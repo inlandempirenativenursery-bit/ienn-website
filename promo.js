@@ -16,7 +16,7 @@
       ".ienn-promo-roll::before{left:-6px}.ienn-promo-roll::after{right:-6px}",
       ".ienn-promo-top{margin-bottom:-9px;z-index:2}.ienn-promo-bottom{margin-top:-9px;z-index:2}",
       /* the sheet */
-      ".ienn-promo-box{position:relative;z-index:1;background:linear-gradient(90deg,#9e0c22 0%,#c8102e 9%,#d0152f 50%,#c8102e 91%,#9e0c22 100%);color:#fff;padding:2rem 1.4rem 1.5rem;text-align:center;border-left:1px solid #7a0918;border-right:1px solid #7a0918}",
+      ".ienn-promo-box{position:relative;z-index:1;background:linear-gradient(90deg,#9e0c22 0%,#c8102e 9%,#d0152f 50%,#c8102e 91%,#9e0c22 100%);color:#fff;padding:2rem 1.4rem 1.9rem;text-align:center;border-left:1px solid #7a0918;border-right:1px solid #7a0918}",
       ".ienn-promo-box::before{content:'';position:absolute;inset:14px 12px;border:1.5px solid rgba(255,240,220,.55);pointer-events:none}",
       ".ienn-promo-box h2{margin:.25rem 2rem .5rem;font-size:clamp(1.9rem,8vw,2.6rem);line-height:1.05;font-weight:800;letter-spacing:.01em;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.25)}",
       ".ienn-promo-box p{margin:0 0 .75rem;line-height:1.45;font-size:1.05rem;font-weight:600;color:#fff8ee}",
@@ -26,6 +26,9 @@
       ".ienn-promo-go:hover{background:#fff}",
       ".ienn-promo-x{position:absolute;top:18px;right:16px;z-index:3;width:44px;height:44px;border:0;background:none;font-size:1.7rem;line-height:1;color:#fff8ee;cursor:pointer;border-radius:50%}",
       ".ienn-promo-tag{position:absolute;top:22px;left:22px;font-size:.7rem;font-weight:800;letter-spacing:.12em;color:#ffe6c7;opacity:.85}",
+      ".ienn-promo-info{margin:1.1rem .25rem 0;padding-top:.85rem;border-top:1px solid rgba(255,240,220,.45);position:relative}",
+      ".ienn-promo-box .ienn-promo-info p{margin:0 0 .2rem;font-size:.86rem;font-weight:600;line-height:1.4;color:#ffe9d2}",
+      ".ienn-promo-box .ienn-promo-info p:last-child{margin-bottom:0}",
       ".ienn-promo-x:hover{background:rgba(255,255,255,.12)}",
       ".ienn-promo-x:focus-visible,.ienn-promo-go:focus-visible{outline:3px solid #ffd27a;outline-offset:3px}",
       "@media (prefers-reduced-motion:no-preference){.ienn-promo{animation:iennFade .25s ease-out}.ienn-promo-scroll{animation:iennPop .45s cubic-bezier(.2,1.3,.4,1)}.ienn-promo-box{transform-origin:top;animation:iennUnroll .5s ease-out}}",
@@ -34,6 +37,8 @@
     document.head.appendChild(st);
   }
   function fmt(d) { if (!d) return ""; var p = d.split("-"); var m = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[1] - 1]; return m ? m + " " + (+p[2]) : d; }
+  var BOTTOM_DEFAULT = "Pickup Saturdays 10 AM – 2 PM in Fontana. | Cash or Zelle at time of pickup.";
+  function lines(v) { if (v && v.join) return v; return String(v || "").split(/\r?\n|\s+\|\s+/).map(function (x) { return x.trim(); }).filter(Boolean); }
   function show(promo, opts) {
     opts = opts || {};
     if (!promo || !promo.title || SHOWN) return;
@@ -42,6 +47,7 @@
     SHOWN = true; css();
     var prev = document.activeElement, wrap = document.createElement("div");
     wrap.className = "ienn-promo";
+    var info = lines(promo.bottomInfo); if (!info.length) info = lines(opts.bottomDefault || BOTTOM_DEFAULT);
     var dates = promo.end ? "Through " + fmt(promo.end) : "";
     wrap.innerHTML = '<div class="ienn-promo-scroll" role="dialog" aria-modal="true" aria-labelledby="ienn-promo-title"' + (promo.message ? ' aria-describedby="ienn-promo-msg"' : "") + ">" +
       '<div class="ienn-promo-roll ienn-promo-top" aria-hidden="true"></div><div class="ienn-promo-box">' +
@@ -50,7 +56,8 @@
       (promo.message ? '<p id="ienn-promo-msg">' + esc(promo.message) + "</p>" : "") +
       (promo.discountNote ? '<p class="ienn-promo-note">' + esc(promo.discountNote) + "</p>" : "") +
       (dates ? '<p class="ienn-promo-dates">' + esc(dates) + "</p>" : "") +
-      '<button type="button" class="ienn-promo-go">' + esc(opts.cta || "Shop now") + "</button></div>" +
+      '<button type="button" class="ienn-promo-go">' + esc(opts.cta || "Shop now") + "</button>" +
+      (info.length ? '<div class="ienn-promo-info">' + info.map(function (l) { return "<p>" + esc(l) + "</p>"; }).join("") + "</div>" : "") + "</div>" +
       '<div class="ienn-promo-roll ienn-promo-bottom" aria-hidden="true"></div></div>';
     var go = wrap.querySelector(".ienn-promo-go"), x = wrap.querySelector(".ienn-promo-x"), oldOverflow = document.body.style.overflow;
     function close(shop) {
@@ -68,7 +75,7 @@
     document.addEventListener("keydown", onKey, true);
     document.body.appendChild(wrap); document.body.style.overflow = "hidden"; go.focus();
   }
-  var PREVIEW = { title: "Fall Sale", message: "Fall is a great time to plant natives. Reserve your plants for Saturday pickup in Fontana.", start: "2026-11-01", end: "2026-11-30", discountNote: "" };
+  var PREVIEW = { title: "Fall Sale", message: "Fall is a great time to plant natives. Reserve your plants for Saturday pickup in Fontana.", start: "2026-11-01", end: "2026-11-30", discountNote: "", bottomInfo: ["Pickup Saturdays 10 AM – 2 PM in Fontana.", "Cash or Zelle at time of pickup."] };
   window.iennPromo = function (promo, opts) { show(promo, Object.assign({}, window.IENN_PROMO_OPTS || {}, opts || {})); };
   function preview() { if (/[?&]promo=preview\b/.test(location.search)) window.iennPromo(PREVIEW, { force: true, preview: true }); }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", preview); else preview();

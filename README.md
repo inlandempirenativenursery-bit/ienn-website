@@ -81,11 +81,12 @@ Optional override from the sheet: add a **Photo** column (also matched: Photo UR
 
 The shop pages (`order.html` and the homepage) can show a small pop-up for a sale. It is controlled entirely from the **Promos** tab of the inventory tool's spreadsheet:
 
-| Active | Title | Message | Start date | End date | Discount note |
-|---|---|---|---|---|---|
-| No | Fall Sale | EXAMPLE: … | 2026-11-01 | 2026-11-30 | e.g. describe the discount here |
+| Active | Title | Message | Start date | End date | Discount note | Bottom info |
+|---|---|---|---|---|---|---|
+| No | Fall Sale | EXAMPLE: … | 2026-11-01 | 2026-11-30 | e.g. describe the discount here | Pickup Saturdays 10 AM – 2 PM in Fontana. \| Cash or Zelle at time of pickup. |
 
 - **Turn a promo on:** set **Active** to `Yes` and fill in Title and Message. Start and End dates are inclusive and use Pacific time. Leave either one blank for "open-ended". A Discount note is optional and shows in bold. Write only what's actually offered.
+- **Bottom info** (optional) is the small cream text under the Shop now button. Start a new line with a line break in the cell or with ` | `. If it's blank, the pop-up shows the default `IENN_PROMO_BOTTOM_DEFAULT` from `IENN_Config.gs` ("Pickup Saturdays 10 AM – 2 PM in Fontana. | Cash or Zelle at time of pickup."). Running `iennSetup()` adds this column to an existing Promos tab without moving your rows; only the untouched example rows get the default text.
 - **Turn it off:** set Active to `No`, or let the End date pass. If several rows qualify, the first one from the top is shown.
 - Customers see it once per browser session, and must tap **Shop now** or **×** (or press Esc) to close it.
 - The tab is created with three inactive example rows (Fall, Spring and Summer Sale) when you run `iennSetup()` once. The example dates and wording are placeholders, so edit them before you activate a row.

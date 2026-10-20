@@ -144,7 +144,7 @@ t('promo: date range, active flag, open-ended, first match wins, bad rows skippe
   assert.strictEqual(pick([['Yes', 'NoEnd', '', '2026-10-01', '', '']], '2027-05-01').title, 'NoEnd');
   assert.strictEqual(pick([['Yes', 'NoStart', '', '', '10/25/2026', '']], '2026-10-20').title, 'NoStart', 'm/d/yyyy accepted');
   assert.strictEqual(pick([['Yes', 'Bad', '', 'soon', '', ''], ['Yes', 'Second', 'm', '', '', 'e.g. 10%']], '2026-10-20').title, 'Second', 'unreadable date skipped; first valid wins');
-  assert.deepStrictEqual(pick([['Yes', 'A', 'msg', new Date(Date.UTC(2026, 9, 18, 12)), '', 'note']], '2026-10-20'), { title: 'A', message: 'msg', start: '2026-10-18', end: '', discountNote: 'note' });
+  assert.deepStrictEqual(pick([['Yes', 'A', 'msg', new Date(Date.UTC(2026, 9, 18, 12)), '', 'note']], '2026-10-20'), { title: 'A', message: 'msg', start: '2026-10-18', end: '', discountNote: 'note', bottomInfo: ['Pickup Saturdays 10 AM – 2 PM in Fontana.', 'Cash or Zelle at time of pickup.'] });
   assert.strictEqual(ctx.iennPickPromo_([['Title'], ['x']], '2026-10-20'), null, 'no Active column -> null');
 });
 
@@ -153,12 +153,30 @@ t('promo: missing tab -> null in inventory; iennSetup creates Promos with inacti
   assert.strictEqual(J(h.ctx.iennInventory()).promo, null);
   h.ctx.iennSetup();
   const rows = h.ss.sheets['Promos'].rows;
-  assert.deepStrictEqual(J(rows[0]), ['Active', 'Title', 'Message', 'Start date', 'End date', 'Discount note']);
+  assert.deepStrictEqual(J(rows[0]), ['Active', 'Title', 'Message', 'Start date', 'End date', 'Discount note', 'Bottom info']);
   assert.deepStrictEqual(rows.slice(1).map(r => [r[0], r[1]]), [['No', 'Fall Sale'], ['No', 'Spring Sale'], ['No', 'Summer Sale']]);
   assert.strictEqual(J(h.ctx.iennInventory()).promo, null, 'examples are inactive');
   rows[1][0] = 'Yes'; rows[1][3] = '2026-10-01'; rows[1][4] = ''; // open-ended so the test doesn't depend on the real clock
   assert.strictEqual(J(h.ctx.iennInventory()).promo.title, 'Fall Sale');
   h.ctx.iennSetup(); assert.strictEqual(h.ss.sheets['Promos'].rows.length, 4, 'setup does not duplicate');
+});
+
+t('promo: Bottom info column (lines, default fallback) and iennSetup adds it to an old Promos tab', () => {
+  const { ctx } = load(), H = ['Active', 'Title', 'Message', 'Start date', 'End date', 'Discount note', 'Bottom info'];
+  const pick = b => J(ctx.iennPickPromo_([H, ['Yes', 'Sale', 'm', '', '', '', b]], '2026-10-20')).bottomInfo;
+  assert.deepStrictEqual(pick('Line one | Line two'), ['Line one', 'Line two']);
+  assert.deepStrictEqual(pick('A\nB\n\nC'), ['A', 'B', 'C']);
+  assert.deepStrictEqual(pick('<b>x</b>'), ['<b>x</b>'], 'raw text; the page escapes it');
+  assert.deepStrictEqual(pick(''), ['Pickup Saturdays 10 AM – 2 PM in Fontana.', 'Cash or Zelle at time of pickup.'], 'blank -> configurable default');
+  const h = load(), old = [['Active', 'Title', 'Message', 'Start date', 'End date', 'Discount note'],
+    ['No', 'Fall Sale', 'EXAMPLE: x', '2026-11-01', '2026-11-30', ''], ['Yes', 'Our own', 'Real promo', '', '', '10% off']];
+  h.ss.sheets['Promos'] = null; h.ss.insertSheet('Promos').rows.push(...old.map(r => r.slice()));
+  h.ctx.iennSetup();
+  const rows = h.ss.sheets['Promos'].rows;
+  assert.strictEqual(rows[0][6], 'Bottom info'); assert.strictEqual(rows.length, 3, 'no rows added or moved');
+  assert.match(rows[1][6], /Pickup Saturdays/); assert.ok(!rows[2][6], 'team rows untouched');
+  assert.deepStrictEqual(J(rows[2].slice(0, 6)), old[2]);
+  assert.strictEqual(J(h.ctx.iennInventory()).promo.bottomInfo.length, 2);
 });
 
 console.log(`\n${pass} tests passed`);
