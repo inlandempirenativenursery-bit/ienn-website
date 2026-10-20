@@ -177,7 +177,7 @@
     <ul>
       <li><span class="ico" aria-hidden="true">📝</span><span><b>Order request</b>Submitting this form sends an order request, not a completed purchase. Nothing is charged online.</span></li>
       <li><span class="ico" aria-hidden="true">🌱</span><span><b>Availability</b>Stock changes weekly. We confirm what is available before pickup.</span></li>
-      <li><span class="ico" aria-hidden="true">💲</span><span><b>Pricing</b>Priced by pot size: 2-inch $3 • 4-inch $6 • Quarter tree pot $10 • 1-gallon $15. Sales tax is shown as an estimate (8.75%) and confirmed at pickup. [TODO: Eric to confirm tax rate and whether tax is added.]</span></li>
+      <li><span class="ico" aria-hidden="true">💲</span><span><b>Pricing</b>Priced by pot size: 4-inch $6 • 1-gallon $15. 2-inch ($3) and quarter tree pot ($10): Ask us, available on request.</span></li>
       <li><span class="ico" aria-hidden="true">🚫</span><span><b>No shipping or installs</b>Pickup only. We can refer you to partner landscapers for installation.</span></li>
       <li><span class="ico" aria-hidden="true">🌵</span><span><b>Plant care</b>Plants are healthy at pickup. How they do after planting depends on site, watering, and care, and survival isn't guaranteed. [TODO: confirm return/replacement policy, if any.]</span></li>
     </ul>
@@ -185,7 +185,7 @@
 
   <h2 id="shop">1. Choose your plants</h2>
   <p class="hint">Pick a size, set how many, then tap <b>Add</b>. 1-gallon is our best value for most yards.</p>
-  <p class="hint">Live stock covers <b>4-inch ($6)</b> and <b>1-gallon ($15)</b>. <b>2-inch ($3)</b> and <b>quarter tree pots ($10)</b> are available on request: list them in Notes and we'll confirm. [TODO Eric: confirm how 2-inch / tree pot stock should be shown]</p>
+  <p class="hint">Live stock covers <b>4-inch ($6)</b> and <b>1-gallon ($15)</b>. <b>2-inch ($3)</b> and <b>quarter tree pot ($10)</b>: Ask us, available on request. List them in Notes and we'll confirm.</p>
   <p class="hint" id="stock-updated" aria-live="polite">Loading live stock…</p>
   <section class="notice" id="stock-error" role="status" hidden>
     <b>Live stock unavailable right now.</b>
@@ -215,7 +215,7 @@
     <textarea id="notes" name="notes" placeholder="Example: Prefer Saturday 11am, or Grand Terrace pickup if possible."></textarea>
 
     <p class="fine"><strong>Privacy:</strong> We use your name, email, phone, and notes only to confirm and fulfill your order and to contact you about pickup. We don't sell or share your personal information. To see, correct, or delete your information, email <a href="mailto:hello@inlandempirenativenursery.com">hello@inlandempirenativenursery.com</a>. [TODO: owner to review; add a full privacy policy page.]</p>
-    <p class="fine" id="send-note">Submitting sends your order request to us. Nothing is charged online. If our order system is unreachable, your email app opens with the order filled in instead; press Send there to finish.</p>
+    <p class="fine" id="send-note">Submitting sends your order request to us. Nothing is charged online. If our order system is unreachable, call or text Andrew at <a href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> (<a href="sms:+19096099373">text</a>), or your email app opens with the order filled in as a backup.</p>
 
     <p class="error" id="qty-error" role="alert">Please add at least one plant above.</p>
     <p class="error" id="form-error" role="alert">Please enter your name and a valid email.</p>
@@ -227,7 +227,7 @@
     <h2 id="confirm-title">Order request ready ✅</h2>
     <p id="confirm-msg">Your email app should open with this order filled in. <b>Press Send there to finish.</b> We'll reply to confirm stock, your total, and pickup details.</p>
     <div id="confirm-body"></div>
-    <p class="fine">Email didn't open? Send this list to <a href="mailto:hello@inlandempirenativenursery.com">hello@inlandempirenativenursery.com</a>.</p>
+    <p class="fine" id="fallback-note">Order didn't go through? Call or text Andrew at <a href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> (<a href="sms:+19096099373">text</a>). Or email this list to <a href="mailto:hello@inlandempirenativenursery.com">hello@inlandempirenativenursery.com</a>.</p>
     <button type="button" class="submit-btn" id="new-order">Start a new order</button>
   </section>
 </main>
@@ -240,7 +240,7 @@
   <footer>
     Inland Empire Native Nursery • Pickup-only • Fontana / Grand Terrace area<br>
     Cash or Zelle • We confirm and send directions after you order.<br>
-    <a href="mailto:hello@inlandempirenativenursery.com" style="color: var(--sage-dark);">hello@inlandempirenativenursery.com</a><br>
+    Call/text Andrew: <a href="tel:+19096099373" style="color: var(--sage-dark);">(909)&nbsp;609&#8209;9373</a> • <a href="mailto:hello@inlandempirenativenursery.com" style="color: var(--sage-dark);">hello@inlandempirenativenursery.com</a><br>
     &copy; 2026 Inland Empire Native Nursery. All rights reserved.
   </footer>
 
@@ -265,7 +265,7 @@
     /* Prices by size only (Eric, 2026-10-20). Keys = site labels; SHEET_SIZE = inventory tool names. */
     var PRICES = { '2-inch': 3, '4-inch': 6, 'Quarter tree pot': 10, '1-gallon': 15 };
     var SHEET_SIZE = { '2-inch': '2"', '4-inch': '4"', 'Quarter tree pot': 'Tree pot', '1-gallon': '1 gal' };
-    var TAX_RATE = 0.0875; /* ESTIMATE from the existing Apps Script default. [TODO Eric confirm] */
+    /* All prices INCLUDE sales tax (Eric, 2026-10-20). No tax is added. */
     function money(n) { return '$' + (Math.round(n * 100) / 100).toFixed(2); }
     function priceOf(size) { return PRICES.hasOwnProperty(size) ? PRICES[size] : null; }
     /* Default "popular first" order when the sheet has no rank/featured column. Lower = earlier. */
@@ -470,7 +470,7 @@
       });
 
       function totals() { var sub = cart.reduce(function (a, i) { var p = priceOf(i.size); return a + (p || 0) * i.qty; }, 0);
-        var tax = Math.round(sub * TAX_RATE * 100) / 100; return { sub: sub, tax: tax, total: Math.round((sub + tax) * 100) / 100 }; }
+        return { sub: sub, total: sub }; }
       window.IENNCart = { totals: function () { return totals(); }, items: function () { return cart.slice(); } };
       function count() { return cart.reduce(function (a, i) { return a + i.qty; }, 0); }
       function render() {
@@ -491,11 +491,9 @@
         summary.appendChild(ul);
         var tt = totals(); var box = el('div', 'totals');
         function row(a, b, c) { var d = el('div', c); d.appendChild(el('span', null, a)); d.appendChild(el('span', null, b)); box.appendChild(d); }
-        row(n + (n === 1 ? ' plant' : ' plants') + ' \u2022 Subtotal', money(tt.sub));
-        row('Est. sales tax (' + (TAX_RATE * 100).toFixed(2) + '%)', money(tt.tax));
-        row('Est. total', money(tt.total), 'grand');
+        row(n + (n === 1 ? ' plant' : ' plants') + ' \u2022 Total', money(tt.total), 'grand');
         summary.appendChild(box);
-        summary.appendChild(el('p', 'fine', 'Tax and total are estimates, confirmed at pickup. Nothing is charged online.'));
+        summary.appendChild(el('p', 'fine', 'Taxes included. Nothing is charged online.'));
         document.getElementById('qty-error').style.display = 'none';
       }
       render();
@@ -513,13 +511,14 @@
         var conflict = document.getElementById('stock-conflict'); conflict.style.display = 'none';
         var tt = totals();
         var lines = cart.map(function (i) { var p = priceOf(i.size); return i.name + ' (' + i.size + '): ' + i.qty + (p !== null ? ' x $' + p + ' = ' + money(p * i.qty) : ''); });
-        lines.push('Subtotal ' + money(tt.sub) + ', est. tax ' + money(tt.tax) + ', est. total ' + money(tt.total));
+        lines.push('Total ' + money(tt.total) + ' (taxes included)');
         var notes = document.getElementById('notes');
         notes.value = notes.value.replace(/\n*Requested quantities: [\s\S]*$/, '');
         notes.value = (notes.value ? notes.value + '\n\n' : '') + 'Requested quantities: ' + lines.join(', ');
         function showConfirm(orderId) {
           var cb = document.getElementById('confirm-body'); cb.innerHTML = '';
           var msg = document.getElementById('confirm-msg');
+          document.getElementById('fallback-note').hidden = !!orderId;
           if (orderId) {
             document.getElementById('confirm-title').textContent = 'Order received \u2705';
             msg.textContent = 'Thanks! We got your order request. We\'ll email you to confirm your plants, total, and pickup details. Nothing has been charged.';

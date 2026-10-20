@@ -26,7 +26,18 @@
  *      notes, source } and returns { invoiceNo } (or the number) - adapt ienToInvoicePayload_ if not.
  *  T4. IENN Invoices column names used by buildResponseEmail (INVOICE_COLS).
  *  T5. 2" and Tree pot have no weekly counts -> shown as "available on request" (not orderable online).
- *  T6. Tax 8.75% is the existing default; Eric to confirm.
+ *  T6. TAXES: all prices INCLUDE sales tax (Eric). Nothing is added. If tax must be reported, back it
+ *      out of the total (tax = total - total / (1 + rate)) at reporting time [TODO Eric: rate + method].
+ *
+ * CHANNELS: ONE public order path = the website (order.html -> doPost). The Index invoice tool is
+ * team-only (phone orders, FB Marketplace, walk-ins). Both go through submitInvoice, so both land in
+ * IENN Invoices and the Sold log. Source = "Website" or "Internal".
+ * The old public customer view (?view=customer) should be retired or redirected to the website,
+ * e.g. in doGet:  if (e.parameter.view === 'customer') return HtmlService.createHtmlOutput(
+ *   '<script>window.top.location.href="' + IENN_CFG.WEBSITE_ORDER_URL + '"</script>');   [TODO Eric]
+ *
+ * ORDER-TO-PICKUP: Andrew owns it. Status flow New -> Claimed -> Confirmed -> Ready -> Picked up;
+ * "Claimed by" defaults to Andrew. The team email goes to everyone and says Andrew claims it.
  */
 var IENN_CFG = {
   SUBMISSIONS_SHEET: 'Submissions',
@@ -37,11 +48,15 @@ var IENN_CFG = {
   COUNTED_SIZES: ['4"', '1 gal'],           // from Submissions JSON keys four / gal1
   ON_REQUEST_SIZES: ['2"', 'Tree pot'],     // [TODO confirm T5]
   PRICES: { '2"': 3, '4"': 6, 'Tree pot': 10, '1 gal': 15 },
-  TAX_RATE: 0.0875,                         // [TODO confirm T6]
+  TAXES_INCLUDED: true,                     // prices include tax (T6)
+  WEBSITE_ORDER_URL: '',                    // [TODO Eric] public URL of order.html (for redirecting ?view=customer)
+  ORDER_OWNER: 'Andrew',
+  OWNER_PHONE: '(909) 609-9373',
+  STATUS_FLOW: ['New', 'Claimed', 'Confirmed', 'Ready', 'Picked up'],
   INVOICES_SPREADSHEET_ID: '',              // [TODO fill] IENN Invoices file id (for the team link + response email)
   INVOICES_SHEET: '',                       // [TODO fill] tab name inside IENN Invoices ('' = first tab)
-  INVOICE_COLS: { id: 'Invoice #', name: 'Name', email: 'Email', items: 'Items', subtotal: 'Subtotal',
-    tax: 'Tax', total: 'Total', notes: 'Notes', status: 'Status', paid: 'Paid', method: 'Payment method',
+  INVOICE_COLS: { id: 'Invoice #', name: 'Name', email: 'Email', items: 'Items', total: 'Total',
+    notes: 'Notes', status: 'Status', claimedBy: 'Claimed by', source: 'Source', paid: 'Paid', method: 'Payment method',
     address: 'Pickup address', window: 'Pickup window', response: 'Our response' }, // [TODO confirm T4]
   WEBSITE_TEAM_NOTICE: true,  // extra short "New IENN order #id" email with link (existing submitInvoice email still sends)
   TEAM_EMAILS: []             // [TODO fill] only if getSettings() has none. No addresses invented.
@@ -92,8 +107,10 @@ function submitInvoice(payload) {
     if (check.problems.length) { var err = new Error('OUT_OF_STOCK'); err.items = check.problems; throw err; }
     var res = submitInvoiceRaw_(payload);
     var no = res && typeof res === 'object' ? (res.invoiceNo || res.invoiceNumber || res.id) : res;
+    var source = payload.source === 'Website' ? 'Website' : 'Internal';
     var week = ienLatestWeek_(), sh = ienSoldSheet_();
-    check.lines.forEach(function (it) { sh.appendRow([new Date(), String(no), it.plant, it.size, it.qty, week, payload.source || 'index']); });
+    check.lines.forEach(function (it) { sh.appendRow([new Date(), String(no), it.plant, it.size, it.qty, week, source]); });
+    try { ienTagInvoice_(no, source); } catch (e) {}
     SpreadsheetApp.flush();
     return res;
   } finally { lock.releaseLock(); }
@@ -113,6 +130,18 @@ function ienCheckStock_(items) {
   return { lines: lines, problems: problems };
 }
 
+/* Sets Source / Status=New / Claimed by=Andrew on the invoice row (adds those columns if missing). */
+function ienTagInvoice_(no, source) {
+  var hit = ienInvoiceRow_(no); if (!hit) return;
+  var C = IENN_CFG.INVOICE_COLS, sh = hit.sheet, vals = { source: source, status: IENN_CFG.STATUS_FLOW[0], claimedBy: IENN_CFG.ORDER_OWNER };
+  Object.keys(vals).forEach(function (k) {
+    var c = hit.col(C[k]);
+    if (c < 0) { c = sh.getLastColumn(); sh.getRange(1, c + 1).setValue(C[k]); hit = ienInvoiceRow_(no); }
+    var cur = hit.row[c];
+    if (k === 'source' || cur === '' || cur == null) sh.getRange(hit.rowNum, c + 1).setValue(vals[k]);
+  });
+}
+
 /* ---------- inventory feed (?view=json) ---------- */
 function ienCatalogNames_() {
   var sh = SpreadsheetApp.getActive().getSheetByName(IENN_CFG.CATALOG_SHEET); if (!sh) return [];
@@ -126,13 +155,13 @@ function inventoryFeed_() {
     return { name: n, sizes: IENN_CFG.COUNTED_SIZES.filter(function (s) { return stock[n][s] !== undefined; })
       .map(function (s) { return { size: s, stock: ienNum_(stock[n][s]), price: IENN_CFG.PRICES[s] }; }) };
   }).filter(function (p) { return p.sizes.length; });
-  return { updated: new Date().toISOString(), week: ienLatestWeek_(), prices: IENN_CFG.PRICES, taxRate: IENN_CFG.TAX_RATE,
+  return { updated: new Date().toISOString(), week: ienLatestWeek_(), prices: IENN_CFG.PRICES, taxesIncluded: true,
     onRequestSizes: IENN_CFG.ON_REQUEST_SIZES, plants: plants };
 }
 
 /* ---------- website order -> existing invoice path ---------- */
 function ienToInvoicePayload_(o, items) {  // [TODO confirm T3: match the Index form's payload]
-  return { customer: { name: o.name, email: o.email, phone: o.phone || '' }, notes: o.notes || '', source: 'website',
+  return { customer: { name: o.name, email: o.email, phone: o.phone || '' }, notes: o.notes || '', source: 'Website', taxIncluded: true,
     items: items.map(function (i) { return { plant: i.name, size: i.size, qty: i.qty, price: IENN_CFG.PRICES[i.size] }; }) };
 }
 function placeOrder_(o) {
@@ -149,7 +178,7 @@ function placeOrder_(o) {
   try { res = submitInvoice(ienToInvoicePayload_({ name: name, email: email, phone: o.phone, notes: o.notes }, items)); }
   catch (e) { if (e.message === 'OUT_OF_STOCK') return { ok: false, error: 'out_of_stock', items: e.items }; throw e; }
   var id = String(res && typeof res === 'object' ? (res.invoiceNo || res.invoiceNumber || res.id) : res);
-  var tax = ienRound_(subtotal * IENN_CFG.TAX_RATE), result = { ok: true, orderId: id, subtotal: subtotal, tax: tax, total: ienRound_(subtotal + tax) };
+  var result = { ok: true, orderId: id, total: subtotal };  // taxes included, nothing added
   if (IENN_CFG.WEBSITE_TEAM_NOTICE) { try { ienNotifyTeam_(result, { name: name, email: email }, items); } catch (e) { result.notifyError = String(e); } }
   return result;
 }
@@ -179,8 +208,9 @@ function ienNotifyTeam_(res, cust, items) {
   MailApp.sendEmail({ to: to.join(','), subject: 'New IENN order #' + res.orderId,
     body: 'A new website order came in from ' + cust.name + ' <' + cust.email + '>.\n' +
       items.map(function (i) { return '  ' + i.qty + ' x ' + i.name + ' (' + i.size + ')'; }).join('\n') +
-      '\nSubtotal $' + res.subtotal.toFixed(2) + ' (est. total $' + res.total.toFixed(2) + ')\n\nView details: ' + link +
-      '\n\nOne person handles the reply (use buildResponseEmail("' + res.orderId + '")).' });
+      '\nTotal $' + res.total.toFixed(2) + ' (taxes included)\n\nView details: ' + link +
+      '\n\n' + IENN_CFG.ORDER_OWNER + ' claims and handles this order (Claimed by = ' + IENN_CFG.ORDER_OWNER +
+      '). Status: ' + IENN_CFG.STATUS_FLOW.join(' -> ') + '. Reply with buildResponseEmail("' + res.orderId + '").' });
 }
 
 /* ---------- uniform customer reply (docs/order-response-template.md) ---------- */
@@ -189,22 +219,22 @@ function buildResponseEmail(invoiceNo) {
   var C = IENN_CFG.INVOICE_COLS;
   function g(k) { var i = hit.col(C[k]); return i < 0 ? '' : hit.row[i]; }
   function money(n) { return '$' + Number(n || 0).toFixed(2); }
-  var sub = Number(g('subtotal') || 0), tax = g('tax') === '' ? ienRound_(sub * IENN_CFG.TAX_RATE) : Number(g('tax'));
-  var total = g('total') === '' ? ienRound_(sub + tax) : Number(g('total'));
+  var total = Number(g('total') || 0);
   var paid = /^(y|yes|paid|true)$/i.test(String(g('paid')).trim());
-  var confirmed = /^(confirmed|ready|picked up)$/i.test(String(g('status')).trim());
+  var confirmed = IENN_CFG.STATUS_FLOW.indexOf(String(g('status')).trim()) >= 2; // Confirmed or later
   var addr = String(g('address')).trim(), notes = String(g('notes')).trim();
   var body = ['Hi ' + String(g('name')).split(' ')[0] + ',', '',
     'Thanks for your order with Inland Empire Native Nursery! Here are the details for order #' + invoiceNo + ':', '',
     String(g('items')), '',
-    'Subtotal: ' + money(sub), 'Sales tax (estimate): ' + money(tax), 'Total: ' + money(total), '',
+    'Total: ' + money(total) + ' (taxes included)', '',
     'Payment status: ' + (paid ? 'Paid' : 'Not yet paid'),
     'Payment form: ' + (String(g('method')).trim() || 'Cash or Zelle at pickup [TODO confirm accepted methods]'), '',
     'Pickup address: ' + (confirmed && addr ? addr : '(We will send the exact address once your order is confirmed.)'),
     'Pickup date/time: ' + (String(g('window')).trim() || 'Saturdays 10 AM - 2 PM'), '',
     'Your notes:', notes ? notes.split('\n').map(function (l) { return '> ' + l; }).join('\n') : '> (none)', '',
     'Our response:', String(g('response')).trim() || '[write response here]', '',
-    'Thank you for planting natives!', 'Inland Empire Native Nursery'].join('\n');
+    'Questions? Call or text me at ' + IENN_CFG.OWNER_PHONE + '.', '',
+    'Thank you for planting natives!', IENN_CFG.ORDER_OWNER + ', for Inland Empire Native Nursery'].join('\n');
   return { to: String(g('email')), subject: 'Your IENN order #' + invoiceNo, body: body };
 }
 
@@ -232,7 +262,7 @@ function ienCsv_() {
   function q(v) { v = String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
   var lines = [['Plant', 'Size', 'Price', 'Counted (week ' + ienLatestWeek_() + ')', 'Sold since', 'Available'].map(q).join(',')];
   ienPlantRows_().forEach(function (r) { lines.push([r.plant, r.size, r.price, r.counted, r.sold, r.available].map(q).join(',')); });
-  IENN_CFG.ON_REQUEST_SIZES.forEach(function (s) { lines.push(['(any plant)', s, IENN_CFG.PRICES[s], '', '', 'On request'].map(q).join(',')); });
+  IENN_CFG.ON_REQUEST_SIZES.forEach(function (s) { lines.push(['(any plant)', s, IENN_CFG.PRICES[s], '', '', 'Ask us (on request)'].map(q).join(',')); });
   return lines.join('\n');
 }
 function ienPrintHtml_() {
@@ -252,8 +282,8 @@ function ienPrintHtml_() {
     '<div><h1>Inland Empire Native Nursery</h1><div class="sub">PLANT LIST &bull; ' + h(date) + ' &bull; COUNT WEEK ' + h(ienLatestWeek_()) + '</div></div></header>' +
     '<p class="noprint"><button class="btn" onclick="window.print()">Print / Save as PDF</button><a class="btn" href="?view=csv" target="_top">Export CSV</a></p>' +
     '<table><thead><tr><th>Plant</th><th>Size</th><th>Price</th><th>Counted</th><th>Sold since count</th><th>Available</th></tr></thead><tbody>' + body + '</tbody></table>' +
-    '<p class="note">Prices by size: 2" $3 &bull; 4" $6 &bull; Tree pot $10 &bull; 1 gal $15. 2" and Tree pot are available on request. ' +
-    'Available = latest weekly count minus orders/invoices since (see the Sold tab). Sales tax est. ' + (IENN_CFG.TAX_RATE * 100).toFixed(2) + '%, confirmed at pickup.</p></body></html>';
+    '<p class="note">Prices by size: 2" $3 &bull; 4" $6 &bull; Tree pot $10 &bull; 1 gal $15. 2" and Tree pot: Ask us, available on request. ' +
+    'Available = latest weekly count minus orders/invoices since (see the Sold tab). Taxes included.</p></body></html>';
 }
 
 /* ---------- web entry points ---------- */

@@ -1,7 +1,9 @@
 # IENN order reply: uniform template
 
-One team member handles each reply. In Apps Script, run `buildResponseEmail("<invoice #>")`
-to get this pre-filled from the IENN Invoices row, or copy it by hand.
+**Andrew owns order-to-pickup.** The team email goes to everyone; Andrew claims each order
+(`Claimed by` = Andrew) and sends this reply. Status flow in IENN Invoices:
+**New → Claimed → Confirmed → Ready → Picked up**.
+In Apps Script, run `buildResponseEmail("<invoice #>")` to get this pre-filled from the invoice row.
 
 **Subject:** Your IENN order #{{invoice}}
 
@@ -10,17 +12,15 @@ Hi {{first name}},
 
 Thanks for your order with Inland Empire Native Nursery! Here are the details for order #{{invoice}}:
 
-{{qty}} x {{plant}} ({{size}}) @ ${{price}} = ${{line total}}
+{{qty}} x {{plant}} ({{size}}) @ ${{price}}
 ...
 
-Subtotal: ${{subtotal}}
-Sales tax (estimate): ${{tax}}
-Total: ${{total}}
+Total: ${{total}} (taxes included)
 
 Payment status: {{Paid | Not yet paid}}
 Payment form: {{Cash | Zelle | ...}}            [TODO confirm accepted methods]
 
-Pickup address: {{exact address, ONLY after the order is confirmed}}
+Pickup address: {{exact address, ONLY once Status is Confirmed or later}}
 Pickup date/time: {{window, default Saturdays 10 AM - 2 PM}}
 
 Your notes:
@@ -29,11 +29,13 @@ Your notes:
 Our response:
 {{our answer / substitutions / anything else}}
 
+Questions? Call or text me at (909) 609-9373.
+
 Thank you for planting natives!
-Inland Empire Native Nursery
+Andrew, for Inland Empire Native Nursery
 ```
 
 Rules
-- Prices by size: 2" $3, 4" $6, Tree pot $10, 1 gal $15. Tax shown as an estimate (8.75%) [TODO Eric confirm].
-- The address prints only when the invoice Status is `Confirmed`/`Ready`; otherwise it says it will follow.
-- Fields come from IENN Invoices columns set in `IENN_CFG.INVOICE_COLS` [TODO confirm names].
+- Prices by size, **taxes included**: 2" $3, 4" $6, Tree pot $10, 1 gal $15. 2" and Tree pot: Ask us, available on request.
+- Total = sum of the lines. No tax is added. (If tax must be reported, back it out of the total [TODO Eric].)
+- Fields come from IENN Invoices columns in `IENN_CFG.INVOICE_COLS` [TODO confirm names].

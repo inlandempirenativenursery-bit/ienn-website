@@ -33,7 +33,10 @@ const feed = () => ({ updated: new Date().toISOString(), plants: [
       await mfCard.locator('.sizes span', { hasText: '4-inch' }).click(); await mfCard.locator('.add-btn').click();
       const ws = page.locator('.plant-card').first(); await ws.locator('.add-btn').click();
       const tot = await page.locator('#summary-body .totals').innerText();
-      assert.match(tot, /Subtotal\s+\$51\.00/); assert.match(tot, /Est\. sales tax \(8\.75%\)\s+\$4\.46/); assert.match(tot, /Est\. total\s+\$55\.46/);
+      assert.match(tot, /4 plants • Total\s+\$51\.00/); assert.doesNotMatch(tot, /tax/i);
+      const body = await page.locator('body').innerText(); assert.strictEqual((body.match(/taxes included/gi) || []).length, 1, 'one Taxes included note');
+      assert.doesNotMatch(body, /8\.75|sales tax/i); assert.match(body, /\(909\)\s609.9373/);
+      assert.strictEqual(await page.locator('footer a[href="tel:+19096099373"]').count(), 1);
       assert.match(await page.locator('#summary-body li').first().innerText(), /2 × Sticky Monkeyflower \(1-gallon\) — \$30\.00/);
       assert.match(await page.locator('#cartbar-count').innerText(), /4 plants • \$51\.00/);
       const ov = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
@@ -45,6 +48,7 @@ const feed = () => ({ updated: new Date().toISOString(), plants: [
         assert.strictEqual(posted.ct, 'text/plain;charset=utf-8');
         assert.deepStrictEqual(posted.body.items.map(i => i.size).sort(), ['1 gal', '1 gal', '4"']);
         assert.ok(!(await page.locator('#confirm').isHidden())); assert.match(await page.locator('#confirm').innerText(), /Order received[\s\S]*Order #W261020-007/);
+        assert.ok(await page.locator('#fallback-note').isHidden());
         assert.strictEqual(await page.evaluate(() => window.__mailto), 0);
         assert.match(await page.locator('#summary-body').innerText(), /No plants added yet/);
         // re-fetched stock: MF 1-gal now 13
@@ -52,8 +56,9 @@ const feed = () => ({ updated: new Date().toISOString(), plants: [
         if (w === 375) await page.screenshot({ path: SHOTS + 'confirm-375.png', fullPage: false });
       }
       if (mode === 'oos') { assert.ok(await page.locator('#confirm').isHidden()); assert.match(await page.locator('#stock-conflict').innerText(), /Sticky Monkeyflower \(1-gallon\) only 1 left/); assert.strictEqual(await page.evaluate(() => window.__mailto), 0); }
-      if (mode === 'fail' || mode === 'none') { assert.strictEqual(await page.evaluate(() => window.__mailto), mode === 'fail' ? 1 : 0); assert.ok(!(await page.locator('#confirm').isHidden())); assert.match(await page.locator('#confirm-body').innerText(), /Subtotal \$51\.00, est\. tax \$4\.46, est\. total \$55\.46/); }
+      if (mode === 'fail' || mode === 'none') { assert.strictEqual(await page.evaluate(() => window.__mailto), mode === 'fail' ? 1 : 0); assert.ok(!(await page.locator('#confirm').isHidden())); assert.match(await page.locator('#confirm-body').innerText(), /Total \$51\.00 \(taxes included\)/); }
       if (mode === 'none') assert.strictEqual(posted, null);
+      if (mode === 'fail') { assert.ok(await page.locator('#fallback-note a[href="tel:+19096099373"]').isVisible()); assert.ok(await page.locator('#fallback-note a[href="sms:+19096099373"]').isVisible()); }
       results.push(r); await ctx.close();
     }
   }

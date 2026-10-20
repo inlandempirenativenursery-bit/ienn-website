@@ -73,7 +73,7 @@ It accepts **JSON** (an Apps Script `doGet` web app) or a **published-sheet CSV*
 Any new active row in the sheet shows up on the site on the next page load. No code changes needed.
 
 **What was found:** the repo's only Google link is the existing IENN web app
-`https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec?view=customer`
+the existing Apps Script customer view (URL removed: retired as a public link; the website is the only public order path)
 (page title "Inland Empire Native Nursery — Invoice"). It returns HTML only (the customer order/invoice form), so it can't be fetched as data yet.
 Its public server functions are `doGet, getSettings, saveTeamEmails, nextInvoiceNumber, getAvailableStock, getInitial, submitInvoice, buildReceiptText`.
 `getInitial()` already returns `{plants, sizes, defaultPrices, stock: {plant: {'4"': n, '1 gal': n}}}`, and `order.html` reads that shape directly.
@@ -113,7 +113,7 @@ The richer form `sizes: "4-inch:6|1-gallon:2"` in one cell also works.
 
 ## Orders, pricing, and one-system stock (`feature/orders-pricing`, stacked on #4)
 
-Built on Eric's real setup: **one Apps Script project** (Index = internal, `?view=customer`) on the
+Built on Eric's real setup: **one Apps Script project** (Index = internal; the old customer view is being retired) on the
 **IENN Inventory** spreadsheet (`Catalog` + `Submissions`), invoices in **IENN Invoices** via `submitInvoice`.
 The tool stays the single source of truth; the only new storage is one small **`Sold`** tab in the tool's own spreadsheet.
 
@@ -200,3 +200,41 @@ Website order (doPost) ──────┴─► submitInvoice ─► IENN Inv
 - Next: one home menu in Index — **Count · Invoice · Orders · Print list** (needs the Index HTML, not in this repo).
 - Next: turn off `WEBSITE_TEAM_NOTICE` if the existing invoice email is enough (one email per order).
 - Next: retire the Google order form link so the website is the one customer entry point.
+
+
+---
+
+## Update: Eric's clarifications (2026-10-20, same PR)
+- **One public order path: the website.** README no longer lists the Apps Script customer URL; index.html CTAs and footer
+  point to `order.html`. The Index invoice tool is **team-only** (phone, FB Marketplace). Both channels go through
+  `submitInvoice` → IENN Invoices + `Sold`, tagged **Source = Website** or **Source = Internal**.
+  `.gs` notes that `?view=customer` should be retired or redirected to the website (`WEBSITE_ORDER_URL`) [TODO Eric].
+- **2" and Tree pot:** consistent "Ask us, available on request" wording on the site, print list and CSV.
+- **Andrew owns order-to-pickup.** The team email goes to everyone and says "Andrew claims and handles this order".
+  New invoice rows get **Claimed by = Andrew** and **Status = New** (columns are added if missing). Flow:
+  New → Claimed → Confirmed → Ready → Picked up. The pickup address appears in the reply only at Confirmed or later.
+  The reply is signed "Andrew, for Inland Empire Native Nursery".
+- **Taxes included in all prices.** The 8.75% math is removed everywhere (site, `.gs`, email, template, print/CSV).
+  Total = sum of line totals. A single "Taxes included" note sits under the cart total on the order page. The `.gs` adds
+  no tax; backing tax out for reporting is a [TODO Eric]. Earlier references in this file to 8.75% tax, "est. tax" and
+  $4.46/$55.46 are **superseded**.
+- **Fallback contact:** Andrew, call/text **(909) 609-9373** (`tel:` + `sms:` links) in the order page's
+  send note and "didn't go through" message, the order-page and home footers, and the reply template. Email/mailto stays
+  as the secondary fallback. The "didn't go through" note hides when an order succeeds.
+- Kept narrow for Kobe's design pass: no new styles or classes; only text, one `id` (`fallback-note`), and JS logic.
+
+### Tests (re-run)
+- `node test/gs.test.js`: **12/12 pass**. Added: Source=Website/Internal on invoice + Sold, Status=New + Claimed by=Andrew
+  created on the invoice row, email says Andrew claims it and lists the status flow, total $48.00 (taxes included, no tax
+  field), reply signed by Andrew with the phone number, address still hidden at Claimed, print/CSV say "Taxes included"
+  and "Ask us".
+- Playwright 375 + 1280: total **$51.00** = sum of lines, exactly **one** "Taxes included" note, no "8.75"/"sales tax"
+  anywhere, footer `tel:` link, fallback `tel:`/`sms:` links on server failure, fallback note hidden on success.
+  0 console errors, no horizontal overflow.
+- `npx html-validate index.html order.html`: **0 errors** (phone numbers use non-breaking space/hyphen).
+- Screenshots refreshed: `/workspace/ienn-website-shots/prices-375.png`, `confirm-375.png`.
+
+### Deploy checklist additions
+- In IENN_CFG set `WEBSITE_ORDER_URL`, then redirect or remove the `?view=customer` branch in `doGet`.
+- Stop sharing the old customer-view / Google order form links anywhere public (bio links, FB posts).
+- Make sure IENN Invoices can take the `Source`, `Status` and `Claimed by` columns (added automatically on first order).
