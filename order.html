@@ -86,22 +86,21 @@
         <div><strong>Pickup</strong>Saturdays 10 AM – 2 PM</div>
         <div><strong>Payment</strong>Cash or Zelle</div>
         <div><strong>Location</strong>Fontana near Sierra &amp; Baseline (~10 min from the 210)</div>
-        <div><strong>Grand Terrace</strong>Delivery/service case-by-case</div>
       </section>
+      <p class="help" style="margin:0 1rem;">Grand Terrace pickup available upon request.</p>
 
       <p class="help" id="updated" style="margin:0 1rem;"></p>
       <section class="grid" id="grid" aria-live="polite"><p class="empty">Loading live availability…</p></section>
 
       <section id="checkout" aria-labelledby="co-h">
         <h2 id="co-h">Checkout</h2>
+        <p class="help">Pickup – Fontana, Saturdays 10 AM – 2 PM.</p>
         <div id="cart-lines"><p class="empty">Your cart is empty — add a plant above.</p></div>
         <form id="order-form" novalidate>
-          <label class="radio"><input type="radio" name="fulfillment" value="Saturday pickup in Fontana (10 AM-2 PM)" checked><span>Saturday pickup in Fontana (10 AM – 2 PM)</span></label>
-          <label class="radio"><input type="radio" name="fulfillment" value="Grand Terrace delivery request (case-by-case)"><span>Request Grand Terrace delivery <span class="help">(case-by-case, we'll confirm)</span></span></label>
           <label for="name">Name</label><input type="text" id="name" name="name" autocomplete="name" required>
           <label for="phone">Phone</label><input type="tel" id="phone" name="phone" autocomplete="tel" required>
           <label for="email">Email</label><input type="email" id="email" name="email" autocomplete="email" required>
-          <label for="notes">Notes</label><textarea id="notes" name="notes" placeholder="Preferred pickup time, Grand Terrace area, questions…"></textarea>
+          <label for="notes">Notes</label><textarea id="notes" name="notes" placeholder="Preferred pickup time, questions…"></textarea>
           <p class="error" id="form-error" role="alert"></p>
           <button type="submit" class="submit">Place order</button>
           <p class="help" style="margin-top:0.5rem;">We confirm availability and price, then send pickup directions. Pay cash or Zelle at pickup.</p>
@@ -119,7 +118,7 @@
         <li>We'll confirm your plants, sizes and price.</li>
         <li>Pickup: Saturdays 10 AM – 2 PM in Fontana near Sierra &amp; Baseline (~10 min from the 210). Exact address sent on confirmation.</li>
         <li>Payment: cash or Zelle at pickup.</li>
-        <li>Grand Terrace delivery/service: case-by-case, we'll reach out.</li>
+        <li class="help" style="list-style:none;">Grand Terrace pickup available upon request. Mention it in your notes.</li>
       </ul>
       <button class="submit" id="shop-again" type="button">Back to shop</button>
     </section>
@@ -130,7 +129,8 @@
     <button type="button" id="go-checkout">Checkout →</button>
   </div>
 
-  <footer>Inland Empire Native Nursery • Saturdays 10 AM – 2 PM • Fontana (Sierra &amp; Baseline) • Cash or Zelle • Grand Terrace case-by-case<br>
+  <footer>Inland Empire Native Nursery • Saturdays 10 AM – 2 PM • Fontana (Sierra &amp; Baseline) • Cash or Zelle<br>
+    <small>Grand Terrace pickup available upon request.</small><br>
     <a href="mailto:hello@inlandempirenativenursery.com" style="color:#666;">hello@inlandempirenativenursery.com</a></footer>
 
   <script>
@@ -287,7 +287,7 @@
     e.preventDefault();
     var form = e.target, err = $("#form-error"), f = {};
     ["name", "phone", "email", "notes"].forEach(function (k) { f[k] = form.elements.namedItem(k); });
-    var ful = (form.querySelector('input[name="fulfillment"]:checked') || {}).value || "Saturday pickup";
+    var ful = "Pickup – Fontana";
     if (!cart.length) { err.textContent = "Add at least one plant first."; return; }
     if (!f.name.value.trim() || !f.phone.value.trim() || !f.email.value || !f.email.checkValidity()) { err.textContent = "Please enter your name, phone, and a valid email."; return; }
     err.textContent = "";

@@ -13,10 +13,10 @@ Thanks for your order with Inland Empire Native Nursery! Here are the details fo
 Total: ${{Total}} (taxes included)
 
 Payment: {{Paid? "Paid (Cash/Zelle) — thank you!" : "Not yet paid. We accept cash or Zelle at pickup."}}
-Fulfillment: {{Saturday pickup in Fontana / Grand Terrace delivery request}}
+Fulfillment: Pickup – Fontana
 Pickup: Saturdays 10 AM – 2 PM.
 Pickup address: {{ONLY after the order is confirmed — exact Fontana address near Sierra & Baseline (~10 min from the 210)}}
-Grand Terrace delivery/service is handled case-by-case — we'll confirm with you directly if you requested it.
+{{Only if requested in notes: Grand Terrace pickup available upon request — we'll confirm.}}
 
 Your notes: {{Notes}}
 Our response: {{Our response}}
