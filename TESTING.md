@@ -108,3 +108,95 @@ The richer form `sizes: "4-inch:6|1-gallon:2"` in one cell also works.
 - `getinitial.json` (the existing Apps Script shape): renders, and stock maps by short name. ✅
 - Missing URL (404): shows the notice and the cached list; with the cache cleared, it shows the labeled dev sample. ✅
 - `npx html-validate -c '{no-inline-style: off}' index.html order.html`: **0 errors**. No horizontal overflow and no console errors at 375 or 1280.
+
+---
+
+## Orders, pricing, and one-system stock (`feature/orders-pricing`, stacked on #4)
+
+Built on Eric's real setup: **one Apps Script project** (Index = internal, `?view=customer`) on the
+**IENN Inventory** spreadsheet (`Catalog` + `Submissions`), invoices in **IENN Invoices** via `submitInvoice`.
+The tool stays the single source of truth; the only new storage is one small **`Sold`** tab in the tool's own spreadsheet.
+
+### What changed
+- **order.html**: price per size on every size chip, line totals, subtotal, est. tax (8.75%) and est. total in the cart
+  and the sticky bar ("4 plants • $51.00"). Tax is labeled an estimate, confirmed at pickup. 2-inch ($3) and quarter
+  tree pots ($10) are shown as **available on request** (no weekly counts exist for them).
+  Submit POSTs JSON as `text/plain` (no CORS preflight) to `ORDER_ENDPOINT`; success shows **Order received** with the
+  invoice number, clears the cart, and re-fetches stock. Out-of-stock reply shows which line is short and refreshes stock.
+  Network/server failure falls back to the existing mailto. `ORDER_ENDPOINT = ''` keeps mailto only.
+  Size names map site ↔ tool: `4-inch ↔ 4"`, `1-gallon ↔ 1 gal`, `2-inch ↔ 2"`, `Quarter tree pot ↔ Tree pot`.
+- **docs/inventory-apps-script.gs** (drop-in file for the existing project):
+  - `getAvailableStock()` wrapper = existing latest-week aggregate − `Sold` rows for that week. Weekly counts are never edited.
+  - `submitInvoice()` wrapper = LockService + oversell check + existing submit + log lines to `Sold`. **Both the Index
+    invoices and website orders decrement stock**, and website orders land in IENN Invoices with the existing team email.
+  - `?view=json` (website feed: Catalog names + available 4"/1 gal, prices, tax, week), `doPost` (orders),
+    `?view=print` (printable plant list, IENN colors, popular-first, Counted / Sold since / Available, date, Print/Save-as-PDF
+    button), `?view=csv` (spreadsheet export).
+  - Optional short team email "New IENN order #<invoice>" with a link to the invoice row. Recipients come from
+    `getSettings()` (saved by `saveTeamEmails`) or `TEAM_EMAILS` [TODO fill]. No addresses are hard-coded.
+  - `buildResponseEmail(invoiceNo)` pre-fills `docs/order-response-template.md`.
+
+### Tests (2026-10-20)
+- `node test/gs.test.js`: **12/12 pass** (stubbed SpreadsheetApp/MailApp/LockService/ContentService and the existing
+  `getAvailableStockRaw_`/`submitInvoiceRaw_`): feed shape; website order → invoice + Sold rows + stock drops + Submissions
+  untouched + email subject/link + lock released; Index invoice also decrements; **oversell rejected** (no invoice, no Sold,
+  no mail); back-to-back orders; new count week resets the offset; on-request sizes refused online; validation; no team
+  emails; response email (address hidden until Confirmed, Paid/Not yet paid, quoted notes); bad JSON; print + CSV.
+- `test/e2e.playwright.js` (headless Chrome, mocked endpoints, 375 + 1280): chip prices, line totals, subtotal $51.00,
+  tax $4.46, total $55.46; POST is `text/plain` with tool size names; confirmation with order #; cart cleared; stock re-fetched;
+  out-of-stock message; HTTP 500 → mailto fallback; no endpoint → mailto. **0 console errors, no horizontal overflow.**
+- `npx html-validate index.html order.html` (inline-style off): **0 errors.**
+- Screenshots (review box, not committed): `/workspace/ienn-website-shots/prices-375.png`, `confirm-375.png`.
+
+### Assumptions / open questions [TODO confirm]
+1. `getAvailableStock()` returns `{ "<common name>": { '4"': n, '1 gal': n } }` from Submissions JSON keys `four` / `gal1`.
+2. Submissions has a **`Week`** column; the latest week is the max value. Sold rows count only against that week.
+3. `submitInvoice(payload)` accepts `{customer:{name,email,phone}, items:[{plant,size,qty,price}], notes, source}` and returns
+   `{invoiceNo}` or the number. If the Index form uses other keys, edit only `ienToInvoicePayload_`.
+4. Catalog columns `id` / `Common name`; IENN Invoices column names in `INVOICE_COLS`; set `INVOICES_SPREADSHEET_ID`.
+5. **2" and Tree pot**: no counts, so "on request" (not orderable online). Eric: add counts to Submissions, or keep as is?
+6. Tax 8.75% estimate and whether it's added on top. Accepted payment methods (page says Cash or Zelle).
+7. Logo on the print page: set `IENN_LOGO_URL` to a public copy of the locked logo (text header used until then).
+
+### Deploy checklist for Eric
+1. Open the IENN inventory Apps Script project (Extensions > Apps Script from IENN Inventory).
+2. **+ File > Script**, name it `website`, paste all of `docs/inventory-apps-script.gs`.
+3. In the existing code: rename `function getAvailableStock(` → `function getAvailableStockRaw_(` and
+   `function submitInvoice(` → `function submitInvoiceRaw_(`.
+4. At the top of the existing `doGet(e)` add: `var web = ienWebsiteGet_(e); if (web) return web;`
+5. In the Index view's HTML menu add: `<a href="?view=print" target="_top">Print plant list</a>`.
+6. In `IENN_CFG` set `INVOICES_SPREADSHEET_ID` (and `INVOICES_SHEET` if not the first tab); check the column names.
+   Make sure team emails are saved (Eric, Andrew, Keith, Raylene) via the existing team-email setting, or fill `TEAM_EMAILS`.
+7. Run `inventoryFeed_` once from the editor to authorize; check the new `Sold` tab appears after a test invoice.
+8. **Deploy > Manage deployments > Edit > New version**, Execute as **Me**, access **Anyone**. Keep the same /exec URL.
+9. In `order.html` set `INVENTORY_URL = '<exec>?view=json'` and `ORDER_ENDPOINT = '<exec>'`.
+10. Test: place a 1-plant website order → invoice in IENN Invoices, team email, `Sold` row, number drops on the site and Index.
+
+---
+
+## Simplicity check (usability review)
+
+```
+Weekly counts (Index › Count) ──► Submissions ─┐
+                                               ├─► getAvailableStock = latest week − Sold ──► website shop (?view=json)
+Invoices (Index › Invoice) ──┐                 │                                         └─► Print list / CSV
+Website order (doPost) ──────┴─► submitInvoice ─► IENN Invoices + team email ─► Sold row ─┘ (stock drops everywhere)
+```
+
+**Friction points**
+1. Several URLs (Index, `?view=customer`, Google order form, website) — the team may not know which is "the" one.
+2. Numbers drop between weekly counts with no explanation → confusion ("I counted 12, why does it say 9?").
+3. 2" and Tree pot have prices but no counts, so the shop can't show live stock for them.
+4. Two emails per website order (existing invoice email + the short "New IENN order" note).
+5. Reply process: who answers, and where the pickup address/payment status live, isn't obvious.
+6. Website order links still split between the order page and the old Google form (PR #1).
+
+**Recommendations (✅ = done in this PR)**
+- ✅ One URL for everything: the same /exec serves Index, customer, json, print, csv, and orders.
+- ✅ Sold visibility: `Sold` tab + print/CSV columns *Counted / Sold since / Available*.
+- ✅ Print plant list + CSV export; link snippet for the Index menu.
+- ✅ Uniform reply via `buildResponseEmail` + template; team email says one person replies.
+- ✅ 2"/Tree pot clearly labeled "on request" on the site instead of fake stock.
+- Next: one home menu in Index — **Count · Invoice · Orders · Print list** (needs the Index HTML, not in this repo).
+- Next: turn off `WEBSITE_TEAM_NOTICE` if the existing invoice email is enough (one email per order).
+- Next: retire the Google order form link so the website is the one customer entry point.

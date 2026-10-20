@@ -139,6 +139,14 @@
     .cartbar-btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.1rem; background: var(--red); color: #fff; border-radius: 8px; text-decoration: none; }
     body.has-cart { padding-bottom: 90px; }
     input.invalid { border-color: var(--red); }
+    .price { color: var(--sage-dark); font-weight: 700; }
+    .sizes span small { font-weight: 400; color: #555; margin-left: 0.3rem; }
+    .totals { margin-top: 0.5rem; border-top: 1px solid #eee; padding-top: 0.5rem; display: grid; gap: 0.15rem; }
+    .totals div { display: flex; justify-content: space-between; }
+    .totals .grand { font-weight: 700; color: var(--sage-dark); }
+    #confirm-body ul { display: block; list-style: disc; padding-left: 1.2rem; }
+    #confirm-body li { display: list-item; }
+    .order-id { font-size: 1.1rem; font-weight: 700; color: var(--sage-dark); }
     @media (min-width: 900px) { .cartbar { left: auto; right: 1rem; bottom: 1rem; border-radius: 10px; } }
     @media (min-width: 640px) { h1 { font-size: 1.8rem; } }
   </style>
@@ -169,7 +177,7 @@
     <ul>
       <li><span class="ico" aria-hidden="true">📝</span><span><b>Order request</b>Submitting this form sends an order request, not a completed purchase. Nothing is charged online.</span></li>
       <li><span class="ico" aria-hidden="true">🌱</span><span><b>Availability</b>Stock changes weekly. We confirm what is available before pickup.</span></li>
-      <li><span class="ico" aria-hidden="true">💲</span><span><b>Pricing</b>We confirm prices and your total before pickup. [TODO: add prices and state whether CA sales tax is included or added.]</span></li>
+      <li><span class="ico" aria-hidden="true">💲</span><span><b>Pricing</b>Priced by pot size: 2-inch $3 • 4-inch $6 • Quarter tree pot $10 • 1-gallon $15. Sales tax is shown as an estimate (8.75%) and confirmed at pickup. [TODO: Eric to confirm tax rate and whether tax is added.]</span></li>
       <li><span class="ico" aria-hidden="true">🚫</span><span><b>No shipping or installs</b>Pickup only. We can refer you to partner landscapers for installation.</span></li>
       <li><span class="ico" aria-hidden="true">🌵</span><span><b>Plant care</b>Plants are healthy at pickup. How they do after planting depends on site, watering, and care, and survival isn't guaranteed. [TODO: confirm return/replacement policy, if any.]</span></li>
     </ul>
@@ -177,6 +185,7 @@
 
   <h2 id="shop">1. Choose your plants</h2>
   <p class="hint">Pick a size, set how many, then tap <b>Add</b>. 1-gallon is our best value for most yards.</p>
+  <p class="hint">Live stock covers <b>4-inch ($6)</b> and <b>1-gallon ($15)</b>. <b>2-inch ($3)</b> and <b>quarter tree pots ($10)</b> are available on request: list them in Notes and we'll confirm. [TODO Eric: confirm how 2-inch / tree pot stock should be shown]</p>
   <p class="hint" id="stock-updated" aria-live="polite">Loading live stock…</p>
   <section class="notice" id="stock-error" role="status" hidden>
     <b>Live stock unavailable right now.</b>
@@ -206,16 +215,17 @@
     <textarea id="notes" name="notes" placeholder="Example: Prefer Saturday 11am, or Grand Terrace pickup if possible."></textarea>
 
     <p class="fine"><strong>Privacy:</strong> We use your name, email, phone, and notes only to confirm and fulfill your order and to contact you about pickup. We don't sell or share your personal information. To see, correct, or delete your information, email <a href="mailto:hello@inlandempirenativenursery.com">hello@inlandempirenativenursery.com</a>. [TODO: owner to review; add a full privacy policy page.]</p>
-    <p class="fine">Submitting opens your email app with the order filled in. Press Send there to finish. If nothing opens, email us at <a href="mailto:hello@inlandempirenativenursery.com">hello@inlandempirenativenursery.com</a>.</p>
+    <p class="fine" id="send-note">Submitting sends your order request to us. Nothing is charged online. If our order system is unreachable, your email app opens with the order filled in instead; press Send there to finish.</p>
 
     <p class="error" id="qty-error" role="alert">Please add at least one plant above.</p>
     <p class="error" id="form-error" role="alert">Please enter your name and a valid email.</p>
+    <p class="error" id="stock-conflict" role="alert"></p>
     <button type="submit" class="submit-btn">Submit Order Request</button>
   </form>
 
   <section class="notice confirm" id="confirm" aria-labelledby="confirm-title" tabindex="-1" hidden>
     <h2 id="confirm-title">Order request ready ✅</h2>
-    <p>Your email app should open with this order filled in. <b>Press Send there to finish.</b> We'll reply to confirm stock, your total, and pickup details.</p>
+    <p id="confirm-msg">Your email app should open with this order filled in. <b>Press Send there to finish.</b> We'll reply to confirm stock, your total, and pickup details.</p>
     <div id="confirm-body"></div>
     <p class="fine">Email didn't open? Send this list to <a href="mailto:hello@inlandempirenativenursery.com">hello@inlandempirenativenursery.com</a>.</p>
     <button type="button" class="submit-btn" id="new-order">Start a new order</button>
@@ -245,6 +255,19 @@
     (function () { var m = /[?&]inventory=([^&]+)/.exec(location.search);
       if (m && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) INVENTORY_URL = decodeURIComponent(m[1]); })();
     var LOW_STOCK = 5;
+    /* ===== ORDERS =====
+       ORDER_ENDPOINT = the same Apps Script /exec URL (no ?view). Orders are POSTed there, stock is
+       decremented in the sheet, and the team is emailed. [TODO set after redeploy, see TESTING.md]
+       Leave "" to keep the email-app (mailto) method. */
+    var ORDER_ENDPOINT = '';
+    (function () { var m = /[?&]order=([^&]+)/.exec(location.search);
+      if (m && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) ORDER_ENDPOINT = decodeURIComponent(m[1]); })();
+    /* Prices by size only (Eric, 2026-10-20). Keys = site labels; SHEET_SIZE = inventory tool names. */
+    var PRICES = { '2-inch': 3, '4-inch': 6, 'Quarter tree pot': 10, '1-gallon': 15 };
+    var SHEET_SIZE = { '2-inch': '2"', '4-inch': '4"', 'Quarter tree pot': 'Tree pot', '1-gallon': '1 gal' };
+    var TAX_RATE = 0.0875; /* ESTIMATE from the existing Apps Script default. [TODO Eric confirm] */
+    function money(n) { return '$' + (Math.round(n * 100) / 100).toFixed(2); }
+    function priceOf(size) { return PRICES.hasOwnProperty(size) ? PRICES[size] : null; }
     /* Default "popular first" order when the sheet has no rank/featured column. Lower = earlier. */
     var POPULAR_DEFAULTS = ['white sage', 'monkeyflower', 'california poppy', 'cleveland sage', 'penstemon',
       'ceanothus', 'buckwheat', 'woolly blue curls', 'milkweed', 'yarrow'];
@@ -264,6 +287,7 @@
         if (/^5\s*-?\s*(gal|gallon)/.test(l)) return '5-gallon';
         if (/^4\s*(\"|in|-inch|inch)/.test(l)) return '4-inch';
         if (/^2\s*(\"|in|-inch|inch)/.test(l)) return '2-inch';
+        if (/tree/.test(l)) return 'Quarter tree pot';
         return t;
       }
       function truthy(v, dflt) { if (v === undefined || v === null || v === '') return dflt; return !/^(no|n|false|0|off|inactive|hidden)$/i.test(String(v).trim()); }
@@ -401,7 +425,8 @@
           var lab = document.createElement('label'); var r = document.createElement('input');
           r.type = 'radio'; r.name = 'size-' + p.id; r.value = s.size; r.disabled = s.stock <= 0;
           if (!r.disabled && (!first || s.size === '1-gallon')) first = r;
-          lab.appendChild(r); lab.appendChild(el('span', null, s.size + (s.stock <= 0 ? ' (out)' : ''))); fs.appendChild(lab);
+          lab.appendChild(r); var chip = el('span', null, s.size + (s.stock <= 0 ? ' (out)' : '')); var pr = priceOf(s.size);
+          if (pr !== null) chip.appendChild(el('small', 'price', '$' + pr)); lab.appendChild(chip); fs.appendChild(lab);
         });
         if (first) first.checked = true;
         var step = el('div', 'stepper'); step.setAttribute('role', 'group'); step.setAttribute('aria-label', 'Quantity of ' + p.name);
@@ -416,6 +441,9 @@
 
         function sel() { var c = fs.querySelector('input:checked'); return c ? c.value : null; }
         function refresh() {
+          var total = p.sizes.reduce(function (a, s) { return a + s.stock; }, 0);
+          card.classList.toggle('oos', !total);
+          Array.prototype.forEach.call(fs.querySelectorAll('input'), function (r) { r.disabled = stockOf(p.id, r.value) <= 0; });
           var size = sel(); var st = size ? stockOf(p.id, size) : 0;
           var inCart = cart.filter(function (i) { return i.id === p.id && i.size === size; }).reduce(function (a, i) { return a + i.qty; }, 0);
           var left = Math.max(st - inCart, 0);
@@ -441,23 +469,33 @@
         p.refresh = refresh;
       });
 
+      function totals() { var sub = cart.reduce(function (a, i) { var p = priceOf(i.size); return a + (p || 0) * i.qty; }, 0);
+        var tax = Math.round(sub * TAX_RATE * 100) / 100; return { sub: sub, tax: tax, total: Math.round((sub + tax) * 100) / 100 }; }
+      window.IENNCart = { totals: function () { return totals(); }, items: function () { return cart.slice(); } };
       function count() { return cart.reduce(function (a, i) { return a + i.qty; }, 0); }
       function render() {
         PLANTS.forEach(function (p) { p.refresh && p.refresh(); });
         var n = count();
         bar.hidden = !n; document.body.classList.toggle('has-cart', !!n);
-        document.getElementById('cartbar-count').textContent = n + (n === 1 ? ' plant' : ' plants') + ' in order';
+        document.getElementById('cartbar-count').textContent = n + (n === 1 ? ' plant' : ' plants') + ' \u2022 ' + money(totals().sub);
         summary.innerHTML = '';
         if (!n) { summary.appendChild(el('p', 'empty', 'No plants added yet.')); return; }
         var ul = el('ul');
         cart.forEach(function (i, idx) {
-          var li = el('li'); li.appendChild(el('span', null, i.qty + ' \u00d7 ' + i.name + ' (' + i.size + ')'));
+          var pr = priceOf(i.size);
+          var li = el('li'); li.appendChild(el('span', null, i.qty + ' \u00d7 ' + i.name + ' (' + i.size + ')' + (pr !== null ? ' \u2014 ' + money(pr * i.qty) : '')));
           var rm = el('button', 'remove-btn', 'Remove'); rm.type = 'button'; rm.setAttribute('aria-label', 'Remove ' + i.name + ' ' + i.size);
           rm.addEventListener('click', function () { cart.splice(idx, 1); save(); render(); });
           li.appendChild(rm); ul.appendChild(li);
         });
         summary.appendChild(ul);
-        var t = el('p', null, n + (n === 1 ? ' plant' : ' plants') + ' total'); t.style.fontWeight = '600'; summary.appendChild(t);
+        var tt = totals(); var box = el('div', 'totals');
+        function row(a, b, c) { var d = el('div', c); d.appendChild(el('span', null, a)); d.appendChild(el('span', null, b)); box.appendChild(d); }
+        row(n + (n === 1 ? ' plant' : ' plants') + ' \u2022 Subtotal', money(tt.sub));
+        row('Est. sales tax (' + (TAX_RATE * 100).toFixed(2) + '%)', money(tt.tax));
+        row('Est. total', money(tt.total), 'grand');
+        summary.appendChild(box);
+        summary.appendChild(el('p', 'fine', 'Tax and total are estimates, confirmed at pickup. Nothing is charged online.'));
         document.getElementById('qty-error').style.display = 'none';
       }
       render();
@@ -472,16 +510,61 @@
         if (!count()) { e.preventDefault(); var err = document.getElementById('qty-error'); err.style.display = 'block'; err.scrollIntoView({ block: 'center' }); return; }
         if (!okName || !okEmail) { e.preventDefault(); document.getElementById('form-error').style.display = 'block'; (okName ? email : name).focus(); return; }
         document.getElementById('form-error').style.display = 'none';
-        var lines = cart.map(function (i) { return i.name + ' (' + i.size + '): ' + i.qty; });
+        var conflict = document.getElementById('stock-conflict'); conflict.style.display = 'none';
+        var tt = totals();
+        var lines = cart.map(function (i) { var p = priceOf(i.size); return i.name + ' (' + i.size + '): ' + i.qty + (p !== null ? ' x $' + p + ' = ' + money(p * i.qty) : ''); });
+        lines.push('Subtotal ' + money(tt.sub) + ', est. tax ' + money(tt.tax) + ', est. total ' + money(tt.total));
         var notes = document.getElementById('notes');
         notes.value = notes.value.replace(/\n*Requested quantities: [\s\S]*$/, '');
         notes.value = (notes.value ? notes.value + '\n\n' : '') + 'Requested quantities: ' + lines.join(', ');
-        /* Delivery method unchanged: the form's mailto action. See TESTING.md for alternatives. */
-        var cb = document.getElementById('confirm-body'); cb.innerHTML = '';
-        var ul = el('ul'); lines.forEach(function (l) { ul.appendChild(el('li', null, l)); }); cb.appendChild(ul);
-        var c = document.getElementById('confirm'); c.hidden = false;
-        setTimeout(function () { c.scrollIntoView({ block: 'start' }); c.focus(); }, 50);
+        function showConfirm(orderId) {
+          var cb = document.getElementById('confirm-body'); cb.innerHTML = '';
+          var msg = document.getElementById('confirm-msg');
+          if (orderId) {
+            document.getElementById('confirm-title').textContent = 'Order received \u2705';
+            msg.textContent = 'Thanks! We got your order request. We\'ll email you to confirm your plants, total, and pickup details. Nothing has been charged.';
+            var idp = el('p', 'order-id', 'Order #' + orderId); cb.appendChild(idp);
+          }
+          var ul = el('ul'); lines.forEach(function (l) { ul.appendChild(el('li', null, l)); }); cb.appendChild(ul);
+          var c = document.getElementById('confirm'); c.hidden = false;
+          setTimeout(function () { c.scrollIntoView({ block: 'start' }); c.focus(); }, 50);
+        }
+        if (!ORDER_ENDPOINT) { showConfirm(null); return; } /* mailto action runs natively */
+        e.preventDefault();
+        var btn = form.querySelector('.submit-btn'); btn.disabled = true; btn.textContent = 'Sending\u2026';
+        var payload = { action: 'order', name: name.value.trim(), email: email.value.trim(),
+          phone: document.getElementById('phone').value.trim(), notes: notes.value,
+          items: cart.map(function (i) { return { name: i.name, size: SHEET_SIZE[i.size] || i.size, qty: i.qty }; }) };
+        function done() { btn.disabled = false; btn.textContent = 'Submit Order Request'; }
+        function mailtoFallback() { done(); showConfirm(null); form.submit(); }
+        /* text/plain = "simple" request, so no CORS preflight (Apps Script can't answer OPTIONS). */
+        var ctl = window.AbortController ? new AbortController() : null; var tm = setTimeout(function () { ctl && ctl.abort(); }, 20000);
+        fetch(ORDER_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), signal: ctl ? ctl.signal : undefined })
+          .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+          .then(function (res) {
+            clearTimeout(tm); done();
+            if (res && res.ok && res.orderId) { showConfirm(res.orderId); cart = []; save(); restock(); return; }
+            if (res && res.error === 'out_of_stock') {
+              conflict.textContent = 'Sorry, stock just changed: ' + (res.items || []).map(function (x) {
+                var site = Object.keys(SHEET_SIZE).filter(function (k) { return SHEET_SIZE[k] === x.size; })[0] || x.size;
+                return x.name + ' (' + site + ') only ' + x.available + ' left'; }).join('; ') + '. Please adjust your order and submit again.';
+              conflict.style.display = 'block'; restock(); return;
+            }
+            mailtoFallback();
+          })['catch'](function () { clearTimeout(tm); mailtoFallback(); });
       });
+      /* Re-fetch live stock (after an order or a stock conflict) and update the cards in place. */
+      function restock() {
+        IENNFeed.load(function (fresh) {
+          if (fresh.source !== 'live') return;
+          fresh.plants.forEach(function (fp) { PLANTS.forEach(function (p) { if (p.id === fp.id) p.sizes.forEach(function (s) {
+            var f = fp.sizes.filter(function (x) { return x.size === s.size; })[0]; s.stock = f ? f.stock : 0; }); }); });
+          cart = cart.filter(function (i) { return stockOf(i.id, i.size) > 0; }).map(function (i) { i.qty = Math.min(i.qty, stockOf(i.id, i.size)); return i; });
+          save(); render();
+          var w = fresh.updated ? new Date(fresh.updated) : new Date();
+          up.textContent = 'Live stock \u2022 updated ' + w.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+        });
+      }
       document.getElementById('new-order').addEventListener('click', function () {
         cart = []; save(); form.reset(); document.getElementById('confirm').hidden = true; render();
         document.getElementById('shop').scrollIntoView({ block: 'start' });
