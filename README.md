@@ -54,7 +54,7 @@ The IENN inventory/invoice Apps Script web app is the **single source of truth**
 5. Select `iennSetup` and click **Run** once. Approve the Spreadsheet, Mail, Gmail and Drive permissions. Check the log for plant count and baseline date.
 6. **Deploy > Manage deployments > edit the existing web app > Version: New version > Deploy.** Keep *Execute as: Me* and *Who has access: Anyone* so the /exec URL stays the same.
 7. Check: open `…/exec?view=inventory` (should be JSON), `…/exec?view=print` and `…/exec?view=hub`, then place a test order on the website and set its Status to Cancelled afterwards.
-8. Fill in placeholders: `TEAM_EMAILS` (only used if the extra email is turned on), `PICKUP_ADDRESS`, `DEFAULT_PAYMENT_METHOD`, `IENN_LOGO_URL` and `IENN_WEBSITE_URL` (where the site is hosted; the closed customer view redirects there).
+8. Fill in placeholders: the order-email addresses `TEAM_EMAIL_TO` (Andrew, primary) and `TEAM_EMAIL_CC` (Eric, Keith; Raylene isn't on order emails), currently `ANDREW_EMAIL_PLACEHOLDER@example.com` and so on (only used if the extra email is turned on), plus `PICKUP_ADDRESS`, `DEFAULT_PAYMENT_METHOD`, `IENN_LOGO_URL` and `IENN_WEBSITE_URL` (where the site is hosted; the closed customer view redirects there).
 
 ### Printable plant list
 `…/exec?view=print` (alias `?view=printlist`, used by the homepage link) gives a clean list with the locked logo (the site's `images/ienn-logo-sage.png`, used as-is), the date, plants sorted by availability then appeal, botanical names, the four sizes with prices, and current availability ("On request" for 2" and Tree pot), Fontana pickup, and Andrew's call/text number. One click from there: **Print**, **Export PDF** (Apps Script converts the HTML to a PDF), **Export CSV**. From the spreadsheet: **IENN menu > Printable plant list / Export plant list: PDF to Drive / Google Sheet**.
@@ -92,3 +92,7 @@ The shop pages (`order.html` and the homepage) can show a small pop-up for a sal
 - Header names can be changed in `IENN_Config.gs` (`PROMO_*_HEADERS`). The logic is in `apps-script/IENN_Promos.gs`, and the pop-up in `promo.js`.
 - **One-time step:** paste `IENN_Promos.gs` and the updated `IENN_Config.gs` / `IENN_Website.gs` into the Apps Script project, run `iennSetup()`, then **Deploy → Manage deployments → edit → New version**. After that, turning promos on and off is sheet-only.
 - **Preview without the sheet:** open `order.html?promo=preview` (or `index.html?promo=preview`).
+
+## Customer confirmation email
+
+Every reply uses the same "look, verify, confirm" template (`templates/order-response-email.md`, built by `IENN_Drafts.gs`). It's auto-filled from the order: items with size, qty and price, the total (taxes included), the Fontana pickup area and Saturday 10 AM – 2 PM schedule, the next Saturday as the pickup date, "Cash or Zelle at time of pickup.", the customer's notes, our notes, Andrew's number and the fine print. It's saved as a Gmail draft only; the team checks it, types the exact address over `{{PICKUP_ADDRESS}}`, and sends.

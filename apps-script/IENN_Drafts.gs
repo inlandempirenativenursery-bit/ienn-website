@@ -4,20 +4,32 @@
  * "Our response", then IENN menu > Draft reply for selected order. The draft lands in YOUR Gmail Drafts; you send it.
  * If the project already has onOpen(), delete the one below and call iennAddMenu_() from yours.
  */
+/* One uniform "look, verify, confirm" reply. Everything is filled from the order; the team only checks it and sends.
+   Anything still in {{...}} (for example {{PICKUP_ADDRESS}}) must be filled in by hand before sending. */
 var RESPONSE_TEMPLATE =
   'Hi {{CUSTOMER_NAME}},\n\n' +
-  'Thanks for your order! Please look it over below and let us know if anything needs to change.\n\n' +
+  'Thanks for your order with Inland Empire Native Nursery! Please look it over and reply to confirm (or tell us what to change).\n\n' +
   'Order number: {{ORDER_ID}}\n\n' +
-  'Items:\n{{ITEMS}}\n\n' +
+  'Your plants:\n{{ITEMS}}\n\n' +
   'Total: ${{TOTAL}} (taxes included)\n\n' +
-  'Payment: {{PAYMENT_METHOD}}\nPayment status: {{PAID_STATUS}}\n\n' +
-  'Pickup location: {{PICKUP_ADDRESS}}, {{PICKUP_CITY}}\n' +
-  'Pickup hours: {{PICKUP_SCHEDULE}}\n' +
-  '{{PICKUP_FINE_PRINT}}\n\n' +
+  'Pickup location: {{PICKUP_ADDRESS}} ({{PICKUP_AREA}})\n' +
+  'Pickup schedule: {{PICKUP_SCHEDULE}}\n' +
+  'Your pickup date: {{PICKUP_DATE}}\n\n' +
+  'Payment: {{PAYMENT_TERMS}}{{PAYMENT_CHOICE}}\n' +
+  'Payment status: {{PAID_STATUS}}\n\n' +
   'Your notes: {{CUSTOMER_NOTES}}\n\n' +
   'Our notes: {{OUR_RESPONSE}}\n\n' +
-  'Questions? Call or text {{OWNER}}: {{PHONE}}\n\n' +
-  '{{SIGN_OFF}}\n';
+  'Questions or changes? Call or text {{OWNER}}: {{PHONE}}\n\n' +
+  '{{SIGN_OFF}}\n\n' +
+  '{{PICKUP_FINE_PRINT}}\n';
+
+/** 'Saturday, October 24, 2026': the first Saturday on or after the order date (Pacific). The team verifies it before sending. */
+function iennNextSaturday_(d) {
+  var ymd = Utilities.formatDate(d || new Date(), IENN_PROMO_TZ, 'yyyy-MM-dd').split('-').map(Number), t = new Date(Date.UTC(ymd[0], ymd[1] - 1, ymd[2]));
+  t.setUTCDate(t.getUTCDate() + (6 - t.getUTCDay() + 7) % 7);
+  var M = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  return 'Saturday, ' + M[t.getUTCMonth()] + ' ' + t.getUTCDate() + ', ' + t.getUTCFullYear();
+}
 
 function onOpen() { iennAddMenu_(); }
 function iennAddMenu_() {
@@ -57,11 +69,15 @@ function iennBuildReply_(orderId) {
   if (!inv) throw new Error('Order ' + orderId + ' not found in ' + IENN_INVOICES_SHEET);
   var sub = 0, items = inv.lines.map(function (l) { var s = iennSize_(l.size), p = s ? s.price : Number(l.amt) / l.qty; sub += l.qty * p;
     return '  - ' + l.qty + ' × ' + iennSplit_(l.plant)[0] + ' (' + (s ? s.label : l.size) + ') @ $' + p + ' = $' + (l.qty * p).toFixed(2); }).join('\n');
-  var note = String(inv.note || ''), m = /^Website order — ([^·\n]+)/.exec(note);
+  var note = String(inv.note || ''), m = /^Website order — ([^·\n]+)/.exec(note), pays = /^Pays by: (.+)$/m.exec(note);
+  var notes = note.replace(/^Website order — [^\n]*\n?/, '').replace(/^Pickup: .*\n?/m, '').replace(/^Pays by: .*\n?/m, '').trim();
+  var choice = String(inv.payment || (pays ? pays[1] : '')).trim();
   var map = { CUSTOMER_NAME: m ? m[1].trim() : 'there', ORDER_ID: inv.id, ITEMS: items, TOTAL: sub.toFixed(2), OWNER: IENN_ORDER_OWNER, PHONE: IENN_CONTACT_PHONE,
-    PAID_STATUS: /^(yes|y|true|paid)$/i.test(String(inv.paid)) || /paid/i.test(String(inv.status)) ? 'Paid — thank you!' : 'Not paid yet (pay at pickup)',
-    PAYMENT_METHOD: inv.payment || DEFAULT_PAYMENT_METHOD, PICKUP_ADDRESS: PICKUP_ADDRESS, PICKUP_CITY: PICKUP_CITY, PICKUP_SCHEDULE: PICKUP_SCHEDULE, PICKUP_FINE_PRINT: PICKUP_FINE_PRINT.join('\n'),
-    CUSTOMER_NOTES: note.replace(/^Website order — [^\n]*\n?/, '') || '(none)', OUR_RESPONSE: inv.response || '(none)', SIGN_OFF: SIGN_OFF };
+    PAID_STATUS: /^(yes|y|true|paid)$/i.test(String(inv.paid)) || /paid/i.test(String(inv.status)) ? 'Paid, thank you!' : 'Not paid yet (pay at pickup)',
+    PAYMENT_TERMS: PAYMENT_TERMS, PAYMENT_CHOICE: choice ? ' (you chose ' + choice + ')' : ' ',
+    PICKUP_ADDRESS: PICKUP_ADDRESS, PICKUP_AREA: PICKUP_AREA, PICKUP_SCHEDULE: PICKUP_SCHEDULE, PICKUP_DATE: iennNextSaturday_(inv.date),
+    PICKUP_FINE_PRINT: PICKUP_FINE_PRINT.join('\n'),
+    CUSTOMER_NOTES: notes || '(none)', OUR_RESPONSE: inv.response || '(none)', SIGN_OFF: SIGN_OFF };
   var body = RESPONSE_TEMPLATE.replace(/\{\{([A-Z_]+)\}\}/g, function (x, k) { return map[k] != null && map[k] !== '' ? String(map[k]) : x; });
   return { to: inv.email, subject: 'Your Inland Empire Native Nursery order ' + inv.id, body: body };
 }
