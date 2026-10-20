@@ -167,10 +167,11 @@
     <ul>
       <li><span class="ico" aria-hidden="true">📅</span><span><b>Pickup only</b>Saturdays 10 AM – 2 PM weekly. Other days/times available case-by-case — just note it below.</span></li>
       <li><span class="ico" aria-hidden="true">💵</span><span><b>Payment</b>Cash or Zelle.</span></li>
-      <li><span class="ico" aria-hidden="true">📍</span><span><b>Location</b>Fontana area, near Sierra Ave &amp; Baseline Rd, roughly within 10 minutes of the 210 freeway. Exact directions after we confirm your order. Grand Terrace pickup possible case-by-case (mention in notes).</span></li>
+      <li><span class="ico" aria-hidden="true">📍</span><span><b>Location</b>Pickup in Fontana. We share the exact address after we confirm your order.</span></li>
       <li><span class="ico" aria-hidden="true">✅</span><span><b>Confirmation</b>We will confirm your order and send pickup details ASAP.</span></li>
     </ul>
   </section>
+  <p class="hint">Grand Terrace pickup available upon request.</p>
 
   <section class="notice" aria-labelledby="terms-title">
     <h2 id="terms-title">Order terms</h2>
@@ -211,8 +212,8 @@
     <label for="phone">Phone (optional)</label>
     <input type="tel" id="phone" name="phone" autocomplete="tel">
 
-    <label for="notes">Notes (pickup day preference, Grand Terrace request, questions, etc.)</label>
-    <textarea id="notes" name="notes" placeholder="Example: Prefer Saturday 11am, or Grand Terrace pickup if possible."></textarea>
+    <label for="notes">Notes (pickup day preference, questions, etc.)</label>
+    <textarea id="notes" name="notes" placeholder="Example: Prefer Saturday 11am."></textarea>
 
     <p class="fine"><strong>Privacy:</strong> We use your name, email, phone, and notes only to confirm and fulfill your order and to contact you about pickup. We don't sell or share your personal information. To see, correct, or delete your information, email <a href="mailto:hello@inlandempirenativenursery.com">hello@inlandempirenativenursery.com</a>. [TODO: owner to review; add a full privacy policy page.]</p>
     <p class="fine" id="send-note">Submitting sends your order request to us. Nothing is charged online. If our order system is unreachable, call or text Andrew at <a href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> (<a href="sms:+19096099373">text</a>), or your email app opens with the order filled in as a backup.</p>
@@ -225,7 +226,7 @@
 
   <section class="notice confirm" id="confirm" aria-labelledby="confirm-title" tabindex="-1" hidden>
     <h2 id="confirm-title">Order request ready ✅</h2>
-    <p id="confirm-msg">Your email app should open with this order filled in. <b>Press Send there to finish.</b> We'll reply to confirm stock, your total, and pickup details.</p>
+    <p id="confirm-msg">Your email app should open with this order filled in. <b>Press Send there to finish.</b> We'll reply to confirm stock, your total, and Fontana pickup details.</p>
     <div id="confirm-body"></div>
     <p class="fine" id="fallback-note">Order didn't go through? Call or text Andrew at <a href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> (<a href="sms:+19096099373">text</a>). Or email this list to <a href="mailto:hello@inlandempirenativenursery.com">hello@inlandempirenativenursery.com</a>.</p>
     <button type="button" class="submit-btn" id="new-order">Start a new order</button>
@@ -238,7 +239,7 @@
   </div>
 
   <footer>
-    Inland Empire Native Nursery • Pickup-only • Fontana / Grand Terrace area<br>
+    Inland Empire Native Nursery • Pickup-only • Fontana<br>
     Cash or Zelle • We confirm and send directions after you order.<br>
     Call/text Andrew: <a href="tel:+19096099373" style="color: var(--sage-dark);">(909)&nbsp;609&#8209;9373</a> • <a href="mailto:hello@inlandempirenativenursery.com" style="color: var(--sage-dark);">hello@inlandempirenativenursery.com</a><br>
     &copy; 2026 Inland Empire Native Nursery. All rights reserved.
@@ -521,7 +522,7 @@
           document.getElementById('fallback-note').hidden = !!orderId;
           if (orderId) {
             document.getElementById('confirm-title').textContent = 'Order received \u2705';
-            msg.textContent = 'Thanks! We got your order request. We\'ll email you to confirm your plants, total, and pickup details. Nothing has been charged.';
+            msg.textContent = 'Thanks! We got your order request. We\'ll email you to confirm your plants, total, and Fontana pickup details. Nothing has been charged.';
             var idp = el('p', 'order-id', 'Order #' + orderId); cb.appendChild(idp);
           }
           var ul = el('ul'); lines.forEach(function (l) { ul.appendChild(el('li', null, l)); }); cb.appendChild(ul);

@@ -238,3 +238,12 @@ Website order (doPost) ──────┴─► submitInvoice ─► IENN Inv
 - In IENN_CFG set `WEBSITE_ORDER_URL`, then redirect or remove the `?view=customer` branch in `doGet`.
 - Stop sharing the old customer-view / Google order form links anywhere public (bio links, FB posts).
 - Make sure IENN Invoices can take the `Source`, `Status` and `Claimed by` columns (added automatically on first order).
+
+### Update: Fontana pickup (2026-10-20)
+- order.html pickup notice now reads "Pickup in Fontana. We share the exact address after we confirm your order." (city only;
+  the cross-street detail was removed). One fine-print line under the notice, using the existing `hint` style:
+  "Grand Terrace pickup available upon request." It isn't a selectable option, and it was removed from the notes label,
+  placeholder and footer. The confirmation text says "Fontana pickup details"; the reply template and `buildResponseEmail`
+  say "Pickup address (Fontana)". Text-only edits, no style/class changes.
+- Re-run: html-validate **0 errors**; `node test/gs.test.js` **12/12**; Playwright 375 + 1280 pass (Fontana text, Grand Terrace
+  appears exactly once as fine print, no GT option, 0 console errors, no overflow). `confirm-375.png` refreshed.

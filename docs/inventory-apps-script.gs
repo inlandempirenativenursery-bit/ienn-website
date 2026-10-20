@@ -229,7 +229,7 @@ function buildResponseEmail(invoiceNo) {
     'Total: ' + money(total) + ' (taxes included)', '',
     'Payment status: ' + (paid ? 'Paid' : 'Not yet paid'),
     'Payment form: ' + (String(g('method')).trim() || 'Cash or Zelle at pickup [TODO confirm accepted methods]'), '',
-    'Pickup address: ' + (confirmed && addr ? addr : '(We will send the exact address once your order is confirmed.)'),
+    'Pickup address (Fontana): ' + (confirmed && addr ? addr : '(We will send the exact address once your order is confirmed.)'),
     'Pickup date/time: ' + (String(g('window')).trim() || 'Saturdays 10 AM - 2 PM'), '',
     'Your notes:', notes ? notes.split('\n').map(function (l) { return '> ' + l; }).join('\n') : '> (none)', '',
     'Our response:', String(g('response')).trim() || '[write response here]', '',
