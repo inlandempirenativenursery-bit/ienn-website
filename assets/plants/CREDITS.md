@@ -23,7 +23,6 @@ All photos are used with the photographers' permission. Files were only resized 
 | california-buckwheat.jpg | California buckwheat | keithwg1 via iNaturalist (linked in the IENN catalogue; used with permission) | https://static.inaturalist.org/photos/202777363/large.jpg (observation URL not recorded) | All rights reserved, used with permission |
 | california-encelia.jpg | California encelia | keithwg1 via iNaturalist (linked in the IENN catalogue; used with permission) | https://static.inaturalist.org/photos/484970961/large.jpg (observation URL not recorded) | All rights reserved, used with permission |
 | morning-glory.jpg | Morning glory | keithwg1 via iNaturalist (linked in the IENN catalogue; used with permission) | https://static.inaturalist.org/photos/286285846/large.jpg (observation URL not recorded) | All rights reserved, used with permission |
-| yucca.jpg | Yucca | keithwg1 via iNaturalist (linked in the IENN catalogue; used with permission) | https://static.inaturalist.org/photos/516923855/large.jpg (observation URL not recorded) | All rights reserved, used with permission |
 
 Blue Pyramid Cypress and Deergrass have no approved photo yet, so their cards show "Photo coming soon".
 
