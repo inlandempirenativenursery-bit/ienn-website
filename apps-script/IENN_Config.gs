@@ -99,9 +99,10 @@ var PROMO_MESSAGE_HEADERS = ['message', 'text', 'body'];
 var PROMO_START_HEADERS = ['start date', 'start', 'from'];
 var PROMO_END_HEADERS = ['end date', 'end', 'until', 'to'];
 var PROMO_DISCOUNT_HEADERS = ['discount note', 'discount', 'note'];
-var IENN_PROMO_HEADERS = ['Active', 'Title', 'Message', 'Start date', 'End date', 'Discount note'];
+var PROMO_BOTTOM_HEADERS = ['bottom info', 'footer', 'info', 'details', 'fine print']; // optional footer strip on the banner; blank = Discount note + 'Ends <date>' + pickup fine print
+var IENN_PROMO_HEADERS = ['Active', 'Title', 'Message', 'Start date', 'End date', 'Discount note', 'Bottom info'];
 var IENN_PROMO_EXAMPLES = [
-  ['No', 'Fall Sale', 'EXAMPLE: Fall is the best time to plant natives. Reserve yours now.', '2026-11-01', '2026-11-30', 'e.g. describe the discount here'],
-  ['No', 'Spring Sale', 'EXAMPLE: Spring color is here. Reserve your plants for Saturday pickup.', '2027-03-01', '2027-04-30', ''],
-  ['No', 'Summer Sale', 'EXAMPLE: Summer picks for hot, dry gardens.', '2027-06-01', '2027-07-31', '']
+  ['No', 'Fall Sale', 'EXAMPLE: Fall is the best time to plant natives. Reserve yours now.', '2026-11-01', '2026-11-30', 'e.g. describe the discount here', 'EXAMPLE: 15% off 1 gal plants · Ends Nov 30\nPickup Saturdays 10 AM–2 PM in Fontana'],
+  ['No', 'Spring Sale', 'EXAMPLE: Spring color is here. Reserve your plants for Saturday pickup.', '2027-03-01', '2027-04-30', '', ''],
+  ['No', 'Summer Sale', 'EXAMPLE: Summer picks for hot, dry gardens.', '2027-06-01', '2027-07-31', '', '']
 ];

@@ -2,6 +2,7 @@
    window.iennPromo(promo) shows it once per browser session (dismissal remembered per title+start).
    Test: add ?promo=preview to the page URL to show a sample. No dependencies. */
 (function () {
+  var FINE = "Pickup Saturdays 10 AM–2 PM in Fontana. Taxes included.\nGrand Terrace pickup and other times available upon request.";
   var SHOWN = false, KEY = "ienn-promo-dismissed:";
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function css() {
@@ -28,6 +29,8 @@
       ".ienn-promo-tag{position:absolute;top:22px;left:22px;font-size:.7rem;font-weight:800;letter-spacing:.12em;color:#ffe6c7;opacity:.85}",
       ".ienn-promo-x:hover{background:rgba(255,255,255,.12)}",
       ".ienn-promo-x:focus-visible,.ienn-promo-go:focus-visible{outline:3px solid #ffd27a;outline-offset:3px}",
+      ".ienn-promo-info{margin:1rem -1.4rem -1.5rem;padding:.8rem 1.4rem .9rem;background:#fff8ee;color:#7a0918;border-top:3px dashed #a50d22;font-size:.92rem;line-height:1.45;font-weight:600;white-space:pre-line;overflow-wrap:break-word}",
+      ".ienn-promo-info strong{display:block;font-size:1.05rem;font-weight:800;color:#a50d22}",
       "@media (prefers-reduced-motion:no-preference){.ienn-promo{animation:iennFade .25s ease-out}.ienn-promo-scroll{animation:iennPop .45s cubic-bezier(.2,1.3,.4,1)}.ienn-promo-box{transform-origin:top;animation:iennUnroll .5s ease-out}}",
       "@keyframes iennFade{from{opacity:0}}@keyframes iennPop{from{transform:scale(.85) translateY(12px);opacity:0}}@keyframes iennUnroll{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}"
     ].join("");
@@ -42,15 +45,19 @@
     SHOWN = true; css();
     var prev = document.activeElement, wrap = document.createElement("div");
     wrap.className = "ienn-promo";
-    var dates = promo.end ? "Through " + fmt(promo.end) : "";
-    wrap.innerHTML = '<div class="ienn-promo-scroll" role="dialog" aria-modal="true" aria-labelledby="ienn-promo-title"' + (promo.message ? ' aria-describedby="ienn-promo-msg"' : "") + ">" +
+    var custom = String(promo.bottomInfo || "").trim(), dates = promo.end ? (custom ? "Through " : "Ends ") + fmt(promo.end) : "";
+    // Bottom info strip: the Promos "Bottom info" cell, or (blank) Discount note + Ends date + pickup fine print.
+    var info = custom ? esc(custom) : (promo.discountNote ? "<strong>" + esc(promo.discountNote) + "</strong>" : "") +
+      esc((dates ? dates + " · " : "") + FINE);
+    wrap.innerHTML = '<div class="ienn-promo-scroll" role="dialog" aria-modal="true" aria-labelledby="ienn-promo-title"' + ' aria-describedby="' + (promo.message ? "ienn-promo-msg " : "") + 'ienn-promo-info">' +
       '<div class="ienn-promo-roll ienn-promo-top" aria-hidden="true"></div><div class="ienn-promo-box">' +
       '<button type="button" class="ienn-promo-x" aria-label="Close">×</button>' + (opts.preview ? '<span class="ienn-promo-tag">PREVIEW</span>' : "") +
       '<h2 id="ienn-promo-title">' + esc(promo.title) + "</h2>" +
       (promo.message ? '<p id="ienn-promo-msg">' + esc(promo.message) + "</p>" : "") +
-      (promo.discountNote ? '<p class="ienn-promo-note">' + esc(promo.discountNote) + "</p>" : "") +
-      (dates ? '<p class="ienn-promo-dates">' + esc(dates) + "</p>" : "") +
-      '<button type="button" class="ienn-promo-go">' + esc(opts.cta || "Shop now") + "</button></div>" +
+      (custom && promo.discountNote ? '<p class="ienn-promo-note">' + esc(promo.discountNote) + "</p>" : "") +
+      (custom && dates ? '<p class="ienn-promo-dates">' + esc(dates) + "</p>" : "") +
+      '<button type="button" class="ienn-promo-go">' + esc(opts.cta || "Shop now") + "</button>" +
+      '<div class="ienn-promo-info" id="ienn-promo-info">' + info + "</div></div>" +
       '<div class="ienn-promo-roll ienn-promo-bottom" aria-hidden="true"></div></div>';
     var go = wrap.querySelector(".ienn-promo-go"), x = wrap.querySelector(".ienn-promo-x"), oldOverflow = document.body.style.overflow;
     function close(shop) {
@@ -68,7 +75,7 @@
     document.addEventListener("keydown", onKey, true);
     document.body.appendChild(wrap); document.body.style.overflow = "hidden"; go.focus();
   }
-  var PREVIEW = { title: "Fall Sale", message: "Fall is a great time to plant natives. Reserve your plants for Saturday pickup in Fontana.", start: "2026-11-01", end: "2026-11-30", discountNote: "" };
+  var PREVIEW = { title: "Fall Sale", message: "Fall is a great time to plant natives. Reserve your plants for Saturday pickup in Fontana.", start: "2026-11-01", end: "2026-11-30", discountNote: "15% off all 1 gallon plants", bottomInfo: "" };
   window.iennPromo = function (promo, opts) { show(promo, Object.assign({}, window.IENN_PROMO_OPTS || {}, opts || {})); };
   function preview() { if (/[?&]promo=preview\b/.test(location.search)) window.iennPromo(PREVIEW, { force: true, preview: true }); }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", preview); else preview();

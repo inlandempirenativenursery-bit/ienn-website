@@ -15,7 +15,7 @@ function iennPromoActive_(v) { return /^(yes|y|true|on|1|x|✓)$/i.test(String(v
 function iennPickPromo_(values, today) {
   if (!values || values.length < 2) return null;
   var h = values[0], c = { a: iennCol_(h, PROMO_ACTIVE_HEADERS), t: iennCol_(h, PROMO_TITLE_HEADERS), m: iennCol_(h, PROMO_MESSAGE_HEADERS),
-    s: iennCol_(h, PROMO_START_HEADERS), e: iennCol_(h, PROMO_END_HEADERS), d: iennCol_(h, PROMO_DISCOUNT_HEADERS) };
+    s: iennCol_(h, PROMO_START_HEADERS), e: iennCol_(h, PROMO_END_HEADERS), d: iennCol_(h, PROMO_DISCOUNT_HEADERS), b: iennCol_(h, PROMO_BOTTOM_HEADERS) };
   if (c.a < 0 || c.t < 0) return null;
   for (var i = 1; i < values.length; i++) {
     var r = values[i], get = function (k) { return c[k] < 0 ? '' : r[c[k]]; };
@@ -24,7 +24,7 @@ function iennPickPromo_(values, today) {
     var s = iennPromoDay_(get('s')), e = iennPromoDay_(get('e'));
     if (s === null || e === null) continue;
     if ((s && today < s) || (e && today > e)) continue;
-    return { title: title, message: String(get('m') || '').trim(), start: s, end: e, discountNote: String(get('d') || '').trim() };
+    return { title: title, message: String(get('m') || '').trim(), start: s, end: e, discountNote: String(get('d') || '').trim(), bottomInfo: String(get('b') || '').trim() };
   }
   return null;
 }
@@ -39,7 +39,12 @@ function iennPromo_(now) {
 
 /** Creates the Promos tab with headers + example rows (Active = No) if missing. Called by iennSetup(). */
 function iennEnsurePromos_() {
-  var ss = iennSs_(), sh = ss.getSheetByName(IENN_PROMOS_SHEET); if (sh) return sh;
+  var ss = iennSs_(), sh = ss.getSheetByName(IENN_PROMOS_SHEET);
+  if (sh) { // existing tab: append the optional Bottom info column if missing; rows are untouched
+    var head = sh.getDataRange().getValues()[0] || [];
+    if (head.length && iennCol_(head, PROMO_BOTTOM_HEADERS) < 0) sh.getRange(1, head.length + 1).setValue('Bottom info');
+    return sh;
+  }
   sh = ss.insertSheet(IENN_PROMOS_SHEET);
   sh.getRange(1, 1, 1 + IENN_PROMO_EXAMPLES.length, IENN_PROMO_HEADERS.length).setValues([IENN_PROMO_HEADERS].concat(IENN_PROMO_EXAMPLES));
   sh.setFrozenRows(1);
