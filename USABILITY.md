@@ -40,5 +40,5 @@ The system now has four layers: weekly counts, invoices/orders, the website shop
 10. **Partial weekly counts (from Kobe's notes).** If only some counters have submitted for a new week, `getAvailableStock()` may show only their numbers. Pick one counting day and one person who confirms "week complete".
 11. **Name matching (from Kobe's notes).** Stock and invoices are matched by common name (before the "("). Keep Catalog common names unique.
 12. **Mailto fallback.** Many phones have no mail app, so a failed submit now shows call/text Andrew first, and the cart is kept.
-13. **Location.** Fontana is the pickup ("Fontana area, near Sierra Ave & Baseline Rd", exact address after confirmation). Grand Terrace appears only as fine print: "Grand Terrace pickup available upon request."
+13. **Location.** Fontana is the pickup ("Fontana area, near Sierra & Baseline, about 10 minutes from the 210", exact address after confirmation). Grand Terrace appears only as fine print: "Grand Terrace pickup available upon request."
 14. **Fewer clicks:** claim is one menu click (sets status and name), the reply draft is pre-filled, print/PDF/CSV are one click each, and the team email links straight to IENN Invoices.
