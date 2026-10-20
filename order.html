@@ -37,6 +37,7 @@
     .price small { font-weight:400; color:#888; }
     .chips { display:flex; flex-wrap:wrap; gap:0.4rem; }
     .chip { border:1px solid #ccc; background:#fff; border-radius:999px; padding:0.35rem 0.8rem; font-size:0.85rem; min-height:36px; cursor:pointer; }
+    .chip:disabled { opacity:0.5; text-decoration:line-through; }
     .chip[aria-pressed="true"] { border-color:var(--sage-dark); background:var(--sage-dark); color:#fff; }
     .buy { display:flex; gap:0.5rem; align-items:center; }
     .stepper { display:flex; border:1px solid #ccc; border-radius:10px; overflow:hidden; }
@@ -88,7 +89,8 @@
         <div><strong>Grand Terrace</strong>Delivery/service case-by-case</div>
       </section>
 
-      <section class="grid" id="grid" aria-live="polite"><p class="empty">Loading plants…</p></section>
+      <p class="help" id="updated" style="margin:0 1rem;"></p>
+      <section class="grid" id="grid" aria-live="polite"><p class="empty">Loading live availability…</p></section>
 
       <section id="checkout" aria-labelledby="co-h">
         <h2 id="co-h">Checkout</h2>
@@ -131,41 +133,92 @@
     <a href="mailto:hello@inlandempirenativenursery.com" style="color:#666;">hello@inlandempirenativenursery.com</a></footer>
 
   <script>
-  // ===== CONFIG: paste an Apps Script / endpoint URL here to POST orders as JSON instead of mailto =====
+  // ===================== CONFIG (the only things to edit) =====================
   var CONFIG = {
-    ORDER_ENDPOINT: "",                       // e.g. "https://script.google.com/macros/s/XXXX/exec"
+    // Apps Script web-app URL (apps-script/inventory-endpoint.gs). Live inventory comes ONLY from here.
+    INVENTORY_URL: "",                        // e.g. "https://script.google.com/macros/s/XXXX/exec?format=json"
+    // Orders: leave "" to use mailto; set to the same web-app URL to POST orders into the Orders sheet.
+    ORDER_ENDPOINT: "",
     ORDER_EMAIL: "hello@inlandempirenativenursery.com",
-    INVENTORY_URL: "plants.json",
-    CART_KEY: "ienn-cart-v1"
+    CONTACT_TEXT: "Please call, text, or email hello@inlandempirenativenursery.com to order.",
+    // Used only when the sheet has no Rank column. Others follow alphabetically.
+    POPULARITY: ["White Sage", "Sticky Monkeyflower", "California Buckwheat", "Woolly Blue Curls", "Yarrow"],
+    CART_KEY: "ienn-cart-v2",
+    CACHE_KEY: "ienn-inventory-cache-v1"
   };
+  // Dev only: on localhost you can point at a mock with ?inventory=<url>
+  (function () { var m = /[?&]inventory=([^&]+)/.exec(location.search);
+    if (m && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) CONFIG.INVENTORY_URL = decodeURIComponent(m[1]); })();
 
-  var plants = [], cart = load();
+  var plants = [], cart = load(CONFIG.CART_KEY) || [];
   var $ = function (s) { return document.querySelector(s); };
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
-  function load() { try { return JSON.parse(localStorage.getItem(CONFIG.CART_KEY)) || []; } catch (e) { return []; } }
-  function save() { try { localStorage.setItem(CONFIG.CART_KEY, JSON.stringify(cart)); } catch (e) {} }
-  function priceText(p) { return typeof p.price === "number" ? "$" + p.price.toFixed(2) : "Price on confirmation"; }
+  function load(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+  function store(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function save() { store(CONFIG.CART_KEY, cart); }
+  function slug(s) { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+  function num(v) { if (v === "" || v == null) return null; var n = Number(String(v).replace(/[$,]/g, "")); return isFinite(n) ? n : null; }
+
+  // Normalize endpoint rows -> {id,name,botanical,blurb,photo,rank,sizes:[{size,qty,price}]}
+  // Accepts rows with sizes as array of objects, "4\",1 gal" strings, or one row per size (grouped by name).
+  function normalize(data) {
+    var rows = (data && (data.plants || data.items || data)) || [], map = {};
+    if (!Array.isArray(rows)) return [];
+    rows.forEach(function (r) {
+      if (!r || !r.name) return;
+      var show = r.active == null ? (r.show == null ? true : r.show) : r.active;
+      if (show === false || /^(no|false|0|hide)$/i.test(String(show))) return;
+      var key = slug(r.name), p = map[key] || (map[key] = { id: key, name: String(r.name).trim(), botanical: "", blurb: "", photo: "", rank: null, sizes: [] });
+      p.botanical = p.botanical || r.botanical || ""; p.blurb = p.blurb || r.blurb || ""; p.photo = p.photo || r.photo || "";
+      if (num(r.rank) != null) p.rank = num(r.rank);
+      var list = Array.isArray(r.sizes) ? r.sizes : (r.size || r.sizes ? String(r.size || r.sizes).split(/\s*[,;|]\s*/).map(function (s) { return { size: s }; }) : [{ size: "" }]);
+      list.forEach(function (s) {
+        if (typeof s === "string") s = { size: s };
+        var q = num(s.qty != null ? s.qty : r.qty), pr = s.price != null ? s.price : r.price;
+        p.sizes.push({ size: String(s.size || "").trim() || "Standard", qty: q == null ? 0 : q, price: num(pr) });
+      });
+    });
+    return Object.keys(map).map(function (k) { var p = map[k]; p.inStock = p.sizes.some(function (s) { return s.qty > 0; }); return p; });
+  }
+  function sortPlants(list) {
+    var pop = CONFIG.POPULARITY.map(function (n) { return n.toLowerCase(); });
+    function pr(p) { if (p.rank != null) return p.rank; var i = pop.indexOf(p.name.toLowerCase()); return i < 0 ? 1e6 : i - 1e6; }
+    var anyRank = list.some(function (p) { return p.rank != null; });
+    return list.sort(function (a, b) {
+      if (a.inStock !== b.inStock) return a.inStock ? -1 : 1;
+      var d = anyRank ? (a.rank == null ? 1e9 : a.rank) - (b.rank == null ? 1e9 : b.rank) : pr(a) - pr(b);
+      return d || a.name.localeCompare(b.name);
+    });
+  }
+  function priceText(s) { return s && typeof s.price === "number" ? "$" + s.price.toFixed(2) : "Price on confirmation"; }
   function count() { return cart.reduce(function (n, l) { return n + l.qty; }, 0); }
 
+  function cardHTML(p) {
+    var first = p.sizes.filter(function (s) { return s.qty > 0; })[0] || p.sizes[0];
+    var vis = p.photo ? '<div class="swatch" style="height:150px;padding:0;background:#eee;"><img src="' + esc(p.photo) + '" alt="' + esc(p.name) + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>'
+      : '<div class="swatch">' + esc(p.botanical || "California native") + '</div>';
+    return '<article class="card' + (p.inStock ? "" : " soldout") + '" data-id="' + esc(p.id) + '">' + vis +
+      '<div class="body"><div class="title"><h3>' + esc(p.name) + '</h3>' +
+      (p.inStock ? '<span class="badge in">● Available</span>' : '<span class="badge out">Sold out</span>') + '</div>' +
+      (p.blurb ? '<p class="blurb">' + esc(p.blurb) + '</p>' : '') +
+      '<div class="price">' + priceText(first) + '</div><span class="low"></span>' +
+      '<div class="chips" role="group" aria-label="Size">' + p.sizes.map(function (s) {
+        return '<button type="button" class="chip" data-size="' + esc(s.size) + '" aria-pressed="' + (s === first) + '"' + (s.qty > 0 ? "" : " disabled") + '>' + esc(s.size) + (s.qty > 0 ? "" : " · sold out") + '</button>'; }).join("") + '</div>' +
+      '<div class="buy"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease"' + (p.inStock ? "" : " disabled") + '>−</button><span class="q">1</span><button type="button" data-step="1" aria-label="Increase"' + (p.inStock ? "" : " disabled") + '>+</button></div>' +
+      '<button type="button" class="add"' + (p.inStock ? "" : " disabled") + '>' + (p.inStock ? "Add — get yours now" : "Sold out") + '</button></div></div></article>';
+  }
+  function sizeOf(p, card) { var c = card.querySelector('.chip[aria-pressed="true"]'); var n = c ? c.dataset.size : ""; return p.sizes.find(function (s) { return s.size === n; }) || p.sizes[0]; }
+  function refreshCard(p, card) {
+    var s = sizeOf(p, card); card.querySelector(".price").textContent = priceText(s);
+    card.querySelector(".low").textContent = s && s.qty > 0 && s.qty <= 5 ? "Only " + s.qty + " left" : "";
+  }
   function renderGrid() {
     var g = $("#grid");
-    if (!plants.length) { g.innerHTML = '<p class="empty">No plants listed right now — check back soon.</p>'; return; }
-    var sorted = plants.slice().sort(function (a, b) { return (b.inStock - a.inStock) || (b.featured - a.featured); });
-    g.innerHTML = sorted.map(function (p) {
-      var low = p.inStock && typeof p.qty === "number" && p.qty <= 5 ? '<span class="low">Only ' + p.qty + ' left</span>' : "";
-      return '<article class="card' + (p.featured ? " featured" : "") + (p.inStock ? "" : " soldout") + '" data-id="' + esc(p.id) + '">' +
-        '<div class="swatch">' + esc(p.botanical || "California native") + '</div>' +
-        '<div class="body"><div class="title"><h3>' + esc(p.name) + '</h3>' +
-        (p.inStock ? '<span class="badge in">● Available</span>' : '<span class="badge out">Sold out</span>') + '</div>' +
-        '<p class="blurb">' + esc(p.blurb) + '</p>' +
-        '<div class="price">' + priceText(p) + ' <small>• sizes to confirm</small></div>' + low +
-        '<div class="chips" role="group" aria-label="Size">' + (p.sizes || []).map(function (s, i) {
-          return '<button type="button" class="chip" data-size="' + esc(s) + '" aria-pressed="' + (i === 0) + '"' + (p.inStock ? "" : " disabled") + '>' + esc(s) + '</button>'; }).join("") + '</div>' +
-        '<div class="buy"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease"' + (p.inStock ? "" : " disabled") + '>−</button><span class="q">1</span><button type="button" data-step="1" aria-label="Increase"' + (p.inStock ? "" : " disabled") + '>+</button></div>' +
-        '<button type="button" class="add"' + (p.inStock ? "" : " disabled") + '>' + (p.inStock ? "Add — get yours now" : "Sold out") + '</button></div>' +
-        '</div></article>';
-    }).join("");
+    if (!plants.length) { g.innerHTML = '<p class="empty">' + esc(CONFIG.CONTACT_TEXT) + '</p>'; return; }
+    g.innerHTML = plants.map(cardHTML).join("");
+    g.querySelectorAll(".card").forEach(function (c) { var p = find(c.dataset.id); if (p) refreshCard(p, c); });
   }
+  function find(id) { return plants.find(function (x) { return x.id === id; }); }
 
   function renderCart() {
     var n = count();
@@ -176,22 +229,20 @@
       return '<div class="line"><span>' + l.qty + '× ' + esc(l.name) + ' <span class="help">(' + esc(l.size) + ')</span></span><button type="button" data-remove="' + i + '">Remove</button></div>'; }).join("")
       : '<p class="empty">Your cart is empty — add a plant above.</p>';
   }
-
-  function addToCart(p, size, qty) {
-    var ex = cart.find(function (l) { return l.id === p.id && l.size === size; });
-    if (ex) ex.qty = Math.min(99, ex.qty + qty); else cart.push({ id: p.id, name: p.name, size: size, qty: qty });
+  function addToCart(p, s, qty) {
+    var ex = cart.find(function (l) { return l.id === p.id && l.size === s.size; }), max = s.qty > 0 ? s.qty : 99;
+    if (ex) ex.qty = Math.min(max, ex.qty + qty); else cart.push({ id: p.id, name: p.name, size: s.size, qty: Math.min(max, qty) });
     save(); renderCart();
   }
 
   $("#grid").addEventListener("click", function (e) {
     var card = e.target.closest(".card"); if (!card) return;
-    var p = plants.find(function (x) { return x.id === card.dataset.id; }); if (!p || !p.inStock) return;
-    var t = e.target;
-    if (t.classList.contains("chip")) { card.querySelectorAll(".chip").forEach(function (c) { c.setAttribute("aria-pressed", c === t); }); }
-    else if (t.dataset.step) { var q = card.querySelector(".q"); q.textContent = Math.max(1, Math.min(99, +q.textContent + +t.dataset.step)); }
+    var p = find(card.dataset.id); if (!p || !p.inStock) return;
+    var t = e.target.closest("button"); if (!t || t.disabled) return;
+    if (t.classList.contains("chip")) { card.querySelectorAll(".chip").forEach(function (c) { c.setAttribute("aria-pressed", c === t); }); card.querySelector(".q").textContent = 1; refreshCard(p, card); }
+    else if (t.dataset.step) { var s = sizeOf(p, card), q = card.querySelector(".q"); q.textContent = Math.max(1, Math.min(s.qty > 0 ? s.qty : 99, +q.textContent + +t.dataset.step)); }
     else if (t.classList.contains("add")) {
-      var chip = card.querySelector('.chip[aria-pressed="true"]');
-      addToCart(p, chip ? chip.dataset.size : "standard", +card.querySelector(".q").textContent);
+      addToCart(p, sizeOf(p, card), +card.querySelector(".q").textContent);
       t.textContent = "Added ✓"; setTimeout(function () { t.textContent = "Add — get yours now"; }, 1200);
     }
   });
@@ -201,9 +252,10 @@
 
   function submitOrder(order) {
     if (CONFIG.ORDER_ENDPOINT) {
-      // text/plain avoids a CORS preflight with Apps Script doPost(e) -> JSON.parse(e.postData.contents)
+      // text/plain avoids a CORS preflight; Apps Script doPost reads JSON.parse(e.postData.contents)
       return fetch(CONFIG.ORDER_ENDPOINT, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(order) })
-        .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return "sent"; });
+        .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json().catch(function () { return {}; }); })
+        .then(function (j) { if (j && j.ok === false) throw new Error(j.error || "rejected"); return "sent"; });
     }
     var body = ["Name: " + order.name, "Phone: " + order.phone, "Email: " + order.email, "", "Plants:"]
       .concat(order.items.map(function (l) { return "- " + l.qty + " x " + l.name + " (" + l.size + ")"; }),
@@ -214,13 +266,13 @@
 
   $("#order-form").addEventListener("submit", function (e) {
     e.preventDefault();
-    var form = e.target, err = $("#form-error");
-    var f = {}; ["name","phone","email","notes"].forEach(function (k) { f[k] = form.elements.namedItem(k); });
-    f.fulfillment = { value: (form.querySelector('input[name="fulfillment"]:checked') || {}).value || "Saturday pickup" };
+    var form = e.target, err = $("#form-error"), f = {};
+    ["name", "phone", "email", "notes"].forEach(function (k) { f[k] = form.elements.namedItem(k); });
+    var ful = (form.querySelector('input[name="fulfillment"]:checked') || {}).value || "Saturday pickup";
     if (!cart.length) { err.textContent = "Add at least one plant first."; return; }
     if (!f.name.value.trim() || !f.phone.value.trim() || !f.email.value || !f.email.checkValidity()) { err.textContent = "Please enter your name, phone, and a valid email."; return; }
     err.textContent = "";
-    var order = { name: f.name.value.trim(), phone: f.phone.value.trim(), email: f.email.value.trim(), fulfillment: f.fulfillment.value,
+    var order = { name: f.name.value.trim(), phone: f.phone.value.trim(), email: f.email.value.trim(), fulfillment: ful,
       notes: f.notes.value.trim(), items: cart.slice(), submittedAt: new Date().toISOString() };
     submitOrder(order).then(function (how) {
       $("#confirm-note").textContent = how === "mailto" ? "Your email app should open with the order filled in — please hit Send so we receive it." : "We received your order and will be in touch soon.";
@@ -228,18 +280,33 @@
         '<p class="help" style="margin-top:0.5rem;">' + esc(order.fulfillment) + '</p>';
       cart = []; save(); renderCart(); form.reset();
       $("#shop").hidden = true; $("#confirm").hidden = false; window.scrollTo(0, 0);
-    }).catch(function () { err.textContent = "Couldn't send right now. Please email " + CONFIG.ORDER_EMAIL + " or try again."; });
+    }).catch(function () { err.textContent = "Couldn't send right now. " + CONFIG.CONTACT_TEXT; });
   });
 
-  fetch(CONFIG.INVENTORY_URL, { cache: "no-store" }).then(function (r) { return r.json(); })
-    .then(function (d) {
-      plants = d.plants || [];
-      // drop cart lines for plants that are gone or sold out
-      cart = cart.filter(function (l) { return plants.some(function (p) { return p.id === l.id && p.inStock; }); }); save();
-      renderGrid(); renderCart();
-    })
-    .catch(function () { $("#grid").innerHTML = '<p class="empty">Couldn\'t load plants. Please email ' + esc(CONFIG.ORDER_EMAIL) + ' to order.</p>'; });
-  renderCart();
+  function apply(list, updatedText) {
+    plants = sortPlants(list);
+    cart = cart.filter(function (l) { var p = find(l.id); return p && p.sizes.some(function (s) { return s.size === l.size && s.qty > 0; }); }); save();
+    $("#updated").textContent = updatedText || "";
+    renderGrid(); renderCart();
+  }
+  function fmt(t) { var d = new Date(t); return isNaN(d) ? String(t) : d.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
+  function fallback() {
+    var c = load(CONFIG.CACHE_KEY);
+    if (c && c.plants && c.plants.length) apply(normalize(c), "Couldn't reach live inventory — availability last updated " + fmt(c.updated || c.cachedAt) + ".");
+    else { plants = []; $("#updated").textContent = ""; renderGrid(); renderCart(); }
+  }
+  function loadInventory() {
+    if (!CONFIG.INVENTORY_URL) return fallback();
+    fetch(CONFIG.INVENTORY_URL, { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(function (d) {
+        var list = normalize(d); if (!list.length) throw new Error("empty");
+        d.cachedAt = new Date().toISOString(); store(CONFIG.CACHE_KEY, d);
+        apply(list, "Live availability • updated " + fmt(d.updated || d.cachedAt));
+      })
+      .catch(fallback);
+  }
+  renderCart(); loadInventory();
   </script>
 </body>
 </html>

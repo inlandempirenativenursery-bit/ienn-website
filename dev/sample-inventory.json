@@ -1,0 +1,13 @@
+{
+  "_note": "DEV SAMPLE ONLY - not loaded in production. Shape matches apps-script/inventory-endpoint.gs output. Use: order.html?inventory=dev/sample-inventory.json on localhost.",
+  "updated": "2026-10-20T17:00:00Z",
+  "plants": [
+    { "name": "Blue Pyramid Cypress", "botanical": "", "sizes": [{ "size": "1 gal", "qty": 4, "price": null }] },
+    { "name": "California Buckwheat", "botanical": "Eriogonum fasciculatum", "sizes": [{ "size": "4\"", "qty": 0, "price": null }, { "size": "1 gal", "qty": 8, "price": null }] },
+    { "name": "White Sage", "botanical": "Salvia apiana", "sizes": [{ "size": "1 gal", "qty": 6, "price": null }] },
+    { "name": "Sticky Monkeyflower", "botanical": "Diplacus aurantiacus", "sizes": [{ "size": "1 gal", "qty": 3, "price": null }] },
+    { "name": "Woolly Blue Curls", "botanical": "Trichostema lanatum", "sizes": [{ "size": "4\"", "qty": 0, "price": null }] },
+    { "name": "Yarrow", "botanical": "Achillea millefolium", "sizes": [{ "size": "4\"", "qty": 10, "price": null }] },
+    { "name": "Deergrass", "botanical": "Muhlenbergia rigens", "sizes": [{ "size": "1 gal", "qty": 2, "price": null }] }
+  ]
+}
