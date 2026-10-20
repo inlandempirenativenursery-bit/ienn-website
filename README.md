@@ -9,8 +9,10 @@ Repo for the Inland Empire Native Nursery site and customer-facing order experie
 - Clear pickup schedule, payment, and approximate location before order
 - Order submission that notifies the team and sends confirmation/invoice
 
-## Current order form URL
-https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec?view=customer
+## Ordering
+- **Public:** the website shop `order.html` is the only public order path. The homepage "Place Order Now" buttons point there.
+- **Team only:** the inventory tool's internal Index view, for phone orders, Facebook Marketplace and so on. It goes through the same checked submit.
+- The old public `…/exec?view=customer` no longer takes orders. Once deployed, it shows "Orders have moved to our website" with a link to the shop and Andrew's call/text number.
 
 ## Agent roles
 - Robo: customer order form logic & Apps Script integration
@@ -19,53 +21,51 @@ https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJF
 - Lobo: testing, edge cases, cleanup
 
 Work continues in this repo so changes can be reviewed and deployed.
-## Plant inventory on order.html (live from the Inventory sheet)
-The order page loads plants, sizes, prices and stock from the IENN Inventory sheet through the existing Apps Script web app. To add a plant or change stock, edit the sheet. No website change is needed.
-
-- Source setting: `INVENTORY_URL` near the bottom of `order.html` (`INVENTORY SOURCE`). Default: `<web app>/exec?view=inventory`.
-- **One-time setup (Eric):** add `apps-script/inventory-endpoint.gs` to the Apps Script project and add one line to `doGet`, then deploy a new version. The steps are in that file. Until then the page uses an offline fallback list and shows a "stock may be out of date" note.
-- Alternative source: a Google Sheet published to the web as CSV with the columns `Plant, Size, Qty, Price, Sort, Photo` (one row per plant and size). Paste that CSV URL into `INVENTORY_URL`.
-- Availability: a size with Qty > 0 shows a green "Available" badge, and all sizes at 0 shows "Sold out" with the add button turned off. Plants the sheet doesn't track stock for show "Ask about availability".
-- The page refreshes every `REFRESH_MINUTES` (5) and when the tab regains focus. It caches the last good copy in the browser.
-- Sort order: in-stock first, then by appeal, then A–Z. Appeal comes from a sheet `Sort` column if present (lower number = first; set `SORT_COLUMN` in the .gs). Otherwise it comes from the editable `APPEAL_KEYWORDS` list in `order.html` (white sage, monkeyflower/Mimulus/Diplacus, poppy, penstemon, sages, buckwheat, milkweed, and so on).
-- `FALLBACK_PLANTS` in `order.html` is only for offline use. It is not the source of truth.
-
-## Home page shop grid (index.html)
-The home-page cards come from the same `?view=inventory` feed, loaded by `inventory.js` (`INVENTORY_URL`). It reads the raw `getInitial()` JSON from `apps-script/inventory-endpoint.gs`, a list of plant objects, or JSONP (`&callback=`). Until the endpoint is deployed, the URL returns HTML, so the grid shows a short fallback list marked "Ask about availability" (never "Available"). Sort order: `sort` value if present, otherwise white sage and monkeyflowers first, then flowering plants, with out-of-stock plants last. Low-stock threshold: `IENN_LOW_STOCK` (5). The cart hands off to `order.html?slug=qty` or `?slug|size=qty`.
-
-## Prices (by pot size only)
-The sizes are 2" $3, 4" $6, Tree pot $10 and 1 gal $15. Prices **include** 8.75% CA sales tax, the same way the existing invoice tool works (subtotal = total ÷ 1.0875). The table lives in `inventory.js` and `apps-script/ienn-stock-ledger.gs`. Keep the two in sync. Size labels are normalized: 4"/4in/4-inch/four, 1 gal/1-gallon/gal1, 2"/2-inch, quarter/1/4 tree/tree pot. The website shows only 4" and 1 gal unless the feed reports stock in another size.
-
-## Apps Script backend (NOT deployed yet)
-The inventory tool (one Apps Script project with an internal Index view and `?view=customer`) is the single source of truth. Everything below adds files to **that** project and writes only into the tool's own spreadsheet.
+## One system: inventory tool + website (apps-script/)
+The IENN inventory/invoice Apps Script web app is the **single source of truth**: Catalog (plant id to name), Submissions (weekly counts), IENN Invoices (orders). The website reads from it and orders go into it. **We have no access to that Apps Script project, so none of this is deployed yet. Eric has to paste the files in and deploy (steps below).** The real script source wasn't available to us, so the code is written against the function names the live customer page uses (`getInitial()`, `submitInvoice(data)`) and Eric's description (`getAvailableStock()`). Every assumption is listed at the top of `apps-script/IENN_Config.gs`.
 
 | File | What it does |
 |---|---|
-| `apps-script/ienn-stock-ledger.gs` | Takes the latest week's counts minus the **Sold** ledger. Wraps `getAvailableStock` and `submitInvoice`, using LockService. |
-| `apps-script/inventory-endpoint.gs` | `?view=inventory` JSON/JSONP feed, website `doPost` (sends orders through `submitInvoice`), `?view=reply` template. |
-| `apps-script/ienn-printlist.gs` | `?view=printlist` (print/PDF), `&format=csv`, and `exportPlantListSheet()` (writes a "Plant List" sheet). |
-| `apps-script/IndexNav.html` | One nav bar for the internal Index view. |
+| `IENN_Config.gs` | All settings: sheet and tab names, header aliases, **final prices by size, taxes included** (2" $3 · 4" $6 · Tree pot $10 · 1 gal $15; 8.75% is only backed out for records), team email placeholders, pickup address and payment placeholders |
+| `IENN_Stock.gs` | Available stock = latest weekly count (`getAvailableStock()`) minus units on IENN Invoices dated after that count |
+| `IENN_Website.gs` | `?view=inventory` JSON/JSONP; `doPost` for website orders; `iennSubmitInvoiceChecked()` = lock + stock re-check + existing `submitInvoice()` |
+| `IENN_Print.gs` | `?view=print` printable list (Print / Export PDF / Export CSV), `?view=hub` team home, plus spreadsheet menu exports (PDF to Drive, Google Sheet) |
+| `IENN_Drafts.gs` | IENN spreadsheet menu: Claim order, Draft reply (Gmail **draft only**, never sent), Print/export |
 
-**Assumptions** (Eric to confirm; the full list is at the top of `ienn-stock-ledger.gs`):
-- `Submissions` has one row per person per weekly count, with Timestamp | (Week) | Person | Counts. Counts is JSON shaped `{"<catalog id>": {"four": n, "gal1": n}}`.
-- The latest week is the Week value of the newest row, or the ISO week of its timestamp. Within that week, each person's newest row counts, and counts are summed across people.
-- `Catalog` maps Id to Name, with an optional Botanical column.
-- The existing `getAvailableStock()` stays as the source of the counts.
-- The `Sold` sheet is auto-created in the same spreadsheet: one row per order line, tagged with the week. Available stock = this week's count − this week's Sold rows. A new weekly count starts a new week, so the deductions reset.
+### How it works
+- **Inventory to website:** `order.html` loads `APPS_SCRIPT_URL?view=inventory`. Each plant shows all four sizes with prices. 4" and 1 gal are tracked: a number means that many available, 0 means sold out and that size's chip is disabled. 2" and Tree pot aren't counted yet (**Eric will add counts later**), so they're orderable at their price and labeled **"Available on request"**. The page refreshes every 5 minutes and when the tab regains focus. The last good copy is cached in the browser; if the source can't be reached, the page shows an offline list with a "stock may be out of date" note.
+- **Adding a plant** = add it to the tool's Catalog. It appears on the website (and print list) on the next refresh. No website edit needed.
+- **Website order to existing invoice path:** the page POSTs JSON as `text/plain`. That's a "simple" request with no CORS preflight, which Apps Script can't answer, and Apps Script's redirect reply allows any origin, so the page can read the invoice number. `doPost` checks the order, recalculates prices on the server (prices sent by the browser are ignored), puts name, phone, pickup choice and payment into the invoice note (`Website order — Name · Phone`, `Pickup: …`, `Pays by: …`). **Prices include tax:** line `amt` and `grand` are the displayed prices, and `subtotal`/`tax` are derived backwards (subtotal = grand / 1.0875) for the existing tool's records, so the customer total always equals the sum of the displayed prices, and calls `iennSubmitInvoiceChecked`. That function takes a `LockService` script lock, re-checks stock, then calls the **existing `submitInvoice(data)`**. That writes IENN Invoices and sends the existing team email, so there's no second orders log and no second notification. The page then shows the confirmation with the invoice number. If stock ran out meanwhile, the order is rejected with a clear message ("Only 1 White Sage (4-inch pot) left — you asked for 2") and the cart is trimmed. If the endpoint can't be reached, the order is **not** placed. The cart is kept, and the page offers **call/text Andrew (909) 609-9373** (tel:/sms: links, with the order pre-filled in the text) or an email link to hello@inlandempirenativenursery.com.
+- **Auto stock decrease without touching anyone's counts:** available = latest week's counts minus units on IENN Invoices with a timestamp after the latest Submissions date. Edge cases:
+  - A new weekly count becomes the new baseline, so sales before it stop being subtracted (the count already reflects them).
+  - Set an invoice's Status to `Cancelled` to give its units back.
+  - Sales on the internal invoice view are subtracted too, because they're in IENN Invoices.
+  - If counts are entered *during* pickup day, orders placed between the physical count and its entry are subtracted twice until the next count. Count after the day's pickups.
+  - If invoices only store a date (no time), an order on the same day as the count date isn't subtracted. Use a timestamp column if the sheet has one.
+  - The lock only covers orders that go through `iennSubmitInvoiceChecked`. Switch the customer view to it too (step 4).
+- **Order status:** three columns are added to the right of IENN Invoices if missing: `Status` (New → Claimed → Paid → Picked up, or Cancelled), `Handled by`, `Our response`. This is the only change to existing sheets. No new sheets are created.
 
-**Deploy steps:**
-1. Paste the three `.gs` files into the tool's Apps Script project as new files.
-2. Rename the existing `function getAvailableStock(` to `function getAvailableStockRaw_(`.
-3. Rename the existing `function submitInvoice(` to `function submitInvoiceOriginal_(`. Its Invoices write and team email stay unchanged.
-4. Add the first line of the existing `doGet(e)`: `var r = ienRouteGet_(e); if (r) return r;`. The project has no `doPost` today; the new one is in `inventory-endpoint.gs`.
-5. Paste `IndexNav.html` at the top of the Index view's `<body>`. Fix its two `#anchors` and the website URL.
-6. Set `ADMIN_KEY` and `PICKUP_ADDRESS`. If the tool's spreadsheet isn't found automatically, set `INVENTORY_SS_ID`, or point `ienSS_()` at the tool's own lookup.
-7. Deploy > Manage deployments > edit the current deployment > **New version**, Execute as Me, Access Anyone. The /exec URL stays the same. Approve the Drive and Sheets permissions.
-8. Test:
-   - `…/exec?view=inventory` returns JSON.
-   - `…/exec?view=printlist` shows the list.
-   - A test order from order.html shows an order number, a row in IENN Invoices, the team email, Sold rows, and lower stock.
+### Deploy steps for Eric (in the existing Apps Script project)
+1. Open the inventory/invoice Apps Script project. For each file in `apps-script/`, click **+ > Script** and paste it in with the same name.
+2. In `IENN_Config.gs`, check the tab names and header aliases against the real sheets. Check S1–S7 at the top, especially how IENN Invoices stores line items (JSON column, or one row per line). Leave `IENN_EXTRA_TEAM_EMAIL = false` if `submitInvoice` already emails the team.
+3. In the existing `doGet(e)`, add this as the first line: `var ienn = iennRoute_(e); if (ienn) return ienn;`. If a `doPost` or `onOpen` already exists, merge as described at the top of `IENN_Website.gs` and `IENN_Drafts.gs`.
+4. **Required:** in the internal Index view HTML (team orders), change `.submitInvoice(data)` to `.iennSubmitInvoiceChecked(data)`, so team orders get the same lock, stock re-check, IENN Invoices log and stock decrease. Paste `apps-script/IndexNav.html` at the top of Index's `<body>` for the team nav. The public `?view=customer` is closed automatically by `iennRoute_`.
+4b. To say "Andrew is handling it" in the existing team email, add this line to the email body in `submitInvoice`: `'\nAndrew is handling this order (order-to-pickup).'`. (The add-on also sets Handled by = Andrew on every new invoice.)
+5. Select `iennSetup` and click **Run** once. Approve the Spreadsheet, Mail, Gmail and Drive permissions. Check the log for plant count and baseline date.
+6. **Deploy > Manage deployments > edit the existing web app > Version: New version > Deploy.** Keep *Execute as: Me* and *Who has access: Anyone* so the /exec URL stays the same.
+7. Check: open `…/exec?view=inventory` (should be JSON), `…/exec?view=print` and `…/exec?view=hub`, then place a test order on the website and set its Status to Cancelled afterwards.
+8. Fill in placeholders: `TEAM_EMAILS` (only used if the extra email is turned on), `PICKUP_ADDRESS`, `DEFAULT_PAYMENT_METHOD`, `IENN_LOGO_URL` and `IENN_WEBSITE_URL` (where the site is hosted; the closed customer view redirects there).
 
-**Order flow:** order.html POSTs `text/plain` JSON to `ORDER_URL`. The script calls `submitInvoice(data)` in the real invoice format, with the website's name, phone, pickup and payment in `note`. That locks, re-checks stock and calls the original, which writes Invoices and emails the team. It then appends the Sold rows and returns `{ok, orderId, total, tax}`, or `{ok:false, error}` when stock is too low. The customer view and the internal view go through the same check. If the POST fails, the page falls back to the email (mailto) form.
+### Printable plant list
+`…/exec?view=print` (alias `?view=printlist`, used by the homepage link) gives a clean list with the locked logo (the site's `images/ienn-logo-sage.png`, used as-is), the date, plants sorted by availability then appeal, botanical names, the four sizes with prices, and current availability ("On request" for 2" and Tree pot), Fontana pickup, and Andrew's call/text number. One click from there: **Print**, **Export PDF** (Apps Script converts the HTML to a PDF), **Export CSV**. From the spreadsheet: **IENN menu > Printable plant list / Export plant list: PDF to Drive / Google Sheet**.
 
-See also: `docs/TEAM-QUICKSTART.md`, `docs/USABILITY-NOTES.md`, `docs/order-reply-template.md`. Tests: `node tests/pricing.test.js`.
+### Replying to customers
+**Andrew owns order-to-pickup.** New invoices get Handled by = Andrew automatically. In IENN Invoices, click the order and choose **IENN > Claim selected order (Andrew)** (sets Status = Claimed, Handled by = Andrew; edit the cell to hand off). Type the reply in `Our response`, then choose **IENN > Draft reply for selected order**. A Gmail **draft** is created from `templates/order-response-email.md`; review it and send it yourself. Nothing is sent to customers automatically.
+
+### Tests
+`node tests/apps-script.test.js` runs the real .gs files against stubs of SpreadsheetApp, MailApp, GmailApp and LockService, plus a fake of the existing tool. It covers: header and size matching, counts minus sales, the baseline reset, cancelled invoices, decrement, oversell rejection, the lock, server-side prices, emails, drafts and the print/CSV export. `node tests/mock-server.js` serves the site plus a mock `/exec` on http://localhost:8822; point `APPS_SCRIPT_URL` at `http://localhost:8822/exec` to try the page locally.
+
+## Home page shop grid (index.html)
+The home-page cards come from the same `?view=inventory` feed, loaded by `inventory.js` (`INVENTORY_URL`). It reads the raw `getInitial()` JSON from `apps-script/IENN_Website.gs` (`iennInventory()`), a list of plant objects, or JSONP (`&callback=`). Until the endpoint is deployed, the URL returns HTML, so the grid shows a short fallback list marked "Ask about availability" (never "Available"). Sort order: `sort` value if present, otherwise white sage and monkeyflowers first, then flowering plants, with out-of-stock plants last. Low-stock threshold: `IENN_LOW_STOCK` (5). The cart hands off to `order.html?slug=qty` or `?slug|size=qty`.
+
+See `MERGE-NOTES.md` for what replaced Kobe's Sold-ledger back end, and which markup hooks the design pass relies on.

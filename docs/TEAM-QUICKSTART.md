@@ -1,24 +1,21 @@
 # IENN team quickstart (1 page)
 
-Everything starts from the **inventory tool** (the Apps Script link). Use the nav bar at the top: **Weekly count · Invoices / orders · Print plant list · Website stock preview**.
+**Team home:** `…/exec?view=hub` (bookmark it). It has four tiles: Counts & invoices · Orders · Print plant list · Website shop.
 
-## 1. Weekly count
-- Each counter submits their counts once a week in **Weekly count**: 4" and 1 gal per plant.
-- If you need to fix a count, submit again the same week. Your newest submission replaces your earlier one.
-- A new week's count becomes the new starting stock. Sales recorded before it no longer reduce the numbers.
-- Never edit the **Sold** sheet or other people's submissions by hand.
+## 1. Weekly count (counters)
+- Submit counts once a week in the internal view (4" and 1 gal per plant). Count after Saturday pickups and enter it the same day.
+- A new count is the new starting stock. Website and team orders since that count are subtracted automatically. Never edit other people's submissions.
 
-## 2. How orders arrive
-- Website and customer-form orders come in as invoices, in the same IENN Invoices sheet and with the same team email as before.
-- Stock goes down automatically. Orders that ask for more than is available are refused, and the customer is asked to adjust.
-- Website orders show "WEBSITE ORDER" in the invoice note, with the customer's name, phone, pickup choice and payment method.
+## 2. Orders (Andrew owns order-to-pickup)
+- Customers order only on the website. Phone and Facebook Marketplace orders: enter them in the internal view (same stock check, same IENN Invoices).
+- Everyone gets the order email. New orders show **Handled by = Andrew**.
+- In IENN Invoices: **IENN > Claim selected order (Andrew)**. Type the reply in **Our response**, then **IENN > Draft reply**. Check the Gmail draft and send it.
+- Statuses: **New → Claimed → Paid → Picked up**. **Cancelled** returns the plants to stock.
 
-## 3. Replying (one person per order)
-1. The first person to take an order writes their name on that order's row (Invoices sheet).
-2. Open the reply template: in the Sold sheet, select the order, then **IENN > Reply template**.
-3. Fill in "Our response". Add the exact pickup address only once the order is confirmed.
-4. Send it from the team inbox. Mark the order paid when the money arrives (cash or Zelle).
+## 3. Prices
+2" $3 · 4" $6 · Tree pot $10 · 1 gal $15. These are final prices, taxes included. 2" and Tree pot are "available on request" (not counted yet).
 
 ## 4. Printable plant list
-- Click **Print plant list**, then **Print / Save as PDF**. The list shows only plants in stock, with size prices; tax is included.
-- **Download CSV** or **Export plant list to sheet** creates a "Plant List" tab you can share.
+**Print plant list** (or IENN menu): Print, Export PDF, Export CSV, or save to Drive / Google Sheet.
+
+Customer questions: call or text Andrew, (909) 609-9373.

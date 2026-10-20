@@ -1,14 +1,14 @@
 /* IENN shared inventory loader (used by index.html and order.html).
-   Paste the deployed inventory web-app URL below (see apps-script/inventory-endpoint.gs + README).
+   Paste the deployed inventory web-app URL below (see apps-script/IENN_Website.gs iennInventory() + README).
    While empty or unreachable, pages show the FALLBACK list with "Ask about availability" (never fake "Available"). */
 var INVENTORY_URL = "https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec?view=inventory"; // live once ?view=inventory is deployed (returns HTML today -> fallback)
 var ORDER_URL = "https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec"; // doPost order intake (once deployed)
-/* PRICES ARE BY SIZE ONLY (authoritative; feed prices ignored). Same table as apps-script/ienn-stock-ledger.gs.
-   Size labels match the inventory tool: 2", 4", Tree pot, 1 gal. Prices INCLUDE 8.75% sales tax (as in the invoice tool). */
+/* PRICES ARE BY SIZE ONLY (authoritative; feed prices ignored). Same table as apps-script/IENN_Config.gs (IENN_SIZES).
+   Size labels match the inventory tool: 2", 4", Tree pot, 1 gal. Prices INCLUDE tax ($3/$6/$10/$15 are final); ienTax only backs tax out for records. */
 var IENN_SIZES = ['2"', '4"', "Tree pot", "1 gal"];
 var IENN_SIZE_PRICES = { '2"': 3, '4"': 6, "Tree pot": 10, "1 gal": 15 };
 var IENN_TAX_PCT = 8.75;
-var IENN_PRINTLIST_URL = "https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec?view=printlist";
+var IENN_PRINTLIST_URL = "https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec?view=print";
 function ienTax(total) { var sub = total / (1 + IENN_TAX_PCT / 100); return { subtotal: Math.round(sub * 100) / 100, tax: Math.round((total - sub) * 100) / 100, total: total }; }
 function ienNormSize(s) {
   var t = String(s == null ? "" : s).toLowerCase().replace(/[\u201d\u2033]/g, '"').replace(/\s+/g, " ").trim();
