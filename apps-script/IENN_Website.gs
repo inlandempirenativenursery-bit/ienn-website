@@ -1,6 +1,7 @@
 /**
  * Website endpoints.
  *  GET  ?view=print / ?view=hub -> see IENN_Print.gs
+ *  GET  ?view=promos     -> JSON promo banner feed (IENN_Promos.gs, optional Promos tab)
  *  GET  ?view=inventory  -> JSON (or JSONP with &callback=) built from getInitial()/getAvailableStock() + Catalog + prices
  *  POST (text/plain JSON) -> website order, through iennSubmitInvoiceChecked -> existing submitInvoice
  *
@@ -22,6 +23,7 @@ function iennRoute_(e) {
   if (p.view === 'customer') return iennCustomerClosed_();     // public orders now go through the website only
   if (p.view === 'print' || p.view === 'printlist') return iennPrintRoute_(p);
   if (p.view === 'hub') return HtmlService.createHtmlOutput(iennHubHtml_()).setTitle('IENN team home');
+  if (p.view === 'promos') { try { return iennJson_(iennPromos(), p.callback); } catch (err) { return iennJson_({ ok: false, promos: [] }, p.callback); } }
   if (p.view !== 'inventory') return null;
   try { return iennJson_(iennInventory(), p.callback); } catch (err) { return iennJson_({ ok: false, error: String(err.message || err) }, p.callback); }
 }
