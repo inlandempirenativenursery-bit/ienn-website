@@ -147,6 +147,30 @@
       .plant-grid { grid-template-columns: repeat(3, 1fr); }
       section { max-width: 800px; margin: 0 auto; }
     }
+    .plant-img { background: linear-gradient(135deg, var(--cream), var(--lilac)); color: var(--sage-dark); font-weight: 700; font-size: 1.6rem; height: 90px; }
+    .plant-info { display: flex; flex-direction: column; gap: 0.35rem; flex: 1; }
+    .bot { font-style: italic; font-size: 0.75rem; color: #777; }
+    .note { font-size: 0.78rem; color: #555; }
+    .badge { align-self: flex-start; font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 99px; }
+    .badge.in { background: #2e7d32; color: #fff; }
+    .badge.low { background: #f3c969; color: #4a3b00; }
+    .badge.out { background: #bbb; color: #333; }
+    .badge.ask { background: var(--cream); color: var(--sage-dark); border: 1px solid var(--sage); }
+    .size { font-size: 0.8rem; color: #666; }
+    .shop-row { display: flex; align-items: center; gap: 0.3rem; margin-top: auto; }
+    .shop-row button.step { width: 36px; height: 36px; border: 1px solid #ccc; background: #fff; border-radius: 6px; font-size: 1.1rem; }
+    .shop-row output { min-width: 1.5rem; text-align: center; font-weight: 600; }
+    .add-btn { width: 100%; min-height: 44px; border: 0; border-radius: 8px; background: var(--sage-dark); color: #fff; font-weight: 700; font-size: 0.95rem; cursor: pointer; }
+    .add-btn:disabled { background: #bbb; cursor: not-allowed; }
+    .cart-bar { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 2px solid var(--sage); display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 1rem; z-index: 50; box-shadow: 0 -2px 8px rgba(0,0,0,.08); }
+    .cart-bar[hidden] { display: none; }
+    #cart-count { font-weight: 700; color: var(--sage-dark); flex: 1; }
+    .cart-clear { background: none; border: 0; color: #666; text-decoration: underline; min-height: 44px; }
+    .cart-go { background: var(--red); color: #fff; text-decoration: none; font-weight: 700; padding: 0.7rem 1rem; border-radius: 8px; }
+    .toast { position: fixed; left: 50%; bottom: 80px; transform: translateX(-50%); background: var(--sage-dark); color: #fff; padding: 0.6rem 1rem; border-radius: 8px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 60; }
+    .toast.show { opacity: 1; }
+    body.has-cart { padding-bottom: 70px; }
+    @media (min-width: 1000px) { .plant-grid { grid-template-columns: repeat(4, 1fr); } section.plants { max-width: 1000px; } }
   </style>
 </head>
 <body>
@@ -167,43 +191,18 @@
   </section>
 
   <section class="plants" id="plants">
-    <h2>Available now</h2>
-    <p style="font-size:0.95rem; color:#555; margin-bottom:0.5rem;">Updated weekly from our nursery counts.</p>
-    <div class="plant-grid">
-      <div class="plant-card">
-        <div class="plant-img">Photo</div>
-        <div class="plant-info">
-          <h3>Blue Pyramid Cypress</h3>
-          <div class="plant-meta">1-gallon</div>
-          <div class="stock">In stock</div>
-        </div>
-      </div>
-      <div class="plant-card">
-        <div class="plant-img">Photo</div>
-        <div class="plant-info">
-          <h3>Woolly Blue Curls</h3>
-          <div class="plant-meta">4-inch</div>
-          <div class="stock">Limited</div>
-        </div>
-      </div>
-      <div class="plant-card">
-        <div class="plant-img">Photo</div>
-        <div class="plant-info">
-          <h3>Sticky Monkeyflower</h3>
-          <div class="plant-meta">1-gallon</div>
-          <div class="stock">In stock</div>
-        </div>
-      </div>
-      <div class="plant-card">
-        <div class="plant-img">Photo</div>
-        <div class="plant-info">
-          <h3>Yarrow</h3>
-          <div class="plant-meta">4-inch</div>
-          <div class="stock">In stock</div>
-        </div>
-      </div>
-    </div>
+    <h2>Shop native plants</h2>
+    <p style="font-size:0.95rem; color:#555; margin-bottom:0.5rem;">Pick a quantity, tap Add, then check out. Prices are confirmed when we confirm your order.</p>
+    <div class="plant-grid" id="shop-grid" aria-live="polite"></div>
+    <noscript><p><a href="order.html">Open the order form</a> to choose plants.</p></noscript>
   </section>
+
+  <div class="cart-bar" id="cart-bar" hidden>
+    <span id="cart-count">0 plants</span>
+    <button type="button" class="cart-clear" id="cart-clear">Clear</button>
+    <a href="order.html" class="cart-go" id="cart-go">Checkout / Place Order</a>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <section class="problem">
     <h2>Tired of plants that don’t make it?</h2>
@@ -255,4 +254,69 @@
     <p>Inland Empire Native Nursery • Pickup-only • Fontana / Grand Terrace area</p>
     <p style="margin-top:0.5rem;"><a href="mailto:hello@inlandempirenativenursery.com">Contact</a> • inlandempirenativenursery.com</p>
   </footer>
+  <script>
+  /* ===== PLANT DATA =====
+     Names/sizes/stock labels come from the existing site copy (unverified vs. live counts).
+     Botanical names added for clarity. NO prices exist anywhere in the repo -> price shown as "Price confirmed at order".
+     stock: "in" | "low" | "out" | "unknown". To make stock live, set STOCK_URL to a JSON endpoint returning
+     {"blue-pyramid":"in","yarrow":"out",...} (e.g. an Apps Script ?view=inventory doGet from the Sheet). */
+  var STOCK_URL = '';
+  var PLANTS = [
+    { id: 'blue-pyramid', name: 'Blue Pyramid Cypress', bot: "Cupressus arizonica 'Blue Pyramid'", size: '1-gallon', note: 'Silvery-blue evergreen; drought tolerant once established.', stock: 'in' },
+    { id: 'woolly-blue', name: 'Woolly Blue Curls', bot: 'Trichostema lanatum', size: '4-inch', note: 'Fragrant purple spikes; loves sun and good drainage.', stock: 'low' },
+    { id: 'monkeyflower', name: 'Sticky Monkeyflower', bot: 'Diplacus aurantiacus', size: '1-gallon', note: 'Orange blooms for hummingbirds; little summer water.', stock: 'in' },
+    { id: 'yarrow', name: 'Yarrow', bot: 'Achillea millefolium', size: '4-inch', note: 'Tough, pollinator-friendly groundcover/perennial.', stock: 'in' }
+  ];
+  (function () {
+    var LABEL = { in: 'Available • Get yours now', low: 'Low stock • Get yours now', out: 'Out of stock', unknown: 'Ask about availability' };
+    var CLS = { in: 'in', low: 'low', out: 'out', unknown: 'ask' };
+    var KEY = 'ienn-cart';
+    var cart = {};
+    try { cart = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { cart = {}; }
+    var grid = document.getElementById('shop-grid');
+    var bar = document.getElementById('cart-bar'), toastEl = document.getElementById('toast'), tTimer;
+    function save() { try { localStorage.setItem(KEY, JSON.stringify(cart)); } catch (e) {} }
+    function toast(msg) { toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(tTimer); tTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 1800); }
+    function renderBar() {
+      var n = 0, q = [];
+      PLANTS.forEach(function (p) { var c = cart[p.id] || 0; if (c > 0) { n += c; q.push(encodeURIComponent(p.id) + '=' + c); } });
+      bar.hidden = n === 0; document.body.classList.toggle('has-cart', n > 0);
+      document.getElementById('cart-count').textContent = n + (n === 1 ? ' plant' : ' plants') + ' in cart • price confirmed at order';
+      document.getElementById('cart-go').href = 'order.html' + (q.length ? '?' + q.join('&') : '');
+    }
+    function render() {
+      grid.innerHTML = '';
+      PLANTS.forEach(function (p) {
+        var st = LABEL[p.stock] ? p.stock : 'unknown', qty = 1;
+        var card = document.createElement('article'); card.className = 'plant-card';
+        card.innerHTML = '<div class="plant-img" aria-hidden="true"></div><div class="plant-info"><h3></h3><div class="bot"></div>' +
+          '<span class="badge"></span><div class="size"></div><div class="note"></div>' +
+          '<div class="shop-row"><button type="button" class="step minus">−</button><output>1</output><button type="button" class="step plus">+</button></div>' +
+          '<button type="button" class="add-btn"></button></div>';
+        card.querySelector('.plant-img').textContent = p.name.charAt(0);
+        card.querySelector('h3').textContent = p.name;
+        card.querySelector('.bot').textContent = p.bot;
+        var b = card.querySelector('.badge'); b.textContent = LABEL[st]; b.className = 'badge ' + CLS[st];
+        card.querySelector('.size').textContent = p.size + ' • Price confirmed at order';
+        card.querySelector('.note').textContent = p.note;
+        var out = card.querySelector('output'), add = card.querySelector('.add-btn');
+        card.querySelector('.minus').setAttribute('aria-label', 'One fewer ' + p.name);
+        card.querySelector('.plus').setAttribute('aria-label', 'One more ' + p.name);
+        card.querySelector('.minus').onclick = function () { qty = Math.max(1, qty - 1); out.textContent = qty; };
+        card.querySelector('.plus').onclick = function () { qty = Math.min(99, qty + 1); out.textContent = qty; };
+        add.textContent = st === 'out' ? 'Out of stock' : (st === 'unknown' ? 'Add (we\'ll confirm)' : 'Add to cart');
+        add.disabled = st === 'out';
+        add.setAttribute('aria-label', 'Add ' + p.name + ' to cart');
+        add.onclick = function () { cart[p.id] = Math.min(99, (cart[p.id] || 0) + qty); save(); renderBar(); toast('Added ' + qty + ' × ' + p.name); };
+        grid.appendChild(card);
+      });
+      renderBar();
+    }
+    document.getElementById('cart-clear').onclick = function () { cart = {}; save(); renderBar(); toast('Cart cleared'); };
+    render();
+    if (STOCK_URL) fetch(STOCK_URL).then(function (r) { return r.json(); }).then(function (d) {
+      PLANTS.forEach(function (p) { if (d && d[p.id]) p.stock = d[p.id]; }); render();
+    }).catch(function () {});
+  })();
+  </script>
 </body></html>

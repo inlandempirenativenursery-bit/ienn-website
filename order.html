@@ -121,8 +121,6 @@
     </a>
     <a href="index.html" style="color: var(--sage-dark); text-decoration: none; font-size: 0.95rem; padding: 0.75rem 0.5rem; min-height: 44px; display: inline-flex; align-items: center;">← Back</a>
   </header>
-  <main>
-  <main>
 <main>
   <h1>Place Your Order</h1>
 
@@ -250,6 +248,9 @@
         card.querySelector('.minus').addEventListener('click', function () { input.value = clamp(input.value) - 1; update(); });
         input.addEventListener('input', update);
       });
+      // Prefill from home-page cart: order.html?blue-pyramid=2&yarrow=1
+      var params = new URLSearchParams(location.search);
+      cards.forEach(function (card) { var input = card.querySelector('input'); if (params.has(input.name)) input.value = clamp(params.get(input.name)); });
       update();
       document.getElementById('order-form').addEventListener('submit', function (e) {
         var items = update();
