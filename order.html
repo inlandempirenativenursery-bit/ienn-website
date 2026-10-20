@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Plants | Inland Empire Native Nursery</title>
+  <style>
+    :root {
+      --lilac: #d4c4e0;
+      --sage: #6b7c6a;
+      --sage-dark: #4a5a4a;
+      --cream: #f8f6f3;
+      --red: #c0392b;
+      --text: #2c2c2c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
+      background: #fff;
+      line-height: 1.5;
+      padding-bottom: 40px;
+    }
+    header {
+      background: #fff;
+      border-bottom: 1px solid #eee;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo-text { font-weight: 700; color: var(--sage-dark); }
+    .logo-sub { font-size: 0.7rem; color: var(--sage); }
+    h1 { font-size: 1.5rem; color: var(--sage-dark); margin: 1.25rem 1rem 0.5rem; }
+    .notice {
+      background: var(--cream);
+      border-left: 4px solid var(--sage);
+      margin: 1rem;
+      padding: 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+    .notice strong { color: var(--sage-dark); }
+    .plants { margin: 1rem; }
+    .plant-card {
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .plant-info h3 { font-size: 1rem; color: var(--sage-dark); }
+    .plant-meta { font-size: 0.85rem; color: #666; }
+    .qty { display: flex; align-items: center; gap: 0.5rem; }
+    .qty input { width: 60px; padding: 0.4rem; text-align: center; border: 1px solid #ccc; border-radius: 6px; }
+    form { margin: 1rem; }
+    label { display: block; margin: 0.75rem 0 0.25rem; font-weight: 600; font-size: 0.95rem; }
+    input[type="text"], input[type="email"], textarea {
+      width: 100%;
+      padding: 0.7rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    textarea { min-height: 80px; }
+    .submit-btn {
+      background: var(--red);
+      color: #fff;
+      border: none;
+      padding: 0.9rem 1.5rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+      border-radius: 8px;
+      width: 100%;
+      margin-top: 1rem;
+      cursor: pointer;
+    }
+    .submit-btn:hover { background: #a93226; }
+    footer { text-align: center; font-size: 0.8rem; color: #666; margin-top: 2rem; padding: 1rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <div class="logo-text">IENN</div>
+      <div class="logo-sub">INLAND EMPIRE NATIVE NURSERY</div>
+    </div>
+    <a href="index.html" style="color: var(--sage); text-decoration: none; font-size: 0.9rem;">← Back</a>
+  </header>
+
+  <h1>Place Your Order</h1>
+
+  <div class="notice">
+    <strong>Pickup & Details</strong><br>
+    • Saturdays 10 AM – 2 PM weekly. Other days/times available case-by-case — just note it below.<br>
+    • Payment: Cash or Zelle.<br>
+    • Location: Fontana area, near Sierra Ave & Baseline Rd, roughly within 10 minutes of the 210 freeway. Exact directions after we confirm your order. Grand Terrace pickup possible case-by-case (mention in notes).<br>
+    • We will confirm your order and send pickup details ASAP.
+  </div>
+
+  <div class="plants" id="plant-list">
+    <div class="plant-card">
+      <div class="plant-info">
+        <h3>Blue Pyramid Cypress</h3>
+        <div class="plant-meta">1-gallon • In stock</div>
+      </div>
+      <div class="qty">
+        <label>Qty</label>
+        <input type="number" name="blue-pyramid" min="0" value="0">
+      </div>
+    </div>
+    <div class="plant-card">
+      <div class="plant-info">
+        <h3>Woolly Blue Curls</h3>
+        <div class="plant-meta">4-inch • Limited</div>
+      </div>
+      <div class="qty">
+        <label>Qty</label>
+        <input type="number" name="woolly-blue" min="0" value="0">
+      </div>
+    </div>
+    <div class="plant-card">
+      <div class="plant-info">
+        <h3>Sticky Monkeyflower</h3>
+        <div class="plant-meta">1-gallon • In stock</div>
+      </div>
+      <div class="qty">
+        <label>Qty</label>
+        <input type="number" name="monkeyflower" min="0" value="0">
+      </div>
+    </div>
+    <div class="plant-card">
+      <div class="plant-info">
+        <h3>Yarrow</h3>
+        <div class="plant-meta">4-inch • In stock</div>
+      </div>
+      <div class="qty">
+        <label>Qty</label>
+        <input type="number" name="yarrow" min="0" value="0">
+      </div>
+    </div>
+  </div>
+
+  <form id="order-form" action="mailto:hello@inlandempirenativenursery.com" method="post" enctype="text/plain">
+    <label for="name">Your Name</label>
+    <input type="text" id="name" name="name" required>
+
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" required>
+
+    <label for="phone">Phone (optional)</label>
+    <input type="text" id="phone" name="phone">
+
+    <label for="notes">Notes (pickup day preference, Grand Terrace request, questions, etc.)</label>
+    <textarea id="notes" name="notes" placeholder="Example: Prefer Saturday 11am, or Grand Terrace pickup if possible."></textarea>
+
+    <button type="submit" class="submit-btn">Submit Order</button>
+  </form>
+
+  <footer>
+    Inland Empire Native Nursery • Pickup-only • Fontana / Grand Terrace area<br>
+    Cash or Zelle • We confirm and send directions after you order.
+  </footer>
+
+  <script>
+    document.getElementById('order-form').addEventListener('submit', function(e) {
+      const quantities = Array.from(document.querySelectorAll('.qty input')).map(i => `${i.name}: ${i.value}`).join(', ');
+      const notesField = document.getElementById('notes');
+      notesField.value = (notesField.value ? notesField.value + '\n\n' : '') + 'Requested quantities: ' + quantities;
+    });
+  </script>
+</body>
+</html>
