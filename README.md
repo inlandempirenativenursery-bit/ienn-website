@@ -19,3 +19,9 @@ https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJF
 - Lobo: testing, edge cases, cleanup
 
 Work continues in this repo so changes can be reviewed and deployed.
+## Updating plant stock (order.html)
+All plants on the order page come from one list near the bottom of `order.html`, marked `STOCK: edit here` (`var PLANTS = [...]`).
+- Sold out: change `inStock: true` to `inStock: false`. The card then shows "Sold out" and its Add button is turned off.
+- Back in stock: set it to `true` again.
+- Add a plant: copy one line and change `id`, `name`, and `sizes`. Use `image: "images/your-photo.jpg"` if a photo exists.
+- Optional live stock: set `STOCK_CSV_URL` to a published Google Sheet CSV with the columns `id,inStock`. It's off (`""`) by default. If the sheet can't be loaded, the page uses the list above.
