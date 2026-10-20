@@ -19,14 +19,33 @@ https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJF
 - Lobo: testing, edge cases, cleanup
 
 Work continues in this repo so changes can be reviewed and deployed.
-## Live inventory for order.html (setup — not deployed yet)
-`order.html` loads plants **only** from the Apps Script endpoint in `CONFIG.INVENTORY_URL` (no hardcoded plant list). New rows in the sheet appear automatically; qty > 0 shows "Available", 0 shows "Sold out". The last good response is cached in the browser and shown with "availability last updated …" if the endpoint is down; with no cache, customers see a call/text/email message.
+## Live inventory + orders (setup — NOT deployed yet)
+`order.html` gets plants only from the existing IENN Apps Script project, via `CONFIG.EXEC_URL` (`?api=inventory` for GET, `?api=order` for POST, sent as text/plain JSON to avoid a CORS preflight). Until `EXEC_URL` is set, the page shows a call/text/email message and orders fall back to mailto.
 
-1. Open the IENN Inventory Google Sheet → **Extensions → Apps Script** → create a **new** project (keep the existing invoice web app untouched, it already has its own `doGet`). Or create a standalone project and set `CFG.SPREADSHEET_ID`.
-2. Paste `apps-script/inventory-endpoint.gs`. Set `CFG.INVENTORY_SHEET` to the inventory tab name, and add your header names to `CFG.HEADERS` / `CFG.SIZE_COLUMNS` if they differ. Optional columns: Botanical, Price, Active/Show, Rank, Blurb, Photo URL.
-3. Run `readInventory_` once from the editor to authorize and check output (View → Logs / Execution log).
-4. **Deploy → New deployment → Web app**: Execute as **Me**, Who has access **Anyone**. Copy the `/exec` URL.
-5. In `order.html`, set `CONFIG.INVENTORY_URL` to that URL. Optionally also set `CONFIG.ORDER_ENDPOINT` to the same URL to write orders into an `Orders` tab (otherwise orders use mailto).
-6. After editing the script later, use **Deploy → Manage deployments → Edit → New version** so the URL stays the same.
+**Prices (by size only, no tax shown on the site):** 2-inch $3 • 4-inch $6 • Quarter tree pot $10 • 1-gallon $15. They live in `CONFIG.SIZES` (order.html) and `CFG_IENN.SIZES` (apps-script/ienn-api.gs); keep the two in sync. The server recomputes the subtotal from its own prices.
 
-Dev testing: serve the repo locally and open `order.html?inventory=dev/sample-inventory.json` (localhost only).
+**Assumed sheet layout (edit `CFG_IENN` if different):** tab `Inventory`, header row 1, one row per plant. Column `Plant` is required; optional columns are `Botanical`, `Rank`, `Active` (no/false hides a plant), `Blurb`, and `Photo`. There is one count column per size, with headers `2"`, `4"`, `Tree pot`, `1 gal` (aliases accepted: 2-inch, 4 inch, quarter tree pot, 1 gallon…). A blank count cell means the size isn't offered; 0 means sold out.
+
+### Install into the existing Apps Script project
+1. Open the existing IENN Apps Script project (the one serving `…exec?view=customer`). **File → + → Script**, name it `ienn-api`, and paste `apps-script/ienn-api.gs`.
+2. In `CFG_IENN`, check `INVENTORY_SHEET` (tab name) and `SPREADSHEET_ID` (leave "" if the project is bound to the sheet). If `getSettings()` doesn't hold the team emails, fill in `TEAM_EMAILS` (Eric, Andrew, Keith, Raylene).
+3. Make this the **first line** inside the existing `doGet(e)`:
+   ```js
+   if (e && e.parameter && e.parameter.api) return ienn_api_doGet_(e);
+   ```
+4. If there is no `doPost`, add:
+   ```js
+   function doPost(e) { return ienn_api_doPost_(e); }
+   ```
+   Otherwise make this the first line of the existing `doPost(e)`: `if (e && e.parameter && e.parameter.api) return ienn_api_doPost_(e);`
+5. Run `ienn_publicInventory_` once in the editor to authorize (Sheets, Mail) and check the log output.
+6. **Deploy → Manage deployments → (existing web app) → Edit → Version: New version → Deploy.** The /exec URL stays the same. "Who has access" must be **Anyone** for the public site.
+7. Set `CONFIG.EXEC_URL` in `order.html` to the `/exec` URL (no query string) and push.
+
+### What an order does
+The server takes a script lock and re-reads counts. If any line is short, it rejects with `{ok:false, error:"insufficient_stock", short:[…]}`; the site then shows those items and refreshes availability. Otherwise it decrements the size cells and appends a row to the `Orders` tab (Order ID, Received, Name, Phone, Email, Fulfillment, Items, Subtotal, Notes, Status=New, Paid=No, Payment method, Pickup address sent, Our response, Claimed by). It then emails the team "New IENN order #ID — name" with a link to the row (one person claims it and replies), and returns the order ID, which the confirmation screen shows.
+
+### Replying to customers
+Run `ienn_buildCustomerReply_("W…")` in the editor and copy the text from the log, or use `templates/customer-response.md`. Nothing is sent automatically. Fill **Pickup address sent** only after you confirm the order.
+
+Dev testing: serve the repo locally and open `order.html?inventory=dev/sample-inventory.json&order=<mock-url>` (localhost only).

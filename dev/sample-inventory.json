@@ -1,13 +1,14 @@
 {
-  "_note": "DEV SAMPLE ONLY - not loaded in production. Shape matches apps-script/inventory-endpoint.gs output. Use: order.html?inventory=dev/sample-inventory.json on localhost.",
+  "_note": "DEV SAMPLE ONLY - never loaded in production. Same shape as GET <exec>?api=inventory from apps-script/ienn-api.gs. Use order.html?inventory=dev/sample-inventory.json on localhost.",
+  "ok": true,
   "updated": "2026-10-20T17:00:00Z",
   "plants": [
-    { "name": "Blue Pyramid Cypress", "botanical": "", "sizes": [{ "size": "1 gal", "qty": 4, "price": null }] },
-    { "name": "California Buckwheat", "botanical": "Eriogonum fasciculatum", "sizes": [{ "size": "4\"", "qty": 0, "price": null }, { "size": "1 gal", "qty": 8, "price": null }] },
-    { "name": "White Sage", "botanical": "Salvia apiana", "sizes": [{ "size": "1 gal", "qty": 6, "price": null }] },
-    { "name": "Sticky Monkeyflower", "botanical": "Diplacus aurantiacus", "sizes": [{ "size": "1 gal", "qty": 3, "price": null }] },
-    { "name": "Woolly Blue Curls", "botanical": "Trichostema lanatum", "sizes": [{ "size": "4\"", "qty": 0, "price": null }] },
-    { "name": "Yarrow", "botanical": "Achillea millefolium", "sizes": [{ "size": "4\"", "qty": 10, "price": null }] },
-    { "name": "Deergrass", "botanical": "Muhlenbergia rigens", "sizes": [{ "size": "1 gal", "qty": 2, "price": null }] }
+    { "name": "Blue Pyramid Cypress", "botanical": "", "sizes": [{ "key": "1 gal", "label": "1-gallon", "qty": 4, "price": 15 }] },
+    { "name": "California Buckwheat", "botanical": "Eriogonum fasciculatum", "sizes": [{ "key": "4\"", "label": "4-inch", "qty": 0, "price": 6 }, { "key": "1 gal", "label": "1-gallon", "qty": 8, "price": 15 }] },
+    { "name": "White Sage", "botanical": "Salvia apiana", "sizes": [{ "key": "2\"", "label": "2-inch", "qty": 12, "price": 3 }, { "key": "1 gal", "label": "1-gallon", "qty": 6, "price": 15 }] },
+    { "name": "Sticky Monkeyflower", "botanical": "Diplacus aurantiacus", "sizes": [{ "key": "1 gal", "label": "1-gallon", "qty": 3, "price": 15 }] },
+    { "name": "Woolly Blue Curls", "botanical": "Trichostema lanatum", "sizes": [{ "key": "4\"", "label": "4-inch", "qty": 0, "price": 6 }] },
+    { "name": "Yarrow", "botanical": "Achillea millefolium", "sizes": [{ "key": "4\"", "label": "4-inch", "qty": 10, "price": 6 }] },
+    { "name": "Deergrass", "botanical": "Muhlenbergia rigens", "sizes": [{ "key": "Tree pot", "label": "Quarter tree pot", "qty": 2, "price": 10 }] }
   ]
 }
