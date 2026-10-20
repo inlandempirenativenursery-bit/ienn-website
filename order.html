@@ -28,7 +28,8 @@
     .card.in-cart { border-color:var(--sage); box-shadow:0 0 0 2px rgba(107,124,106,.25); }
     .card.sold-out { opacity:.75; }
     .ph { aspect-ratio:5/2; background:linear-gradient(135deg,var(--cream),#ecebe6); display:flex; align-items:center; justify-content:center; color:#8a8f88; font-size:0.85rem; }
-    .ph img { width:100%; height:100%; object-fit:cover; }
+    .ph { position:relative; overflow:hidden; }
+    .ph img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
     .body { padding:0.9rem; display:flex; flex-direction:column; gap:0.6rem; flex:1; }
     .card h3 { font-size:1.1rem; color:var(--sage-dark); line-height:1.3; }
     .badge { align-self:flex-start; font-size:0.8rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:999px; }
@@ -113,6 +114,8 @@
     .lead b { color:var(--sage-dark); }
     .nw { white-space:nowrap; }
     .summary .rm { padding:0 0.75rem; }
+    .photo-credit { margin:0; padding:0.15rem 0.9rem 0; font-size:0.7rem; color:#6b6f69; }
+    .photo-credit a { color:inherit; }
     .ph .leaf { font-size:1.6rem; opacity:.55; }
     input:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible { outline:3px solid var(--sage-dark); outline-offset:2px; }
     footer { text-align:center; font-size:0.8rem; color:#555; margin-top:2rem; padding:1rem; }
@@ -149,7 +152,7 @@
     <h2 id="notice-title">Pickup &amp; Details</h2>
     <ul>
       <li><span aria-hidden="true">📅</span><span><b>Pickup: Fontana · Saturdays 10 AM – 2 PM</b>Pickup only — reserve here, pick up on Saturday.</span></li>
-      <li><span aria-hidden="true">💵</span><span><b>Payment</b>Cash or Zelle.</span></li>
+      <li><span aria-hidden="true">💵</span><span><b>Payment</b>Cash or Zelle at time of pickup.</span></li>
       <li><span aria-hidden="true">📍</span><span><b>Location</b>Fontana. We share the exact address after we confirm your order.</span></li>
       <li><span aria-hidden="true">✅</span><span><b>Confirmation</b>We will confirm your order and send pickup details ASAP.</span></li>
       <li><span aria-hidden="true">📞</span><span><b>Questions?</b>Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a></span></li>
@@ -216,10 +219,11 @@
 
   <footer>
     Inland Empire Native Nursery • Pickup: Fontana · Saturdays 10 AM – 2 PM<br>
-    Cash or Zelle • We confirm and send directions after you order.<br>
+    Cash or Zelle at time of pickup • We confirm and send directions after you order.<br>
     Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a>
   </footer>
 
+  <script src="plant-photos.js"></script>
   <script>
     /* ===== IENN SETTINGS =====
        APPS_SCRIPT_URL: the existing IENN inventory/invoice web app (/exec). The page reads ?view=inventory from it
@@ -234,9 +238,12 @@
     var ON_REQUEST = "Available on request";   // 2" and Tree pot (not counted yet)
     var CONTACT_PHONE = "(909) 609-9373", CONTACT_TEL = "+19096099373";   // Andrew, call/text fallback
     /* Appeal sort (earlier keyword = shown first); plants with stock come first, sold out last. */
-    var APPEAL_KEYWORDS = ["white sage", "salvia apiana", "monkeyflower", "mimulus", "diplacus", "poppy", "eschscholzia",
-      "penstemon", "sage", "salvia", "buckwheat", "eriogonum", "milkweed", "asclepias", "lupine", "lupinus", "woolly blue curls",
-      "trichostema", "ceanothus", "lilac", "yarrow", "achillea", "verbena", "aster", "fuchsia", "epilobium", "coreopsis", "sunflower", "encelia"];
+    /* Default order (an explicit feed/sheet rank still wins): popular + colorful first. */
+    var APPEAL_KEYWORDS = ["white sage", "salvia apiana", "sticky monkeyflower", "diplacus aurantiacus", "rock monkeyflower", "diplacus calycinus",
+      "monkeyflower", "mimulus", "diplacus", "california poppy", "eschscholzia", "showy penstemon", "penstemon spectabilis", "scarlet bugler",
+      "penstemon centranthifolius", "matilija", "romneya", "milkweed", "asclepias", "penstemon", "poppy", "sage", "salvia", "buckwheat", "eriogonum",
+      "lupine", "lupinus", "woolly blue curls", "trichostema", "ceanothus", "lilac", "yarrow", "achillea", "verbena", "aster", "fuchsia", "epilobium",
+      "coreopsis", "sunflower", "encelia", "marigold", "baileya", "morning glory", "calystegia"];
     /* OFFLINE FALLBACK ONLY (live inventory unreachable and nothing cached). Stock unknown -> "Available on request". */
     var FALLBACK_PLANTS = [
       { name: "Blue Pyramid Cypress", sizes: ['1 gal'] },
@@ -269,7 +276,8 @@
           return p && z && canAdd(z) ? { key: k, p: p, z: z, q: cart[k], total: cart[k] * z.price } : null; }).filter(Boolean);
       }
       function appeal(p) { var t = (p.name + " " + p.botanical).toLowerCase(); for (var i = 0; i < APPEAL_KEYWORDS.length; i++) if (t.indexOf(APPEAL_KEYWORDS[i]) >= 0) return i; return 999; }
-      function sortPlants(a) { var r = { ok: 0, ask: 1, out: 2 }; return a.sort(function (x, y) { return r[pstate(x)] - r[pstate(y)] || appeal(x) - appeal(y) || x.name.localeCompare(y.name); }); }
+      function rk(p) { return p.rank == null || p.rank === "" || isNaN(Number(p.rank)) ? 1e9 : Number(p.rank); }
+      function sortPlants(a) { var r = { ok: 0, ask: 1, out: 2 }; return a.sort(function (x, y) { return r[pstate(x)] - r[pstate(y)] || rk(x) - rk(y) || appeal(x) - appeal(y) || x.name.localeCompare(y.name); }); }
       function split(full) { var m = /^(.*?)\s*\((.*)\)\s*$/.exec(full || ""); return m ? [m[1], m[2]] : [String(full || "").trim(), ""]; }
 
       function render() {
@@ -278,8 +286,10 @@
           var ps = pstate(p), card = el("article", { class: "card" + (ps === "out" ? " sold-out" : ""), "aria-labelledby": p.id + "-name" });
           card.dataset.id = p.id;
           var ph = el("div", { class: "ph" });
-          if (p.image) ph.appendChild(el("img", { src: p.image, alt: p.name, loading: "lazy" })); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }  // image slot kept: set p.image
+          if (p.image) ph.appendChild(el("img", p.srcset ? { src: p.image, srcset: p.srcset, sizes: "(max-width: 600px) 45vw, 260px", alt: p.name, loading: "lazy", decoding: "async" } : { src: p.image, alt: p.name, loading: "lazy", decoding: "async" })); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }  // image slot kept: set p.image
           card.appendChild(ph);
+          var cr = p.image && typeof ienPhoto === "function" && ienPhoto(p.name); cr = cr && cr.src === p.image && cr.credit;
+          if (cr) { var cp = el("p", { class: "photo-credit" }); cp.appendChild(el("a", { href: cr.url, target: "_blank", rel: "noopener" }, cr.text)); card.appendChild(cp); }
           var b = el("div", { class: "body" });
           var h3 = el("h3", { id: p.id + "-name" }); h3.appendChild(el("span", { class: "slot", "aria-hidden": "true" }, String.fromCharCode(65 + Math.floor(idx / 6)) + (idx % 6 + 1))); h3.appendChild(document.createTextNode(p.name)); b.appendChild(h3);
           if (p.botanical) b.appendChild(el("span", { class: "note" }, p.botanical));
@@ -289,7 +299,7 @@
           var info = el("span", { class: "price" });
           var add;
           function showInfo() { var ok = canAdd(pick);
-            info.textContent = !pick ? "Ask us — add it in Notes and we'll confirm" : !ok ? "Sold out in this size" : pick.qty == null ? "We'll confirm availability" : pick.qty <= 5 ? "Only " + pick.qty + " left" : "In stock";
+            info.textContent = !pick ? "Ask us — add it in Notes and we'll confirm" : !ok ? "Sold out in this size" : pick.qty == null ? "We'll confirm availability" : pick.qty <= 5 ? "Only " + pick.qty + " left in " + pick.label : pick.qty + " left in " + pick.label;
             if (add) { add.disabled = !ok; add.textContent = ok ? "Add to order" : !pick ? "Ask us" : "Sold out"; }
             [minus, inp, plus].forEach(function (x) { if (x) x.disabled = !ok; }); }
           var minus, inp, plus;
@@ -407,13 +417,13 @@
 
       function fromInventory(d) {
         return (d.plants || []).map(function (p) {
-          return { id: slug(p.name), name: p.name, fullName: p.fullName || p.name, botanical: p.botanical || "", image: p.image || "",
+          return { id: slug(p.name), name: p.name, fullName: p.fullName || p.name, botanical: p.botanical || "", rank: p.rank != null ? p.rank : p.priority != null ? p.priority : p.sort, image: p.image || (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).src || "", srcset: p.image ? "" : (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).srcset || "",
             sizes: (p.sizes || []).map(function (z) { return { key: z.key, label: z.size || SIZE_LABELS[z.key] || z.key, price: isFinite(Number(z.price)) && z.price !== "" && z.price != null ? Number(z.price) : PRICES[z.key], qty: z.qty == null ? null : Number(z.qty) }; }) };
         });
       }
       function fallback() {
         return FALLBACK_PLANTS.map(function (p) { var nb = split(p.name);
-          return { id: slug(nb[0]), name: nb[0], fullName: p.name, botanical: nb[1], image: "", sizes: p.sizes.map(function (k) { return { key: k, label: SIZE_LABELS[k], price: PRICES[k], qty: null }; }) }; });
+          return { id: slug(nb[0]), name: nb[0], fullName: p.name, botanical: nb[1], image: (typeof ienPhoto === "function" && ienPhoto(nb[0]) || {}).src || "", srcset: (typeof ienPhoto === "function" && ienPhoto(nb[0]) || {}).srcset || "", sizes: p.sizes.map(function (k) { return { key: k, label: SIZE_LABELS[k], price: PRICES[k], qty: null }; }) }; });
       }
       var params = new URLSearchParams(location.search), prefilled = false;
       function prefill() { // home-page cart link: order.html?white-sage=2 or ?white-sage|1%20gal=1 (slug or slug|size)
