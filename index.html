@@ -177,6 +177,19 @@
     .cart-bar.bump #cart-count { animation: bump .35s cubic-bezier(.2,.8,.3,1); }
     @keyframes bump { from { transform: translateY(-6px); opacity: .4; } to { transform: none; opacity: 1; } }
     @media (prefers-reduced-motion: reduce) { .cart-bar.bump #cart-count { animation: none; } }
+    /* consistency with order.html: badges, 44px targets, primary button */
+    .slogan { font-size: 0.85rem; letter-spacing: 0.04em; color: var(--sage); margin-bottom: 0.4rem; }
+    .badge.in { background: #e6f4e7; color: #2e7d32; }
+    .badge.low { background: #fff4d6; color: #7a5a00; }
+    .badge.out { background: #eee; color: #666; }
+    .badge.ask { background: var(--cream); color: var(--sage-dark); border: 1px solid #ddd; }
+    .pill { min-height: 44px; font-size: 0.85rem; }
+    .shop-row button.step { width: 44px; height: 44px; }
+    .add-btn { background: var(--red); border-radius: 10px; }
+    .add-btn:disabled { background: #ccc; color: #666; }
+    .cart-go { white-space: nowrap; min-height: 44px; display: inline-flex; align-items: center; border-radius: 10px; }
+    .cart-clear { min-width: 44px; }
+    body.has-cart { padding-bottom: 96px; }
     .ask-line { font-size: 0.75rem; color: #555; }
     .ask-line[hidden] { display: none; }
     .toast { position: fixed; left: 50%; bottom: 80px; transform: translateX(-50%); background: var(--sage-dark); color: #fff; padding: 0.6rem 1rem; border-radius: 8px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 60; }
@@ -204,6 +217,7 @@
   </header>
 
   <section class="hero">
+    <p class="slogan">Connecting people to native plants</p>
     <h1>Locally grown California native plants for the Inland Empire</h1>
     <p>Healthy, climate-adapted plants ready for pickup. No shipping — just plants that thrive here.</p>
   </section>
@@ -241,15 +255,15 @@
     <div class="plan-steps">
       <div class="step">
         <div class="step-number">1</div>
-        <div><strong>Browse</strong><br>See what’s available</div>
+        <div><strong>Select</strong><br>Pick plants &amp; sizes below</div>
       </div>
       <div class="step">
         <div class="step-number">2</div>
-        <div><strong>Order</strong><br>Place your order online</div>
+        <div><strong>Reserve</strong><br>We hold them for you</div>
       </div>
       <div class="step">
         <div class="step-number">3</div>
-        <div><strong>Pickup</strong><br>Collect in the Fontana area</div>
+        <div><strong>Pick up</strong><br>Fontana · Saturdays 10 AM – 2 PM</div>
       </div>
     </div>
   </section>
@@ -272,14 +286,14 @@
   </section>
 
   <footer>
-    <p>Inland Empire Native Nursery • Pickup-only • Fontana area</p>
+    <p>Inland Empire Native Nursery • Pickup: Fontana · Saturdays 10 AM – 2 PM</p>
     <p style="margin-top:0.5rem;">Questions? Call or text Andrew: <a href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> • <a href="sms:+19096099373">Text</a> • <a href="mailto:hello@inlandempirenativenursery.com">Email</a></p>
   </footer>
   <script src="inventory.js"></script>
   <script>
   /* Shop grid renders entirely from the inventory feed (INVENTORY_URL in inventory.js). */
   (function () {
-    var LABEL = { in: 'Available \u2022 Get yours now', low: 'Low stock \u2022 Get yours now', out: 'Out of stock', unknown: 'Ask about availability', request: 'Available on request' };
+    var LABEL = { in: 'Available \u00b7 Get yours now', low: 'Low stock \u00b7 Get yours now', out: 'Sold out', unknown: 'We\u2019ll confirm availability', request: 'Available on request' };
     var CLS = { in: 'in', low: 'low', out: 'out', unknown: 'ask', request: 'ask' };
     var KEY = 'ienn-cart', cart = {}, NAMES = {};
     try { cart = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { cart = {}; }
@@ -293,7 +307,7 @@
       var n = 0, q = [], total = 0, priced = true;
       Object.keys(cart).forEach(function (k) { var c = cart[k]; if (c > 0) { n += c; q.push(encodeURIComponent(k) + '=' + c); var pr = (NAMES[k] || {}).price; if (pr == null) priced = false; else total += pr * c; } });
       bar.hidden = n === 0; document.body.classList.toggle('has-cart', n > 0);
-      document.getElementById('cart-count').textContent = n + (n === 1 ? ' plant' : ' plants') + ' \u2022 ' + (priced && n ? 'Total $' + total.toFixed(2) + ' \u2022 Taxes included' : 'price confirmed at order');
+      document.getElementById('cart-count').textContent = n + (n === 1 ? ' plant' : ' plants') + ' \u00b7 ' + (priced && n ? '$' + total.toFixed(2) + ' \u00b7 Taxes included' : 'price confirmed at order');
       document.getElementById('cart-go').href = 'order.html' + (q.length ? '?' + q.join('&') : '');
     }
     function card(p, idx) {
@@ -323,7 +337,7 @@
       function sync() {
         var st = sz.status; badge.textContent = LABEL[st]; badge.className = 'badge ' + CLS[st];
         meta.textContent = (sz.size ? sz.size + ' \u2022 ' : '') + money(sz.price);
-        add.disabled = st === 'out'; add.textContent = st === 'out' ? 'Out of stock' : (st === 'request' ? 'Request' : (st === 'unknown' ? "Add (we'll confirm)" : 'Add to cart'));
+        add.disabled = st === 'out'; add.textContent = st === 'out' ? 'Sold out' : (st === 'request' ? 'Ask us' : 'Add to order');
         ask.hidden = st !== 'request';
         add.setAttribute('aria-label', 'Add ' + p.name + ' to cart');
       }
