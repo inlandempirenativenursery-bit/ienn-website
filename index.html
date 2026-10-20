@@ -198,7 +198,7 @@
 
   <section class="plants" id="plants">
     <h2>Shop native plants</h2>
-    <p style="font-size:0.95rem; color:#555; margin-bottom:0.5rem;">Pick a quantity, tap Add, then check out. Prices are confirmed when we confirm your order.</p>
+    <p style="font-size:0.95rem; color:#555; margin-bottom:0.5rem;">Pick a quantity, tap Add, then check out. Prices by pot size: 2-inch $3 • 4-inch $6 • Quarter tree $10 • 1-gallon $15.</p>
     <p class="shop-status" id="shop-status" role="status">Loading live availability…</p>
     <div class="plant-grid" id="shop-grid" aria-busy="true">
       <div class="plant-card skel"></div><div class="plant-card skel"></div><div class="plant-card skel"></div><div class="plant-card skel"></div>
@@ -276,12 +276,12 @@
     function save() { try { localStorage.setItem(KEY, JSON.stringify(cart)); } catch (e) {} }
     function toast(m) { toastEl.textContent = m; toastEl.classList.add('show'); clearTimeout(tTimer); tTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 1800); }
     function el(t, c, txt) { var e = document.createElement(t); if (c) e.className = c; if (txt != null) e.textContent = txt; return e; }
-    function money(n) { return n == null ? 'Price confirmed at order' : '$' + n.toFixed(2); }
+    function money(n) { return n == null ? 'Price confirmed at order' : '$' + n + ' each'; }
     function renderBar() {
       var n = 0, q = [], total = 0, priced = true;
       Object.keys(cart).forEach(function (k) { var c = cart[k]; if (c > 0) { n += c; q.push(encodeURIComponent(k) + '=' + c); var pr = (NAMES[k] || {}).price; if (pr == null) priced = false; else total += pr * c; } });
       bar.hidden = n === 0; document.body.classList.toggle('has-cart', n > 0);
-      document.getElementById('cart-count').textContent = n + (n === 1 ? ' plant' : ' plants') + ' \u2022 ' + (priced && n ? '$' + total.toFixed(2) : 'price confirmed at order');
+      document.getElementById('cart-count').textContent = n + (n === 1 ? ' plant' : ' plants') + ' \u2022 ' + (priced && n ? 'Total $' + total : 'price confirmed at order');
       document.getElementById('cart-go').href = 'order.html' + (q.length ? '?' + q.join('&') : '');
     }
     function card(p) {
@@ -294,7 +294,7 @@
       body.appendChild(badge);
       if (p.sizes.length > 1) {
         var sel = document.createElement('select'); sel.className = 'size-sel'; sel.setAttribute('aria-label', 'Size of ' + p.name);
-        p.sizes.forEach(function (s, i) { var o = el('option', '', s.size + (s.status === 'out' ? ' (out)' : '')); o.value = i; sel.appendChild(o); });
+        p.sizes.forEach(function (s, i) { var o = el('option', '', s.size + (s.price != null ? ' \u2014 $' + s.price : '') + (s.status === 'out' ? ' (out)' : '')); o.value = i; sel.appendChild(o); });
         var firstIn = p.sizes.findIndex(function (s) { return s.status !== 'out'; }); if (firstIn > 0) { sel.value = firstIn; sz = p.sizes[firstIn]; }
         sel.onchange = function () { sz = p.sizes[sel.value]; sync(); }; body.appendChild(sel);
       }

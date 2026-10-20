@@ -2,6 +2,19 @@
    Paste the deployed inventory web-app URL below (see apps-script/inventory-endpoint.gs + README).
    While empty or unreachable, pages show the FALLBACK list with "Ask about availability" (never fake "Available"). */
 var INVENTORY_URL = "https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec?view=inventory"; // live once ?view=inventory is deployed (returns HTML today -> fallback)
+var ORDER_URL = "https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec"; // doPost order intake (once deployed)
+/* PRICES ARE BY SIZE ONLY (authoritative; feed prices are ignored). Keep in sync with apps-script/inventory-endpoint.gs. */
+var IENN_SIZES = ["2-inch", "4-inch", "Quarter tree", "1-gallon"];
+var IENN_SIZE_PRICES = { "2-inch": 3, "4-inch": 6, "Quarter tree": 10, "1-gallon": 15 };
+function ienNormSize(s) {
+  var t = String(s == null ? "" : s).toLowerCase().replace(/[”″]/g, '"').replace(/\s+/g, " ").trim();
+  if (/quarter|1\/4|¼|tree/.test(t)) return "Quarter tree";
+  if (/^1 ?(-| )?(gal|gallon)s?\b|^1g$|^#1$|one gallon/.test(t)) return "1-gallon";
+  if (/^2 ?(-| )?("|in\b|inch|inches)|^2$/.test(t)) return "2-inch";
+  if (/^4 ?(-| )?("|in\b|inch|inches)|^4$/.test(t)) return "4-inch";
+  return null;
+}
+function ienPrice(size) { var z = ienNormSize(size); return z ? IENN_SIZE_PRICES[z] : null; }
 var IENN_LOW_STOCK = 5;          // qty at or below this => "Low stock"
 var IENN_PINNED = [/salvia apiana|white sage/i, /diplacus|mimulus|monkey ?flower/i]; // shown first
 var IENN_COLORFUL = /flower|bloom|curls|poppy|penstemon|salvia|sage|lupin|ceanothus|buckwheat|yarrow|milkweed|aster|primrose|verbena|iris|fuchsia|gilia|phacelia|clarkia/i;
@@ -30,6 +43,9 @@ var IENN = (function () {
     if (Array.isArray(sizes)) sizes.forEach(function (s) { if (typeof s === "string") s = { size: s }; out.push({ size: String(pick(s, ["size", "container"]) || ""), qty: num(pick(s, ["qty", "quantity", "stock", "onhand", "available"])), price: num(pick(s, ["price", "cost"])), status: pick(s, ["status", "instock"]) }); });
     else if (sizes && typeof sizes === "object") for (var k in sizes) { var v = sizes[k]; out.push(typeof v === "object" ? { size: k, qty: num(pick(v, ["qty", "quantity", "stock"])), price: num(pick(v, ["price"])) } : { size: k, qty: num(v) }); }
     else out.push({ size: String(pick(r, ["size", "container", "pot"]) || ""), qty: num(pick(r, ["qty", "quantity", "stock", "onhand", "available", "count"])), price: num(pick(r, ["price", "cost"])), status: pick(r, ["status", "instock", "availability"]) });
+    var merged = {}; out.forEach(function (s) { var z = ienNormSize(s.size) || s.size || ""; if (merged[z]) { if (s.qty != null) merged[z].qty = (merged[z].qty || 0) + s.qty; } else { s.size = z; merged[z] = s; } });
+    out = Object.keys(merged).map(function (z) { var s = merged[z]; s.price = ienPrice(z); return s; })
+      .sort(function (a, b) { return IENN_SIZES.indexOf(a.size) - IENN_SIZES.indexOf(b.size); });
     out.forEach(function (s) { s.status = statusFrom(s.qty, s.status); });
     var rank = { in: 0, low: 1, unknown: 2, out: 3 }, best = out.reduce(function (a, s) { return rank[s.status] < rank[a] ? s.status : a; }, "out");
     return { id: String(pick(r, ["id", "slug", "sku"]) || slug(name)), name: name.trim(), botanical: bot ? String(bot) : "", note: String(pick(r, ["note", "description", "notes", "blurb"]) || ""),
@@ -76,3 +92,5 @@ var IENN = (function () {
   }
   return { load: load, parse: parse, slug: slug };
 })();
+
+if (typeof module !== "undefined") module.exports = { IENN: IENN, ienNormSize: ienNormSize, ienPrice: ienPrice };
