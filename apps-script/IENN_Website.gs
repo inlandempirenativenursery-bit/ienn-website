@@ -1,7 +1,7 @@
 /**
  * Website endpoints.
  *  GET  ?view=print / ?view=hub -> see IENN_Print.gs
- *  GET  ?view=inventory  -> JSON (or JSONP with &callback=) built from getInitial()/getAvailableStock() + Catalog + prices
+ *  GET  ?view=inventory  -> JSON (incl. `promo`, see IENN_Promos.gs) (or JSONP with &callback=) built from getInitial()/getAvailableStock() + Catalog + prices
  *  POST (text/plain JSON) -> website order, through iennSubmitInvoiceChecked -> existing submitInvoice
  *
  * WHY doPost + text/plain: a static site can send a "simple" POST (no custom headers) without a CORS preflight,
@@ -37,6 +37,7 @@ function iennInventory() {
       sizes: IENN_SIZES.map(function (s) { return { key: s.key, size: s.label, price: s.price, qty: s.tracked ? (a[s.key] || 0) : null }; }) };
   });
   return { version: 3, updated: new Date().toISOString(), taxIncluded: true, onRequestLabel: IENN_ON_REQUEST_LABEL, contactPhone: IENN_CONTACT_PHONE,
+    promo: iennPromo_(),   // IENN_Promos.gs: first active Promos row covering today (LA), else null
     sizes: IENN_SIZES.map(function (s) { return { key: s.key, label: s.label, price: s.price, tracked: s.tracked }; }), plants: plants };
 }
 
@@ -144,7 +145,7 @@ function iennTeamEmail_(id, data, meta) {
 
 /** Run once from the editor: authorises scopes, adds Status/Handled by/Our response columns to IENN Invoices, logs what it found. */
 function iennSetup() {
-  var inv = iennInventory(); iennInvoices_();
+  var inv = iennInventory(); iennInvoices_(); iennPromoSheet_();   // creates the Promos tab (examples, Active=no) if missing
   Logger.log('Plants: ' + inv.plants.length + '; baseline count date: ' + iennBaselineDate_());
   if (false) { MailApp.getRemainingDailyQuota(); GmailApp.getDrafts(); }
 }

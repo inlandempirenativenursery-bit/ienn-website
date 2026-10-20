@@ -69,3 +69,16 @@ The IENN inventory/invoice Apps Script web app is the **single source of truth**
 The home-page cards come from the same `?view=inventory` feed, loaded by `inventory.js` (`INVENTORY_URL`). It reads the raw `getInitial()` JSON from `apps-script/IENN_Website.gs` (`iennInventory()`), a list of plant objects, or JSONP (`&callback=`). Until the endpoint is deployed, the URL returns HTML, so the grid shows a short fallback list marked "Ask about availability" (never "Available"). Sort order: `sort` value if present, otherwise white sage and monkeyflowers first, then flowering plants, with out-of-stock plants last. Low-stock threshold: `IENN_LOW_STOCK` (5). The cart hands off to `order.html?slug=qty` or `?slug|size=qty`.
 
 See `MERGE-NOTES.md` for what replaced Kobe's Sold-ledger back end, and which markup hooks the design pass relies on.
+
+## Sale / promo pop-up
+
+A small pop-up on the shop page (`promos.js`). Its data comes from the **Promos** tab of the IENN Inventory spreadsheet and arrives with the existing inventory feed (`promo` in `?view=inventory`), so the page makes no extra request. The shop stays underneath, and the order flow is unchanged.
+
+**Promos tab columns:** `Active` (yes/no or a checkbox) | `Title` | `Message` | `Start date` | `End date` | `Discount note (optional)`.
+The site shows the **first** row that has Active = yes and a date range covering today, Pacific time. Both the start and end dates count. There are three example rows (Fall, Spring, Summer), all set to Active = no.
+
+**Turn a sale on:** set `Active` = yes and enter the start and end dates. **Turn it off:** set `Active` = no (or let the end date pass). No redeploy is needed. Customers see the pop-up once per sale per day, after they tap "Shop the sale" or "Continue shopping" (or press Esc).
+
+**Do this once, when this code is deployed:** paste the updated `apps-script/IENN_Website.gs` and the new `IENN_Promos.gs` into the Apps Script project. Run `iennSetup()` once to create the Promos tab. Then **Deploy → Manage deployments → Edit → New version** on the existing web app, which keeps the same URL.
+
+**Test without the sheet:** open `index.html?promo=preview` to see the pop-up with mock data.

@@ -96,9 +96,11 @@ var IENN = (function () {
   }
   /* cb(list, live:boolean) */
   function load(cb) {
-    var fb = function () { cb(parse(IENN_FALLBACK).map(function (p) { p.sizes.forEach(function (s) { if (s.status !== "request") s.status = "unknown"; }); p.status = "unknown"; return p; }), false); };
+    /* Promo banner (promos.js) reads the raw feed from this same fetch: no extra request. */
+    var feed = function (d) { window.IENN_FEED = d || null; try { document.dispatchEvent(new CustomEvent("ienn:feed", { detail: d || null })); } catch (e) {} };
+    var fb = function () { feed(null); cb(parse(IENN_FALLBACK).map(function (p) { p.sizes.forEach(function (s) { if (s.status !== "request") s.status = "unknown"; }); p.status = "unknown"; return p; }), false); };
     if (!INVENTORY_URL) return fb();
-    var good = function (d) { var l = parse(d); l.length ? cb(l, true) : fb(); };
+    var good = function (d) { feed(d); var l = parse(d); l.length ? cb(l, true) : fb(); };
     fetch(INVENTORY_URL).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(good)
       .catch(function () { jsonp(INVENTORY_URL, good, fb); });
   }

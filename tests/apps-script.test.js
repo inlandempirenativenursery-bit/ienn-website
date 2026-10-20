@@ -1,5 +1,5 @@
 // Run: node tests/apps-script.test.js   (no dependencies)
-const assert = require('assert'), vm = require('vm'), { load } = require('./gas-harness');
+const assert = require('assert'), vm = require('vm'), { load, makeSheet } = require('./gas-harness');
 const J = x => JSON.parse(JSON.stringify(x));
 let pass = 0; const t = (name, fn) => { fn(); pass++; console.log('ok -', name); };
 const order = (h, items, extra) => JSON.parse(h.ctx.doPost({ postData: { contents: JSON.stringify(Object.assign({ name: 'Ana Lopez', email: 'ana@example.com', phone: '9095550100', notes: 'Saturday 11am', pickup: 'Saturday 10 AM – 2 PM', payment: 'Zelle', items }, extra)) } }).getContent());
@@ -128,6 +128,30 @@ t('claim defaults to Andrew; team-entered order uses the same checked submit + s
   assert.strictEqual(res.invoiceNumber, 'INV-101');
   assert.strictEqual(J(h.ctx.iennInventory()).plants.find(p => p.name === 'Toyon').sizes[3].qty, 0);
   const rows = h.ss.sheets['IENN Invoices'].rows; assert.strictEqual(rows[rows.length - 1][11], 'Andrew');
+});
+
+t('promo: first active row covering today (LA, inclusive); bad rows skipped; feed carries promo or null', () => {
+  const h = load(), pick = (rows, d) => J(h.ctx.iennPromoPick_(rows, d));
+  const rows = [['no', 'Fall Sale', 'x', '2026-11-01', '2026-11-30'], ['yes', 'Fall Sale', 'Fall msg', '2026-11-01', '2026-11-30', '10% off'],
+    ['TRUE', 'Late', 'second', '11/15/2026', '12/5/2026'], [true, 'Broken', 'm', 'soon', '2026-12-01'], ['yes', '', 'no title', '2026-01-01', '2027-01-01']];
+  assert.strictEqual(pick(rows, '2026-10-31'), null);
+  assert.deepStrictEqual(pick(rows, '2026-11-01'), { title: 'Fall Sale', message: 'Fall msg', start: '2026-11-01', end: '2026-11-30', discountNote: '10% off' });
+  assert.strictEqual(pick(rows, '2026-11-30').title, 'Fall Sale', 'end date inclusive');
+  assert.strictEqual(pick(rows, '2026-12-01').title, 'Late', 'next active row; M/d/yyyy parsed'); assert.strictEqual(pick(rows, '2026-12-05').discountNote, null);
+  assert.strictEqual(pick(rows, '2026-12-06'), null);
+  // Date cells: midnight LA = 07:00Z (PDT, Nov 1) / 08:00Z (PST, Nov 2)
+  assert.strictEqual(pick([[true, 'D', '', new Date('2026-11-01T07:00:00Z'), new Date('2026-11-02T08:00:00Z')]], '2026-11-02').title, 'D');
+  assert.strictEqual(J(h.ctx.iennInventory()).promo, null, 'no Promos tab -> null, no sheet created on GET');
+  h.ss.insertSheet = n => (h.ss.sheets[n] = makeSheet(n, [], 9, h.ss));
+  const sh = h.ctx.iennPromoSheet_();
+  assert.deepStrictEqual(J(sh.rows[0]), ['Active', 'Title', 'Message', 'Start date', 'End date', 'Discount note (optional)']);
+  assert.deepStrictEqual(J(sh.rows.slice(1).map(r => [r[0], r[1], r[3], r[4]])), [['no', 'Fall Sale', '2026-11-01', '2026-11-30'], ['no', 'Spring Sale', '2027-03-01', '2027-04-30'], ['no', 'Summer Sale', '2027-06-01', '2027-07-31']]);
+  assert.ok(sh.rows.slice(1).every(r => /EXAMPLE/.test(r[2])));
+  assert.strictEqual(h.ctx.iennPromoSheet_(), sh, 'getOrCreate is idempotent'); assert.strictEqual(J(h.ctx.iennInventory()).promo, null, 'examples inactive');
+  sh.rows[1][0] = 'yes'; h.setNow(Date.parse('2026-11-01T07:30:00Z'));   // 12:30 AM Nov 1 in LA
+  assert.strictEqual(J(h.ctx.iennInventory()).promo.title, 'Fall Sale');
+  h.setNow(Date.parse('2026-11-01T06:30:00Z'));   // still Oct 31 in LA
+  assert.strictEqual(h.ctx.iennPromoToday_(), '2026-10-31');
 });
 
 console.log(`\n${pass} tests passed`);

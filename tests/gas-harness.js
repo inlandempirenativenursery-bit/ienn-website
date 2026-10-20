@@ -65,7 +65,7 @@ function load(opts = {}) {
     ContentService: { MimeType: { JSON: 'json', JAVASCRIPT: 'js', CSV: 'csv' }, createTextOutput: s => ({ s, setMimeType() { return this; }, downloadAsFile() { return this; }, getContent() { return s; } }) },
     HtmlService: { createHtmlOutput: h => ({ h, setTitle() { return this; }, getContent() { return h; } }) },
     ScriptApp: { getService: () => ({ getUrl: () => 'https://script.google.com/macros/s/TEST/exec' }) },
-    Utilities: { formatDate: (d, tz, f) => f === 'MMMM d, yyyy' ? 'October 20, 2026' : new Date(d).toISOString().slice(0, 10), base64Encode: () => '' },
+    Utilities: { formatDate: (d, tz, f) => f === 'MMMM d, yyyy' ? 'October 20, 2026' : (tz === 'America/Los_Angeles' ? new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(new Date(d)) : new Date(d).toISOString().slice(0, 10)), base64Encode: () => '' },
     Session: { getScriptTimeZone: () => 'America/Los_Angeles', getActiveUser: () => ({ getEmail: () => 'keith@test.local' }) },
     Logger: { log() {} }, console, Date
   };
@@ -75,4 +75,4 @@ function load(opts = {}) {
   fs.readdirSync(dir).filter(f => f.endsWith('.gs')).sort().forEach(f => vm.runInContext(fs.readFileSync(path.join(dir, f), 'utf8'), ctx, { filename: f }));
   return { ctx, ss, sent, drafts, lockState, setNow: t => (now = t) };
 }
-module.exports = { load };
+module.exports = { load, makeSheet };

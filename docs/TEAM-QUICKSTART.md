@@ -20,3 +20,13 @@
 **Print plant list** (or IENN menu): Print, Export PDF, Export CSV, or save to Drive / Google Sheet.
 
 Customer questions: call or text Andrew, (909) 609-9373.
+
+## Run a sale (pop-up on the website)
+
+1. Open the **IENN Inventory** spreadsheet and go to the **Promos** tab.
+2. Fill in a row: **Active** = yes, **Title**, **Message**, **Start date**, **End date**, and an optional **Discount note**. Replace the "EXAMPLE" text.
+3. That's it. The website shows the pop-up between those dates, start and end included, Pacific time. No redeploy is needed.
+4. To stop the sale early, set **Active** = no. If more than one row is active, the site uses the first one listed.
+
+**One time only (whoever deploys the code):** add `IENN_Promos.gs` to the Apps Script project, run `iennSetup()` to create the tab, then deploy a **new version** of the existing web app.
+To preview the pop-up, open the shop page with `?promo=preview` added to the end of the address.
