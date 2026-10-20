@@ -7,6 +7,7 @@
 - A new count is the new starting stock. Website and team orders since that count are subtracted automatically. Never edit other people's submissions.
 
 ## 2. Orders (Andrew owns order-to-pickup)
+- Regular pickup: **Fontana · Saturdays 10 AM – 2 PM**. Other times on request, case by case; Grand Terrace only on request. The customer's choice is in the invoice note ("Pickup: …").
 - Customers order only on the website. Phone and Facebook Marketplace orders: enter them in the internal view (same stock check, same IENN Invoices).
 - Everyone gets the order email. New orders show **Handled by = Andrew**.
 - In IENN Invoices: **IENN > Claim selected order (Andrew)**. Type the reply in **Our response**, then **IENN > Draft reply**. Check the Gmail draft and send it.

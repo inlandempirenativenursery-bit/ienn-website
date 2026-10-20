@@ -167,6 +167,18 @@
     #cart-count { font-weight: 700; color: var(--sage-dark); flex: 1; }
     .cart-clear { background: none; border: 0; color: #666; text-decoration: underline; min-height: 44px; }
     .cart-go { background: var(--red); color: #fff; text-decoration: none; font-weight: 700; padding: 0.7rem 1rem; border-radius: 8px; }
+    .slot { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.68rem; color: #8a8f88; border: 1px solid #e3e1db; border-radius: 4px; padding: 0 0.25rem; margin-right: 0.35rem; vertical-align: 2px; background: #fafaf8; }
+    .pills { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+    .pill { min-height: 34px; padding: 0 0.3rem; border: 1px solid #c9c9c4; background: #fff; font-size: 0.8rem; border-radius: 6px; cursor: pointer; color: var(--text); }
+    .pill[aria-pressed="true"] { background: var(--sage-dark); border-color: var(--sage-dark); color: #fff; position: relative; }
+    .pill.req { border-style: dashed; color: #555; }
+    .pill.req[aria-pressed="true"] { background: var(--cream); color: var(--sage-dark); border-style: solid; }
+    .cart-bar { background: linear-gradient(#fbfaf7, #f4f2ec); box-shadow: inset 0 2px 5px rgba(0,0,0,.06), 0 -2px 8px rgba(0,0,0,.06); border-top: 1px solid #e3e1db; }
+    .cart-bar.bump #cart-count { animation: bump .35s cubic-bezier(.2,.8,.3,1); }
+    @keyframes bump { from { transform: translateY(-6px); opacity: .4; } to { transform: none; opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) { .cart-bar.bump #cart-count { animation: none; } }
+    .ask-line { font-size: 0.75rem; color: #555; }
+    .ask-line[hidden] { display: none; }
     .toast { position: fixed; left: 50%; bottom: 80px; transform: translateX(-50%); background: var(--sage-dark); color: #fff; padding: 0.6rem 1rem; border-radius: 8px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 60; }
     .toast.show { opacity: 1; }
     .skel { min-height: 260px; background: linear-gradient(90deg,#f1f1f1 25%,#e6e6e6 50%,#f1f1f1 75%); background-size: 200% 100%; animation: sk 1.2s infinite; }
@@ -188,7 +200,7 @@
         <div class="logo-sub">INLAND EMPIRE NATIVE NURSERY</div>
       </div>
     </a>
-    <a href="order.html" class="order-btn" rel="noopener">Place Order Now</a>
+    <a href="order.html" class="order-btn">Place Order Now</a>
   </header>
 
   <section class="hero">
@@ -198,7 +210,7 @@
 
   <section class="plants" id="plants">
     <h2>Shop native plants</h2>
-    <p style="font-size:0.95rem; color:#555; margin-bottom:0.5rem;">Pick a quantity, tap Add, then check out. Prices by pot size: 2" $3 • 4" $6 • Tree pot $10 • 1 gal $15 (tax included). <a href="#" id="printlist-link" target="_blank" rel="noopener" style="color:var(--sage-dark)">Printable plant list</a></p>
+    <p style="font-size:0.95rem; color:#555; margin-bottom:0.5rem;">Pick a quantity, tap Add, then check out. Prices by pot size: 2" $3 • 4" $6 • Tree pot $10 • 1 gal $15. 2" and Tree pot are available on request. <a href="#" id="printlist-link" target="_blank" rel="noopener" style="color:var(--sage-dark)">Printable plant list</a></p>
     <p class="shop-status" id="shop-status" role="status">Loading live availability…</p>
     <div class="plant-grid" id="shop-grid" aria-busy="true">
       <div class="plant-card skel"></div><div class="plant-card skel"></div><div class="plant-card skel"></div><div class="plant-card skel"></div>
@@ -209,7 +221,7 @@
   <div class="cart-bar" id="cart-bar" hidden>
     <span id="cart-count">0 plants</span>
     <button type="button" class="cart-clear" id="cart-clear">Clear</button>
-    <a href="order.html" class="cart-go" id="cart-go">Checkout / Place Order</a>
+    <a href="order.html" class="cart-go" id="cart-go">Reserve for pickup</a>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -221,7 +233,7 @@
   <section class="guide">
     <h2>We’re local growers who get it</h2>
     <p>IENN focuses on California native plants suited to the Inland Empire. We grow them so you can plant with confidence.</p>
-    <p style="margin-top:0.75rem; font-style:italic; color:#666; font-size:0.9rem;">Certified arborist &amp; field botanist background • Pickup-only • Fontana / Grand Terrace area</p>
+    <p style="margin-top:0.75rem; font-style:italic; color:#666; font-size:0.9rem;">Certified arborist &amp; field botanist background • Pickup-only • Fontana area</p>
   </section>
 
   <section class="plan">
@@ -255,20 +267,20 @@
   <section class="cta-section" id="order">
     <h2 style="color:var(--sage-dark);">Ready to plant something that works here?</h2>
     <p style="margin:0.75rem 0 1.25rem;">Place your order and pick up locally.</p>
-    <a href="order.html" class="order-btn" rel="noopener">Place Order Now</a>
+    <a href="order.html" class="order-btn">Place Order Now</a>
     <p class="disclaimer">Availability varies by season and stock • Local pickup only (Fontana area); payment by cash or Zelle • Plant care and native-planting info is general guidance • Photos are representative.</p>
   </section>
 
   <footer>
-    <p>Inland Empire Native Nursery • Pickup-only • Fontana / Grand Terrace area</p>
-    <p style="margin-top:0.5rem;"><a href="mailto:hello@inlandempirenativenursery.com">Contact</a> • inlandempirenativenursery.com</p>
+    <p>Inland Empire Native Nursery • Pickup-only • Fontana area</p>
+    <p style="margin-top:0.5rem;">Questions? Call or text Andrew: <a href="tel:+19096099373">(909) 609-9373</a> • <a href="sms:+19096099373">Text</a> • <a href="mailto:hello@inlandempirenativenursery.com">Email</a></p>
   </footer>
   <script src="inventory.js"></script>
   <script>
   /* Shop grid renders entirely from the inventory feed (INVENTORY_URL in inventory.js). */
   (function () {
-    var LABEL = { in: 'Available \u2022 Get yours now', low: 'Low stock \u2022 Get yours now', out: 'Out of stock', unknown: 'Ask about availability' };
-    var CLS = { in: 'in', low: 'low', out: 'out', unknown: 'ask' };
+    var LABEL = { in: 'Available \u2022 Get yours now', low: 'Low stock \u2022 Get yours now', out: 'Out of stock', unknown: 'Ask about availability', request: 'Available on request' };
+    var CLS = { in: 'in', low: 'low', out: 'out', unknown: 'ask', request: 'ask' };
     var KEY = 'ienn-cart', cart = {}, NAMES = {};
     try { cart = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { cart = {}; }
     var grid = document.getElementById('shop-grid'), info = document.getElementById('shop-status');
@@ -281,43 +293,48 @@
       var n = 0, q = [], total = 0, priced = true;
       Object.keys(cart).forEach(function (k) { var c = cart[k]; if (c > 0) { n += c; q.push(encodeURIComponent(k) + '=' + c); var pr = (NAMES[k] || {}).price; if (pr == null) priced = false; else total += pr * c; } });
       bar.hidden = n === 0; document.body.classList.toggle('has-cart', n > 0);
-      document.getElementById('cart-count').textContent = n + (n === 1 ? ' plant' : ' plants') + ' \u2022 ' + (priced && n ? 'Total $' + total.toFixed(2) + ' incl. tax' : 'price confirmed at order');
+      document.getElementById('cart-count').textContent = n + (n === 1 ? ' plant' : ' plants') + ' \u2022 ' + (priced && n ? 'Total $' + total.toFixed(2) + ' \u2022 Taxes included' : 'price confirmed at order');
       document.getElementById('cart-go').href = 'order.html' + (q.length ? '?' + q.join('&') : '');
     }
-    function card(p) {
+    function card(p, idx) {
       var c = el('article', 'plant-card'), body = el('div', 'plant-info'), sz = p.sizes[0], qty = 1;
       var img = el('div', 'plant-img');
       if (p.image) { var im = document.createElement('img'); im.src = p.image; im.alt = p.name; im.loading = 'lazy'; img.appendChild(im); } else { img.setAttribute('aria-hidden', 'true'); img.textContent = p.name.charAt(0); }
       c.appendChild(img); c.appendChild(body);
-      body.appendChild(el('h3', '', p.name)); if (p.botanical) body.appendChild(el('div', 'bot', p.botanical));
-      var badge = el('span'), meta = el('div', 'size'), add = el('button', 'add-btn');
+      var h3 = el('h3'); var sl = el('span', 'slot', String.fromCharCode(65 + Math.floor(idx / 6)) + (idx % 6 + 1)); sl.setAttribute('aria-hidden', 'true'); h3.appendChild(sl); h3.appendChild(document.createTextNode(p.name)); body.appendChild(h3); if (p.botanical) body.appendChild(el('div', 'bot', p.botanical));
+      var badge = el('span'), meta = el('div', 'size'), add = el('button', 'add-btn'), ask = el('div', 'ask-line');
+      ask.innerHTML = 'Ask us: <a href="tel:' + IENN_TEL + '">call</a> or <a href="sms:' + IENN_TEL + '">text</a> ' + IENN_PHONE;
       body.appendChild(badge);
-      if (p.sizes.length > 1) {
-        var sel = document.createElement('select'); sel.className = 'size-sel'; sel.setAttribute('aria-label', 'Size of ' + p.name);
-        p.sizes.forEach(function (s, i) { var o = el('option', '', s.size + (s.price != null ? ' \u2014 $' + s.price : '') + (s.status === 'out' ? ' (out)' : '')); o.value = i; sel.appendChild(o); });
-        var firstIn = p.sizes.findIndex(function (s) { return s.status !== 'out'; }); if (firstIn > 0) { sel.value = firstIn; sz = p.sizes[firstIn]; }
-        sel.onchange = function () { sz = p.sizes[sel.value]; sync(); }; body.appendChild(sel);
-      }
+      var firstIn = p.sizes.findIndex(function (s) { return s.status !== 'out' && s.status !== 'request'; }); if (firstIn > 0) sz = p.sizes[firstIn];
+      var pills = el('div', 'pills'); pills.setAttribute('role', 'group'); pills.setAttribute('aria-label', 'Size of ' + p.name);
+      p.sizes.forEach(function (s) {
+        var b = el('button', 'pill' + (s.status === 'request' ? ' req' : ''), s.size); b.type = 'button';
+        b.setAttribute('aria-pressed', s === sz ? 'true' : 'false'); b.setAttribute('aria-label', s.size + (s.price != null ? ', $' + s.price : '') + (s.status === 'request' ? ', on request' : s.status === 'out' ? ', out of stock' : ''));
+        b.onclick = function () { sz = s; pills.querySelectorAll('.pill').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); sync(); };
+        pills.appendChild(b);
+      });
+      body.appendChild(pills);
       body.appendChild(meta);
       if (p.note) body.appendChild(el('div', 'note', p.note));
       var row = el('div', 'shop-row'), mi = el('button', 'step', '\u2212'), out = el('output', '', '1'), pl = el('button', 'step', '+');
       mi.type = pl.type = add.type = 'button'; mi.setAttribute('aria-label', 'One fewer ' + p.name); pl.setAttribute('aria-label', 'One more ' + p.name);
       mi.onclick = function () { qty = Math.max(1, qty - 1); out.textContent = qty; }; pl.onclick = function () { qty = Math.min(99, qty + 1); out.textContent = qty; };
-      row.appendChild(mi); row.appendChild(out); row.appendChild(pl); body.appendChild(row); body.appendChild(add);
+      row.appendChild(mi); row.appendChild(out); row.appendChild(pl); body.appendChild(row); body.appendChild(add); body.appendChild(ask);
       function sync() {
         var st = sz.status; badge.textContent = LABEL[st]; badge.className = 'badge ' + CLS[st];
         meta.textContent = (sz.size ? sz.size + ' \u2022 ' : '') + money(sz.price);
-        add.disabled = st === 'out'; add.textContent = st === 'out' ? 'Out of stock' : (st === 'unknown' ? "Add (we'll confirm)" : 'Add to cart');
+        add.disabled = st === 'out'; add.textContent = st === 'out' ? 'Out of stock' : (st === 'request' ? 'Request' : (st === 'unknown' ? "Add (we'll confirm)" : 'Add to cart'));
+        ask.hidden = st !== 'request';
         add.setAttribute('aria-label', 'Add ' + p.name + ' to cart');
       }
-      add.onclick = function () { var k = p.id + (sz.size ? '|' + sz.size : ''); NAMES[k] = { price: sz.price }; cart[k] = Math.min(99, (cart[k] || 0) + qty); save(); renderBar(); toast('Added ' + qty + ' \u00d7 ' + p.name); };
+      add.onclick = function () { var k = p.id + (sz.size ? '|' + sz.size : ''); NAMES[k] = { price: sz.price }; cart[k] = Math.min(99, (cart[k] || 0) + qty); save(); renderBar(); bar.classList.remove('bump'); void bar.offsetWidth; bar.classList.add('bump'); toast((sz.status === 'request' ? 'Requested ' : 'Added ') + qty + ' \u00d7 ' + p.name + (sz.status === 'request' ? ' (' + sz.size + ', we\u2019ll confirm)' : '')); };
       sync(); return c;
     }
     document.getElementById('printlist-link').href = IENN_PRINTLIST_URL;
     document.getElementById('cart-clear').onclick = function () { cart = {}; save(); renderBar(); toast('Cart cleared'); };
     IENN.load(function (list, live) {
       grid.innerHTML = ''; grid.removeAttribute('aria-busy');
-      list.forEach(function (p) { p.sizes.forEach(function (s) { NAMES[p.id + (s.size ? '|' + s.size : '')] = { price: s.price }; }); grid.appendChild(card(p)); });
+      list.forEach(function (p, i) { p.sizes.forEach(function (s) { NAMES[p.id + (s.size ? '|' + s.size : '')] = { price: s.price }; }); grid.appendChild(card(p, i)); });
       info.textContent = live ? 'Live availability from our nursery inventory.' : 'Live availability is loading or unavailable right now \u2014 add what you like, order, and we\u2019ll confirm what\u2019s in stock.';
       info.className = live ? 'shop-status live' : 'shop-status';
       renderBar();

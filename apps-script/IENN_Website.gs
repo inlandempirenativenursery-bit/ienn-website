@@ -63,7 +63,7 @@ function iennWebsiteOrder_(b) {
   }
   var total = lines.reduce(function (a, l) { return a + Number(l.amt); }, 0), sub = total / (1 + IENN_TAX_PCT / 100);   // prices include tax
   var phone = String(b.phone || '').trim().slice(0, 40), notes = String(b.notes || '').trim().slice(0, 1000);
-  var pickup = String(b.pickup || '').trim().slice(0, 100), pay = String(b.payment || '').trim().slice(0, 40);
+  var pickup = String(b.pickup || 'Fontana · Saturdays 10 AM – 2 PM').trim().slice(0, 100), pay = String(b.payment || '').trim().slice(0, 40);
   var data = { date: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd'), paid: 'unpaid', payment: '',
     customerEmail: email, discType: 'none', discAmt: '',
     note: 'Website order — ' + name + (phone ? ' · ' + phone : '') + (pickup ? '\nPickup: ' + pickup : '') + (pay ? '\nPays by: ' + pay : '') + (notes ? '\n' + notes : ''),

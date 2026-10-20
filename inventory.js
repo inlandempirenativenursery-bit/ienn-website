@@ -4,10 +4,14 @@
 var INVENTORY_URL = "https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec?view=inventory"; // live once ?view=inventory is deployed (returns HTML today -> fallback)
 var ORDER_URL = "https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec"; // doPost order intake (once deployed)
 /* PRICES ARE BY SIZE ONLY (authoritative; feed prices ignored). Same table as apps-script/IENN_Config.gs (IENN_SIZES).
-   Size labels match the inventory tool: 2", 4", Tree pot, 1 gal. Prices INCLUDE tax ($3/$6/$10/$15 are final); ienTax only backs tax out for records. */
+   Size labels match the inventory tool: 2", 4", Tree pot, 1 gal. Prices INCLUDE 8.75% sales tax (as in the invoice tool). */
 var IENN_SIZES = ['2"', '4"', "Tree pot", "1 gal"];
 var IENN_SIZE_PRICES = { '2"': 3, '4"': 6, "Tree pot": 10, "1 gal": 15 };
 var IENN_TAX_PCT = 8.75;
+/* Sizes not tracked in weekly counts: shown on every plant as "Available on request" (no stock check). */
+var IENN_REQUEST_SIZES = ['2"', "Tree pot"];
+function ienIsRequest(size) { return IENN_REQUEST_SIZES.indexOf(ienNormSize(size) || size) >= 0; }
+var IENN_PHONE = "(909) 609-9373", IENN_TEL = "+19096099373"; // Andrew — call/text
 var IENN_PRINTLIST_URL = "https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec?view=print";
 function ienTax(total) { var sub = total / (1 + IENN_TAX_PCT / 100); return { subtotal: Math.round(sub * 100) / 100, tax: Math.round((total - sub) * 100) / 100, total: total }; }
 function ienNormSize(s) {
@@ -51,14 +55,17 @@ var IENN = (function () {
     var merged = {}; out.forEach(function (s) { var z = ienNormSize(s.size) || s.size || ""; if (merged[z]) { if (s.qty != null) merged[z].qty = (merged[z].qty || 0) + s.qty; } else { s.size = z; merged[z] = s; } });
     out = Object.keys(merged).map(function (z) { var s = merged[z]; s.price = ienPrice(z); return s; })
       .sort(function (a, b) { return IENN_SIZES.indexOf(a.size) - IENN_SIZES.indexOf(b.size); });
+    out = out.filter(function (s) { return !ienIsRequest(s.size); });
     out.forEach(function (s) { s.status = statusFrom(s.qty, s.status); });
     var rank = { in: 0, low: 1, unknown: 2, out: 3 }, best = out.reduce(function (a, s) { return rank[s.status] < rank[a] ? s.status : a; }, "out");
+    if (!out.length) best = "request";
+    IENN_REQUEST_SIZES.forEach(function (z) { out.push({ size: z, qty: null, price: IENN_SIZE_PRICES[z], status: "request" }); });
     return { id: String(pick(r, ["id", "slug", "sku"]) || slug(name)), name: name.trim(), botanical: bot ? String(bot) : "", note: String(pick(r, ["note", "description", "notes", "blurb"]) || ""),
       image: String(pick(r, ["image", "imageurl", "photo", "img"]) || ""), priority: num(pick(r, ["priority", "popularity", "rank", "sort", "order"])),
       color: String(pick(r, ["color", "flowercolor", "bloom"]) || ""), sizes: out, status: best };
   }
   function sortList(a) {
-    var rank = { in: 0, low: 0, unknown: 1, out: 2 };
+    var rank = { in: 0, low: 0, unknown: 1, request: 1, out: 2 };
     function pin(p) { var t = p.name + " " + p.botanical; for (var i = 0; i < IENN_PINNED.length; i++) if (IENN_PINNED[i].test(t)) return i; return 99; }
     function col(p) { return p.color || IENN_COLORFUL.test(p.name + " " + p.botanical) ? 0 : 1; }
     var anyPri = a.some(function (p) { return p.priority != null; });
@@ -89,7 +96,7 @@ var IENN = (function () {
   }
   /* cb(list, live:boolean) */
   function load(cb) {
-    var fb = function () { cb(parse(IENN_FALLBACK).map(function (p) { p.sizes.forEach(function (s) { s.status = "unknown"; }); p.status = "unknown"; return p; }), false); };
+    var fb = function () { cb(parse(IENN_FALLBACK).map(function (p) { p.sizes.forEach(function (s) { if (s.status !== "request") s.status = "unknown"; }); p.status = "unknown"; return p; }), false); };
     if (!INVENTORY_URL) return fb();
     var good = function (d) { var l = parse(d); l.length ? cb(l, true) : fb(); };
     fetch(INVENTORY_URL).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(good)
@@ -98,4 +105,4 @@ var IENN = (function () {
   return { load: load, parse: parse, slug: slug };
 })();
 
-if (typeof module !== "undefined") module.exports = { IENN: IENN, ienNormSize: ienNormSize, ienPrice: ienPrice, ienTax: ienTax };
+if (typeof module !== "undefined") module.exports = { IENN: IENN, ienNormSize: ienNormSize, ienPrice: ienPrice, ienTax: ienTax, ienIsRequest: ienIsRequest };
