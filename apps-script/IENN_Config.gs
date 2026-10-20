@@ -69,16 +69,20 @@ var IENN_EXTRA_TEAM_EMAIL = false;
 var IENN_ORDER_OWNER = 'Andrew';
 var IENN_CONTACT_PHONE = '(909) 609-9373';      // Andrew: call/text fallback shown to customers
 var IENN_CONTACT_TEL = '+19096099373';
-var TEAM_EMAILS = [
+/** New-order emails: Andrew is To (primary); Eric and Keith are CC. Raylene is not on order emails. */
+var TEAM_EMAIL_TO = 'ANDREW_EMAIL_PLACEHOLDER@example.com';
+var TEAM_EMAIL_CC = [
   'ERIC_EMAIL_PLACEHOLDER@example.com',
-  'ANDREW_EMAIL_PLACEHOLDER@example.com',
-  'KEITH_EMAIL_PLACEHOLDER@example.com',
-  'RAYLENE_EMAIL_PLACEHOLDER@example.com'
+  'KEITH_EMAIL_PLACEHOLDER@example.com'
 ];
+var TEAM_EMAILS = [TEAM_EMAIL_TO].concat(TEAM_EMAIL_CC);   // everyone on order emails (kept for compatibility)
 
 /** Customer reply drafts (never sent automatically). Keep {{...}} until confirmed. */
 var PICKUP_ADDRESS = '{{PICKUP_ADDRESS}}';
-var DEFAULT_PAYMENT_METHOD = '{{PAYMENT_METHOD}}';  // don't put a Zelle handle here until confirmed
+var DEFAULT_PAYMENT_METHOD = 'Cash or Zelle at time of pickup';  // no Zelle handle until confirmed
+var PICKUP_CITY = 'Fontana';
+var PICKUP_SCHEDULE = 'Saturdays 10 AM – 2 PM';
+var PICKUP_FINE_PRINT = ['Grand Terrace pickup available upon request.', 'Other pickup times available case by case upon request.'];
 var SIGN_OFF = 'Thank you for supporting native plants!\nInland Empire Native Nursery';
 
 /* ---- Promos tab (website banner) ----

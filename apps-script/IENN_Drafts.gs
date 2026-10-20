@@ -5,10 +5,19 @@
  * If the project already has onOpen(), delete the one below and call iennAddMenu_() from yours.
  */
 var RESPONSE_TEMPLATE =
-  'Hi {{CUSTOMER_NAME}},\n\nThanks for your order! Here\'s what we have for you:\n\nOrder: {{ORDER_ID}}\n\n{{ITEMS}}\n\n' +
+  'Hi {{CUSTOMER_NAME}},\n\n' +
+  'Thanks for your order! Please look it over below and let us know if anything needs to change.\n\n' +
+  'Order number: {{ORDER_ID}}\n\n' +
+  'Items:\n{{ITEMS}}\n\n' +
   'Total: ${{TOTAL}} (taxes included)\n\n' +
-  'Payment status: {{PAID_STATUS}}\nPayment method: {{PAYMENT_METHOD}}\n\nPickup: {{PICKUP_ADDRESS}} (Fontana) · Saturdays 10 AM – 2 PM\n(Grand Terrace pickup available upon request. Other pickup times available case by case upon request.)\n\n' +
-  'Your notes: {{CUSTOMER_NOTES}}\n\nOur response:\n{{OUR_RESPONSE}}\n\nQuestions? Call or text {{OWNER}}: {{PHONE}}\n\n{{SIGN_OFF}}\n';
+  'Payment: {{PAYMENT_METHOD}}\nPayment status: {{PAID_STATUS}}\n\n' +
+  'Pickup location: {{PICKUP_ADDRESS}}, {{PICKUP_CITY}}\n' +
+  'Pickup hours: {{PICKUP_SCHEDULE}}\n' +
+  '{{PICKUP_FINE_PRINT}}\n\n' +
+  'Your notes: {{CUSTOMER_NOTES}}\n\n' +
+  'Our notes: {{OUR_RESPONSE}}\n\n' +
+  'Questions? Call or text {{OWNER}}: {{PHONE}}\n\n' +
+  '{{SIGN_OFF}}\n';
 
 function onOpen() { iennAddMenu_(); }
 function iennAddMenu_() {
@@ -47,12 +56,12 @@ function iennBuildReply_(orderId) {
   var inv = iennInvoices_().filter(function (x) { return String(x.id) === String(orderId); })[0];
   if (!inv) throw new Error('Order ' + orderId + ' not found in ' + IENN_INVOICES_SHEET);
   var sub = 0, items = inv.lines.map(function (l) { var s = iennSize_(l.size), p = s ? s.price : Number(l.amt) / l.qty; sub += l.qty * p;
-    return l.qty + ' × ' + iennSplit_(l.plant)[0] + ' (' + (s ? s.label : l.size) + ') @ $' + p + ' = $' + (l.qty * p).toFixed(2); }).join('\n');
+    return '  - ' + l.qty + ' × ' + iennSplit_(l.plant)[0] + ' (' + (s ? s.label : l.size) + ') @ $' + p + ' = $' + (l.qty * p).toFixed(2); }).join('\n');
   var note = String(inv.note || ''), m = /^Website order — ([^·\n]+)/.exec(note);
   var map = { CUSTOMER_NAME: m ? m[1].trim() : 'there', ORDER_ID: inv.id, ITEMS: items, TOTAL: sub.toFixed(2), OWNER: IENN_ORDER_OWNER, PHONE: IENN_CONTACT_PHONE,
     PAID_STATUS: /^(yes|y|true|paid)$/i.test(String(inv.paid)) || /paid/i.test(String(inv.status)) ? 'Paid — thank you!' : 'Not paid yet (pay at pickup)',
-    PAYMENT_METHOD: inv.payment || DEFAULT_PAYMENT_METHOD, PICKUP_ADDRESS: PICKUP_ADDRESS,
-    CUSTOMER_NOTES: note.replace(/^Website order — [^\n]*\n?/, '') || '(none)', OUR_RESPONSE: inv.response || '{{OUR_RESPONSE}}', SIGN_OFF: SIGN_OFF };
+    PAYMENT_METHOD: inv.payment || DEFAULT_PAYMENT_METHOD, PICKUP_ADDRESS: PICKUP_ADDRESS, PICKUP_CITY: PICKUP_CITY, PICKUP_SCHEDULE: PICKUP_SCHEDULE, PICKUP_FINE_PRINT: PICKUP_FINE_PRINT.join('\n'),
+    CUSTOMER_NOTES: note.replace(/^Website order — [^\n]*\n?/, '') || '(none)', OUR_RESPONSE: inv.response || '(none)', SIGN_OFF: SIGN_OFF };
   var body = RESPONSE_TEMPLATE.replace(/\{\{([A-Z_]+)\}\}/g, function (x, k) { return map[k] != null && map[k] !== '' ? String(map[k]) : x; });
   return { to: inv.email, subject: 'Your Inland Empire Native Nursery order ' + inv.id, body: body };
 }

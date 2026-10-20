@@ -84,10 +84,10 @@ t('invalid input rejected; server ignores client prices', () => {
 t('optional extra team email (off by default) skips placeholders and contains summary + link', () => {
   const h = load(); vm.runInContext("IENN_EXTRA_TEAM_EMAIL = true;", h.ctx);
   order(h, [{ plant: 'Yarrow', sizeKey: '2"', qty: 1 }]); assert.strictEqual(h.sent.length, 1, 'placeholders skipped');
-  vm.runInContext("TEAM_EMAILS = ['eric@test.local','andrew@test.local','keith@test.local','raylene@test.local'];", h.ctx);
+  vm.runInContext("TEAM_EMAIL_TO = 'andrew@test.local'; TEAM_EMAIL_CC = ['eric@test.local','keith@test.local'];", h.ctx);
   order(h, [{ plant: 'Yarrow', sizeKey: '2"', qty: 2 }]);
   const m = h.sent[h.sent.length - 1];
-  assert.strictEqual(m.to, 'eric@test.local,andrew@test.local,keith@test.local,raylene@test.local');
+  assert.strictEqual(m.to, 'andrew@test.local'); assert.strictEqual(m.cc, 'eric@test.local,keith@test.local');
   assert.match(m.body, /2 × Yarrow \(2"\) = \$6\.00/); assert.match(m.body, /#gid=3/); assert.match(m.body, /Total: \$6\.00 \(taxes included\)/);
   assert.match(m.body, /Andrew is handling this order/); assert.doesNotMatch(m.body, /plus tax/);
 });
@@ -100,8 +100,8 @@ t('reply draft fills template from IENN Invoices, keeps placeholders, never send
   assert.strictEqual(d.to, 'ana@example.com'); assert.match(d.body, /Hi Ana Lopez,/);
   assert.match(d.body, /2 × White Sage \(4-inch pot\) @ \$6 = \$12\.00/);
   assert.match(d.body, /Total: \$12\.00 \(taxes included\)/); assert.doesNotMatch(d.body, /Tax \(/); assert.match(d.body, /Call or text Andrew: \(909\) 609-9373/);
-  assert.match(d.body, /Payment status: Not paid yet/); assert.match(d.body, /\{\{PAYMENT_METHOD\}\}/); assert.match(d.body, /\{\{PICKUP_ADDRESS\}\}/);
-  assert.match(d.body, /Your notes: Pickup: Saturday 10 AM – 2 PM\nPays by: Zelle\nSaturday 11am/); assert.match(d.body, /Our response:\nReady Saturday!/);
+  assert.match(d.body, /Payment status: Not paid yet/); assert.match(d.body, /Payment: Cash or Zelle at time of pickup/); assert.match(d.body, /Grand Terrace pickup available upon request\./); assert.match(d.body, /\{\{PICKUP_ADDRESS\}\}/);
+  assert.match(d.body, /Your notes: Pickup: Saturday 10 AM – 2 PM\nPays by: Zelle\nSaturday 11am/); assert.match(d.body, /Our notes: Ready Saturday!/);
 });
 
 t('print list + CSV: sorted by availability then appeal, prices on sizes', () => {

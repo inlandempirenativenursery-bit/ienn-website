@@ -133,13 +133,15 @@ function iennCustomerClosed_() {
 function iennFail_(throwIt, r) { if (throwIt) throw new Error(r.message); return r; }
 
 function iennTeamEmail_(id, data, meta) {
-  var to = TEAM_EMAILS.filter(function (a) { return a && !/PLACEHOLDER/i.test(a); }); if (!to.length) return false;
+  var ok = function (a) { return a && !/PLACEHOLDER/i.test(a); };
+  var to = ok(TEAM_EMAIL_TO) ? TEAM_EMAIL_TO : '', cc = TEAM_EMAIL_CC.filter(ok); if (!to && !cc.length) return false;
+  if (!to) { to = cc.shift(); }
   var body = 'A new order came in (' + (meta.source || 'customer view') + ').\n\nOrder: ' + id + '\nCustomer: ' + (meta.name || '') + ' <' + data.customerEmail + '>\n\n' +
     data.lines.map(function (l) { return '  ' + l.qty + ' × ' + l.plant + ' (' + l.size + ') = $' + l.amt; }).join('\n') +
     '\n\nTotal: $' + data.grand + ' (taxes included)\nNotes: ' + (data.note || '') + '\n\n' + IENN_ORDER_OWNER + ' is handling this order (order-to-pickup).' +
     '\n\nView details: ' + iennInvoicesSheet_().getParent().getUrl() + '#gid=' + iennInvoicesSheet_().getSheetId() +
     '\nIf someone else takes it, change Handled by in IENN Invoices.';
-  MailApp.sendEmail({ to: to.join(','), subject: 'New IENN order ' + id + ' — ' + (meta.name || data.customerEmail), body: body });
+  MailApp.sendEmail({ to: to, cc: cc.join(','), subject: 'New IENN order ' + id + ' — ' + (meta.name || data.customerEmail), body: body });
   return true;
 }
 
