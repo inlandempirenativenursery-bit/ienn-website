@@ -34,46 +34,38 @@ The order page loads plants, sizes, prices and stock from the IENN Inventory she
 The home-page cards come from the same `?view=inventory` feed, loaded by `inventory.js` (`INVENTORY_URL`). It reads the raw `getInitial()` JSON from `apps-script/inventory-endpoint.gs`, a list of plant objects, or JSONP (`&callback=`). Until the endpoint is deployed, the URL returns HTML, so the grid shows a short fallback list marked "Ask about availability" (never "Available"). Sort order: `sort` value if present, otherwise white sage and monkeyflowers first, then flowering plants, with out-of-stock plants last. Low-stock threshold: `IENN_LOW_STOCK` (5). The cart hands off to `order.html?slug=qty` or `?slug|size=qty`.
 
 ## Prices (by pot size only)
-| Size | Price |
+The sizes are 2" $3, 4" $6, Tree pot $10 and 1 gal $15. Prices **include** 8.75% CA sales tax, the same way the existing invoice tool works (subtotal = total ÷ 1.0875). The table lives in `inventory.js` and `apps-script/ienn-stock-ledger.gs`. Keep the two in sync. Size labels are normalized: 4"/4in/4-inch/four, 1 gal/1-gallon/gal1, 2"/2-inch, quarter/1/4 tree/tree pot. The website shows only 4" and 1 gal unless the feed reports stock in another size.
+
+## Apps Script backend (NOT deployed yet)
+The inventory tool (one Apps Script project with an internal Index view and `?view=customer`) is the single source of truth. Everything below adds files to **that** project and writes only into the tool's own spreadsheet.
+
+| File | What it does |
 |---|---|
-| 2-inch | $3 |
-| 4-inch | $6 |
-| Quarter tree | $10 |
-| 1-gallon | $15 |
+| `apps-script/ienn-stock-ledger.gs` | Takes the latest week's counts minus the **Sold** ledger. Wraps `getAvailableStock` and `submitInvoice`, using LockService. |
+| `apps-script/inventory-endpoint.gs` | `?view=inventory` JSON/JSONP feed, website `doPost` (sends orders through `submitInvoice`), `?view=reply` template. |
+| `apps-script/ienn-printlist.gs` | `?view=printlist` (print/PDF), `&format=csv`, and `exportPlantListSheet()` (writes a "Plant List" sheet). |
+| `apps-script/IndexNav.html` | One nav bar for the internal Index view. |
 
-These prices live in one table, `IENN_SIZE_PRICES`, which appears in both `inventory.js` and `apps-script/inventory-endpoint.gs`. Keep the two in sync. Any prices in the feed are ignored. Size labels are normalized: 4", 4in and 4-inch all mean 4-inch; 1 gal and 1-gallon mean 1-gallon; 2" and 2-inch mean 2-inch; quarter, 1/4 tree and tree pot mean Quarter tree.
+**Assumptions** (Eric to confirm; the full list is at the top of `ienn-stock-ledger.gs`):
+- `Submissions` has one row per person per weekly count, with Timestamp | (Week) | Person | Counts. Counts is JSON shaped `{"<catalog id>": {"four": n, "gal1": n}}`.
+- The latest week is the Week value of the newest row, or the ISO week of its timestamp. Within that week, each person's newest row counts, and counts are summed across people.
+- `Catalog` maps Id to Name, with an optional Botanical column.
+- The existing `getAvailableStock()` stays as the source of the counts.
+- The `Sold` sheet is auto-created in the same spreadsheet: one row per order line, tagged with the week. Available stock = this week's count − this week's Sold rows. A new weekly count starts a new week, so the deductions reset.
 
-## Apps Script backend: setup and deploy (NOT deployed yet)
-`apps-script/inventory-endpoint.gs` replaces the earlier `inventoryJson_()` snippet. It provides the inventory feed, order intake, the team email and the reply template.
+**Deploy steps:**
+1. Paste the three `.gs` files into the tool's Apps Script project as new files.
+2. Rename the existing `function getAvailableStock(` to `function getAvailableStockRaw_(`.
+3. Rename the existing `function submitInvoice(` to `function submitInvoiceOriginal_(`. Its Invoices write and team email stay unchanged.
+4. Add the first line of the existing `doGet(e)`: `var r = ienRouteGet_(e); if (r) return r;`. The project has no `doPost` today; the new one is in `inventory-endpoint.gs`.
+5. Paste `IndexNav.html` at the top of the Index view's `<body>`. Fix its two `#anchors` and the website URL.
+6. Set `ADMIN_KEY` and `PICKUP_ADDRESS`. If the tool's spreadsheet isn't found automatically, set `INVENTORY_SS_ID`, or point `ienSS_()` at the tool's own lookup.
+7. Deploy > Manage deployments > edit the current deployment > **New version**, Execute as Me, Access Anyone. The /exec URL stays the same. Approve the Drive and Sheets permissions.
+8. Test:
+   - `…/exec?view=inventory` returns JSON.
+   - `…/exec?view=printlist` shows the list.
+   - A test order from order.html shows an order number, a row in IENN Invoices, the team email, Sold rows, and lower stock.
 
-**Sheet assumptions (Eric is still confirming; edit the constants at the top of the .gs if the sheet differs):**
-- Tab `Inventory`, one row per plant, with these columns:
-  - `Plant`: the plant name, optionally written as "Common (Botanical)".
-  - `Botanical`: optional.
-  - One count column per size: `2-inch`, `4-inch`, `Quarter tree`, `1-gallon`. Header matching is loose.
-  - `Priority` (optional): lower numbers are shown first.
-  - `Photo` (optional): a public image URL.
-- Tab `Orders`: created automatically. Columns: Order ID, Timestamp, Name, Email, Phone, Items, Sizes, Qty, Line prices, Total, Pickup, Payment method, Paid status (defaults to Unpaid), Customer notes, Status, Our response.
+**Order flow:** order.html POSTs `text/plain` JSON to `ORDER_URL`. The script calls `submitInvoice(data)` in the real invoice format, with the website's name, phone, pickup and payment in `note`. That locks, re-checks stock and calls the original, which writes Invoices and emails the team. It then appends the Sold rows and returns `{ok, orderId, total, tax}`, or `{ok:false, error}` when stock is too low. The customer view and the internal view go through the same check. If the POST fails, the page falls back to the email (mailto) form.
 
-**Steps:**
-1. Paste the .gs file into the existing IENN Apps Script project. Remove any earlier `inventoryJson_` paste.
-2. Fill in the TODO constants:
-   - `TEAM_EMAILS`: the addresses for Eric, Andrew, Keith and Raylene.
-   - `ADMIN_KEY`: a long random string.
-   - `PICKUP_ADDRESS`.
-3. Routing. Apps Script allows only one `doGet` and one `doPost` per project.
-   - Make the first line of the existing `doGet(e)`: `var r = ienRouteGet_(e); if (r) return r;`
-   - If there is no `doPost`, uncomment the one at the bottom of the file. If there is one, make its first line `var r = ienRoutePost_(e); if (r) return r;`
-4. Optional sheet menu: in `onOpen()`, add `SpreadsheetApp.getUi().createMenu('IENN').addItem('Reply template for selected order', 'ienReplyForSelected').addToUi();`
-5. Deploy: Deploy > Manage deployments > edit the current web app > Version: **New version**, Execute as **Me**, Who has access **Anyone**. The /exec URL stays the same. On the first run, approve the Sheets and Mail permissions.
-6. Test:
-   - `…/exec?view=inventory` should return JSON.
-   - Place a test order on order.html. It should show an order number, add a row to Orders, lower the stock counts and send the team email.
-
-**How orders flow:** order.html POSTs JSON as `text/plain` (which avoids a CORS preflight) to `ORDER_URL`, set in `inventory.js`.
-- The script takes a lock, re-checks stock, lowers the counts, adds a row to Orders and emails the team.
-- It returns `{ok, orderId, total}`, or `{ok:false, error}` when stock is too low.
-- If the POST fails (for example, before the script is deployed), the page falls back to the old email (mailto) form.
-- Reply template: see `docs/order-reply-template.md`. It is never sent to customers automatically.
-
-Tests: `node tests/pricing.test.js` (size normalization, prices, inventory parsing, stock checks).
+See also: `docs/TEAM-QUICKSTART.md`, `docs/USABILITY-NOTES.md`, `docs/order-reply-template.md`. Tests: `node tests/pricing.test.js`.

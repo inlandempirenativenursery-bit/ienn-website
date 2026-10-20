@@ -3,15 +3,20 @@
    While empty or unreachable, pages show the FALLBACK list with "Ask about availability" (never fake "Available"). */
 var INVENTORY_URL = "https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec?view=inventory"; // live once ?view=inventory is deployed (returns HTML today -> fallback)
 var ORDER_URL = "https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec"; // doPost order intake (once deployed)
-/* PRICES ARE BY SIZE ONLY (authoritative; feed prices are ignored). Keep in sync with apps-script/inventory-endpoint.gs. */
-var IENN_SIZES = ["2-inch", "4-inch", "Quarter tree", "1-gallon"];
-var IENN_SIZE_PRICES = { "2-inch": 3, "4-inch": 6, "Quarter tree": 10, "1-gallon": 15 };
+/* PRICES ARE BY SIZE ONLY (authoritative; feed prices ignored). Same table as apps-script/ienn-stock-ledger.gs.
+   Size labels match the inventory tool: 2", 4", Tree pot, 1 gal. Prices INCLUDE 8.75% sales tax (as in the invoice tool). */
+var IENN_SIZES = ['2"', '4"', "Tree pot", "1 gal"];
+var IENN_SIZE_PRICES = { '2"': 3, '4"': 6, "Tree pot": 10, "1 gal": 15 };
+var IENN_TAX_PCT = 8.75;
+var IENN_PRINTLIST_URL = "https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec?view=printlist";
+function ienTax(total) { var sub = total / (1 + IENN_TAX_PCT / 100); return { subtotal: Math.round(sub * 100) / 100, tax: Math.round((total - sub) * 100) / 100, total: total }; }
 function ienNormSize(s) {
-  var t = String(s == null ? "" : s).toLowerCase().replace(/[”″]/g, '"').replace(/\s+/g, " ").trim();
-  if (/quarter|1\/4|¼|tree/.test(t)) return "Quarter tree";
-  if (/^1 ?(-| )?(gal|gallon)s?\b|^1g$|^#1$|one gallon/.test(t)) return "1-gallon";
-  if (/^2 ?(-| )?("|in\b|inch|inches)|^2$/.test(t)) return "2-inch";
-  if (/^4 ?(-| )?("|in\b|inch|inches)|^4$/.test(t)) return "4-inch";
+  var t = String(s == null ? "" : s).toLowerCase().replace(/[\u201d\u2033]/g, '"').replace(/\s+/g, " ").trim();
+  if (t === "four") return '4"'; if (t === "gal1") return "1 gal"; if (t === "two") return '2"';
+  if (/quarter|1\/4|\u00bc|tree/.test(t)) return "Tree pot";
+  if (/^1 ?(-| )?(gal|gallon)s?\b|^1g$|^#1$|one gallon/.test(t)) return "1 gal";
+  if (/^2 ?(-| )?("|in\b|inch|inches)|^2$/.test(t)) return '2"';
+  if (/^4 ?(-| )?("|in\b|inch|inches)|^4$/.test(t)) return '4"';
   return null;
 }
 function ienPrice(size) { var z = ienNormSize(size); return z ? IENN_SIZE_PRICES[z] : null; }
@@ -93,4 +98,4 @@ var IENN = (function () {
   return { load: load, parse: parse, slug: slug };
 })();
 
-if (typeof module !== "undefined") module.exports = { IENN: IENN, ienNormSize: ienNormSize, ienPrice: ienPrice };
+if (typeof module !== "undefined") module.exports = { IENN: IENN, ienNormSize: ienNormSize, ienPrice: ienPrice, ienTax: ienTax };

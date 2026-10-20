@@ -1,31 +1,32 @@
 # IENN order reply template
 
-One person handles each order. When you take an order, set its **Status** in the Orders tab (for example "Replying – Eric"). To fill in the template for an order, either:
-- in the sheet, select the order's row and use **IENN > Reply template for selected order**, or
-- open the "Reply template" link in the team email (`…/exec?view=reply&id=<order id>&key=<ADMIN_KEY>`).
+**One person handles each order.** Whoever takes an order writes their name in that order's row (see "Ownership" in USABILITY-NOTES.md).
 
-Copy the text, check it, and send it yourself. **The system never emails customers automatically.**
+To get the filled-in template, either:
+- in the **Sold** sheet, select a row of the order and choose **IENN > Reply template for selected Sold row**, or
+- open `…/exec?view=reply&id=<order number>&key=<ADMIN_KEY>`.
+
+Copy the text, check it, and send it yourself from the team inbox. **Nothing is ever emailed to customers automatically.**
 
 ```
 Subject: Your IENN order #<ORDER NUMBER> is confirmed
 
 Hi <NAME>,
 
-Thanks for your order! Here are the details:
+Thanks for your order!
 
 Order number: <ORDER NUMBER>
-  <QTY> × <PLANT> (<SIZE>) $<LINE TOTAL>
-  ...
+  <QTY> × <PLANT> (<SIZE>) $<LINE>
+Subtotal: $<SUB>
+Tax 8.75% (included): $<TAX>
 Total: $<TOTAL>
 
 Payment: <Paid | Unpaid> — pay by <Cash | Zelle> at pickup.
-Pickup address: <EXACT PICKUP ADDRESS — share only after the order is confirmed>
+Pickup address: <EXACT ADDRESS — only after the order is confirmed>
 Pickup time: <Saturday 10 AM – 2 PM / agreed time>
 
 Your notes: <CUSTOMER NOTES>
-Our response: <YOUR ANSWER / ANY CHANGES>
+Our response: <YOUR ANSWER / CHANGES>
 
 — Inland Empire Native Nursery
 ```
-
-Prices are by size only: 2-inch $3, 4-inch $6, Quarter tree $10, 1-gallon $15.

@@ -198,7 +198,7 @@
 
   <section class="plants" id="plants">
     <h2>Shop native plants</h2>
-    <p style="font-size:0.95rem; color:#555; margin-bottom:0.5rem;">Pick a quantity, tap Add, then check out. Prices by pot size: 2-inch $3 • 4-inch $6 • Quarter tree $10 • 1-gallon $15.</p>
+    <p style="font-size:0.95rem; color:#555; margin-bottom:0.5rem;">Pick a quantity, tap Add, then check out. Prices by pot size: 2" $3 • 4" $6 • Tree pot $10 • 1 gal $15 (tax included). <a href="#" id="printlist-link" target="_blank" rel="noopener" style="color:var(--sage-dark)">Printable plant list</a></p>
     <p class="shop-status" id="shop-status" role="status">Loading live availability…</p>
     <div class="plant-grid" id="shop-grid" aria-busy="true">
       <div class="plant-card skel"></div><div class="plant-card skel"></div><div class="plant-card skel"></div><div class="plant-card skel"></div>
@@ -281,7 +281,7 @@
       var n = 0, q = [], total = 0, priced = true;
       Object.keys(cart).forEach(function (k) { var c = cart[k]; if (c > 0) { n += c; q.push(encodeURIComponent(k) + '=' + c); var pr = (NAMES[k] || {}).price; if (pr == null) priced = false; else total += pr * c; } });
       bar.hidden = n === 0; document.body.classList.toggle('has-cart', n > 0);
-      document.getElementById('cart-count').textContent = n + (n === 1 ? ' plant' : ' plants') + ' \u2022 ' + (priced && n ? 'Total $' + total : 'price confirmed at order');
+      document.getElementById('cart-count').textContent = n + (n === 1 ? ' plant' : ' plants') + ' \u2022 ' + (priced && n ? 'Total $' + total.toFixed(2) + ' incl. tax' : 'price confirmed at order');
       document.getElementById('cart-go').href = 'order.html' + (q.length ? '?' + q.join('&') : '');
     }
     function card(p) {
@@ -313,6 +313,7 @@
       add.onclick = function () { var k = p.id + (sz.size ? '|' + sz.size : ''); NAMES[k] = { price: sz.price }; cart[k] = Math.min(99, (cart[k] || 0) + qty); save(); renderBar(); toast('Added ' + qty + ' \u00d7 ' + p.name); };
       sync(); return c;
     }
+    document.getElementById('printlist-link').href = IENN_PRINTLIST_URL;
     document.getElementById('cart-clear').onclick = function () { cart = {}; save(); renderBar(); toast('Cart cleared'); };
     IENN.load(function (list, live) {
       grid.innerHTML = ''; grid.removeAttribute('aria-busy');

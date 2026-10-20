@@ -270,7 +270,9 @@
           });
           sb.appendChild(ul);
           var money = ls.reduce(function (a, l) { return a + (ienPrice(l.size) || 0) * l.q; }, 0);
-          sb.appendChild(el("p", { style: "font-weight:600;margin-top:.5rem" }, total + (total === 1 ? " plant" : " plants") + " • Total $" + money + " (pay at pickup)"));
+          var tx = ienTax(money);
+          sb.appendChild(el("p", { style: "margin-top:.5rem;font-size:.9rem;color:#555" }, "Subtotal $" + tx.subtotal.toFixed(2) + " • Tax " + IENN_TAX_PCT + "% (included) $" + tx.tax.toFixed(2)));
+          sb.appendChild(el("p", { style: "font-weight:600" }, total + (total === 1 ? " plant" : " plants") + " • Total $" + money.toFixed(2) + " (pay at pickup)"));
           document.getElementById("qty-error").style.display = "none";
         }
         var bar = document.getElementById("cartbar");
@@ -301,7 +303,7 @@
           var ci = document.getElementById("confirm-id");
           if (id) {
             document.getElementById("confirm-title").textContent = "Order received — thank you!";
-            document.getElementById("confirm-msg").textContent = "We've reserved your plants. Total $" + total + ", paid at pickup by " + payload.payment + ". We'll email you to confirm pickup details and the exact address.";
+            document.getElementById("confirm-msg").textContent = "We've reserved your plants. Total $" + Number(total).toFixed(2) + " (incl. " + IENN_TAX_PCT + "% tax), paid at pickup by " + payload.payment + ". We'll email you to confirm pickup details and the exact address.";
             ci.textContent = "Your order number: " + id; ci.hidden = false;
           } else ci.hidden = true;
           var c = document.getElementById("confirm"); c.hidden = false;

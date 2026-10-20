@@ -1,0 +1,11 @@
+<!-- IENN internal nav — paste at the top of <body> in the existing Index.html (internal view only). NOT DEPLOYED.
+     Replaces any other ad-hoc links so there is ONE place to go. Uses google.script.run for the export only. -->
+<nav class="ienn-nav" style="display:flex;flex-wrap:wrap;gap:8px;padding:8px 0;border-bottom:1px solid #ddd;margin-bottom:12px">
+  <a href="#weekly-count" class="ienn-nav-btn">Weekly count</a>
+  <a href="#invoices" class="ienn-nav-btn">Invoices / orders</a>
+  <a href="?view=printlist" target="_top" class="ienn-nav-btn">Print plant list</a>
+  <button type="button" class="ienn-nav-btn" onclick="this.disabled=true;google.script.run.withSuccessHandler(function(u){window.open(u,'_blank');}).exportPlantListSheet()">Export plant list to sheet</button>
+  <a href="https://inlandempirenativenursery-bit.github.io/ienn-website/" target="_blank" class="ienn-nav-btn">Website stock preview</a>
+</nav>
+<style>.ienn-nav-btn{font:inherit;padding:8px 12px;border:1px solid #4a5a4a;border-radius:6px;background:#fff;color:#4a5a4a;text-decoration:none;cursor:pointer}</style>
+<!-- Edit the two #anchors to match the existing section ids in Index.html, and the website URL to wherever the site is hosted [TODO]. -->
