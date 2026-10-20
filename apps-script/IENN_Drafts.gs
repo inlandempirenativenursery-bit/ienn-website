@@ -7,7 +7,7 @@
 var RESPONSE_TEMPLATE =
   'Hi {{CUSTOMER_NAME}},\n\nThanks for your order! Here\'s what we have for you:\n\nOrder: {{ORDER_ID}}\n\n{{ITEMS}}\n\n' +
   'Total: ${{TOTAL}} (taxes included)\n\n' +
-  'Payment status: {{PAID_STATUS}}\nPayment method: {{PAYMENT_METHOD}}\n\nPickup address: {{PICKUP_ADDRESS}}\n(Grand Terrace pickup available upon request.)\n\n' +
+  'Payment status: {{PAID_STATUS}}\nPayment method: {{PAYMENT_METHOD}}\n\nPickup: {{PICKUP_ADDRESS}} (Fontana) · Saturdays 10 AM – 2 PM\n(Grand Terrace pickup available upon request. Other pickup times available case by case upon request.)\n\n' +
   'Your notes: {{CUSTOMER_NOTES}}\n\nOur response:\n{{OUR_RESPONSE}}\n\nQuestions? Call or text {{OWNER}}: {{PHONE}}\n\n{{SIGN_OFF}}\n';
 
 function onOpen() { iennAddMenu_(); }

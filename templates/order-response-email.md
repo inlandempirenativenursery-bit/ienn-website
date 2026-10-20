@@ -24,8 +24,8 @@ Total: ${{TOTAL}} (taxes included)
 Payment status: {{PAID_STATUS}}
 Payment method: {{PAYMENT_METHOD}}
 
-Pickup address: {{PICKUP_ADDRESS}}
-(Grand Terrace pickup available upon request.)
+Pickup: {{PICKUP_ADDRESS}} (Fontana) · Saturdays 10 AM – 2 PM
+(Grand Terrace pickup available upon request. Other pickup times available case by case upon request.)
 
 Your notes: {{CUSTOMER_NOTES}}
 
