@@ -130,4 +130,23 @@ t('claim defaults to Andrew; team-entered order uses the same checked submit + s
   const rows = h.ss.sheets['IENN Invoices'].rows; assert.strictEqual(rows[rows.length - 1][11], 'Andrew');
 });
 
+// ---- Promo banner feed (?view=promos) ----
+const promoSheet = rows => ({ getDataRange: () => ({ getValues: () => rows.map(r => r.slice()) }) });
+const PH = ['Active', 'Title', 'Message', 'Start date', 'End date', 'Discount note', 'Pages'];
+const promosWith = (rows, day) => { const h = load(); if (rows) h.ss.sheets.Promos = promoSheet([PH].concat(rows)); return J(h.ctx.iennPromos(new Date(day + 'T19:00:00Z'))); };
+t('promos: missing tab, empty tab, inactive and out-of-range rows give none', () => {
+  assert.deepStrictEqual(promosWith(null, '2026-11-05').promos, []);
+  assert.deepStrictEqual(promosWith([], '2026-11-05').promos, []);
+  assert.deepStrictEqual(promosWith([['no', 'Fall sale', 'x', '2026-11-01', '2026-11-30', '', 'all']], '2026-11-05').promos, []);
+  assert.deepStrictEqual(promosWith([['yes', 'Fall sale', 'x', '2026-11-01', '2026-11-30', '', 'all']], '2026-10-31').promos, []);
+  assert.deepStrictEqual(promosWith([['yes', 'Fall sale', 'x', '2026-11-01', '2026-11-30', '', 'all']], '2026-12-01').promos, []);
+});
+t('promos: first active in-range row wins; inclusive dates; placeholders hidden; route works', () => {
+  const rows = [['no', 'Spring sale', 's', '2026-03-01', '2026-04-30', '', ''], ['Yes', 'Fall sale', 'Plant season!', new Date('2026-11-01T12:00:00Z'), '11/30/2026', '[Eric to fill]', 'Order'],
+    ['yes', 'Second', 'later', '2026-11-01', '2026-11-30', '10% off', 'all']];
+  ['2026-11-01', '2026-11-30'].forEach(d => { const p = promosWith(rows, d).promos; assert.strictEqual(p.length, 1); assert.deepStrictEqual(p[0], { title: 'Fall sale', message: 'Plant season!', discount: '', start: '2026-11-01', end: '2026-11-30', pages: 'order' }); });
+  assert.strictEqual(promosWith([['yes', 'Open', 'm', '', '', 'Free tote', '']], '2026-07-04').promos[0].discount, 'Free tote');
+  const h = load(); const r = JSON.parse(h.ctx.iennRoute_({ parameter: { view: 'promos' } }).getContent()); assert.deepStrictEqual([r.ok, r.promos], [true, []]);
+});
+
 console.log(`\n${pass} tests passed`);
