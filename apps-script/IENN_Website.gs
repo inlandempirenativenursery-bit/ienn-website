@@ -37,7 +37,8 @@ function iennInventory() {
       sizes: IENN_SIZES.map(function (s) { return { key: s.key, size: s.label, price: s.price, qty: s.tracked ? (a[s.key] || 0) : null }; }) };
   });
   return { version: 3, updated: new Date().toISOString(), taxIncluded: true, onRequestLabel: IENN_ON_REQUEST_LABEL, contactPhone: IENN_CONTACT_PHONE,
-    sizes: IENN_SIZES.map(function (s) { return { key: s.key, label: s.label, price: s.price, tracked: s.tracked }; }), plants: plants };
+    sizes: IENN_SIZES.map(function (s) { return { key: s.key, label: s.label, price: s.price, tracked: s.tracked }; }), plants: plants,
+    promo: iennPromo_() };
 }
 
 function doPost(e) { return iennWebsitePost_(e); }
@@ -144,7 +145,7 @@ function iennTeamEmail_(id, data, meta) {
 
 /** Run once from the editor: authorises scopes, adds Status/Handled by/Our response columns to IENN Invoices, logs what it found. */
 function iennSetup() {
-  var inv = iennInventory(); iennInvoices_();
+  var inv = iennInventory(); iennInvoices_(); iennEnsurePromos_();
   Logger.log('Plants: ' + inv.plants.length + '; baseline count date: ' + iennBaselineDate_());
   if (false) { MailApp.getRemainingDailyQuota(); GmailApp.getDrafts(); }
 }

@@ -130,4 +130,34 @@ t('claim defaults to Andrew; team-entered order uses the same checked submit + s
   const rows = h.ss.sheets['IENN Invoices'].rows; assert.strictEqual(rows[rows.length - 1][11], 'Andrew');
 });
 
+t('promo: date range, active flag, open-ended, first match wins, bad rows skipped', () => {
+  const { ctx } = load(), H = ['Active', 'Title', 'Message', 'Start date', 'End date', 'Discount note'];
+  const pick = (rows, d) => J(ctx.iennPickPromo_([H].concat(rows), d));
+  const fall = ['Yes', 'Fall Sale', 'Plant now', '2026-11-01', '2026-11-30', ''];
+  assert.strictEqual(pick([fall], '2026-10-31'), null, 'before start');
+  assert.strictEqual(pick([fall], '2026-11-01').title, 'Fall Sale', 'start inclusive');
+  assert.strictEqual(pick([fall], '2026-11-30').title, 'Fall Sale', 'end inclusive');
+  assert.strictEqual(pick([fall], '2026-12-01'), null, 'after end');
+  assert.strictEqual(pick([['No', 'Off', '', '', '', '']], '2026-11-05'), null, 'Active=No');
+  assert.strictEqual(pick([[' yes ', 'Open', '', '', '', '']], '2030-01-01').title, 'Open', 'blank start+end = open-ended, yes is case/space tolerant');
+  assert.strictEqual(pick([['Yes', 'NoEnd', '', '2026-10-01', '', '']], '2027-05-01').title, 'NoEnd');
+  assert.strictEqual(pick([['Yes', 'NoStart', '', '', '10/25/2026', '']], '2026-10-20').title, 'NoStart', 'm/d/yyyy accepted');
+  assert.strictEqual(pick([['Yes', 'Bad', '', 'soon', '', ''], ['Yes', 'Second', 'm', '', '', 'e.g. 10%']], '2026-10-20').title, 'Second', 'unreadable date skipped; first valid wins');
+  assert.deepStrictEqual(pick([['Yes', 'A', 'msg', new Date(Date.UTC(2026, 9, 18, 12)), '', 'note']], '2026-10-20'), { title: 'A', message: 'msg', start: '2026-10-18', end: '', discountNote: 'note' });
+  assert.strictEqual(ctx.iennPickPromo_([['Title'], ['x']], '2026-10-20'), null, 'no Active column -> null');
+});
+
+t('promo: missing tab -> null in inventory; iennSetup creates Promos with inactive examples', () => {
+  const h = load();
+  assert.strictEqual(J(h.ctx.iennInventory()).promo, null);
+  h.ctx.iennSetup();
+  const rows = h.ss.sheets['Promos'].rows;
+  assert.deepStrictEqual(J(rows[0]), ['Active', 'Title', 'Message', 'Start date', 'End date', 'Discount note']);
+  assert.deepStrictEqual(rows.slice(1).map(r => [r[0], r[1]]), [['No', 'Fall Sale'], ['No', 'Spring Sale'], ['No', 'Summer Sale']]);
+  assert.strictEqual(J(h.ctx.iennInventory()).promo, null, 'examples are inactive');
+  rows[1][0] = 'Yes'; rows[1][3] = '2026-10-01'; rows[1][4] = ''; // open-ended so the test doesn't depend on the real clock
+  assert.strictEqual(J(h.ctx.iennInventory()).promo.title, 'Fall Sale');
+  h.ctx.iennSetup(); assert.strictEqual(h.ss.sheets['Promos'].rows.length, 4, 'setup does not duplicate');
+});
+
 console.log(`\n${pass} tests passed`);

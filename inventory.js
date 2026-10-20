@@ -91,7 +91,7 @@ var IENN = (function () {
   function load(cb) {
     var fb = function () { cb(parse(IENN_FALLBACK).map(function (p) { p.sizes.forEach(function (s) { s.status = "unknown"; }); p.status = "unknown"; return p; }), false); };
     if (!INVENTORY_URL) return fb();
-    var good = function (d) { var l = parse(d); l.length ? cb(l, true) : fb(); };
+    var good = function (d) { var l = parse(d); l.length ? cb(l, true) : fb(); if (d && window.iennPromo) window.iennPromo(d.promo); };
     fetch(INVENTORY_URL).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(good)
       .catch(function () { jsonp(INVENTORY_URL, good, fb); });
   }

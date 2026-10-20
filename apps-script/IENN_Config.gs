@@ -80,3 +80,22 @@ var TEAM_EMAILS = [
 var PICKUP_ADDRESS = '{{PICKUP_ADDRESS}}';
 var DEFAULT_PAYMENT_METHOD = '{{PAYMENT_METHOD}}';  // don't put a Zelle handle here until confirmed
 var SIGN_OFF = 'Thank you for supporting native plants!\nInland Empire Native Nursery';
+
+/* ---- Promos tab (website banner) ----
+ * Tab "Promos" in this spreadsheet (iennSetup() creates it with example rows set to Active = No).
+ * One promo per row. The website shows the FIRST row where Active = Yes and today (America/Los_Angeles)
+ * falls within Start date .. End date, inclusive. A blank Start or End means open-ended. */
+var IENN_PROMOS_SHEET = 'Promos';
+var IENN_PROMO_TZ = 'America/Los_Angeles';
+var PROMO_ACTIVE_HEADERS = ['active', 'on', 'enabled'];
+var PROMO_TITLE_HEADERS = ['title', 'name'];
+var PROMO_MESSAGE_HEADERS = ['message', 'text', 'body'];
+var PROMO_START_HEADERS = ['start date', 'start', 'from'];
+var PROMO_END_HEADERS = ['end date', 'end', 'until', 'to'];
+var PROMO_DISCOUNT_HEADERS = ['discount note', 'discount', 'note'];
+var IENN_PROMO_HEADERS = ['Active', 'Title', 'Message', 'Start date', 'End date', 'Discount note'];
+var IENN_PROMO_EXAMPLES = [
+  ['No', 'Fall Sale', 'EXAMPLE: Fall is the best time to plant natives. Reserve yours now.', '2026-11-01', '2026-11-30', 'e.g. describe the discount here'],
+  ['No', 'Spring Sale', 'EXAMPLE: Spring color is here. Reserve your plants for Saturday pickup.', '2027-03-01', '2027-04-30', ''],
+  ['No', 'Summer Sale', 'EXAMPLE: Summer picks for hot, dry gardens.', '2027-06-01', '2027-07-31', '']
+];

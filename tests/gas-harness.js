@@ -44,7 +44,7 @@ function submitInvoice(data) {
 
 function load(opts = {}) {
   let now = opts.now || Date.parse('2026-10-20T17:00:00Z');
-  const ss = { sheets: {}, getSheetByName(n) { return this.sheets[n] || null; }, insertSheet(n) { throw new Error('must not create sheets: ' + n); },
+  const ss = { sheets: {}, getSheetByName(n) { return this.sheets[n] || null; }, insertSheet(n) { if (n !== 'Promos') throw new Error('must not create sheets: ' + n); return (this.sheets[n] = makeSheet(n, [], 99, this)); },
     getUrl: () => 'https://docs.google.com/spreadsheets/d/TEST_SHEET_ID/edit' };
   const add = (n, rows, id) => (ss.sheets[n] = makeSheet(n, rows, id, ss));
   add('Catalog', [['id', 'name'], ['p1', 'White Sage (Salvia apiana)'], ['p2', 'Sticky Monkeyflower (Diplacus aurantiacus)'], ['p3', 'Yarrow'], ['p4', 'Blue Pyramid Cypress'], ['p5', 'Toyon (Heteromeles arbutifolia)']], 1);

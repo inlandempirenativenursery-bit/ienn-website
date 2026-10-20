@@ -76,3 +76,19 @@ See `MERGE-NOTES.md` for what replaced Kobe's Sold-ledger back end, and which ma
 Cards show `assets/plants/<plant-id>.jpg`, where the id is the slug of the common name (for example "White Sage" becomes `white-sage`). The ids that have a photo are listed in `PLANT_PHOTOS` in `order.html`. To add a photo, save it at about 800px wide as JPEG in `assets/plants/`, add its id to `PLANT_PHOTOS`, and credit it in `assets/plants/CREDITS.md`. Plants without a photo show "Photo coming soon".
 
 Optional override from the sheet: add a **Photo** column (also matched: Photo URL, Image, Image URL, Picture) to the inventory tool's **Catalog** tab with a full image URL. The `?view=inventory` JSON then returns it as `image`, and it wins over the local file (`CATALOG_PHOTO_HEADERS` in `IENN_Config.gs`, `iennCatalogPhotos_()` in `IENN_Stock.gs`). Redeploy the Apps Script for this to take effect.
+
+## Promos (sale pop-up)
+
+The shop pages (`order.html` and the homepage) can show a small pop-up for a sale. It is controlled entirely from the **Promos** tab of the inventory tool's spreadsheet:
+
+| Active | Title | Message | Start date | End date | Discount note |
+|---|---|---|---|---|---|
+| No | Fall Sale | EXAMPLE: … | 2026-11-01 | 2026-11-30 | e.g. describe the discount here |
+
+- **Turn a promo on:** set **Active** to `Yes` and fill in Title and Message. Start and End dates are inclusive and use Pacific time. Leave either one blank for "open-ended". A Discount note is optional and shows in bold. Write only what's actually offered.
+- **Turn it off:** set Active to `No`, or let the End date pass. If several rows qualify, the first one from the top is shown.
+- Customers see it once per browser session, and must tap **Shop now** or **×** (or press Esc) to close it.
+- The tab is created with three inactive example rows (Fall, Spring and Summer Sale) when you run `iennSetup()` once. The example dates and wording are placeholders, so edit them before you activate a row.
+- Header names can be changed in `IENN_Config.gs` (`PROMO_*_HEADERS`). The logic is in `apps-script/IENN_Promos.gs`, and the pop-up in `promo.js`.
+- **One-time step:** paste `IENN_Promos.gs` and the updated `IENN_Config.gs` / `IENN_Website.gs` into the Apps Script project, run `iennSetup()`, then **Deploy → Manage deployments → edit → New version**. After that, turning promos on and off is sheet-only.
+- **Preview without the sheet:** open `order.html?promo=preview` (or `index.html?promo=preview`).
