@@ -190,7 +190,7 @@
         var raw = s.key || s.size || s.label || "", zi = sizeInfo(raw) || sizeInfo(s.label);
         var q = num(s.qty != null ? s.qty : r.qty), pr = num(s.price != null ? s.price : r.price);
         p.sizes.push({ size: zi ? zi.key : (String(raw).trim() || "Standard"), label: s.label || (zi ? zi.label : String(raw).trim() || "Standard"),
-          qty: q == null ? 0 : q, price: pr != null ? pr : (zi ? zi.price : null) });
+          qty: q == null ? (s.qty === null ? null : 0) : q, price: pr != null ? pr : (zi ? zi.price : null) });
       });
     });
     return Object.keys(map).map(function (k) { var p = map[k]; p.inStock = p.sizes.some(function (s) { return s.qty > 0; }); return p; });
@@ -219,7 +219,7 @@
       (p.blurb ? '<p class="blurb">' + esc(p.blurb) + '</p>' : '') +
       '<div class="price">' + priceText(first) + '</div><span class="low"></span>' +
       '<div class="chips" role="group" aria-label="Size">' + p.sizes.map(function (s) {
-        return '<button type="button" class="chip" data-size="' + esc(s.size) + '" aria-pressed="' + (s === first) + '"' + (s.qty > 0 ? "" : " disabled") + '>' + esc(s.label) + (typeof s.price === "number" ? " · " + money(s.price) : "") + (s.qty > 0 ? "" : " · sold out") + '</button>'; }).join("") + '</div>' +
+        return '<button type="button" class="chip" data-size="' + esc(s.size) + '" aria-pressed="' + (s === first) + '"' + (s.qty > 0 ? "" : " disabled") + '>' + esc(s.label) + (typeof s.price === "number" ? " · " + money(s.price) : "") + (s.qty > 0 ? "" : s.qty === null ? " · ask us" : " · sold out") + '</button>'; }).join("") + '</div>' +
       '<div class="buy"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease"' + (p.inStock ? "" : " disabled") + '>−</button><span class="q">1</span><button type="button" data-step="1" aria-label="Increase"' + (p.inStock ? "" : " disabled") + '>+</button></div>' +
       '<button type="button" class="add"' + (p.inStock ? "" : " disabled") + '>' + (p.inStock ? "Add — get yours now" : "Sold out") + '</button></div></div></article>';
   }
@@ -239,12 +239,12 @@
   function renderCart() {
     var n = count();
     $("#cart-count").textContent = n + (n === 1 ? " plant" : " plants");
-    $("#cart-summary").textContent = (n ? "Subtotal " + money(subtotal()) + " • " : "") + cart.map(function (l) { return l.qty + "× " + l.name; }).join(", ");
+    $("#cart-summary").textContent = (n ? "Total " + money(subtotal()) + " • " : "") + cart.map(function (l) { return l.qty + "× " + l.name; }).join(", ");
     $("#cartbar").classList.toggle("show", n > 0);
     $("#cart-lines").innerHTML = n ? cart.map(function (l, i) {
       return '<div class="line"><span>' + l.qty + '× ' + esc(l.name) + ' <span class="help">(' + esc(l.label || l.size) + ')</span></span><span>' +
         (typeof l.price === "number" ? money(l.price * l.qty) : "TBD") + ' <button type="button" data-remove="' + i + '">Remove</button></span></div>'; }).join("") +
-        '<div class="line"><strong>Subtotal</strong><strong>' + money(subtotal()) + '</strong></div><p class="help">Pay cash or Zelle at pickup.</p>'
+        '<div class="line"><strong>Total</strong><strong>' + money(subtotal()) + '</strong></div><p class="help">Prices include sales tax. Pay cash or Zelle at pickup.</p>'
       : '<p class="empty">Your cart is empty — add a plant above.</p>';
   }
   function addToCart(p, s, qty) {
@@ -276,7 +276,7 @@
         .then(function (j) { if (j && j.ok === false) { var er = new Error(j.message || j.error || "rejected"); er.data = j; throw er; } return { how: "sent", orderId: j && j.orderId, subtotal: j && j.subtotal }; });
     }
     var body = ["Name: " + order.name, "Phone: " + order.phone, "Email: " + order.email, "", "Plants:"]
-      .concat(order.items.map(function (l) { return "- " + l.qty + " x " + l.name + " (" + (l.label || l.size) + ")" + (typeof l.price === "number" ? " = " + money(l.price * l.qty) : ""); }), ["Subtotal: " + money(order.subtotal)],
+      .concat(order.items.map(function (l) { return "- " + l.qty + " x " + l.name + " (" + (l.label || l.size) + ")" + (typeof l.price === "number" ? " = " + money(l.price * l.qty) : ""); }), ["Total (tax included): " + money(order.subtotal)],
         ["", "Fulfillment: " + order.fulfillment, "", "Notes: " + (order.notes || "-")]).join("\n");
     window.location.href = "mailto:" + CONFIG.ORDER_EMAIL + "?subject=" + encodeURIComponent("Plant order - " + order.name) + "&body=" + encodeURIComponent(body);
     return Promise.resolve({ how: "mailto" });
@@ -299,7 +299,7 @@
       $("#confirm-id").textContent = res.orderId ? "Order #" + res.orderId : "";
       $("#confirm-note").textContent = res.how === "mailto" ? "Your email app should open with the order filled in — please hit Send so we receive it." : "We received your order and will be in touch soon.";
       $("#confirm-lines").innerHTML = order.items.map(function (l) { return '<div class="line"><span>' + l.qty + '× ' + esc(l.name) + ' (' + esc(l.label || l.size) + ')</span><span>' + (typeof l.price === "number" ? money(l.price * l.qty) : "TBD") + '</span></div>'; }).join("") +
-        '<div class="line"><strong>Subtotal</strong><strong>' + money(res.subtotal != null ? res.subtotal : order.subtotal) + '</strong></div>' +
+        '<div class="line"><strong>Total (tax included)</strong><strong>' + money(res.total != null ? res.total : order.subtotal) + '</strong></div>' +
         '<p class="help" style="margin-top:0.5rem;">' + esc(order.fulfillment) + '</p>';
       cart = []; save(); renderCart(); form.reset();
       $("#shop").hidden = true; $("#confirm").hidden = false; window.scrollTo(0, 0);

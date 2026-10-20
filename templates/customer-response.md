@@ -1,16 +1,16 @@
 # Customer reply template (copy/paste — not auto-sent)
 
-Generate a filled copy from the Orders tab with `ienn_buildCustomerReply_("<Order ID>")` in the Apps Script editor
+Generate a filled copy from the **Web Orders** tab with `ienn_buildCustomerReply_("<Invoice no>")` in the Apps Script editor
 (check the Execution log), or fill the fields below by hand. Keep this file and the helper in sync.
 
 ---
 
 Hi {{first name}},
 
-Thanks for your order with Inland Empire Native Nursery! Here are the details for order #{{Order ID}}:
+Thanks for your order with Inland Empire Native Nursery! Here are the details for order #{{Invoice no}}:
 
 {{Items — qty x plant (size) @ price = line total}}
-Subtotal: ${{Subtotal}}
+Total: ${{Total}} (sales tax included)
 
 Payment: {{Paid? "Paid (Cash/Zelle) — thank you!" : "Not yet paid. We accept cash or Zelle at pickup."}}
 Fulfillment: {{Saturday pickup in Fontana / Grand Terrace delivery request}}
@@ -25,4 +25,4 @@ See you soon,
 Inland Empire Native Nursery
 
 ---
-After sending: fill **Pickup address sent**, **Our response**, set **Status** (Confirmed / Picked up), and **Paid** / **Payment method** when paid.
+After sending (Web Orders tab): put your name in **Claimed by**, fill **Pickup address sent**, **Our response**, set **Status** (Confirmed / Picked up), and **Paid** / **Payment method** when paid.

@@ -1,247 +1,322 @@
 /**
- * IENN website API — ADD-ON FILE for the EXISTING IENN Apps Script project (invoice app).
- * NOT deployed by this repo. Defines no top-level doGet/doPost; everything is prefixed `ienn_`.
+ * IENN website + plant-list API — ADD-ON FILE for the EXISTING IENN inventory/invoice Apps Script project.
+ * The inventory tool (Catalog + Submissions) is the single source of truth. This file:
+ *   - never creates or points at a different spreadsheet (uses the tool's own spreadsheet, see ienn_ss_)
+ *   - never edits people's weekly count JSON in Submissions
+ *   - adds ONE ledger tab "Stock Adjustments" (+ a "Web Orders" tab for website contact/reply tracking)
+ *   - defines no top-level doGet/doPost; all names are prefixed ienn_
+ * NOT deployed by this repo. Install steps: README "Install into the existing Apps Script project".
  *
- * Install (see README "Live inventory + orders"):
- *   1. Add this file to the existing project as a new script file (e.g. ienn-api.gs).
- *   2. Add as the FIRST line inside the existing doGet(e):
- *        if (e && e.parameter && e.parameter.api) return ienn_api_doGet_(e);
- *   3. If the project has no doPost, add:
- *        function doPost(e) { return ienn_api_doPost_(e); }
- *      If it already has one, add as its FIRST line:
- *        if (e && e.parameter && e.parameter.api) return ienn_api_doPost_(e);
- *   4. Deploy → Manage deployments → Edit → New version (same /exec URL). Access must be "Anyone".
+ * Live stock = getAvailableStock()   (existing: latest week's counts, by plant name, for '4"' and '1 gal')
+ *            + sum(Stock Adjustments.Delta where Week key == latest week key)
+ * A new weekly count changes the week key, so old adjustments stop applying (baseline resets).
  *
- * Endpoints (site):
- *   GET  <exec>?api=inventory  -> {ok, updated, plants:[{name, botanical, rank, blurb, photo, sizes:[{key,label,qty,price}]}]}
- *   POST <exec>?api=order      body = JSON as text/plain -> {ok:true, orderId, subtotal} | {ok:false, error, short:[...]}
- *
- * SHEET ASSUMPTIONS (edit CFG_IENN if yours differ):
- *   - Inventory tab "Inventory", header row 1, ONE ROW PER PLANT.
- *   - Column "Plant" (required). Optional: Botanical, Rank, Active, Blurb, Photo.
- *   - One COUNT column per size, headers 2"  4"  Tree pot  1 gal (aliases accepted, see SIZES).
- *   - Blank count cell = size not offered; 0 = sold out.
+ * Routes (via the one-line patches in README):
+ *   GET  <exec>?api=inventory                -> JSON for the website
+ *   GET  <exec>?api=plantlist&format=csv     -> CSV download (add &instock=1 for in-stock only)
+ *   GET  <exec>?view=plantlist               -> printable plant list (add &instock=1)
+ *   POST <exec>?api=order  (text/plain JSON) -> validates live stock under lock, then calls existing submitInvoice()
  */
 var CFG_IENN = {
-  SPREADSHEET_ID: "",            // "" = the spreadsheet this project is bound to
-  INVENTORY_SHEET: "Inventory",
-  ORDERS_SHEET: "Orders",        // created automatically
-  // Prices are by size only (site shows no tax; the invoice app adds 8.75% tax separately).
-  SIZES: [
-    { key: '2"',       label: "2-inch",           price: 3,  aliases: ['2"', "2 in", "2-inch", "2 inch", "2in"] },
-    { key: '4"',       label: "4-inch",           price: 6,  aliases: ['4"', "4 in", "4-inch", "4 inch", "4in"] },
-    { key: "Tree pot", label: "Quarter tree pot", price: 10, aliases: ["tree pot", "quarter tree pot", "1/4 tree pot", "treepot"] },
-    { key: "1 gal",    label: "1-gallon",         price: 15, aliases: ["1 gal", "1-gallon", "1 gallon", "1gal", "gallon"] }
-  ],
-  HEADERS: {
-    name:      ["plant", "plant name", "name", "common name"],
-    botanical: ["botanical", "botanical name", "scientific name"],
-    rank:      ["rank", "popularity"],
-    active:    ["active", "show", "list online"],
-    blurb:     ["blurb", "description"],
-    photo:     ["photo", "photo url", "image", "image url"]
-  },
-  // Fallback team recipients if getSettings() has no team emails. Fill in REAL addresses:
-  TEAM_EMAILS: [
-    // "",  // Eric
-    // "",  // Andrew
-    // "",  // Keith
-    // ""   // Raylene
-  ],
-  CACHE_SECONDS: 60,
+  CATALOG_SHEET: "Catalog",
+  SUBMISSIONS_SHEET: "Submissions",
+  ADJUSTMENTS_SHEET: "Stock Adjustments",
+  WEB_ORDERS_SHEET: "Web Orders",
+  // Existing app constants (tax-INCLUSIVE prices: the invoice app computes subtotal = total / 1.0875).
+  PRICES: { '2"': 3, '4"': 6, "Tree pot": 10, "1 gal": 15 },
+  TAX_PCT: 8.75,
+  SIZE_LABELS: { '2"': "2-inch", '4"': "4-inch", "Tree pot": "Quarter tree pot", "1 gal": "1-gallon" },
+  TRACKED_SIZES: ['4"', "1 gal"],          // the only sizes the weekly count tracks
+  // Name of an EXISTING function in the project that returns the tool's Spreadsheet, if it has one
+  // (e.g. "getSpreadsheet_"). Leave "" to auto-detect; see ienn_ss_.
+  SPREADSHEET_RESOLVER: "",
+  SPREADSHEET_NAME: "IENN Inventory",      // last-resort lookup by name (must be unique in the owner's Drive)
+  // submitInvoice() emails the customer a receipt when customerEmail is set. Web orders are unpaid
+  // requests, so by default we DON'T pass the email (team replies with the template instead).
+  SEND_CUSTOMER_RECEIPT: false,
+  LOGO_URL: "",                            // public URL of the existing logo, if any (repo is private)
+  CACHE_SECONDS: 30,
   MAX_QTY_PER_LINE: 200
 };
 
-var IENN_ORDER_HEADERS = ["Order ID", "Received", "Name", "Phone", "Email", "Fulfillment", "Items", "Subtotal", "Notes",
-  "Status", "Paid", "Payment method", "Pickup address sent", "Our response", "Claimed by"];
+var IENN_ADJ_HEADERS = ["Timestamp", "Week key", "Plant", "Size", "Delta", "Ref (invoice/order no)", "Source", "Note"];
+var IENN_WEB_HEADERS = ["Invoice no", "Received", "Name", "Phone", "Email", "Fulfillment", "Items", "Total (tax incl.)",
+  "Customer notes", "Status", "Paid", "Payment method", "Claimed by", "Pickup address sent", "Our response"];
 
-function ienn_ss_() { return CFG_IENN.SPREADSHEET_ID ? SpreadsheetApp.openById(CFG_IENN.SPREADSHEET_ID) : SpreadsheetApp.getActiveSpreadsheet(); }
+// ---------------------------------------------------------------- helpers
 function ienn_norm_(s) { return String(s == null ? "" : s).toLowerCase().replace(/[\u201c\u201d\u2033]/g, '"').replace(/\s+/g, " ").trim(); }
+function ienn_key_(name) { return ienn_norm_(String(name || "").split(" (")[0]); }
 function ienn_json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
-function ienn_num_(v) { if (v === "" || v == null) return null; var n = Number(String(v).replace(/[$,]/g, "")); return isFinite(n) ? n : null; }
+function ienn_money_(n) { return (Number(n) || 0).toFixed(2); }
 function ienn_size_(s) {
-  var n = ienn_norm_(s);
-  for (var i = 0; i < CFG_IENN.SIZES.length; i++) {
-    var z = CFG_IENN.SIZES[i];
-    if (ienn_norm_(z.key) === n || ienn_norm_(z.label) === n || z.aliases.some(function (a) { return ienn_norm_(a) === n; })) return z;
-  }
+  var n = ienn_norm_(s), al = { '2"': ['2"', "2-inch", "2 inch", "2 in"], '4"': ['4"', "4-inch", "4 inch", "4 in"],
+    "Tree pot": ["tree pot", "quarter tree pot", "1/4 tree pot"], "1 gal": ["1 gal", "1-gallon", "1 gallon", "1gal"] };
+  for (var k in al) if (al[k].indexOf(n) >= 0) return k;
   return null;
 }
+function ienn_globalFn_(name) { var g = typeof globalThis !== "undefined" ? globalThis : this; var f = g && g[name]; return typeof f === "function" ? f : null; }
 
-/** Reads the inventory tab into {sheet, rows:[{row, name, ..., sizes:[{key,label,price,qty,col}]}]} */
-function ienn_readInventory_() {
-  var sh = ienn_ss_().getSheetByName(CFG_IENN.INVENTORY_SHEET);
-  if (!sh) throw new Error("Inventory sheet not found: " + CFG_IENN.INVENTORY_SHEET);
-  var values = sh.getDataRange().getValues();
-  var head = (values.shift() || []).map(ienn_norm_), col = {}, sizeCols = [];
-  Object.keys(CFG_IENN.HEADERS).forEach(function (k) {
-    col[k] = -1;
-    CFG_IENN.HEADERS[k].some(function (a) { var i = head.indexOf(ienn_norm_(a)); if (i >= 0) { col[k] = i; return true; } return false; });
+/** The inventory tool's own spreadsheet. Order: configured resolver, common existing helper names,
+ *  bound spreadsheet, then the unique Drive file named CFG.SPREADSHEET_NAME. Never creates one. */
+function ienn_ss_() {
+  if (ienn_ss_.cached) return ienn_ss_.cached;
+  var names = (CFG_IENN.SPREADSHEET_RESOLVER ? [CFG_IENN.SPREADSHEET_RESOLVER] : [])
+    .concat(["getSpreadsheet_", "getSpreadsheet", "getSS_", "getSS", "getInventorySpreadsheet_", "openInventory_", "ss_"]);
+  for (var i = 0; i < names.length; i++) {
+    var f = ienn_globalFn_(names[i]);
+    if (f) { try { var s = f(); if (s && s.getSheetByName) return (ienn_ss_.cached = s); } catch (e) {} }
+  }
+  var active = SpreadsheetApp.getActiveSpreadsheet();
+  if (active && active.getSheetByName(CFG_IENN.CATALOG_SHEET)) return (ienn_ss_.cached = active);
+  var it = DriveApp.getFilesByName(CFG_IENN.SPREADSHEET_NAME), found = [];
+  while (it.hasNext()) found.push(it.next());
+  if (found.length !== 1) throw new Error("Can't resolve the inventory tool's spreadsheet (" + found.length + " named '" +
+    CFG_IENN.SPREADSHEET_NAME + "'). Set CFG_IENN.SPREADSHEET_RESOLVER to the existing lookup function.");
+  return (ienn_ss_.cached = SpreadsheetApp.open(found[0]));
+}
+function ienn_sheet_(name, headers) {
+  var ss = ienn_ss_(), sh = ss.getSheetByName(name);
+  if (!sh) { sh = ss.insertSheet(name); sh.appendRow(headers); sh.setFrozenRows(1); }
+  return sh;
+}
+function ienn_rows_(sh) {
+  var v = sh.getDataRange().getValues(), h = (v.shift() || []).map(ienn_norm_);
+  return { head: h, rows: v, col: function (aliases) { for (var i = 0; i < aliases.length; i++) { var j = h.indexOf(aliases[i]); if (j >= 0) return j; } return -1; } };
+}
+
+// ---------------------------------------------------------------- stock
+/** Latest weekly-count key. Uses getAvailableStock()'s week if it returns one, else the newest week/date in Submissions. */
+function ienn_latestWeekKey_(base) {
+  if (base && (base.week || base.weekKey)) return String(base.week || base.weekKey);
+  var sh = ienn_ss_().getSheetByName(CFG_IENN.SUBMISSIONS_SHEET); if (!sh) return "unknown";
+  var t = ienn_rows_(sh), c = t.col(["week", "week key", "week of", "weekof", "weekkey", "date", "timestamp", "submitted"]);
+  if (c < 0) c = 0;
+  var best = null;
+  t.rows.forEach(function (r) { var v = r[c]; if (v === "" || v == null) return;
+    var k = v instanceof Date ? Utilities.formatDate(v, Session.getScriptTimeZone(), "yyyy-MM-dd") : String(v);
+    if (best == null || k > best) best = k; });
+  return best || "unknown";
+}
+/** Existing getAvailableStock() normalized to {plantKey: {name, '4"': n, '1 gal': n}} (+ week). */
+function ienn_baseStock_() {
+  var f = ienn_globalFn_("getAvailableStock");
+  if (!f) throw new Error("getAvailableStock() not found in this project");
+  var raw = f() || {}, base = raw.stock && typeof raw.stock === "object" ? raw.stock : raw, out = {};
+  Object.keys(base).forEach(function (name) {
+    var v = base[name]; if (!v || typeof v !== "object") return;
+    var e = out[ienn_key_(name)] = { name: name };
+    Object.keys(v).forEach(function (s) { var k = ienn_size_(s) || s; e[k] = (Number(v[s]) || 0) + (e[k] || 0); });
   });
-  if (col.name < 0) throw new Error("No 'Plant' column. Headers: " + head.join(", "));
-  head.forEach(function (h, i) { var z = ienn_size_(h); if (z) sizeCols.push({ z: z, i: i }); });
-  var rows = [];
-  values.forEach(function (r, idx) {
-    var name = String(r[col.name] || "").trim(); if (!name) return;
-    var act = col.active >= 0 ? String(r[col.active]).trim() : "";
-    var hidden = col.active >= 0 && (r[col.active] === false || /^(no|n|false|0|hide)$/i.test(act));
-    var g = function (k) { return col[k] >= 0 ? r[col[k]] : ""; };
-    var sizes = [];
-    sizeCols.forEach(function (c) {
-      var q = ienn_num_(r[c.i]);
-      if (q != null) sizes.push({ key: c.z.key, label: c.z.label, price: c.z.price, qty: Math.max(0, Math.floor(q)), col: c.i + 1 });
+  return { stock: out, week: ienn_latestWeekKey_(raw) };
+}
+/** Live stock = base + adjustments for the current week key. */
+function ienn_getLiveStock_() {
+  var b = ienn_baseStock_(), live = JSON.parse(JSON.stringify(b.stock));
+  var sh = ienn_ss_().getSheetByName(CFG_IENN.ADJUSTMENTS_SHEET);
+  if (sh && sh.getLastRow() > 1) {
+    sh.getDataRange().getValues().slice(1).forEach(function (r) {
+      if (String(r[1]) !== String(b.week)) return;
+      var k = ienn_key_(r[2]), s = ienn_size_(r[3]) || String(r[3]), d = Number(r[4]) || 0;
+      var e = live[k] || (live[k] = { name: String(r[2]) }); e[s] = (e[s] || 0) + d;
     });
-    rows.push({ row: idx + 2, name: name, hidden: hidden, botanical: String(g("botanical") || ""), rank: ienn_num_(g("rank")),
-      blurb: String(g("blurb") || ""), photo: String(g("photo") || ""), sizes: sizes });
+  }
+  Object.keys(live).forEach(function (k) { CFG_IENN.TRACKED_SIZES.forEach(function (s) { if (live[k][s] != null) live[k][s] = Math.max(0, live[k][s]); }); });
+  return { stock: live, week: b.week };
+}
+/** SHARED by website orders and in-person invoices. Appends one negative row per tracked-size line.
+ *  Idempotent per (ref, source): calling twice for the same invoice does nothing the second time. */
+function ienn_recordSale_(lines, ref, source, weekKey) {
+  if (!lines || !lines.length) return 0;
+  var sh = ienn_sheet_(CFG_IENN.ADJUSTMENTS_SHEET, IENN_ADJ_HEADERS);
+  if (ref && sh.getLastRow() > 1) {
+    var refs = sh.getRange(2, 6, sh.getLastRow() - 1, 1).getValues();
+    for (var i = 0; i < refs.length; i++) if (String(refs[i][0]) === String(ref)) return 0;
+  }
+  var wk = weekKey || ienn_baseStock_().week, now = new Date(), n = 0;
+  lines.forEach(function (l) {
+    var s = ienn_size_(l.size), q = Math.floor(Number(l.qty) || 0);
+    if (!s || CFG_IENN.TRACKED_SIZES.indexOf(s) < 0 || q <= 0) return;
+    sh.appendRow([now, wk, String(l.plant || l.name), s, -q, String(ref || ""), source || "", ""]); n++;
   });
-  return { sheet: sh, rows: rows };
+  try { CacheService.getScriptCache().remove("ienn_inventory"); } catch (e) {}
+  return n;
 }
 
-function ienn_publicInventory_() {
-  var inv = ienn_readInventory_();
-  return { ok: true, updated: new Date().toISOString(),
-    plants: inv.rows.filter(function (p) { return !p.hidden && p.sizes.length; }).map(function (p) {
-      return { name: p.name, botanical: p.botanical, rank: p.rank, blurb: p.blurb, photo: p.photo,
-        sizes: p.sizes.map(function (s) { return { key: s.key, label: s.label, qty: s.qty, price: s.price }; }) };
-    }) };
+// ---------------------------------------------------------------- catalog / public inventory
+function ienn_catalog_() {
+  var sh = ienn_ss_().getSheetByName(CFG_IENN.CATALOG_SHEET), list = [];
+  if (!sh) return list;
+  var t = ienn_rows_(sh);
+  var cName = t.col(["common name", "name", "plant", "plant name", "common"]), cBot = t.col(["botanical", "botanical name", "scientific name", "latin"]);
+  var cId = t.col(["id", "plant id", "plantid"]), cAct = t.col(["active", "show", "list online"]), cRank = t.col(["rank", "popularity"]);
+  var cBlurb = t.col(["blurb", "description"]), cPhoto = t.col(["photo", "photo url", "image"]);
+  if (cName < 0) cName = cId >= 0 ? (cId === 0 ? 1 : 0) : 0;
+  t.rows.forEach(function (r) {
+    var name = String(r[cName] || "").trim(); if (!name) return;
+    if (cAct >= 0 && (r[cAct] === false || /^(no|n|false|0|hide)$/i.test(String(r[cAct]).trim()))) return;
+    var bot = cBot >= 0 ? String(r[cBot] || "") : ((/\(([^)]+)\)/.exec(name) || [])[1] || "");
+    list.push({ id: cId >= 0 ? String(r[cId]) : "", name: name.split(" (")[0].trim(), botanical: bot,
+      rank: cRank >= 0 && r[cRank] !== "" ? Number(r[cRank]) : null, blurb: cBlurb >= 0 ? String(r[cBlurb] || "") : "", photo: cPhoto >= 0 ? String(r[cPhoto] || "") : "" });
+  });
+  return list;
+}
+function ienn_plants_(inStockOnly) {
+  var live = ienn_getLiveStock_(), seen = {}, out = [];
+  var add = function (p) {
+    var k = ienn_key_(p.name); if (seen[k]) return; seen[k] = 1;
+    var st = live.stock[k] || {};
+    var sizes = Object.keys(CFG_IENN.PRICES).map(function (s) {
+      var tracked = CFG_IENN.TRACKED_SIZES.indexOf(s) >= 0;
+      return { key: s, label: CFG_IENN.SIZE_LABELS[s], price: CFG_IENN.PRICES[s], qty: tracked ? (st[s] || 0) : null };
+    });
+    var inStock = sizes.some(function (z) { return z.qty > 0; });
+    if (inStockOnly && !inStock) return;
+    out.push({ name: p.name, botanical: p.botanical || "", rank: p.rank, blurb: p.blurb || "", photo: p.photo || "", inStock: inStock, sizes: sizes });
+  };
+  ienn_catalog_().forEach(add);
+  Object.keys(live.stock).forEach(function (k) { add({ name: String(live.stock[k].name).split(" (")[0] }); }); // counted but not in Catalog
+  return { ok: true, updated: new Date().toISOString(), week: live.week, taxIncluded: true, taxPct: CFG_IENN.TAX_PCT, plants: out };
 }
 
+// ---------------------------------------------------------------- routes
 function ienn_api_doGet_(e) {
+  var p = (e && e.parameter) || {};
   try {
-    var api = e.parameter.api;
-    if (api === "inventory") {
-      var cache = CacheService.getScriptCache(), hit = cache.get("ienn_inventory");
+    if (p.view === "plantlist") return ienn_plantListHtml_(p.instock === "1");
+    if (p.api === "inventory") {
+      var c = CacheService.getScriptCache(), hit = c.get("ienn_inventory");
       if (hit) return ContentService.createTextOutput(hit).setMimeType(ContentService.MimeType.JSON);
-      var out = JSON.stringify(ienn_publicInventory_());
-      cache.put("ienn_inventory", out, CFG_IENN.CACHE_SECONDS);
+      var out = JSON.stringify(ienn_plants_(false)); c.put("ienn_inventory", out, CFG_IENN.CACHE_SECONDS);
       return ContentService.createTextOutput(out).setMimeType(ContentService.MimeType.JSON);
     }
+    if (p.api === "plantlist" && p.format === "csv")
+      return ContentService.createTextOutput(ienn_exportPlantListCsv_(p.instock === "1")).setMimeType(ContentService.MimeType.CSV).downloadAsFile("ienn-plant-list.csv");
     return ienn_json_({ ok: false, error: "unknown_api" });
   } catch (err) { return ienn_json_({ ok: false, error: String(err && err.message || err) }); }
 }
-
 function ienn_api_doPost_(e) {
   try {
-    if (e.parameter.api !== "order") return ienn_json_({ ok: false, error: "unknown_api" });
+    if (!e || !e.parameter || e.parameter.api !== "order") return ienn_json_({ ok: false, error: "unknown_api" });
     return ienn_json_(ienn_placeOrder_(JSON.parse(e.postData.contents)));
   } catch (err) { return ienn_json_({ ok: false, error: String(err && err.message || err) }); }
 }
 
-/** Validates against live counts under a lock, decrements, logs, notifies. Returns a plain object. */
+// ---------------------------------------------------------------- website order -> existing invoice flow
 function ienn_placeOrder_(o) {
   var s = function (v, max) { return String(v == null ? "" : v).trim().slice(0, max || 200); };
   if (!o || !s(o.name) || !(s(o.phone) || s(o.email)) || !Array.isArray(o.items) || !o.items.length)
     return { ok: false, error: "missing_fields", message: "Name, phone or email, and at least one plant are required." };
-  var lines = [];
+  var need = {}, order = [];
   for (var i = 0; i < o.items.length; i++) {
     var it = o.items[i], z = ienn_size_(it.size), q = Math.floor(Number(it.qty));
     if (!s(it.name) || !z || !(q > 0) || q > CFG_IENN.MAX_QTY_PER_LINE)
       return { ok: false, error: "bad_item", message: "Invalid item: " + s(it.name) + " " + s(it.size) };
-    lines.push({ name: s(it.name), z: z, qty: q });
+    var k = ienn_key_(it.name) + "|" + z;
+    if (!need[k]) { need[k] = { name: s(it.name), size: z, qty: 0 }; order.push(need[k]); }
+    need[k].qty += q;
   }
   var lock = LockService.getScriptLock();
-  if (!lock.tryLock(20000)) return { ok: false, error: "busy", message: "Busy, please try again." };
+  if (!lock.tryLock(20000)) return { ok: false, error: "busy", message: "Busy, please try again in a moment." };
   try {
-    var inv = ienn_readInventory_(), byName = {};
-    inv.rows.forEach(function (r) { if (!r.hidden) byName[ienn_norm_(r.name)] = r; });
-    // merge duplicate lines, then check stock
-    var need = {}, short = [];
-    lines.forEach(function (l) { var k = ienn_norm_(l.name) + "|" + l.z.key; need[k] = need[k] || { name: l.name, z: l.z, qty: 0 }; need[k].qty += l.qty; });
-    Object.keys(need).forEach(function (k) {
-      var n = need[k], r = byName[ienn_norm_(n.name)], cell = r && r.sizes.filter(function (x) { return x.key === n.z.key; })[0];
-      n.r = r; n.cell = cell;
-      if (!cell || cell.qty < n.qty) short.push({ name: n.name, size: n.z.label, requested: n.qty, available: cell ? cell.qty : 0 });
+    var live = ienn_getLiveStock_(), short = [];
+    order.forEach(function (n) {
+      if (CFG_IENN.TRACKED_SIZES.indexOf(n.size) < 0) { short.push({ name: n.name, size: CFG_IENN.SIZE_LABELS[n.size], requested: n.qty, available: null, reason: "not_tracked" }); return; }
+      var st = live.stock[ienn_key_(n.name)], have = st ? (st[n.size] || 0) : 0;
+      n.plant = st ? st.name : n.name;   // exact name the invoice app knows
+      if (have < n.qty) short.push({ name: n.name, size: CFG_IENN.SIZE_LABELS[n.size], requested: n.qty, available: have });
     });
     if (short.length) return { ok: false, error: "insufficient_stock", short: short,
-      message: "Not enough stock: " + short.map(function (x) { return x.name + " " + x.size + " (wanted " + x.requested + ", have " + x.available + ")"; }).join("; ") };
-    var subtotal = 0, itemText = [];
-    Object.keys(need).forEach(function (k) {
-      var n = need[k];
-      inv.sheet.getRange(n.r.row, n.cell.col).setValue(n.cell.qty - n.qty);
-      subtotal += n.qty * n.z.price;
-      itemText.push(n.qty + " x " + n.r.name + " (" + n.z.label + ") @ $" + n.z.price + " = $" + (n.qty * n.z.price));
-    });
-    var ss = ienn_ss_(), osh = ss.getSheetByName(CFG_IENN.ORDERS_SHEET) || ss.insertSheet(CFG_IENN.ORDERS_SHEET);
-    if (osh.getLastRow() === 0) osh.appendRow(IENN_ORDER_HEADERS);
-    var tz = Session.getScriptTimeZone(), now = new Date();
-    var orderId = "W" + Utilities.formatDate(now, tz, "yyMMdd") + "-" + ("000" + osh.getLastRow()).slice(-4);
-    osh.appendRow([orderId, now, s(o.name), s(o.phone, 40), s(o.email, 120), s(o.fulfillment, 120), itemText.join("\n"), subtotal,
+      message: "Not enough stock: " + short.map(function (x) { return x.name + " " + x.size + (x.available == null ? " (ask us)" : " (wanted " + x.requested + ", have " + x.available + ")"); }).join("; ") };
+
+    var lines = order.map(function (n) { return { plant: n.plant, size: n.size, qty: String(n.qty), amt: ienn_money_(n.qty * CFG_IENN.PRICES[n.size]) }; });
+    var grand = order.reduce(function (t, n) { return t + n.qty * CFG_IENN.PRICES[n.size]; }, 0);
+    var sub = grand / (1 + CFG_IENN.TAX_PCT / 100), tax = grand - sub;
+    var itemsText = order.map(function (n) { return n.qty + " x " + n.plant + " (" + CFG_IENN.SIZE_LABELS[n.size] + ") = $" + ienn_money_(n.qty * CFG_IENN.PRICES[n.size]); }).join("\n");
+
+    // Web Orders row first so the team email (inside submitInvoice) can link to it.
+    var ss = ienn_ss_(), wsh = ienn_sheet_(CFG_IENN.WEB_ORDERS_SHEET, IENN_WEB_HEADERS);
+    wsh.appendRow(["(pending)", new Date(), s(o.name), s(o.phone, 40), s(o.email, 120), s(o.fulfillment, 120), itemsText, ienn_money_(grand),
       s(o.notes, 2000), "New", "No", "", "", "", ""]);
-    var row = osh.getLastRow();
-    SpreadsheetApp.flush();
-    try { CacheService.getScriptCache().remove("ienn_inventory"); } catch (x) {}
-    var link = ss.getUrl() + "#gid=" + osh.getSheetId() + "&range=A" + row;
-    try { ienn_notifyTeam_(orderId, o, itemText, subtotal, link); } catch (mailErr) { console.error("notify failed: " + mailErr); }
-    return { ok: true, orderId: orderId, subtotal: subtotal };
+    var row = wsh.getLastRow(), link = ss.getUrl() + "#gid=" + wsh.getSheetId() + "&range=A" + row;
+    var note = ["WEBSITE ORDER — " + s(o.name) + " • " + s(o.phone, 40) + " • " + s(o.email, 120), "Fulfillment: " + s(o.fulfillment, 120),
+      "Customer notes: " + (s(o.notes, 2000) || "-"), "Order details / claim: " + link,
+      "One person claims it (Web Orders → Claimed by) and replies using ienn_buildCustomerReply_."].join("\n");
+    var data = { date: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd"), paid: "unpaid", payment: "",
+      customerEmail: CFG_IENN.SEND_CUSTOMER_RECEIPT ? s(o.email, 120) : "", discType: "none", discAmt: "", note: note,
+      lines: lines, subtotal: ienn_money_(sub), tax: ienn_money_(tax), grand: ienn_money_(grand), source: "website" };
+
+    var invno, submit = ienn_globalFn_("submitInvoice");
+    try {
+      if (!submit) throw new Error("submitInvoice() not found");
+      var res = submit(data) || {}; invno = res.invno || res.invoiceNo || res.id;
+      if (!invno) throw new Error("submitInvoice returned no invno");
+    } catch (subErr) {
+      wsh.getRange(row, 10).setValue("FAILED: " + String(subErr && subErr.message || subErr));
+      return { ok: false, error: "invoice_failed", message: "We couldn't record your order. Please call, text or email us." };
+    }
+    wsh.getRange(row, 1).setValue(invno);
+    ienn_recordSale_(lines, invno, "website", live.week);   // no-op if the patched submitInvoice already recorded it
+    return { ok: true, orderId: invno, total: grand, subtotal: Number(ienn_money_(sub)), tax: Number(ienn_money_(tax)) };
   } finally { lock.releaseLock(); }
 }
 
-/** Team recipients: existing app's getSettings() team emails if present, else CFG_IENN.TEAM_EMAILS. */
-function ienn_teamEmails_() {
-  var found = [];
-  try {
-    if (typeof getSettings === "function") {
-      var st = getSettings(), txt = "";
-      var walk = function (v, k) {
-        if (v == null) return;
-        if (typeof v === "string") { if (/email|team|recipient/i.test(k || "") || /@/.test(v)) txt += " " + v; }
-        else if (Array.isArray(v)) v.forEach(function (x) { walk(x, k); });
-        else if (typeof v === "object") Object.keys(v).forEach(function (kk) { walk(v[kk], kk); });
-      };
-      walk(st, "");
-      found = txt.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) || [];
-    }
-  } catch (e) { found = []; }
-  if (!found.length) found = CFG_IENN.TEAM_EMAILS.filter(function (x) { return /@/.test(x); });
-  return found.filter(function (x, i, a) { return a.indexOf(x) === i; });
+// ---------------------------------------------------------------- printable list + CSV
+function ienn_esc_(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+function ienn_avail_(q) { return q == null ? "ask" : (q > 0 ? q + " available" : "sold out"); }
+function ienn_sorted_(inStockOnly) {
+  return ienn_plants_(inStockOnly).plants.sort(function (a, b) { return (b.inStock - a.inStock) || a.name.localeCompare(b.name); });
+}
+function ienn_plantListHtml_(inStockOnly) {
+  var plants = ienn_sorted_(inStockOnly), tz = Session.getScriptTimeZone();
+  var base = ScriptApp.getService().getUrl();
+  var rows = plants.map(function (p) {
+    return "<tr class='" + (p.inStock ? "" : "out") + "'><td><b>" + ienn_esc_(p.name) + "</b>" + (p.botanical ? "<br><i>" + ienn_esc_(p.botanical) + "</i>" : "") + "</td>" +
+      p.sizes.map(function (z) { return "<td>$" + z.price + "<br><small>" + ienn_avail_(z.qty) + "</small></td>"; }).join("") + "</tr>";
+  }).join("");
+  var html = "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>IENN Plant List</title><style>" +
+    "body{font:14px/1.35 system-ui,sans-serif;color:#222;margin:24px;max-width:900px}h1{color:#4a5a4a;margin:0}table{width:100%;border-collapse:collapse;margin-top:12px}" +
+    "th,td{border-bottom:1px solid #ddd;padding:6px 8px;text-align:left;vertical-align:top}th{background:#f3f6f3}tr.out{color:#999}" +
+    ".info{background:#f8f6f3;border-left:4px solid #6b7c6a;padding:8px 12px;margin:10px 0}.bar a,.bar button{margin-right:8px}" +
+    "@media print{.bar{display:none}body{margin:0}}</style></head><body>" +
+    (CFG_IENN.LOGO_URL ? "<img src='" + ienn_esc_(CFG_IENN.LOGO_URL) + "' alt='IENN logo' style='height:56px'>" : "") +
+    "<h1>Inland Empire Native Nursery — Plant List</h1><div>Availability as of " + Utilities.formatDate(new Date(), tz, "MMM d, yyyy h:mm a") + "</div>" +
+    "<div class='info'><b>Pickup:</b> Saturdays 10 AM – 2 PM &nbsp;•&nbsp; <b>Payment:</b> Cash or Zelle &nbsp;•&nbsp; <b>Location:</b> Fontana near Sierra &amp; Baseline (~10 min from the 210) &nbsp;•&nbsp; <b>Grand Terrace:</b> delivery/service case-by-case. Prices include sales tax.</div>" +
+    "<div class='bar'><button onclick='window.print()'>Print / Save as PDF</button>" +
+    "<a target='_top' href='" + base + "?view=plantlist" + (inStockOnly ? "" : "&instock=1") + "'>" + (inStockOnly ? "Show all plants" : "In-stock only") + "</a>" +
+    "<a target='_top' href='" + base + "?api=plantlist&format=csv" + (inStockOnly ? "&instock=1" : "") + "'>Download CSV</a></div>" +
+    "<table><thead><tr><th>Plant</th>" + Object.keys(CFG_IENN.PRICES).map(function (s) { return "<th>" + CFG_IENN.SIZE_LABELS[s] + "</th>"; }).join("") + "</tr></thead><tbody>" +
+    (rows || "<tr><td colspan='5'>No plants listed.</td></tr>") + "</tbody></table>" +
+    "<p><small>2-inch and quarter tree pot aren't in the weekly count — ask for availability.</small></p></body></html>";
+  return HtmlService.createHtmlOutput(html).setTitle("IENN Plant List").setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+function ienn_exportPlantListCsv_(inStockOnly) {
+  var q = function (v) { v = String(v == null ? "" : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+  var sizes = Object.keys(CFG_IENN.PRICES);
+  var head = ["Plant", "Botanical"].concat(sizes.map(function (s) { return CFG_IENN.SIZE_LABELS[s] + " price"; }), sizes.map(function (s) { return CFG_IENN.SIZE_LABELS[s] + " available"; }));
+  var lines = [head.map(q).join(",")];
+  ienn_sorted_(inStockOnly).forEach(function (p) {
+    lines.push([p.name, p.botanical].concat(p.sizes.map(function (z) { return z.price; }), p.sizes.map(function (z) { return z.qty == null ? "ask" : z.qty; })).map(q).join(","));
+  });
+  return lines.join("\n");
 }
 
-function ienn_notifyTeam_(orderId, o, itemText, subtotal, link) {
-  var to = ienn_teamEmails_();
-  if (!to.length) { console.warn("No team emails configured; order " + orderId + " logged only."); return; }
-  var body = [
-    "New website order " + orderId,
-    "", "Customer: " + o.name, "Phone: " + (o.phone || "-"), "Email: " + (o.email || "-"), "Fulfillment: " + (o.fulfillment || "-"),
-    "", "Items:", itemText.join("\n"), "Subtotal: $" + subtotal + " (no tax shown on site)",
-    "", "Customer notes: " + (o.notes || "-"),
-    "", "View details: " + link,
-    "", "ONE person should claim this order: put your name in 'Claimed by' and reply to the customer.",
-    "Reply text: run ienn_buildCustomerReply_(\"" + orderId + "\") in the script editor (copy/paste, not auto-sent)."
-  ].join("\n");
-  var msg = { to: to.join(","), subject: "New IENN order #" + orderId + " — " + o.name, body: body };
-  if (o.email) msg.replyTo = String(o.email);
-  MailApp.sendEmail(msg);
-}
-
-/** Copy/paste customer reply for an order (NOT sent). Keep in sync with templates/customer-response.md. */
-function ienn_buildCustomerReply_(orderId) {
-  var sh = ienn_ss_().getSheetByName(CFG_IENN.ORDERS_SHEET);
-  if (!sh) throw new Error("No Orders sheet");
+// ---------------------------------------------------------------- customer reply (copy/paste, never sent)
+/** Keep in sync with templates/customer-response.md. Run in the editor; copy from the Execution log. */
+function ienn_buildCustomerReply_(invoiceNo) {
+  var sh = ienn_ss_().getSheetByName(CFG_IENN.WEB_ORDERS_SHEET); if (!sh) throw new Error("No Web Orders sheet");
   var v = sh.getDataRange().getValues(), h = v[0], rec = null;
-  for (var i = 1; i < v.length; i++) if (String(v[i][0]) === String(orderId)) { rec = {}; h.forEach(function (k, j) { rec[k] = v[i][j]; }); }
-  if (!rec) throw new Error("Order not found: " + orderId);
-  var paid = /^(yes|y|true)$/i.test(String(rec["Paid"]));
-  var addr = String(rec["Pickup address sent"] || "").trim();
-  var text = [
-    "Hi " + String(rec["Name"]).split(" ")[0] + ",",
-    "",
-    "Thanks for your order with Inland Empire Native Nursery! Here are the details for order #" + rec["Order ID"] + ":",
-    "",
-    String(rec["Items"]),
-    "Subtotal: $" + rec["Subtotal"],
-    "",
+  for (var i = 1; i < v.length; i++) if (String(v[i][0]) === String(invoiceNo)) { rec = {}; h.forEach(function (k, j) { rec[k] = v[i][j]; }); }
+  if (!rec) throw new Error("Order not found: " + invoiceNo);
+  var paid = /^(yes|y|true|paid)$/i.test(String(rec["Paid"])), addr = String(rec["Pickup address sent"] || "").trim();
+  var text = ["Hi " + String(rec["Name"]).split(" ")[0] + ",", "",
+    "Thanks for your order with Inland Empire Native Nursery! Order #" + rec["Invoice no"] + ":", "",
+    String(rec["Items"]), "Total: $" + rec["Total (tax incl.)"] + " (sales tax included)", "",
     "Payment: " + (paid ? "Paid" + (rec["Payment method"] ? " (" + rec["Payment method"] + ")" : "") + " — thank you!" : "Not yet paid. We accept cash or Zelle at pickup."),
-    "Fulfillment: " + rec["Fulfillment"],
-    "Pickup: Saturdays 10 AM – 2 PM.",
+    "Fulfillment: " + rec["Fulfillment"], "Pickup: Saturdays 10 AM – 2 PM.",
     "Pickup address: " + (addr || "[CONFIRM ORDER FIRST, then paste the exact Fontana address near Sierra & Baseline here]"),
-    "Grand Terrace delivery/service is handled case-by-case — we'll confirm with you directly if you requested it.",
-    "",
-    "Your notes: " + (rec["Notes"] || "-"),
-    "Our response: " + (rec["Our response"] || "[write response here]"),
-    "",
-    "See you soon,",
-    "Inland Empire Native Nursery"
-  ].join("\n");
+    "Grand Terrace delivery/service is handled case-by-case — we'll confirm with you directly if you requested it.", "",
+    "Your notes: " + (rec["Customer notes"] || "-"), "Our response: " + (rec["Our response"] || "[write response here]"), "",
+    "See you soon,", "Inland Empire Native Nursery"].join("\n");
   console.log(text);
   return text;
 }

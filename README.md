@@ -19,33 +19,37 @@ https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJF
 - Lobo: testing, edge cases, cleanup
 
 Work continues in this repo so changes can be reviewed and deployed.
-## Live inventory + orders (setup — NOT deployed yet)
-`order.html` gets plants only from the existing IENN Apps Script project, via `CONFIG.EXEC_URL` (`?api=inventory` for GET, `?api=order` for POST, sent as text/plain JSON to avoid a CORS preflight). Until `EXEC_URL` is set, the page shows a call/text/email message and orders fall back to mailto.
+## Live inventory + orders + printable list (setup — NOT deployed yet)
+**One system:** the existing IENN inventory/invoice Apps Script project (internal Index view + `?view=customer`) is the single source of truth. `apps-script/ienn-api.gs` is an **add-on file** for that project. It uses the tool's own spreadsheet (no new spreadsheet or ID) and adds two tabs to it: **Stock Adjustments** (ledger) and **Web Orders** (website contact/claim/reply tracking). It never edits the weekly count JSON in `Submissions`.
 
-**Prices (by size only, no tax shown on the site):** 2-inch $3 • 4-inch $6 • Quarter tree pot $10 • 1-gallon $15. They live in `CONFIG.SIZES` (order.html) and `CFG_IENN.SIZES` (apps-script/ienn-api.gs); keep the two in sync. The server recomputes the subtotal from its own prices.
-
-**Assumed sheet layout (edit `CFG_IENN` if different):** tab `Inventory`, header row 1, one row per plant. Column `Plant` is required; optional columns are `Botanical`, `Rank`, `Active` (no/false hides a plant), `Blurb`, and `Photo`. There is one count column per size, with headers `2"`, `4"`, `Tree pot`, `1 gal` (aliases accepted: 2-inch, 4 inch, quarter tree pot, 1 gallon…). A blank count cell means the size isn't offered; 0 means sold out.
+- **Live stock** = existing `getAvailableStock()` (latest week, `4"` and `1 gal`) plus the Stock Adjustments rows for that same week key. A new weekly count resets the baseline.
+- **Website** (`order.html`, `CONFIG.EXEC_URL`): `GET ?api=inventory` returns Catalog plants with live stock. 2" and Tree pot are priced, but the weekly count doesn't track them, so they show "ask us" and can't be added. `POST ?api=order` (text/plain JSON) takes a lock, re-checks live stock, then calls the **existing `submitInvoice()`**. That gives the same invoice number, IENN Invoices row and team email; the note carries the customer details and a link to the Web Orders row. It then writes the adjustments.
+- **Prices:** 2" $3, 4" $6, Tree pot $10, 1 gal $15. They are **tax-inclusive**, like the invoice app (subtotal = total / 1.0875, tax 8.75%). The site shows the total with "prices include sales tax".
+- **Printable list:** `<exec>?view=plantlist` (add `&instock=1` for in-stock only) with a Print/Save-as-PDF button, plus a CSV export at `<exec>?api=plantlist&format=csv`.
 
 ### Install into the existing Apps Script project
-1. Open the existing IENN Apps Script project (the one serving `…exec?view=customer`). **File → + → Script**, name it `ienn-api`, and paste `apps-script/ienn-api.gs`.
-2. In `CFG_IENN`, check `INVENTORY_SHEET` (tab name) and `SPREADSHEET_ID` (leave "" if the project is bound to the sheet). If `getSettings()` doesn't hold the team emails, fill in `TEAM_EMAILS` (Eric, Andrew, Keith, Raylene).
-3. Make this the **first line** inside the existing `doGet(e)`:
+1. Open the existing project → **File → + → Script** → name it `ienn-api` → paste `apps-script/ienn-api.gs`.
+2. **doGet patch:** make this the first line inside the existing `doGet(e)`:
    ```js
-   if (e && e.parameter && e.parameter.api) return ienn_api_doGet_(e);
+   if (e && e.parameter && (e.parameter.api || e.parameter.view === "plantlist")) return ienn_api_doGet_(e);
    ```
-4. If there is no `doPost`, add:
+3. **doPost:** if the project has none, add `function doPost(e) { return ienn_api_doPost_(e); }`. Otherwise make `if (e && e.parameter && e.parameter.api) return ienn_api_doPost_(e);` its first line.
+4. **submitInvoice patch** (so in-person invoices also decrement stock): right after the invoice number is assigned and the row is written (before `return`), add:
    ```js
-   function doPost(e) { return ienn_api_doPost_(e); }
+   try { ienn_recordSale_(data.lines, invno, data.source || "invoice"); } catch (err) { console.error(err); }
    ```
-   Otherwise make this the first line of the existing `doPost(e)`: `if (e && e.parameter && e.parameter.api) return ienn_api_doPost_(e);`
-5. Run `ienn_publicInventory_` once in the editor to authorize (Sheets, Mail) and check the log output.
-6. **Deploy → Manage deployments → (existing web app) → Edit → Version: New version → Deploy.** The /exec URL stays the same. "Who has access" must be **Anyone** for the public site.
-7. Set `CONFIG.EXEC_URL` in `order.html` to the `/exec` URL (no query string) and push.
+   Use the variable names the function actually has (`data` = its argument, `invno` = the number it returns). This call can safely run more than once: website orders call it again and nothing is double-counted.
+5. **Spreadsheet lookup:** if the project already has a function that returns the tool's spreadsheet, put its name in `CFG_IENN.SPREADSHEET_RESOLVER`. Otherwise `ienn_ss_()` tries common helper names, then the bound spreadsheet, then the single Drive file named "IENN Inventory".
+6. **Index button (optional):** in the internal Index HTML add
+   `<a href="https://script.google.com/macros/s/<DEPLOYMENT_ID>/exec?view=plantlist" target="_blank">Print plant list</a>` (or `<?= ScriptApp.getService().getUrl() ?>?view=plantlist` if Index is a template).
+7. Run `ienn_getLiveStock_` once in the editor to authorize, and check the log.
+8. **Deploy → Manage deployments → Edit → New version** (the URL stays the same; access must be Anyone for the website).
+9. Set `CONFIG.EXEC_URL` in `order.html` to the `/exec` URL and push.
 
-### What an order does
-The server takes a script lock and re-reads counts. If any line is short, it rejects with `{ok:false, error:"insufficient_stock", short:[…]}`; the site then shows those items and refreshes availability. Otherwise it decrements the size cells and appends a row to the `Orders` tab (Order ID, Received, Name, Phone, Email, Fulfillment, Items, Subtotal, Notes, Status=New, Paid=No, Payment method, Pickup address sent, Our response, Claimed by). It then emails the team "New IENN order #ID — name" with a link to the row (one person claims it and replies), and returns the order ID, which the confirmation screen shows.
+**Fixing a wrong count:** add a row to **Stock Adjustments** with the current week key, plant, size, Delta (+/-) and Source=`manual`, or just submit a new weekly count.
 
-### Replying to customers
-Run `ienn_buildCustomerReply_("W…")` in the editor and copy the text from the log, or use `templates/customer-response.md`. Nothing is sent automatically. Fill **Pickup address sent** only after you confirm the order.
+**Replying to customers:** run `ienn_buildCustomerReply_("<invoice no>")` and copy the text from the log, or use `templates/customer-response.md`. Nothing is sent automatically.
 
-Dev testing: serve the repo locally and open `order.html?inventory=dev/sample-inventory.json&order=<mock-url>` (localhost only).
+See `docs/SYSTEM-GUIDE.md` for the weekly flow and the usability notes.
+
+Dev testing: `order.html?inventory=dev/sample-inventory.json&order=<mock-url>` (localhost only).
