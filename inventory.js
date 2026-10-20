@@ -1,0 +1,78 @@
+/* IENN shared inventory loader (used by index.html and order.html).
+   Paste the deployed inventory web-app URL below (see apps-script/inventory-endpoint.gs + README).
+   While empty or unreachable, pages show the FALLBACK list with "Ask about availability" (never fake "Available"). */
+var INVENTORY_URL = "https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec?view=inventory"; // live once ?view=inventory is deployed (returns HTML today -> fallback)
+var IENN_LOW_STOCK = 5;          // qty at or below this => "Low stock"
+var IENN_PINNED = [/salvia apiana|white sage/i, /diplacus|mimulus|monkey ?flower/i]; // shown first
+var IENN_COLORFUL = /flower|bloom|curls|poppy|penstemon|salvia|sage|lupin|ceanothus|buckwheat|yarrow|milkweed|aster|primrose|verbena|iris|fuchsia|gilia|phacelia|clarkia/i;
+
+/* MARKED FALLBACK ONLY: names/sizes from existing site copy; stock unknown, no prices. */
+var IENN_FALLBACK = [
+  { name: "Sticky Monkeyflower", botanical: "Diplacus aurantiacus", sizes: [{ size: "1-gallon" }] },
+  { name: "Woolly Blue Curls", botanical: "Trichostema lanatum", sizes: [{ size: "4-inch" }] },
+  { name: "Yarrow", botanical: "Achillea millefolium", sizes: [{ size: "4-inch" }] },
+  { name: "Blue Pyramid Cypress", botanical: "Cupressus arizonica 'Blue Pyramid'", sizes: [{ size: "1-gallon" }] }
+];
+
+var IENN = (function () {
+  function pick(o, keys) { for (var i = 0; i < keys.length; i++) { for (var k in o) if (k.toLowerCase().replace(/[\s_-]/g, "") === keys[i]) { var v = o[k]; if (v !== "" && v != null) return v; } } return undefined; }
+  function num(v) { if (v == null || v === "") return null; var n = parseFloat(String(v).replace(/[^0-9.\-]/g, "")); return isNaN(n) ? null : n; }
+  function slug(s) { return String(s).toLowerCase().replace(/\(.*?\)/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+  function statusFrom(qty, txt) {
+    if (txt) { txt = String(txt).toLowerCase(); if (/out|sold|none|^no$|false|0/.test(txt)) return "out"; if (/low|limit/.test(txt)) return "low"; if (/in|avail|yes|true/.test(txt)) return "in"; }
+    if (qty == null) return "unknown"; if (qty <= 0) return "out"; if (qty <= IENN_LOW_STOCK) return "low"; return "in";
+  }
+  function norm(r) {
+    var name = pick(r, ["name", "plant", "commonname", "common", "plantname"]); if (!name) return null;
+    name = String(name); var bot = pick(r, ["botanical", "botanicalname", "scientific", "scientificname", "latin"]);
+    var m = name.match(/^(.*?)\s*\((.*)\)\s*$/); if (m) { name = m[1]; bot = bot || m[2]; }
+    var sizes = pick(r, ["sizes", "variants"]), out = [];
+    if (Array.isArray(sizes)) sizes.forEach(function (s) { if (typeof s === "string") s = { size: s }; out.push({ size: String(pick(s, ["size", "container"]) || ""), qty: num(pick(s, ["qty", "quantity", "stock", "onhand", "available"])), price: num(pick(s, ["price", "cost"])), status: pick(s, ["status", "instock"]) }); });
+    else if (sizes && typeof sizes === "object") for (var k in sizes) { var v = sizes[k]; out.push(typeof v === "object" ? { size: k, qty: num(pick(v, ["qty", "quantity", "stock"])), price: num(pick(v, ["price"])) } : { size: k, qty: num(v) }); }
+    else out.push({ size: String(pick(r, ["size", "container", "pot"]) || ""), qty: num(pick(r, ["qty", "quantity", "stock", "onhand", "available", "count"])), price: num(pick(r, ["price", "cost"])), status: pick(r, ["status", "instock", "availability"]) });
+    out.forEach(function (s) { s.status = statusFrom(s.qty, s.status); });
+    var rank = { in: 0, low: 1, unknown: 2, out: 3 }, best = out.reduce(function (a, s) { return rank[s.status] < rank[a] ? s.status : a; }, "out");
+    return { id: String(pick(r, ["id", "slug", "sku"]) || slug(name)), name: name.trim(), botanical: bot ? String(bot) : "", note: String(pick(r, ["note", "description", "notes", "blurb"]) || ""),
+      image: String(pick(r, ["image", "imageurl", "photo", "img"]) || ""), priority: num(pick(r, ["priority", "popularity", "rank", "sort", "order"])),
+      color: String(pick(r, ["color", "flowercolor", "bloom"]) || ""), sizes: out, status: best };
+  }
+  function sortList(a) {
+    var rank = { in: 0, low: 0, unknown: 1, out: 2 };
+    function pin(p) { var t = p.name + " " + p.botanical; for (var i = 0; i < IENN_PINNED.length; i++) if (IENN_PINNED[i].test(t)) return i; return 99; }
+    function col(p) { return p.color || IENN_COLORFUL.test(p.name + " " + p.botanical) ? 0 : 1; }
+    var anyPri = a.some(function (p) { return p.priority != null; });
+    return a.sort(function (x, y) {
+      if (anyPri) { var px = x.priority == null ? 1e9 : x.priority, py = y.priority == null ? 1e9 : y.priority; if (px !== py) return px - py; }
+      return (rank[x.status] === 2) - (rank[y.status] === 2) || pin(x) - pin(y) || col(x) - col(y) || rank[x.status] - rank[y.status] || x.name.localeCompare(y.name);
+    });
+  }
+  /* Raw Apps Script getInitial() shape: {plants:["Name (Bot)"], sizes, defaultPrices:{size:price}, stock:{plant:{size:qty}}, sort?, photos?} */
+  function fromInitial(d) {
+    var stock = d.stock || {}, prices = d.defaultPrices || {}, sort = d.sort || {}, photos = d.photos || {};
+    var names = d.plants.slice(); Object.keys(stock).forEach(function (k) { if (names.indexOf(k) < 0 && !names.some(function (n) { return n.split(" (")[0] === k.split(" (")[0]; })) names.push(k); });
+    return names.map(function (full) {
+      var c = full.split(" (")[0].trim(), st = stock[full] || stock[c];
+      if (!st) for (var k in stock) if (k.split(" (")[0].trim().toLowerCase() === c.toLowerCase()) { st = stock[k]; break; }
+      var zs = st ? Object.keys(st) : (d.sizes || []);
+      return { name: full, priority: sort[full] != null ? sort[full] : sort[c], image: photos[full] || photos[c] || "",
+        sizes: (zs.length ? zs : [""]).map(function (z) { var p = typeof prices[z] === "number" || typeof prices[z] === "string" ? prices[z] : null; return { size: z, qty: st ? (st[z] == null ? null : st[z]) : null, price: p }; }) };
+    });
+  }
+  function parse(d) { if (d && Array.isArray(d.plants) && typeof d.plants[0] === "string") d = fromInitial(d); var rows = Array.isArray(d) ? d : (d && (d.plants || d.inventory || d.items || d.data)) || []; return sortList(rows.map(norm).filter(Boolean)); }
+  function jsonp(url, ok, fail) {
+    var cb = "ienncb" + Date.now(), s = document.createElement("script"), t = setTimeout(function () { done(); fail(); }, 10000);
+    function done() { clearTimeout(t); try { delete window[cb]; } catch (e) { window[cb] = undefined; } s.remove(); }
+    window[cb] = function (d) { done(); ok(d); };
+    s.onerror = function () { done(); fail(); };
+    s.src = url + (url.indexOf("?") < 0 ? "?" : "&") + "callback=" + cb; document.head.appendChild(s);
+  }
+  /* cb(list, live:boolean) */
+  function load(cb) {
+    var fb = function () { cb(parse(IENN_FALLBACK).map(function (p) { p.sizes.forEach(function (s) { s.status = "unknown"; }); p.status = "unknown"; return p; }), false); };
+    if (!INVENTORY_URL) return fb();
+    var good = function (d) { var l = parse(d); l.length ? cb(l, true) : fb(); };
+    fetch(INVENTORY_URL).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(good)
+      .catch(function () { jsonp(INVENTORY_URL, good, fb); });
+  }
+  return { load: load, parse: parse, slug: slug };
+})();

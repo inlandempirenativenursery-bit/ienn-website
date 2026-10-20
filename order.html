@@ -331,11 +331,11 @@
         });
       }
       var params = new URLSearchParams(location.search), prefilled = false;
-      function prefill() { // home-page cart link: order.html?blue-pyramid=2&yarrow=1
+      function prefill() { // home-page cart link: order.html?blue-pyramid=2&white-sage|1%20gal=1 (slug or slug|size)
         if (prefilled) return; prefilled = true;
         params.forEach(function (v, k) {
           var p = PLANTS.find(function (x) { return x.id === k || x.id.indexOf(k + "-") === 0 || k.indexOf(x.id) === 0; }), q = parseInt(v, 10);
-          if (p && q > 0 && p.inStock !== false) cart[p.id + "|" + p.sizes[0]] = Math.min(q, 99);
+          var z = k.split("|")[1]; if (p && q > 0 && p.inStock !== false) cart[p.id + "|" + (z && p.sizes.indexOf(z) >= 0 ? z : p.sizes[0])] = Math.min(q, 99);
         });
         save();
       }
