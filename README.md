@@ -19,9 +19,13 @@ https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJF
 - Lobo: testing, edge cases, cleanup
 
 Work continues in this repo so changes can be reviewed and deployed.
-## Updating plant stock (order.html)
-All plants on the order page come from one list near the bottom of `order.html`, marked `STOCK: edit here` (`var PLANTS = [...]`).
-- Sold out: change `inStock: true` to `inStock: false`. The card then shows "Sold out" and its Add button is turned off.
-- Back in stock: set it to `true` again.
-- Add a plant: copy one line and change `id`, `name`, and `sizes`. Use `image: "images/your-photo.jpg"` if a photo exists.
-- Optional live stock: set `STOCK_CSV_URL` to a published Google Sheet CSV with the columns `id,inStock`. It's off (`""`) by default. If the sheet can't be loaded, the page uses the list above.
+## Plant inventory on order.html (live from the Inventory sheet)
+The order page loads plants, sizes, prices and stock from the IENN Inventory sheet through the existing Apps Script web app. To add a plant or change stock, edit the sheet. No website change is needed.
+
+- Source setting: `INVENTORY_URL` near the bottom of `order.html` (`INVENTORY SOURCE`). Default: `<web app>/exec?view=inventory`.
+- **One-time setup (Eric):** add `apps-script/inventory-endpoint.gs` to the Apps Script project and add one line to `doGet`, then deploy a new version. The steps are in that file. Until then the page uses an offline fallback list and shows a "stock may be out of date" note.
+- Alternative source: a Google Sheet published to the web as CSV with the columns `Plant, Size, Qty, Price, Sort, Photo` (one row per plant and size). Paste that CSV URL into `INVENTORY_URL`.
+- Availability: a size with Qty > 0 shows a green "Available" badge, and all sizes at 0 shows "Sold out" with the add button turned off. Plants the sheet doesn't track stock for show "Ask about availability".
+- The page refreshes every `REFRESH_MINUTES` (5) and when the tab regains focus. It caches the last good copy in the browser.
+- Sort order: in-stock first, then by appeal, then A–Z. Appeal comes from a sheet `Sort` column if present (lower number = first; set `SORT_COLUMN` in the .gs). Otherwise it comes from the editable `APPEAL_KEYWORDS` list in `order.html` (white sage, monkeyflower/Mimulus/Diplacus, poppy, penstemon, sages, buckwheat, milkweed, and so on).
+- `FALLBACK_PLANTS` in `order.html` is only for offline use. It is not the source of truth.
