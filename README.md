@@ -81,9 +81,11 @@ Optional override from the sheet: add a **Photo** column (also matched: Photo UR
 
 The shop pages (`order.html` and the homepage) can show a small pop-up for a sale. It is controlled entirely from the **Promos** tab of the inventory tool's spreadsheet:
 
-| Active | Title | Message | Start date | End date | Discount note |
-|---|---|---|---|---|---|
-| No | Fall Sale | EXAMPLE: … | 2026-11-01 | 2026-11-30 | e.g. describe the discount here |
+| Active | Title | Message | Start date | End date | Discount note | Bottom info |
+|---|---|---|---|---|---|---|
+| No | Fall Sale | EXAMPLE: Plants are available now. Right now is the best time to get plants started. | 2026-11-01 | 2026-11-30 | (blank) | Pickup Saturdays 10 AM – 2 PM in Fontana. \| Cash or Zelle at time of pickup. |
+
+The full column guide is in `PROMOS.md`.
 
 - **Turn a promo on:** set **Active** to `Yes` and fill in Title and Message. Start and End dates are inclusive and use Pacific time. Leave either one blank for "open-ended". A Discount note is optional and shows in bold. Write only what's actually offered.
 - **Turn it off:** set Active to `No`, or let the End date pass. If several rows qualify, the first one from the top is shown.

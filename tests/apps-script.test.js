@@ -143,8 +143,8 @@ t('promo: date range, active flag, open-ended, first match wins, bad rows skippe
   assert.strictEqual(pick([[' yes ', 'Open', '', '', '', '']], '2030-01-01').title, 'Open', 'blank start+end = open-ended, yes is case/space tolerant');
   assert.strictEqual(pick([['Yes', 'NoEnd', '', '2026-10-01', '', '']], '2027-05-01').title, 'NoEnd');
   assert.strictEqual(pick([['Yes', 'NoStart', '', '', '10/25/2026', '']], '2026-10-20').title, 'NoStart', 'm/d/yyyy accepted');
-  assert.strictEqual(pick([['Yes', 'Bad', '', 'soon', '', ''], ['Yes', 'Second', 'm', '', '', 'e.g. 10%']], '2026-10-20').title, 'Second', 'unreadable date skipped; first valid wins');
-  assert.deepStrictEqual(pick([['Yes', 'A', 'msg', new Date(Date.UTC(2026, 9, 18, 12)), '', 'note']], '2026-10-20'), { title: 'A', message: 'msg', start: '2026-10-18', end: '', discountNote: 'note', bottomInfo: '' });
+  assert.strictEqual(pick([['Yes', 'Bad', '', 'soon', '', ''], ['Yes', 'Second', 'm', '', '', 'note']], '2026-10-20').title, 'Second', 'unreadable date skipped; first valid wins');
+  assert.deepStrictEqual(pick([['Yes', 'A', 'msg', new Date(Date.UTC(2026, 9, 18, 12)), '', 'note']], '2026-10-20'), { title: 'A', message: 'msg', start: '2026-10-18', end: '', discountNote: 'note', bottomInfo: 'Pickup Saturdays 10 AM – 2 PM in Fontana. | Cash or Zelle at time of pickup.' });
   assert.strictEqual(ctx.iennPickPromo_([['Title'], ['x']], '2026-10-20'), null, 'no Active column -> null');
 });
 
@@ -164,19 +164,25 @@ t('promo: missing tab -> null in inventory; iennSetup creates Promos with inacti
 t('promo: optional Bottom info column (aliases), line breaks kept, appended to an existing tab without touching rows', () => {
   const h = load(), pick = (H, r) => J(h.ctx.iennPickPromo_([H, r], '2026-11-05'));
   const H = ['Active', 'Title', 'Message', 'Start date', 'End date', 'Discount note'];
-  assert.strictEqual(pick(H.concat('Bottom info'), ['Yes', 'Fall Sale', 'm', '', '', '', ' 15% off\nEnds Nov 30 ']).bottomInfo, '15% off\nEnds Nov 30');
+  assert.strictEqual(pick(H.concat('Bottom info'), ['Yes', 'Fall Sale', 'm', '', '', '', ' Plants ready now\nEnds Nov 30 ']).bottomInfo, 'Plants ready now\nEnds Nov 30');
   assert.strictEqual(pick(H.concat('Footer'), ['Yes', 'F', '', '', '', '', 'x']).bottomInfo, 'x', 'footer alias');
   assert.strictEqual(pick(H.concat('Info'), ['Yes', 'F', '', '', '', '', 'y']).bottomInfo, 'y', 'info alias');
-  assert.strictEqual(pick(H, ['Yes', 'F', '', '', '', '']).bottomInfo, '', 'no column -> blank (site falls back)');
-  const old = [['Yes', 'Fall Sale', 'Plant now', '2026-10-01', '', '10% off']];
+  assert.strictEqual(pick(H, ['Yes', 'F', '', '', '', '']).bottomInfo, 'Pickup Saturdays 10 AM – 2 PM in Fontana. | Cash or Zelle at time of pickup.', 'no column -> configurable default');
+  const old = [['Yes', 'Fall Sale', 'Plant now', '2026-10-01', '', '']];
   const sh = h.ss.insertSheet('Promos'); sh.rows.push(H.slice(), old[0].slice());
   h.ctx.iennSetup();
   assert.deepStrictEqual(J(sh.rows[0]), H.concat('Bottom info'));
   assert.deepStrictEqual(J(sh.rows[1]), old[0], 'existing row untouched');
   assert.strictEqual(sh.rows.length, 2);
-  assert.strictEqual(J(h.ctx.iennInventory()).promo.bottomInfo, '');
+  assert.match(J(h.ctx.iennInventory()).promo.bottomInfo, /Cash or Zelle at time of pickup/);
   sh.rows[1][6] = 'Line 1\nLine 2'; assert.strictEqual(J(h.ctx.iennInventory()).promo.bottomInfo, 'Line 1\nLine 2', 'in ?view=inventory JSON');
   h.ctx.iennSetup(); assert.strictEqual(sh.rows[0].length, 7, 'not appended twice');
+  const h2 = load(), sh2 = h2.ss.insertSheet('Promos');
+  sh2.rows.push(H.slice(), ['No', 'Spring Sale', 'EXAMPLE: Spring is the last window to get plants in before summer heat.', '', '', ''], ['No', 'Spring Sale', 'Our own spring text', '', '', '']);
+  h2.ctx.iennSetup();
+  assert.match(String(sh2.rows[1][6]), /^Pickup Saturdays 10 AM – 2 PM in Fontana\. \| Cash or Zelle at time of pickup\.$/, 'untouched example row filled');
+  assert.ok(!sh2.rows[2][6], 'edited row left blank');
+  assert.ok(!/%|off\b/i.test(JSON.stringify(J(h2.ctx.IENN_PROMO_EXAMPLES))), 'no discounts in examples');
 });
 
 console.log(`\n${pass} tests passed`);

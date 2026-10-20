@@ -24,7 +24,7 @@ function iennPickPromo_(values, today) {
     var s = iennPromoDay_(get('s')), e = iennPromoDay_(get('e'));
     if (s === null || e === null) continue;
     if ((s && today < s) || (e && today > e)) continue;
-    return { title: title, message: String(get('m') || '').trim(), start: s, end: e, discountNote: String(get('d') || '').trim(), bottomInfo: String(get('b') || '').trim() };
+    return { title: title, message: String(get('m') || '').trim(), start: s, end: e, discountNote: String(get('d') || '').trim(), bottomInfo: String(get('b') || '').trim() || IENN_PROMO_BOTTOM_DEFAULT };
   }
   return null;
 }
@@ -42,7 +42,13 @@ function iennEnsurePromos_() {
   var ss = iennSs_(), sh = ss.getSheetByName(IENN_PROMOS_SHEET);
   if (sh) { // existing tab: append the optional Bottom info column if missing; rows are untouched
     var head = sh.getDataRange().getValues()[0] || [];
-    if (head.length && iennCol_(head, PROMO_BOTTOM_HEADERS) < 0) sh.getRange(1, head.length + 1).setValue('Bottom info');
+    if (head.length && iennCol_(head, PROMO_BOTTOM_HEADERS) < 0) {
+      var v = sh.getDataRange().getValues(), col = head.length + 1, t = iennCol_(head, PROMO_TITLE_HEADERS), m = iennCol_(head, PROMO_MESSAGE_HEADERS), ex = {};
+      IENN_PROMO_EXAMPLES.forEach(function (r) { ex[String(r[1]).toLowerCase()] = 1; });
+      sh.getRange(1, col).setValue('Bottom info');
+      for (var i = 1; i < v.length; i++)   // only untouched example rows (same title, Message still starts with EXAMPLE:)
+        if (t >= 0 && m >= 0 && ex[String(v[i][t]).trim().toLowerCase()] && /^EXAMPLE:/.test(String(v[i][m]))) sh.getRange(i + 1, col).setValue(IENN_PROMO_BOTTOM_DEFAULT);
+    }
     return sh;
   }
   sh = ss.insertSheet(IENN_PROMOS_SHEET);
