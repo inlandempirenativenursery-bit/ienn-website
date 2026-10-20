@@ -72,14 +72,31 @@ function iennBuildReply_(orderId) {
   var note = String(inv.note || ''), m = /^Website order — ([^·\n]+)/.exec(note), pays = /^Pays by: (.+)$/m.exec(note);
   var notes = note.replace(/^Website order — [^\n]*\n?/, '').replace(/^Pickup: .*\n?/m, '').replace(/^Pays by: .*\n?/m, '').trim();
   var choice = String(inv.payment || (pays ? pays[1] : '')).trim();
+  var confirmed = IENN_CONFIRMED_STATUSES.indexOf(String(inv.status)) >= 0;   // exact address only after Andrew confirms
   var map = { CUSTOMER_NAME: m ? m[1].trim() : 'there', ORDER_ID: inv.id, ITEMS: items, TOTAL: sub.toFixed(2), OWNER: IENN_ORDER_OWNER, PHONE: IENN_CONTACT_PHONE,
     PAID_STATUS: /^(yes|y|true|paid)$/i.test(String(inv.paid)) || /paid/i.test(String(inv.status)) ? 'Paid, thank you!' : 'Not paid yet (pay at pickup)',
     PAYMENT_TERMS: PAYMENT_TERMS, PAYMENT_CHOICE: choice ? ' (you chose ' + choice + ')' : ' ',
-    PICKUP_ADDRESS: PICKUP_ADDRESS, PICKUP_AREA: PICKUP_AREA, PICKUP_SCHEDULE: PICKUP_SCHEDULE, PICKUP_DATE: iennNextSaturday_(inv.date),
-    PICKUP_FINE_PRINT: PICKUP_FINE_PRINT.join('\n'),
+    PICKUP_ADDRESS: confirmed ? PICKUP_ADDRESS : PICKUP_UNCONFIRMED_TEXT, PICKUP_AREA: PICKUP_AREA, PICKUP_SCHEDULE: PICKUP_SCHEDULE, PICKUP_DATE: iennNextSaturday_(inv.date),
+    PICKUP_FINE_PRINT: PICKUP_FINE_PRINT.concat(confirmed && PICKUP_ALT_ADDRESS && !/\{\{/.test(PICKUP_ALT_ADDRESS) ? ['Alternate pickup (available upon request): ' + PICKUP_ALT_ADDRESS] : []).join('\n'),
     CUSTOMER_NOTES: notes || '(none)', OUR_RESPONSE: inv.response || '(none)', SIGN_OFF: SIGN_OFF };
   var body = RESPONSE_TEMPLATE.replace(/\{\{([A-Z_]+)\}\}/g, function (x, k) { return map[k] != null && map[k] !== '' ? String(map[k]) : x; });
   return { to: inv.email, subject: 'Your Inland Empire Native Nursery order ' + inv.id, body: body };
+}
+
+/** Andrew confirms an order: Status = Confirmed, then a Gmail DRAFT with the exact pickup address (not sent).
+    Works in a standalone project too: run from the editor, e.g. iennConfirmAndDraft('IEN-2026-004'). */
+function iennConfirmAndDraft(orderId) {
+  var all = iennInvoices_(), inv = all.filter(function (x) { return String(x.id) === String(orderId); })[0];
+  if (!inv) throw new Error('Order ' + orderId + ' not found in ' + IENN_INVOICES_SHEET);
+  if (/cancel/i.test(String(inv.status))) throw new Error('Order ' + orderId + ' is Cancelled.');
+  if (IENN_CONFIRMED_STATUSES.indexOf(String(inv.status)) < 0) all.sheet.getRange(inv.row, all.cols.status + 1).setValue('Confirmed');
+  return iennDraftReply(orderId);
+}
+/** Editor helper: confirm + draft the newest order that is still New or Claimed. */
+function iennConfirmAndDraftLatest() {
+  var open = iennInvoices_().filter(function (x) { return /^(new|claimed)$/i.test(String(x.status || 'New')); });
+  if (!open.length) throw new Error('No New or Claimed orders.');
+  var d = iennConfirmAndDraft(open[open.length - 1].id); Logger.log('Draft saved (not sent): ' + d.subject + ' to ' + d.to); return d;
 }
 
 /** Creates a Gmail DRAFT for the order (not sent). */

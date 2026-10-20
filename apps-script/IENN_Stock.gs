@@ -23,10 +23,13 @@ function iennSize_(s) {
 /** Latest count date in Submissions (Date or null). */
 function iennBaselineDate_() {
   var sh = iennSs_().getSheetByName(IENN_SUBMISSIONS_SHEET); if (!sh) return null;
-  var v = sh.getDataRange().getValues(), c = iennCol_(v[0] || [], SUBMISSION_DATE_HEADERS); if (c < 0) return null;
-  var best = null;
-  for (var i = 1; i < v.length; i++) { var d = iennDate_(v[i][c]); if (d && (!best || d > best)) best = d; }
-  return best;
+  var v = sh.getDataRange().getValues(), head = v[0] || [];
+  for (var a = 0; a < SUBMISSION_DATE_HEADERS.length; a++) {            // alias priority: first column with readable dates wins
+    var c = iennCol_(head, [SUBMISSION_DATE_HEADERS[a]]), best = null; if (c < 0) continue;
+    for (var i = 1; i < v.length; i++) { var x = v[i][c], d = typeof x === 'number' ? new Date(x) : iennDate_(x); if (d && (!best || d > best)) best = d; }
+    if (best) return best;
+  }
+  return null;
 }
 
 function iennInvoicesSheet_() {
@@ -84,8 +87,9 @@ function iennAvailable_() {
 
 function iennCatalogNames_() {
   var sh = iennSs_().getSheetByName(IENN_CATALOG_SHEET); if (!sh) return [];
-  var v = sh.getDataRange().getValues(), c = iennCol_(v[0] || [], CATALOG_NAME_HEADERS); if (c < 0) return [];
-  return v.slice(1).map(function (r) { return String(r[c] || '').trim(); }).filter(String);
+  var v = sh.getDataRange().getValues(), c = iennCol_(v[0] || [], CATALOG_NAME_HEADERS), l = iennCol_(v[0] || [], CATALOG_LATIN_HEADERS); if (c < 0) return [];
+  return v.slice(1).map(function (r) { var n = String(r[c] || '').trim(), b = l >= 0 ? String(r[l] || '').trim() : '';
+    return n && b && !/\(/.test(n) ? n + ' (' + b + ')' : n; }).filter(String);
 }
 /** Optional Photo column in Catalog: { plantKey: url }. Missing column -> {} (website uses assets/plants/<id>.jpg). */
 function iennCatalogPhotos_() {

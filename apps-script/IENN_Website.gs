@@ -65,7 +65,7 @@ function iennWebsiteOrder_(b) {
   var total = lines.reduce(function (a, l) { return a + Number(l.amt); }, 0), sub = total / (1 + IENN_TAX_PCT / 100);   // prices include tax
   var phone = String(b.phone || '').trim().slice(0, 40), notes = String(b.notes || '').trim().slice(0, 1000);
   var pickup = String(b.pickup || '').trim().slice(0, 100), pay = String(b.payment || '').trim().slice(0, 40);
-  var data = { date: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd'), paid: 'unpaid', payment: '',
+  var data = { date: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd'), paid: 'unpaid', payment: pay,
     customerEmail: email, discType: 'none', discAmt: '',
     note: 'Website order — ' + name + (phone ? ' · ' + phone : '') + (pickup ? '\nPickup: ' + pickup : '') + (pay ? '\nPays by: ' + pay : '') + (notes ? '\n' + notes : ''),
     lines: lines, subtotal: iennMoney_(sub), tax: iennMoney_(total - Number(iennMoney_(sub))), grand: iennMoney_(total) };
@@ -102,7 +102,7 @@ function iennSubmitInvoiceChecked(data, meta) {
 
     var res = submitInvoice(data);                                         // existing: writes IENN Invoices + emails team
     var id = (res != null && (typeof res === 'string' || typeof res === 'number')) ? String(res)
-           : (res && (res.invoiceNumber || res.invoiceNo || res.number || res.id));
+           : (res && (res.invoiceNumber || res.invoiceNo || res.invno || res.number || res.id));
     if (!id) { var all = iennInvoices_(); id = all.length ? all[all.length - 1].id : ''; }   // newest invoice row
     if (SpreadsheetApp.flush) SpreadsheetApp.flush();
     iennMarkNew_(id);
