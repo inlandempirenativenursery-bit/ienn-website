@@ -247,3 +247,11 @@ Website order (doPost) ──────┴─► submitInvoice ─► IENN Inv
   say "Pickup address (Fontana)". Text-only edits, no style/class changes.
 - Re-run: html-validate **0 errors**; `node test/gs.test.js` **12/12**; Playwright 375 + 1280 pass (Fontana text, Grand Terrace
   appears exactly once as fine print, no GT option, 0 console errors, no overflow). `confirm-375.png` refreshed.
+
+### Update: Saturday pickup window (2026-10-20)
+- Pickup notice: "Pickup in Fontana, Saturdays 10 AM – 2 PM. We share the exact address after we confirm your order."
+  The "Pickup only" line reads "Saturdays 10 AM – 2 PM in Fontana." Fine print (same `hint` style as the Grand Terrace line):
+  "Other pickup times available case by case upon request." The confirmation text mentions Saturdays 10 AM – 2 PM;
+  the reply template / `buildResponseEmail` default pickup window is "Saturday 10 AM - 2 PM (Fontana)". Text-only.
+- Re-run: html-validate **0 errors**; `node test/gs.test.js` **12/12**; Playwright 375 + 1280 pass (schedule text, fine print,
+  confirmation window; 0 console errors, no overflow). `confirm-375.png` refreshed.

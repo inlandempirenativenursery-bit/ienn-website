@@ -165,13 +165,14 @@
   <section class="notice" aria-labelledby="notice-title">
     <h2 id="notice-title">Pickup &amp; Details</h2>
     <ul>
-      <li><span class="ico" aria-hidden="true">📅</span><span><b>Pickup only</b>Saturdays 10 AM – 2 PM weekly. Other days/times available case-by-case — just note it below.</span></li>
+      <li><span class="ico" aria-hidden="true">📅</span><span><b>Pickup only</b>Saturdays 10 AM – 2 PM in Fontana.</span></li>
       <li><span class="ico" aria-hidden="true">💵</span><span><b>Payment</b>Cash or Zelle.</span></li>
-      <li><span class="ico" aria-hidden="true">📍</span><span><b>Location</b>Pickup in Fontana. We share the exact address after we confirm your order.</span></li>
+      <li><span class="ico" aria-hidden="true">📍</span><span><b>Location</b>Pickup in Fontana, Saturdays 10 AM – 2 PM. We share the exact address after we confirm your order.</span></li>
       <li><span class="ico" aria-hidden="true">✅</span><span><b>Confirmation</b>We will confirm your order and send pickup details ASAP.</span></li>
     </ul>
   </section>
   <p class="hint">Grand Terrace pickup available upon request.</p>
+  <p class="hint">Other pickup times available case by case upon request.</p>
 
   <section class="notice" aria-labelledby="terms-title">
     <h2 id="terms-title">Order terms</h2>
@@ -226,7 +227,7 @@
 
   <section class="notice confirm" id="confirm" aria-labelledby="confirm-title" tabindex="-1" hidden>
     <h2 id="confirm-title">Order request ready ✅</h2>
-    <p id="confirm-msg">Your email app should open with this order filled in. <b>Press Send there to finish.</b> We'll reply to confirm stock, your total, and Fontana pickup details.</p>
+    <p id="confirm-msg">Your email app should open with this order filled in. <b>Press Send there to finish.</b> We'll reply to confirm stock, your total, and Fontana pickup details (Saturdays 10 AM – 2 PM).</p>
     <div id="confirm-body"></div>
     <p class="fine" id="fallback-note">Order didn't go through? Call or text Andrew at <a href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> (<a href="sms:+19096099373">text</a>). Or email this list to <a href="mailto:hello@inlandempirenativenursery.com">hello@inlandempirenativenursery.com</a>.</p>
     <button type="button" class="submit-btn" id="new-order">Start a new order</button>
@@ -522,7 +523,7 @@
           document.getElementById('fallback-note').hidden = !!orderId;
           if (orderId) {
             document.getElementById('confirm-title').textContent = 'Order received \u2705';
-            msg.textContent = 'Thanks! We got your order request. We\'ll email you to confirm your plants, total, and Fontana pickup details. Nothing has been charged.';
+            msg.textContent = 'Thanks! We got your order request. We\'ll email you to confirm your plants, total, and Fontana pickup details (Saturdays 10 AM \u2013 2 PM). Nothing has been charged.';
             var idp = el('p', 'order-id', 'Order #' + orderId); cb.appendChild(idp);
           }
           var ul = el('ul'); lines.forEach(function (l) { ul.appendChild(el('li', null, l)); }); cb.appendChild(ul);

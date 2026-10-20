@@ -21,7 +21,7 @@ Payment status: {{Paid | Not yet paid}}
 Payment form: {{Cash | Zelle | ...}}            [TODO confirm accepted methods]
 
 Pickup address (Fontana): {{exact address, ONLY once Status is Confirmed or later}}
-Pickup date/time: {{window, default Saturdays 10 AM - 2 PM}}
+Pickup date/time: {{window, default Saturday 10 AM – 2 PM (Fontana); other times case by case upon request}}
 
 Your notes:
 > {{customer notes, quoted}}

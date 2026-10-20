@@ -105,7 +105,7 @@ t('buildResponseEmail: address hidden until confirmed, paid status, quoted notes
   const H = inv[0]; inv[1][H.indexOf('Status')] = 'Claimed'; m = ctx.buildResponseEmail(r.orderId); assert.match(m.body, /once your order is confirmed/);
   Object.assign(inv[1], { [H.indexOf('Status')]: 'Confirmed', [H.indexOf('Paid')]: 'Yes', [H.indexOf('Payment method')]: 'Zelle', [H.indexOf('Pickup address')]: '123 Test St', [H.indexOf('Our response')]: 'See you then!' });
   m = ctx.buildResponseEmail(r.orderId);
-  assert.match(m.body, /Payment status: Paid/); assert.match(m.body, /Payment form: Zelle/); assert.match(m.body, /Pickup address \(Fontana\): 123 Test St/); assert.match(m.body, /See you then!/);
+  assert.match(m.body, /Payment status: Paid/); assert.match(m.body, /Payment form: Zelle/); assert.match(m.body, /Pickup address \(Fontana\): 123 Test St/); assert.match(m.body, /Pickup date\/time: Saturday 10 AM - 2 PM \(Fontana\)/); assert.match(m.body, /See you then!/);
 });
 t('bad JSON post', () => { const { ctx } = makeEnv(); assert.strictEqual(JSON.parse(ctx.doPost({ postData: { contents: '{' } }).s).error, 'bad_json'); });
 t('print + csv: popular-first, counted/sold/available, out rows, on-request', () => {

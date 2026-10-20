@@ -36,7 +36,7 @@ const feed = () => ({ updated: new Date().toISOString(), plants: [
       assert.match(tot, /4 plants • Total\s+\$51\.00/); assert.doesNotMatch(tot, /tax/i);
       const body = await page.locator('body').innerText(); assert.strictEqual((body.match(/taxes included/gi) || []).length, 1, 'one Taxes included note');
       assert.doesNotMatch(body, /8\.75|sales tax/i); assert.match(body, /\(909\)\s609.9373/);
-      assert.match(body, /Pickup in Fontana\./); assert.strictEqual((body.match(/Grand Terrace/g) || []).length, 1, 'GT only as fine print');
+      assert.match(body, /Pickup in Fontana, Saturdays 10 AM – 2 PM\./); assert.match(body, /Other pickup times available case by case upon request\./); assert.strictEqual((body.match(/Grand Terrace/g) || []).length, 1, 'GT only as fine print');
       assert.strictEqual(await page.locator('input[value*="Grand" i], option', { hasText: 'Grand Terrace' }).count(), 0);
       assert.strictEqual(await page.locator('footer a[href="tel:+19096099373"]').count(), 1);
       assert.match(await page.locator('#summary-body li').first().innerText(), /2 × Sticky Monkeyflower \(1-gallon\) — \$30\.00/);
@@ -49,7 +49,7 @@ const feed = () => ({ updated: new Date().toISOString(), plants: [
       if (mode === 'ok') {
         assert.strictEqual(posted.ct, 'text/plain;charset=utf-8');
         assert.deepStrictEqual(posted.body.items.map(i => i.size).sort(), ['1 gal', '1 gal', '4"']);
-        assert.ok(!(await page.locator('#confirm').isHidden())); assert.match(await page.locator('#confirm').innerText(), /Order received[\s\S]*Order #W261020-007/);
+        assert.ok(!(await page.locator('#confirm').isHidden())); assert.match(await page.locator('#confirm').innerText(), /Order received[\s\S]*Saturdays 10 AM – 2 PM[\s\S]*Order #W261020-007/);
         assert.ok(await page.locator('#fallback-note').isHidden());
         assert.strictEqual(await page.evaluate(() => window.__mailto), 0);
         assert.match(await page.locator('#summary-body').innerText(), /No plants added yet/);
