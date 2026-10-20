@@ -47,6 +47,8 @@ var IENN_STATUSES = ['New', 'Claimed', 'Paid', 'Picked up', 'Cancelled'];
 var SUBMISSION_DATE_HEADERS = ['week', 'week of', 'week start', 'date', 'timestamp', 'submitted', 'submitted at'];
 var CATALOG_ID_HEADERS = ['id', 'plant id', 'plantid'];
 var CATALOG_NAME_HEADERS = ['name', 'common name', 'plant', 'plant name'];
+/* Optional Catalog column: full image URL (or site-relative path) that overrides the website's assets/plants/<id>.jpg. Leave blank to use the local photo. */
+var CATALOG_PHOTO_HEADERS = ['photo', 'photo url', 'image', 'image url', 'picture'];
 
 /** Prices by size (confirmed by Eric). Keys are the size names the existing tool uses. */
 var IENN_SIZES = [
@@ -67,14 +69,43 @@ var IENN_EXTRA_TEAM_EMAIL = false;
 var IENN_ORDER_OWNER = 'Andrew';
 var IENN_CONTACT_PHONE = '(909) 609-9373';      // Andrew: call/text fallback shown to customers
 var IENN_CONTACT_TEL = '+19096099373';
-var TEAM_EMAILS = [
+/** New-order emails: Andrew is To (primary); Eric and Keith are CC. Raylene is not on order emails. */
+var TEAM_EMAIL_TO = 'ANDREW_EMAIL_PLACEHOLDER@example.com';
+var TEAM_EMAIL_CC = [
   'ERIC_EMAIL_PLACEHOLDER@example.com',
-  'ANDREW_EMAIL_PLACEHOLDER@example.com',
-  'KEITH_EMAIL_PLACEHOLDER@example.com',
-  'RAYLENE_EMAIL_PLACEHOLDER@example.com'
+  'KEITH_EMAIL_PLACEHOLDER@example.com'
 ];
+var TEAM_EMAILS = [TEAM_EMAIL_TO].concat(TEAM_EMAIL_CC);   // everyone on order emails (kept for compatibility)
 
 /** Customer reply drafts (never sent automatically). Keep {{...}} until confirmed. */
 var PICKUP_ADDRESS = '{{PICKUP_ADDRESS}}';
-var DEFAULT_PAYMENT_METHOD = '{{PAYMENT_METHOD}}';  // don't put a Zelle handle here until confirmed
+var DEFAULT_PAYMENT_METHOD = 'Cash or Zelle at time of pickup';  // no Zelle handle until confirmed
+var PICKUP_CITY = 'Fontana';
+var PICKUP_AREA = 'Fontana area, near Sierra Ave & Baseline Rd';   // context only; exact address goes in PICKUP_ADDRESS once confirmed
+var PAYMENT_TERMS = 'Cash or Zelle at time of pickup.';
+var PICKUP_SCHEDULE = 'Saturdays 10 AM – 2 PM';
+var PICKUP_FINE_PRINT = ['Grand Terrace pickup available upon request.', 'Other pickup times available case by case upon request.'];
 var SIGN_OFF = 'Thank you for supporting native plants!\nInland Empire Native Nursery';
+
+/* ---- Promos tab (website banner) ----
+ * Tab "Promos" in this spreadsheet (iennSetup() creates it with example rows set to Active = No).
+ * One promo per row. The website shows the FIRST row where Active = Yes and today (America/Los_Angeles)
+ * falls within Start date .. End date, inclusive. A blank Start or End means open-ended. */
+var IENN_PROMOS_SHEET = 'Promos';
+var IENN_PROMO_TZ = 'America/Los_Angeles';
+var PROMO_ACTIVE_HEADERS = ['active', 'on', 'enabled'];
+var PROMO_TITLE_HEADERS = ['title', 'name'];
+var PROMO_MESSAGE_HEADERS = ['message', 'text', 'body'];
+var PROMO_START_HEADERS = ['start date', 'start', 'from'];
+var PROMO_END_HEADERS = ['end date', 'end', 'until', 'to'];
+var PROMO_DISCOUNT_HEADERS = ['discount note', 'discount', 'note'];
+var PROMO_BOTTOM_HEADERS = ['bottom info', 'footer', 'info', 'details', 'fine print']; // optional footer strip on the banner; blank = IENN_PROMO_BOTTOM_DEFAULT
+var IENN_PROMO_HEADERS = ['Active', 'Title', 'Message', 'Start date', 'End date', 'Discount note', 'Bottom info'];
+/* Bottom info shown when a promo's "Bottom info" cell is blank. A new line or ' | ' starts a new line. */
+var IENN_PROMO_BOTTOM_DEFAULT = 'Pickup Saturdays 10 AM – 2 PM in Fontana. | Cash or Zelle at time of pickup.';
+/* Example rows (Active = No). Messages start with "EXAMPLE:" so iennSetup can tell untouched examples from real rows. No discounts. */
+var IENN_PROMO_EXAMPLES = [
+  ['No', 'Fall Sale', 'EXAMPLE: Plants are available now. Right now is the best time to get plants started.', '2026-11-01', '2026-11-30', '', IENN_PROMO_BOTTOM_DEFAULT],
+  ['No', 'Spring Sale', 'EXAMPLE: Spring is the last window to get plants in before summer heat.', '2027-03-01', '2027-04-30', '', IENN_PROMO_BOTTOM_DEFAULT],
+  ['No', 'Summer Sale', 'EXAMPLE: Summer is here. Pick up drought-tough natives for hot, dry gardens.', '2027-06-01', '2027-07-31', '', IENN_PROMO_BOTTOM_DEFAULT]
+];

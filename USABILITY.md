@@ -3,7 +3,7 @@
 The system now has four layers: weekly counts, invoices/orders, the website shop, and automatic stock decrease. These notes keep it simple for Eric and the team. No visual or logo changes.
 
 ## Roles
-- **Andrew owns the whole order-to-pickup process.** Every new order gets Handled by = Andrew automatically, and "Claim selected order" defaults to Andrew. All four (Eric, Andrew, Keith, Raylene) still get the order email; only Andrew replies unless he hands off (edit Handled by).
+- **Andrew owns the whole order-to-pickup process.** Every new order gets Handled by = Andrew automatically, and "Claim selected order" defaults to Andrew. The new-order email goes To Andrew, CC Eric and Keith (Raylene isn't on order emails); only Andrew replies unless he hands off (edit Handled by).
 - Customers with questions call or text Andrew at (909) 609-9373. This number appears on the order page, its error message, the confirmation, the print list and the reply template.
 - Eric: Catalog, prices, website. Counters: weekly counts.
 

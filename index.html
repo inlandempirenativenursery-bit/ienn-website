@@ -284,15 +284,16 @@
   <section class="cta-section" id="order">
     <h2 style="color:var(--sage-dark);">Ready to plant something that works here?</h2>
     <p style="margin:0.75rem 0 1.25rem;">Place your order and pick up locally.</p>
-    <a href="order.html" class="order-btn">Place Order Now</a>
-    <p class="disclaimer">Availability varies by season and stock • Local pickup only (Fontana area); payment: cash or Zelle at time of pickup • Plant care and native-planting info is general guidance • Photos are representative.</p>
+    <a href="order.html" class="order-btn" rel="noopener">Place Order Now</a>
+    <p class="disclaimer">Availability varies by season and stock • Local pickup only (Fontana area); Cash or Zelle at time of pickup • Plant care and native-planting info is general guidance • Photos are representative.</p>
   </section>
 
   <footer>
     <p>Inland Empire Native Nursery • Pickup: Fontana · Saturdays 10 AM – 2 PM</p>
     <p style="margin-top:0.5rem;">Questions? Call or text Andrew: <a href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> • <a href="sms:+19096099373">Text</a> • <a href="mailto:hello@inlandempirenativenursery.com">Email</a></p>
   </footer>
-  <script src="promos.js"></script>
+  <script>window.IENN_PROMO_OPTS = { cta: "Shop now", onShop: function () { location.href = "order.html"; } };</script>
+  <script src="promo.js"></script>
   <script src="plant-photos.js"></script>
   <script src="inventory.js"></script>
   <script>

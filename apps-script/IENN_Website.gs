@@ -1,7 +1,7 @@
 /**
  * Website endpoints.
  *  GET  ?view=print / ?view=hub -> see IENN_Print.gs
- *  GET  ?view=inventory  -> JSON (incl. `promo`, see IENN_Promos.gs) (or JSONP with &callback=) built from getInitial()/getAvailableStock() + Catalog + prices
+ *  GET  ?view=inventory  -> JSON (or JSONP with &callback=) built from getInitial()/getAvailableStock() + Catalog + prices
  *  POST (text/plain JSON) -> website order, through iennSubmitInvoiceChecked -> existing submitInvoice
  *
  * WHY doPost + text/plain: a static site can send a "simple" POST (no custom headers) without a CORS preflight,
@@ -26,19 +26,19 @@ function iennRoute_(e) {
   try { return iennJson_(iennInventory(), p.callback); } catch (err) { return iennJson_({ ok: false, error: String(err.message || err) }, p.callback); }
 }
 
-/** {version:3, taxPct, sizes:[{key,label,price,tracked}], plants:[{name, fullName, botanical, sizes:[{key,size,price,qty}]}]}
+/** {version:3, taxPct, sizes:[{key,label,price,tracked}], plants:[{name, fullName, botanical, image, sizes:[{key,size,price,qty}]}]}
     qty: number for tracked sizes (0 = sold out), null for untracked sizes (= "Available on request"). Prices include tax. */
 function iennInventory() {
-  var init = getInitial() || {}, avail = iennAvailable_(), seen = {}, names = [];
+  var init = getInitial() || {}, avail = iennAvailable_(), photos = iennCatalogPhotos_(), seen = {}, names = [];
   (init.plants || []).concat(iennCatalogNames_()).forEach(function (n) { var k = iennKey_(n); if (k && !seen[k]) { seen[k] = 1; names.push(n); } });
   var plants = names.map(function (full) {
     var nb = iennSplit_(full), a = avail[iennKey_(full)] || {};
-    return { name: nb[0], fullName: full, botanical: nb[1],
+    return { name: nb[0], fullName: full, botanical: nb[1], image: photos[iennKey_(full)] || photos[iennKey_(nb[0])] || '',
       sizes: IENN_SIZES.map(function (s) { return { key: s.key, size: s.label, price: s.price, qty: s.tracked ? (a[s.key] || 0) : null }; }) };
   });
   return { version: 3, updated: new Date().toISOString(), taxIncluded: true, onRequestLabel: IENN_ON_REQUEST_LABEL, contactPhone: IENN_CONTACT_PHONE,
-    promo: iennPromo_(),   // IENN_Promos.gs: first active Promos row covering today (LA), else null
-    sizes: IENN_SIZES.map(function (s) { return { key: s.key, label: s.label, price: s.price, tracked: s.tracked }; }), plants: plants };
+    sizes: IENN_SIZES.map(function (s) { return { key: s.key, label: s.label, price: s.price, tracked: s.tracked }; }), plants: plants,
+    promo: iennPromo_() };
 }
 
 function doPost(e) { return iennWebsitePost_(e); }
@@ -64,7 +64,7 @@ function iennWebsiteOrder_(b) {
   }
   var total = lines.reduce(function (a, l) { return a + Number(l.amt); }, 0), sub = total / (1 + IENN_TAX_PCT / 100);   // prices include tax
   var phone = String(b.phone || '').trim().slice(0, 40), notes = String(b.notes || '').trim().slice(0, 1000);
-  var pickup = String(b.pickup || 'Fontana · Saturdays 10 AM – 2 PM').trim().slice(0, 100), pay = String(b.payment || '').trim().slice(0, 40);
+  var pickup = String(b.pickup || '').trim().slice(0, 100), pay = String(b.payment || '').trim().slice(0, 40);
   var data = { date: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd'), paid: 'unpaid', payment: '',
     customerEmail: email, discType: 'none', discAmt: '',
     note: 'Website order — ' + name + (phone ? ' · ' + phone : '') + (pickup ? '\nPickup: ' + pickup : '') + (pay ? '\nPays by: ' + pay : '') + (notes ? '\n' + notes : ''),
@@ -133,19 +133,21 @@ function iennCustomerClosed_() {
 function iennFail_(throwIt, r) { if (throwIt) throw new Error(r.message); return r; }
 
 function iennTeamEmail_(id, data, meta) {
-  var to = TEAM_EMAILS.filter(function (a) { return a && !/PLACEHOLDER/i.test(a); }); if (!to.length) return false;
+  var ok = function (a) { return a && !/PLACEHOLDER/i.test(a); };
+  var to = ok(TEAM_EMAIL_TO) ? TEAM_EMAIL_TO : '', cc = TEAM_EMAIL_CC.filter(ok); if (!to && !cc.length) return false;
+  if (!to) { to = cc.shift(); }
   var body = 'A new order came in (' + (meta.source || 'customer view') + ').\n\nOrder: ' + id + '\nCustomer: ' + (meta.name || '') + ' <' + data.customerEmail + '>\n\n' +
     data.lines.map(function (l) { return '  ' + l.qty + ' × ' + l.plant + ' (' + l.size + ') = $' + l.amt; }).join('\n') +
     '\n\nTotal: $' + data.grand + ' (taxes included)\nNotes: ' + (data.note || '') + '\n\n' + IENN_ORDER_OWNER + ' is handling this order (order-to-pickup).' +
     '\n\nView details: ' + iennInvoicesSheet_().getParent().getUrl() + '#gid=' + iennInvoicesSheet_().getSheetId() +
     '\nIf someone else takes it, change Handled by in IENN Invoices.';
-  MailApp.sendEmail({ to: to.join(','), subject: 'New IENN order ' + id + ' — ' + (meta.name || data.customerEmail), body: body });
+  MailApp.sendEmail({ to: to, cc: cc.join(','), subject: 'New IENN order ' + id + ' — ' + (meta.name || data.customerEmail), body: body });
   return true;
 }
 
 /** Run once from the editor: authorises scopes, adds Status/Handled by/Our response columns to IENN Invoices, logs what it found. */
 function iennSetup() {
-  var inv = iennInventory(); iennInvoices_(); iennPromoSheet_();   // creates the Promos tab (examples, Active=no) if missing
+  var inv = iennInventory(); iennInvoices_(); iennEnsurePromos_();
   Logger.log('Plants: ' + inv.plants.length + '; baseline count date: ' + iennBaselineDate_());
   if (false) { MailApp.getRemainingDailyQuota(); GmailApp.getDrafts(); }
 }

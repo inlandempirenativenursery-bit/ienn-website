@@ -54,7 +54,7 @@ The IENN inventory/invoice Apps Script web app is the **single source of truth**
 5. Select `iennSetup` and click **Run** once. Approve the Spreadsheet, Mail, Gmail and Drive permissions. Check the log for plant count and baseline date.
 6. **Deploy > Manage deployments > edit the existing web app > Version: New version > Deploy.** Keep *Execute as: Me* and *Who has access: Anyone* so the /exec URL stays the same.
 7. Check: open `…/exec?view=inventory` (should be JSON), `…/exec?view=print` and `…/exec?view=hub`, then place a test order on the website and set its Status to Cancelled afterwards.
-8. Fill in placeholders: `TEAM_EMAILS` (only used if the extra email is turned on), `PICKUP_ADDRESS`, `DEFAULT_PAYMENT_METHOD`, `IENN_LOGO_URL` and `IENN_WEBSITE_URL` (where the site is hosted; the closed customer view redirects there).
+8. Fill in placeholders: the order-email addresses `TEAM_EMAIL_TO` (Andrew, primary) and `TEAM_EMAIL_CC` (Eric, Keith; Raylene isn't on order emails), currently `ANDREW_EMAIL_PLACEHOLDER@example.com` and so on (only used if the extra email is turned on), plus `PICKUP_ADDRESS`, `DEFAULT_PAYMENT_METHOD`, `IENN_LOGO_URL` and `IENN_WEBSITE_URL` (where the site is hosted; the closed customer view redirects there).
 
 ### Printable plant list
 `…/exec?view=print` (alias `?view=printlist`, used by the homepage link) gives a clean list with the locked logo (the site's `images/ienn-logo-sage.png`, used as-is), the date, plants sorted by availability then appeal, botanical names, the four sizes with prices, and current availability ("On request" for 2" and Tree pot), Fontana pickup, and Andrew's call/text number. One click from there: **Print**, **Export PDF** (Apps Script converts the HTML to a PDF), **Export CSV**. From the spreadsheet: **IENN menu > Printable plant list / Export plant list: PDF to Drive / Google Sheet**.
@@ -70,15 +70,31 @@ The home-page cards come from the same `?view=inventory` feed, loaded by `invent
 
 See `MERGE-NOTES.md` for what replaced Kobe's Sold-ledger back end, and which markup hooks the design pass relies on.
 
-## Sale / promo pop-up
 
-A small pop-up on the shop page (`promos.js`). Its data comes from the **Promos** tab of the IENN Inventory spreadsheet and arrives with the existing inventory feed (`promo` in `?view=inventory`), so the page makes no extra request. The shop stays underneath, and the order flow is unchanged.
+## Plant photos
 
-**Promos tab columns:** `Active` (yes/no or a checkbox) | `Title` | `Message` | `Start date` | `End date` | `Discount note (optional)`.
-The site shows the **first** row that has Active = yes and a date range covering today, Pacific time. Both the start and end dates count. There are three example rows (Fall, Spring, Summer), all set to Active = no.
+Cards show `assets/plants/<plant-id>.jpg`, where the id is the slug of the common name (for example "White Sage" becomes `white-sage`). The ids that have a photo are listed in `IENN_PHOTOS` in `plant-photos.js`. To add a photo, save it at about 800px wide as JPEG in `assets/plants/` (plus a 400px `<plant-id>-400.jpg`), add its id to `IENN_PHOTOS`, and credit it in `assets/plants/CREDITS.md`. Plants without a photo show "Photo coming soon".
 
-**Turn a sale on:** set `Active` = yes and enter the start and end dates. **Turn it off:** set `Active` = no (or let the end date pass). No redeploy is needed. Customers see the pop-up once per sale per day, after they tap "Shop the sale" or "Continue shopping" (or press Esc).
+Optional override from the sheet: add a **Photo** column (also matched: Photo URL, Image, Image URL, Picture) to the inventory tool's **Catalog** tab with a full image URL. The `?view=inventory` JSON then returns it as `image`, and it wins over the local file (`CATALOG_PHOTO_HEADERS` in `IENN_Config.gs`, `iennCatalogPhotos_()` in `IENN_Stock.gs`). Redeploy the Apps Script for this to take effect.
 
-**Do this once, when this code is deployed:** paste the updated `apps-script/IENN_Website.gs` and the new `IENN_Promos.gs` into the Apps Script project. Run `iennSetup()` once to create the Promos tab. Then **Deploy → Manage deployments → Edit → New version** on the existing web app, which keeps the same URL.
+## Promos (sale pop-up)
 
-**Test without the sheet:** open `index.html?promo=preview` to see the pop-up with mock data.
+The shop pages (`order.html` and the homepage) can show a small pop-up for a sale. It is controlled entirely from the **Promos** tab of the inventory tool's spreadsheet:
+
+| Active | Title | Message | Start date | End date | Discount note | Bottom info |
+|---|---|---|---|---|---|---|
+| No | Fall Sale | EXAMPLE: Plants are available now. Right now is the best time to get plants started. | 2026-11-01 | 2026-11-30 | (blank) | Pickup Saturdays 10 AM – 2 PM in Fontana. \| Cash or Zelle at time of pickup. |
+
+The full column guide is in `PROMOS.md`.
+
+- **Turn a promo on:** set **Active** to `Yes` and fill in Title and Message. Start and End dates are inclusive and use Pacific time. Leave either one blank for "open-ended". A Discount note is optional and shows in bold. Write only what's actually offered.
+- **Turn it off:** set Active to `No`, or let the End date pass. If several rows qualify, the first one from the top is shown.
+- Customers see it once per browser session, and must tap **Shop now** or **×** (or press Esc) to close it.
+- The tab is created with three inactive example rows (Fall, Spring and Summer Sale) when you run `iennSetup()` once. The example dates and wording are placeholders, so edit them before you activate a row.
+- Header names can be changed in `IENN_Config.gs` (`PROMO_*_HEADERS`). The logic is in `apps-script/IENN_Promos.gs`, and the pop-up in `promo.js`.
+- **One-time step:** paste `IENN_Promos.gs` and the updated `IENN_Config.gs` / `IENN_Website.gs` into the Apps Script project, run `iennSetup()`, then **Deploy → Manage deployments → edit → New version**. After that, turning promos on and off is sheet-only.
+- **Preview without the sheet:** open `order.html?promo=preview` (or `index.html?promo=preview`).
+
+## Customer confirmation email
+
+Every reply uses the same "look, verify, confirm" template (`templates/order-response-email.md`, built by `IENN_Drafts.gs`). It's auto-filled from the order: items with size, qty and price, the total (taxes included), the Fontana pickup area and Saturday 10 AM – 2 PM schedule, the next Saturday as the pickup date, "Cash or Zelle at time of pickup.", the customer's notes, our notes, Andrew's number and the fine print. It's saved as a Gmail draft only; the team checks it, types the exact address over `{{PICKUP_ADDRESS}}`, and sends.

@@ -439,7 +439,7 @@
       function use(l, msg) { PLANTS = sortPlants(l); prefill(); render(); status.textContent = msg || ""; status.hidden = !msg; }
       function load() {
         fetch(APPS_SCRIPT_URL + "?view=inventory", { cache: "no-store" }).then(function (r) { if (!r.ok) throw 0; return r.text(); }).then(function (t) {
-          var d = JSON.parse(t), l = fromInventory(d); if (!l.length) throw 0;
+          var d = JSON.parse(t), l = fromInventory(d); if (!l.length) throw 0; if (window.iennPromo) window.iennPromo(d.promo);
           try { localStorage.setItem(CACHE, JSON.stringify({ t: Date.now(), d: d })); } catch (e) {}
           use(l, "");
         }).catch(function () {
@@ -454,5 +454,7 @@
       document.addEventListener("visibilitychange", function () { if (!document.hidden) load(); });
     })();
   </script>
+  <script>window.IENN_PROMO_OPTS = { cta: "Shop now", onShop: function () { var g = document.getElementById("plant-list"); if (g) { g.scrollIntoView({ behavior: "smooth" }); var b = g.querySelector("button:not([disabled])"); if (b) b.focus({ preventScroll: true }); } } };</script>
+  <script src="promo.js"></script>
 </body>
 </html>

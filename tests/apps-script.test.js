@@ -1,5 +1,5 @@
 // Run: node tests/apps-script.test.js   (no dependencies)
-const assert = require('assert'), vm = require('vm'), { load, makeSheet } = require('./gas-harness');
+const assert = require('assert'), vm = require('vm'), { load } = require('./gas-harness');
 const J = x => JSON.parse(JSON.stringify(x));
 let pass = 0; const t = (name, fn) => { fn(); pass++; console.log('ok -', name); };
 const order = (h, items, extra) => JSON.parse(h.ctx.doPost({ postData: { contents: JSON.stringify(Object.assign({ name: 'Ana Lopez', email: 'ana@example.com', phone: '9095550100', notes: 'Saturday 11am', pickup: 'Saturday 10 AM – 2 PM', payment: 'Zelle', items }, extra)) } }).getContent());
@@ -84,10 +84,10 @@ t('invalid input rejected; server ignores client prices', () => {
 t('optional extra team email (off by default) skips placeholders and contains summary + link', () => {
   const h = load(); vm.runInContext("IENN_EXTRA_TEAM_EMAIL = true;", h.ctx);
   order(h, [{ plant: 'Yarrow', sizeKey: '2"', qty: 1 }]); assert.strictEqual(h.sent.length, 1, 'placeholders skipped');
-  vm.runInContext("TEAM_EMAILS = ['eric@test.local','andrew@test.local','keith@test.local','raylene@test.local'];", h.ctx);
+  vm.runInContext("TEAM_EMAIL_TO = 'andrew@test.local'; TEAM_EMAIL_CC = ['eric@test.local','keith@test.local'];", h.ctx);
   order(h, [{ plant: 'Yarrow', sizeKey: '2"', qty: 2 }]);
   const m = h.sent[h.sent.length - 1];
-  assert.strictEqual(m.to, 'eric@test.local,andrew@test.local,keith@test.local,raylene@test.local');
+  assert.strictEqual(m.to, 'andrew@test.local'); assert.strictEqual(m.cc, 'eric@test.local,keith@test.local');
   assert.match(m.body, /2 × Yarrow \(2"\) = \$6\.00/); assert.match(m.body, /#gid=3/); assert.match(m.body, /Total: \$6\.00 \(taxes included\)/);
   assert.match(m.body, /Andrew is handling this order/); assert.doesNotMatch(m.body, /plus tax/);
 });
@@ -100,8 +100,9 @@ t('reply draft fills template from IENN Invoices, keeps placeholders, never send
   assert.strictEqual(d.to, 'ana@example.com'); assert.match(d.body, /Hi Ana Lopez,/);
   assert.match(d.body, /2 × White Sage \(4-inch pot\) @ \$6 = \$12\.00/);
   assert.match(d.body, /Total: \$12\.00 \(taxes included\)/); assert.doesNotMatch(d.body, /Tax \(/); assert.match(d.body, /Call or text Andrew: \(909\) 609-9373/);
-  assert.match(d.body, /Payment status: Not paid yet/); assert.match(d.body, /\{\{PAYMENT_METHOD\}\}/); assert.match(d.body, /\{\{PICKUP_ADDRESS\}\}/);
-  assert.match(d.body, /Your notes: Pickup: Saturday 10 AM – 2 PM\nPays by: Zelle\nSaturday 11am/); assert.match(d.body, /Our response:\nReady Saturday!/);
+  assert.match(d.body, /Payment status: Not paid yet/); assert.match(d.body, /Payment: Cash or Zelle at time of pickup\. \(you chose Zelle\)/);
+  assert.match(d.body, /Pickup location: \{\{PICKUP_ADDRESS\}\} \(Fontana area, near Sierra Ave & Baseline Rd\)/); assert.match(d.body, /Pickup schedule: Saturdays 10 AM – 2 PM/); assert.match(d.body, /Your pickup date: Saturday, October 24, 2026/); assert.match(d.body, /Grand Terrace pickup available upon request\./); assert.match(d.body, /\{\{PICKUP_ADDRESS\}\}/);
+  assert.match(d.body, /Your notes: Saturday 11am\n/); assert.match(d.body, /Our notes: Ready Saturday!/);
 });
 
 t('print list + CSV: sorted by availability then appeal, prices on sizes', () => {
@@ -130,28 +131,58 @@ t('claim defaults to Andrew; team-entered order uses the same checked submit + s
   const rows = h.ss.sheets['IENN Invoices'].rows; assert.strictEqual(rows[rows.length - 1][11], 'Andrew');
 });
 
-t('promo: first active row covering today (LA, inclusive); bad rows skipped; feed carries promo or null', () => {
-  const h = load(), pick = (rows, d) => J(h.ctx.iennPromoPick_(rows, d));
-  const rows = [['no', 'Fall Sale', 'x', '2026-11-01', '2026-11-30'], ['yes', 'Fall Sale', 'Fall msg', '2026-11-01', '2026-11-30', '10% off'],
-    ['TRUE', 'Late', 'second', '11/15/2026', '12/5/2026'], [true, 'Broken', 'm', 'soon', '2026-12-01'], ['yes', '', 'no title', '2026-01-01', '2027-01-01']];
-  assert.strictEqual(pick(rows, '2026-10-31'), null);
-  assert.deepStrictEqual(pick(rows, '2026-11-01'), { title: 'Fall Sale', message: 'Fall msg', start: '2026-11-01', end: '2026-11-30', discountNote: '10% off' });
-  assert.strictEqual(pick(rows, '2026-11-30').title, 'Fall Sale', 'end date inclusive');
-  assert.strictEqual(pick(rows, '2026-12-01').title, 'Late', 'next active row; M/d/yyyy parsed'); assert.strictEqual(pick(rows, '2026-12-05').discountNote, null);
-  assert.strictEqual(pick(rows, '2026-12-06'), null);
-  // Date cells: midnight LA = 07:00Z (PDT, Nov 1) / 08:00Z (PST, Nov 2)
-  assert.strictEqual(pick([[true, 'D', '', new Date('2026-11-01T07:00:00Z'), new Date('2026-11-02T08:00:00Z')]], '2026-11-02').title, 'D');
-  assert.strictEqual(J(h.ctx.iennInventory()).promo, null, 'no Promos tab -> null, no sheet created on GET');
-  h.ss.insertSheet = n => (h.ss.sheets[n] = makeSheet(n, [], 9, h.ss));
-  const sh = h.ctx.iennPromoSheet_();
-  assert.deepStrictEqual(J(sh.rows[0]), ['Active', 'Title', 'Message', 'Start date', 'End date', 'Discount note (optional)']);
-  assert.deepStrictEqual(J(sh.rows.slice(1).map(r => [r[0], r[1], r[3], r[4]])), [['no', 'Fall Sale', '2026-11-01', '2026-11-30'], ['no', 'Spring Sale', '2027-03-01', '2027-04-30'], ['no', 'Summer Sale', '2027-06-01', '2027-07-31']]);
-  assert.ok(sh.rows.slice(1).every(r => /EXAMPLE/.test(r[2])));
-  assert.strictEqual(h.ctx.iennPromoSheet_(), sh, 'getOrCreate is idempotent'); assert.strictEqual(J(h.ctx.iennInventory()).promo, null, 'examples inactive');
-  sh.rows[1][0] = 'yes'; h.setNow(Date.parse('2026-11-01T07:30:00Z'));   // 12:30 AM Nov 1 in LA
+t('promo: date range, active flag, open-ended, first match wins, bad rows skipped', () => {
+  const { ctx } = load(), H = ['Active', 'Title', 'Message', 'Start date', 'End date', 'Discount note'];
+  const pick = (rows, d) => J(ctx.iennPickPromo_([H].concat(rows), d));
+  const fall = ['Yes', 'Fall Sale', 'Plant now', '2026-11-01', '2026-11-30', ''];
+  assert.strictEqual(pick([fall], '2026-10-31'), null, 'before start');
+  assert.strictEqual(pick([fall], '2026-11-01').title, 'Fall Sale', 'start inclusive');
+  assert.strictEqual(pick([fall], '2026-11-30').title, 'Fall Sale', 'end inclusive');
+  assert.strictEqual(pick([fall], '2026-12-01'), null, 'after end');
+  assert.strictEqual(pick([['No', 'Off', '', '', '', '']], '2026-11-05'), null, 'Active=No');
+  assert.strictEqual(pick([[' yes ', 'Open', '', '', '', '']], '2030-01-01').title, 'Open', 'blank start+end = open-ended, yes is case/space tolerant');
+  assert.strictEqual(pick([['Yes', 'NoEnd', '', '2026-10-01', '', '']], '2027-05-01').title, 'NoEnd');
+  assert.strictEqual(pick([['Yes', 'NoStart', '', '', '10/25/2026', '']], '2026-10-20').title, 'NoStart', 'm/d/yyyy accepted');
+  assert.strictEqual(pick([['Yes', 'Bad', '', 'soon', '', ''], ['Yes', 'Second', 'm', '', '', 'note']], '2026-10-20').title, 'Second', 'unreadable date skipped; first valid wins');
+  assert.deepStrictEqual(pick([['Yes', 'A', 'msg', new Date(Date.UTC(2026, 9, 18, 12)), '', 'note']], '2026-10-20'), { title: 'A', message: 'msg', start: '2026-10-18', end: '', discountNote: 'note', bottomInfo: 'Pickup Saturdays 10 AM – 2 PM in Fontana. | Cash or Zelle at time of pickup.' });
+  assert.strictEqual(ctx.iennPickPromo_([['Title'], ['x']], '2026-10-20'), null, 'no Active column -> null');
+});
+
+t('promo: missing tab -> null in inventory; iennSetup creates Promos with inactive examples', () => {
+  const h = load();
+  assert.strictEqual(J(h.ctx.iennInventory()).promo, null);
+  h.ctx.iennSetup();
+  const rows = h.ss.sheets['Promos'].rows;
+  assert.deepStrictEqual(J(rows[0]), ['Active', 'Title', 'Message', 'Start date', 'End date', 'Discount note', 'Bottom info']);
+  assert.deepStrictEqual(rows.slice(1).map(r => [r[0], r[1]]), [['No', 'Fall Sale'], ['No', 'Spring Sale'], ['No', 'Summer Sale']]);
+  assert.strictEqual(J(h.ctx.iennInventory()).promo, null, 'examples are inactive');
+  rows[1][0] = 'Yes'; rows[1][3] = '2026-10-01'; rows[1][4] = ''; // open-ended so the test doesn't depend on the real clock
   assert.strictEqual(J(h.ctx.iennInventory()).promo.title, 'Fall Sale');
-  h.setNow(Date.parse('2026-11-01T06:30:00Z'));   // still Oct 31 in LA
-  assert.strictEqual(h.ctx.iennPromoToday_(), '2026-10-31');
+  h.ctx.iennSetup(); assert.strictEqual(h.ss.sheets['Promos'].rows.length, 4, 'setup does not duplicate');
+});
+
+t('promo: optional Bottom info column (aliases), line breaks kept, appended to an existing tab without touching rows', () => {
+  const h = load(), pick = (H, r) => J(h.ctx.iennPickPromo_([H, r], '2026-11-05'));
+  const H = ['Active', 'Title', 'Message', 'Start date', 'End date', 'Discount note'];
+  assert.strictEqual(pick(H.concat('Bottom info'), ['Yes', 'Fall Sale', 'm', '', '', '', ' Plants ready now\nEnds Nov 30 ']).bottomInfo, 'Plants ready now\nEnds Nov 30');
+  assert.strictEqual(pick(H.concat('Footer'), ['Yes', 'F', '', '', '', '', 'x']).bottomInfo, 'x', 'footer alias');
+  assert.strictEqual(pick(H.concat('Info'), ['Yes', 'F', '', '', '', '', 'y']).bottomInfo, 'y', 'info alias');
+  assert.strictEqual(pick(H, ['Yes', 'F', '', '', '', '']).bottomInfo, 'Pickup Saturdays 10 AM – 2 PM in Fontana. | Cash or Zelle at time of pickup.', 'no column -> configurable default');
+  const old = [['Yes', 'Fall Sale', 'Plant now', '2026-10-01', '', '']];
+  const sh = h.ss.insertSheet('Promos'); sh.rows.push(H.slice(), old[0].slice());
+  h.ctx.iennSetup();
+  assert.deepStrictEqual(J(sh.rows[0]), H.concat('Bottom info'));
+  assert.deepStrictEqual(J(sh.rows[1]), old[0], 'existing row untouched');
+  assert.strictEqual(sh.rows.length, 2);
+  assert.match(J(h.ctx.iennInventory()).promo.bottomInfo, /Cash or Zelle at time of pickup/);
+  sh.rows[1][6] = 'Line 1\nLine 2'; assert.strictEqual(J(h.ctx.iennInventory()).promo.bottomInfo, 'Line 1\nLine 2', 'in ?view=inventory JSON');
+  h.ctx.iennSetup(); assert.strictEqual(sh.rows[0].length, 7, 'not appended twice');
+  const h2 = load(), sh2 = h2.ss.insertSheet('Promos');
+  sh2.rows.push(H.slice(), ['No', 'Spring Sale', 'EXAMPLE: Spring is the last window to get plants in before summer heat.', '', '', ''], ['No', 'Spring Sale', 'Our own spring text', '', '', '']);
+  h2.ctx.iennSetup();
+  assert.match(String(sh2.rows[1][6]), /^Pickup Saturdays 10 AM – 2 PM in Fontana\. \| Cash or Zelle at time of pickup\.$/, 'untouched example row filled');
+  assert.ok(!sh2.rows[2][6], 'edited row left blank');
+  assert.ok(!/%|off\b/i.test(JSON.stringify(J(h2.ctx.IENN_PROMO_EXAMPLES))), 'no discounts in examples');
 });
 
 console.log(`\n${pass} tests passed`);
