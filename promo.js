@@ -1,4 +1,4 @@
-/* IENN promo modal. Data: `promo` from the inventory JSON (?view=inventory), set in the "Promos" tab of the inventory sheet.
+/* IENN promo modal: bold red scroll banner over a dim overlay. Data: `promo` from the inventory JSON (?view=inventory), set in the "Promos" tab of the inventory sheet.
    window.iennPromo(promo) shows it once per browser session (dismissal remembered per title+start).
    Test: add ?promo=preview to the page URL to show a sample. No dependencies. */
 (function () {
@@ -7,13 +7,23 @@
   function css() {
     if (document.getElementById("ienn-promo-css")) return;
     var st = document.createElement("style"); st.id = "ienn-promo-css";
-    st.textContent = ".ienn-promo{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;background:rgba(30,36,30,.55)}" +
-      ".ienn-promo-box{position:relative;background:#fff;color:var(--text,#2c2c2c);border-radius:12px;border-top:6px solid var(--sage,#6b7c6a);max-width:420px;width:100%;padding:1.5rem 1.25rem 1.25rem;box-shadow:0 10px 30px rgba(0,0,0,.25);text-align:center}" +
-      ".ienn-promo-box h2{margin:0 2.25rem .5rem;color:var(--sage-dark,#4a5a4a);font-size:1.35rem}" +
-      ".ienn-promo-box p{margin:0 0 .75rem;line-height:1.45}.ienn-promo-note{font-weight:700;color:var(--sage-dark,#4a5a4a)}.ienn-promo-dates{font-size:.85rem;color:#666}" +
-      ".ienn-promo-go{display:inline-flex;align-items:center;justify-content:center;min-height:48px;min-width:44px;padding:0 1.5rem;margin-top:.25rem;border:0;border-radius:8px;background:var(--red,#c0392b);color:#fff;font:inherit;font-weight:700;font-size:1rem;cursor:pointer;width:100%}" +
-      ".ienn-promo-x{position:absolute;top:.25rem;right:.25rem;width:44px;height:44px;border:0;background:none;font-size:1.6rem;line-height:1;color:#555;cursor:pointer;border-radius:8px}" +
-      ".ienn-promo-x:focus-visible,.ienn-promo-go:focus-visible{outline:3px solid var(--sage,#6b7c6a);outline-offset:2px}";
+    var R = "#C1121F", D = "#8B0D16", C = "#FFF8E7";
+    st.textContent = ".ienn-promo{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;background:rgba(15,10,10,.62);overflow-y:auto}" +
+      ".ienn-promo-box{position:relative;width:calc(100% - 3rem);max-width:560px;margin:auto;background:linear-gradient(180deg," + D + " 0,"+R+" 10px,"+R+" calc(100% - 10px)," + D + " 100%);color:" + C + ";padding:1.6rem 1.75rem 1.4rem;text-align:center;box-shadow:0 14px 40px rgba(0,0,0,.45);font-family:inherit;transform-origin:center;animation:ienn-unroll .38s cubic-bezier(.2,.8,.3,1.1) both}" +
+      ".ienn-promo-tail{position:absolute;z-index:-1;top:1.1rem;bottom:-1.1rem;width:2rem;background:" + D + ";filter:brightness(.85)}" +
+      ".ienn-promo-tail.l{left:-1.6rem;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,38% 50%)}" +
+      ".ienn-promo-tail.r{right:-1.6rem;clip-path:polygon(0 0,100% 0,62% 50%,100% 100%,0 100%)}" +
+      ".ienn-promo-curl{position:absolute;top:-6px;bottom:-6px;width:18px;border-radius:9px;background:linear-gradient(90deg," + D + ",#e0343f 45%," + D + ");box-shadow:0 2px 6px rgba(0,0,0,.35)}" +
+      ".ienn-promo-curl.l{left:-9px}.ienn-promo-curl.r{right:-9px}" +
+      ".ienn-promo-box h2{margin:0 1.5rem .5rem;color:" + C + ";font-size:clamp(1.6rem,7vw,3rem);font-weight:900;line-height:1.05;letter-spacing:.01em;text-transform:uppercase;text-shadow:0 2px 0 " + D + ";overflow-wrap:break-word;hyphens:auto}" +
+      ".ienn-promo-box p{margin:0 0 .7rem;line-height:1.45;font-size:1.05rem;overflow-wrap:anywhere}" +
+      ".ienn-promo-note{font-weight:800;font-size:1.15rem!important;border-top:2px dashed rgba(255,248,231,.55);border-bottom:2px dashed rgba(255,248,231,.55);padding:.4rem 0}" +
+      ".ienn-promo-dates{font-size:.9rem!important;opacity:.9}" +
+      ".ienn-promo-go{display:inline-flex;align-items:center;justify-content:center;min-height:48px;min-width:44px;padding:0 1.75rem;margin-top:.25rem;border:2px solid " + C + ";border-radius:999px;background:" + C + ";color:" + R + ";font:inherit;font-weight:800;font-size:1.05rem;cursor:pointer}" +
+      ".ienn-promo-x{position:absolute;top:.15rem;right:.15rem;width:44px;height:44px;border:0;background:none;font-size:1.8rem;line-height:1;color:" + C + ";cursor:pointer;border-radius:8px}" +
+      ".ienn-promo-x:focus-visible,.ienn-promo-go:focus-visible{outline:3px solid " + C + ";outline-offset:3px}" +
+      "@keyframes ienn-unroll{from{transform:scaleX(.08);opacity:0}60%{opacity:1}to{transform:none;opacity:1}}" +
+      "@media (prefers-reduced-motion:reduce){.ienn-promo-box{animation:none}}";
     document.head.appendChild(st);
   }
   function fmt(d) { if (!d) return ""; var p = d.split("-"); var m = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[1] - 1]; return m ? m + " " + (+p[2]) : d; }
@@ -27,6 +37,7 @@
     wrap.className = "ienn-promo";
     var dates = promo.start && promo.end ? fmt(promo.start) + " – " + fmt(promo.end) : promo.end ? "Through " + fmt(promo.end) : "";
     wrap.innerHTML = '<div class="ienn-promo-box" role="dialog" aria-modal="true" aria-labelledby="ienn-promo-title"' + (promo.message ? ' aria-describedby="ienn-promo-msg"' : "") + ">" +
+      '<span class="ienn-promo-tail l" aria-hidden="true"></span><span class="ienn-promo-tail r" aria-hidden="true"></span><span class="ienn-promo-curl l" aria-hidden="true"></span><span class="ienn-promo-curl r" aria-hidden="true"></span>' +
       '<button type="button" class="ienn-promo-x" aria-label="Close">×</button>' +
       '<h2 id="ienn-promo-title">' + esc(promo.title) + "</h2>" +
       (promo.message ? '<p id="ienn-promo-msg">' + esc(promo.message) + "</p>" : "") +
