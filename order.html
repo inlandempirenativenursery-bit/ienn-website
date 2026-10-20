@@ -177,6 +177,11 @@
 
   <h2 id="shop">1. Choose your plants</h2>
   <p class="hint">Pick a size, set how many, then tap <b>Add</b>. 1-gallon is our best value for most yards.</p>
+  <p class="hint" id="stock-updated" aria-live="polite">Loading live stock…</p>
+  <section class="notice" id="stock-error" role="status" hidden>
+    <b>Live stock unavailable right now.</b>
+    <span id="stock-error-text">Showing the last list we loaded. Stock may have changed. Email <a href="mailto:hello@inlandempirenativenursery.com">hello@inlandempirenativenursery.com</a> and we'll confirm.</span>
+  </section>
   <div class="plants" id="plant-list" aria-live="polite">
     <noscript><p class="hint">Turn on JavaScript to use the plant picker, or email your list to hello@inlandempirenativenursery.com.</p></noscript>
   </div>
@@ -230,25 +235,139 @@
   </footer>
 
   <script>
-    /* ===== PLANT LIST: edit stock here (one place) =====
-       stock = how many on hand for that size. 0 = Out of stock (Add is disabled).
-       img = optional photo path, e.g. "images/yarrow.jpg"; leave "" for the placeholder.
-       [TODO: hook this list to a Google Sheet (published CSV) so stock updates without editing code.]
-       [TODO: add prices once confirmed; none are shown on purpose.] */
-    var PLANTS = [
-      { id: 'blue-pyramid', name: 'Blue Pyramid Cypress', note: 'Upright evergreen screen. [TODO: confirm — Arizona cypress, not a CA native]', img: '',
-        sizes: [{ size: '1-gallon', stock: 12 }] },
-      { id: 'woolly-blue', name: 'Woolly Blue Curls', note: 'Fragrant purple blooms, loves sun and dry soil.', img: '',
-        sizes: [{ size: '4-inch', stock: 3 }, { size: '1-gallon', stock: 0 }] },
-      { id: 'monkeyflower', name: 'Sticky Monkeyflower', note: 'Orange blooms spring to summer; hummingbird favorite.', img: '',
-        sizes: [{ size: '1-gallon', stock: 15 }] },
-      { id: 'yarrow', name: 'Yarrow', note: 'Tough, low-water groundcover with flat white flowers.', img: '',
-        sizes: [{ size: '4-inch', stock: 20 }, { size: '1-gallon', stock: 8 }] }
-    ];
+    /* ===== LIVE INVENTORY FEED =====
+       INVENTORY_URL = the IENN Inventory Apps Script web app (?view=json, returns JSON)
+       OR a "Publish to web" CSV link of the inventory sheet. Both are supported.
+       [TODO: Eric to paste the real URL. See TESTING.md and docs/inventory-apps-script.gs.]
+       Leave "" to use the DEV SAMPLE list below (never for launch). */
+    var INVENTORY_URL = '';
+    /* Local testing only: ?inventory=<url> works on localhost, ignored on the live site. */
+    (function () { var m = /[?&]inventory=([^&]+)/.exec(location.search);
+      if (m && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) INVENTORY_URL = decodeURIComponent(m[1]); })();
     var LOW_STOCK = 5;
+    /* Default "popular first" order when the sheet has no rank/featured column. Lower = earlier. */
+    var POPULAR_DEFAULTS = ['white sage', 'monkeyflower', 'california poppy', 'cleveland sage', 'penstemon',
+      'ceanothus', 'buckwheat', 'woolly blue curls', 'milkweed', 'yarrow'];
+    /* DEV SAMPLE ONLY: shown if no URL is set and nothing is cached. Not real stock. */
+    var DEV_SAMPLE = [
+      { name: 'Blue Pyramid Cypress', note: 'Upright evergreen screen. [TODO: confirm, Arizona cypress, not a CA native]', sizes: [{ size: '1-gallon', stock: 12 }] },
+      { name: 'Woolly Blue Curls', note: 'Fragrant purple blooms, loves sun and dry soil.', sizes: [{ size: '4-inch', stock: 3 }, { size: '1-gallon', stock: 0 }] },
+      { name: 'Sticky Monkeyflower', note: 'Orange blooms spring to summer; hummingbird favorite.', sizes: [{ size: '1-gallon', stock: 15 }] },
+      { name: 'Yarrow', note: 'Tough, low-water groundcover with flat white flowers.', sizes: [{ size: '4-inch', stock: 20 }, { size: '1-gallon', stock: 8 }] }
+    ];
+    window.IENNFeed = (function () {
+      var CACHE = 'ienn-inventory-v1';
+      function slug(t) { return String(t).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
+      function sizeLabel(z) {
+        var t = String(z || '').trim(), l = t.toLowerCase();
+        if (/^1\s*-?\s*(gal|gallon)/.test(l)) return '1-gallon';
+        if (/^5\s*-?\s*(gal|gallon)/.test(l)) return '5-gallon';
+        if (/^4\s*(\"|in|-inch|inch)/.test(l)) return '4-inch';
+        if (/^2\s*(\"|in|-inch|inch)/.test(l)) return '2-inch';
+        return t;
+      }
+      function truthy(v, dflt) { if (v === undefined || v === null || v === '') return dflt; return !/^(no|n|false|0|off|inactive|hidden)$/i.test(String(v).trim()); }
+      function pick(o, keys) { for (var k in o) { var n = k.toLowerCase().replace(/[^a-z]/g, ''); if (keys.indexOf(n) >= 0) return o[k]; } }
+      function num(v) { var n = parseInt(String(v == null ? '' : v).replace(/[^0-9-]/g, ''), 10); return isNaN(n) || n < 0 ? 0 : n; }
+      function parseCSV(text) {
+        var rows = [], row = [], f = '', q = false;
+        for (var i = 0; i < text.length; i++) {
+          var c = text[i];
+          if (q) { if (c === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+          else if (c === '"' && f === '') q = true;
+          else if (c === ',') { row.push(f); f = ''; }
+          else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
+          else f += c;
+        }
+        if (f || row.length) { row.push(f); rows.push(row); }
+        rows = rows.filter(function (r) { return r.join('').trim(); });
+        var head = rows.shift() || [];
+        return rows.map(function (r) { var o = {}; head.forEach(function (h, j) { o[h.trim()] = (r[j] || '').trim(); }); return o; });
+      }
+      /* Accepts: [rows] | {plants:[rows], updated} | Apps Script getInitial() shape {plants:[names], sizes, stock:{name:{size:n}}} */
+      function normalize(data) {
+        var updated = data && (data.updated || data.updatedAt) || null, rows = data;
+        if (data && !Array.isArray(data)) {
+          rows = data.plants || data.rows || data.items || [];
+          if (data.stock && rows.length && typeof rows[0] === 'string') {
+            rows = rows.map(function (n) {
+              var st = data.stock[n] || data.stock[String(n).split(' (')[0]] || {};
+              return { name: n, sizes: Object.keys(st).map(function (z) { return { size: z, stock: st[z] }; }) };
+            });
+          }
+        }
+        var byId = {}, out = [];
+        (rows || []).forEach(function (r) {
+          var name = String(pick(r, ['name', 'plant', 'plantname', 'commonname']) || '').trim();
+          if (!name || !truthy(pick(r, ['active', 'show', 'onsite', 'visible', 'listed']), true)) return;
+          var id = slug(name), p = byId[id];
+          if (!p) {
+            var rank = pick(r, ['rank', 'sortrank', 'sort', 'order', 'priority']);
+            p = byId[id] = { id: id, name: name, note: String(pick(r, ['note', 'notes', 'description', 'blurb']) || ''),
+              img: String(pick(r, ['image', 'img', 'photo', 'imageurl', 'photourl']) || ''), sizes: [],
+              rank: rank === undefined || rank === '' ? null : Number(rank),
+              featured: truthy(pick(r, ['featured', 'popular']), false) };
+            out.push(p);
+          }
+          var sz = r.sizes, list = [];
+          if (Array.isArray(sz)) list = sz;
+          else if (typeof sz === 'string' && sz) list = sz.split(/[|;]/).map(function (x) { var a = x.split(':'); return { size: a[0], stock: a[1] }; });
+          else { var z = pick(r, ['size', 'container', 'pot']); if (z) list = [{ size: z, stock: pick(r, ['stock', 'qty', 'quantity', 'onhand', 'available']) }]; }
+          list.forEach(function (s) { var lab = sizeLabel(s.size); if (!lab) return;
+            var ex = p.sizes.filter(function (x) { return x.size === lab; })[0];
+            if (ex) ex.stock += num(s.stock); else p.sizes.push({ size: lab, stock: num(s.stock) }); });
+        });
+        out = out.filter(function (p) { return p.sizes.length; });
+        return { plants: sort(out), updated: updated };
+      }
+      function popIdx(name) { var l = name.toLowerCase(); for (var i = 0; i < POPULAR_DEFAULTS.length; i++) if (l.indexOf(POPULAR_DEFAULTS[i]) >= 0) return i; return -1; }
+      function sort(list) {
+        function key(p) {
+          if (p.rank !== null && !isNaN(p.rank)) return [0, p.rank];
+          if (p.featured) return [1, popIdx(p.name) < 0 ? 999 : popIdx(p.name)];
+          var i = popIdx(p.name); return i >= 0 ? [2, i] : [3, 0];
+        }
+        return list.sort(function (a, b) {
+          var ka = key(a), kb = key(b);
+          var ia = a.sizes.some(function (s) { return s.stock > 0; }), ib = b.sizes.some(function (s) { return s.stock > 0; });
+          if (ka[0] < 3 || kb[0] < 3) { if (ka[0] !== kb[0]) return ka[0] - kb[0]; if (ka[1] !== kb[1]) return ka[1] - kb[1]; }
+          if (ia !== ib) return ia ? -1 : 1;
+          return a.name.localeCompare(b.name);
+        });
+      }
+      function load(cb) {
+        function fallback(why) {
+          var c = null; try { c = JSON.parse(localStorage.getItem(CACHE)); } catch (e) {}
+          if (c && c.plants && c.plants.length) return cb({ plants: sort(c.plants), updated: c.updated, source: 'cache', error: why });
+          cb({ plants: normalize(DEV_SAMPLE).plants, updated: null, source: 'sample', error: why });
+        }
+        if (!INVENTORY_URL) return fallback(null);
+        var url = INVENTORY_URL + (INVENTORY_URL.indexOf('?') < 0 ? '?' : '&') + '_=' + Date.now();
+        var done = false, t = setTimeout(function () { if (!done) { done = true; fallback('timeout'); } }, 10000);
+        fetch(url, { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+          .then(function (txt) {
+            if (done) return; done = true; clearTimeout(t);
+            var t2 = txt.trim(), data = (t2[0] === '[' || t2[0] === '{') ? JSON.parse(t2) : parseCSV(t2);
+            var res = normalize(data); if (!res.plants.length) throw new Error('empty');
+            res.updated = res.updated || new Date().toISOString(); res.source = 'live';
+            try { localStorage.setItem(CACHE, JSON.stringify({ plants: res.plants, updated: res.updated })); } catch (e) {}
+            cb(res);
+          })['catch'](function (e) { if (!done) { done = true; clearTimeout(t); fallback(String(e && e.message || e)); } });
+      }
+      return { load: load, normalize: normalize, parseCSV: parseCSV };
+    })();
   </script>
   <script>
-    (function () {
+    IENNFeed.load(function (res) {
+      var PLANTS = res.plants;
+      var up = document.getElementById('stock-updated');
+      var when = res.updated ? new Date(res.updated) : null;
+      var stamp = when && !isNaN(when) ? when.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+      if (res.source === 'live') up.textContent = 'Live stock • updated ' + stamp;
+      else if (res.source === 'cache') up.textContent = 'Saved stock list • updated ' + stamp;
+      else up.textContent = 'Sample list (dev only) • not live stock';
+      if (res.error) document.getElementById('stock-error').hidden = false;
+      if (res.error && res.source === 'sample') document.getElementById('stock-error-text').innerHTML = 'Please email <a href="mailto:hello@inlandempirenativenursery.com">hello@inlandempirenativenursery.com</a> for current availability. The plants below are a sample only.';
       var KEY = 'ienn-cart-v1';
       var list = document.getElementById('plant-list');
       var summary = document.getElementById('summary-body');
@@ -367,7 +486,7 @@
         cart = []; save(); form.reset(); document.getElementById('confirm').hidden = true; render();
         document.getElementById('shop').scrollIntoView({ block: 'start' });
       });
-    })();
+    });
   </script>
 </body>
 </html>

@@ -1,0 +1,10 @@
+{"updated":"2026-10-20T17:00:00Z","plants":[
+ {"name":"Yarrow","size":"4\"","stock":20,"note":"Tough groundcover."},
+ {"name":"Yarrow","size":"1 gal","stock":8},
+ {"name":"White Sage","sizes":"4-inch:6|1-gallon:2","note":"Classic aromatic sage."},
+ {"name":"Sticky Monkeyflower","size":"1 gal","stock":15},
+ {"name":"Zauschneria (New Test Plant)","size":"1 gal","stock":4,"note":"New row added in sheet."},
+ {"name":"Coyote Brush","size":"1 gal","stock":0},
+ {"name":"Hidden Plant","size":"1 gal","stock":9,"active":"no"},
+ {"name":"Desert Mallow","size":"1 gal","stock":5,"rank":1,"note":"Ranked first explicitly."}
+]}
