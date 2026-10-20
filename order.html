@@ -3,263 +3,243 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Order Plants | Inland Empire Native Nursery</title>
+  <title>Shop Plants | Inland Empire Native Nursery</title>
+  <link rel="icon" href="images/ienn-logo-sage.png" type="image/png">
   <style>
-    :root {
-      --lilac: #d4c4e0;
-      --sage: #6b7c6a;
-      --sage-dark: #4a5a4a;
-      --cream: #f8f6f3;
-      --red: #c0392b;
-      --text: #2c2c2c;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      color: var(--text);
-      background: #fff;
-      line-height: 1.5;
-      padding-bottom: 40px;
-    }
-    header {
-      background: #fff;
-      border-bottom: 1px solid #eee;
-      padding: 0.75rem 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .logo-text { font-weight: 700; color: var(--sage-dark); }
-    .logo-sub { font-size: 0.7rem; color: var(--sage); }
-    h1 { font-size: 1.5rem; color: var(--sage-dark); margin: 1.25rem 1rem 0.5rem; }
-    .notice {
-      background: var(--cream);
-      border-left: 4px solid var(--sage);
-      margin: 1rem;
-      padding: 1rem;
-      border-radius: 8px;
-      font-size: 0.95rem;
-    }
-    .notice strong { color: var(--sage-dark); }
-    .plants { margin: 1rem; }
-    .plant-card {
-      background: #fff;
-      border: 1px solid #eee;
-      border-radius: 10px;
-      padding: 1rem;
-      margin-bottom: 0.75rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .plant-info h3 { font-size: 1rem; color: var(--sage-dark); }
-    .plant-meta { font-size: 0.85rem; color: #666; }
-    .qty { display: flex; align-items: center; gap: 0.5rem; }
-    .qty label { margin: 0; }
-    .qty input { width: 64px; min-height: 44px; padding: 0.4rem; font-size: 1rem; text-align: center; border: 1px solid #ccc; border-radius: 6px; }
-    form { margin: 1rem; }
-    label { display: block; margin: 0.75rem 0 0.25rem; font-weight: 600; font-size: 0.95rem; }
-    input[type="text"], input[type="email"], input[type="tel"], textarea {
-      width: 100%;
-      padding: 0.7rem;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 1rem;
-    }
-    textarea { min-height: 80px; }
-    .submit-btn {
-      background: var(--red);
-      color: #fff;
-      border: none;
-      padding: 0.9rem 1.5rem;
-      font-size: 1.05rem;
-      font-weight: 700;
-      border-radius: 8px;
-      width: 100%;
-      margin-top: 1rem;
-      cursor: pointer;
-    }
-    .submit-btn:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--sage-dark); outline-offset: 2px; }
-    .fine { font-size: 0.85rem; color: #555; margin-top: 0.75rem; }
-    .submit-btn:hover { background: #a93226; }
-    footer { text-align: center; font-size: 0.8rem; color: #555; margin-top: 2rem; padding: 1rem; }
-    main { max-width: 720px; margin: 0 auto; }
-    h2 { font-size: 1.15rem; color: var(--sage-dark); margin: 1.5rem 1rem 0.25rem; }
-    .hint { margin: 0 1rem; font-size: 0.9rem; color: #555; }
-    .notice h2 { margin: 0 0 0.5rem; }
-    .notice ul { list-style: none; display: grid; gap: 0.6rem; }
-    .notice li { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.25rem; }
-    .notice .ico { font-size: 1.1rem; line-height: 1.4; }
-    .notice b { color: var(--sage-dark); display: block; }
-    .plant-card { gap: 0.75rem; flex-wrap: wrap; transition: border-color .15s, background .15s; }
-    .plant-card.selected { border-color: var(--sage); background: #f3f6f2; }
-    .plant-info { flex: 1 1 180px; min-width: 0; }
-    .plant-info h3 { font-size: 1.05rem; }
-    .stepper { display: flex; align-items: center; border: 1px solid #ccc; border-radius: 10px; overflow: hidden; }
-    .stepper button { width: 44px; height: 44px; border: none; background: var(--cream); color: var(--sage-dark); font-size: 1.4rem; font-weight: 700; cursor: pointer; touch-action: manipulation; }
-    .stepper button:active { background: var(--lilac); }
-    .stepper button:disabled { color: #aaa; cursor: default; }
-    .stepper input { width: 52px; height: 44px; border: none; border-left: 1px solid #ccc; border-right: 1px solid #ccc; text-align: center; font-size: 1.05rem; -moz-appearance: textfield; }
-    .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-    .summary { margin: 1rem; padding: 1rem; border: 2px dashed var(--sage); border-radius: 10px; background: #fff; }
-    .summary h2 { margin: 0 0 0.5rem; font-size: 1.05rem; }
-    .summary ul { padding-left: 1.2rem; }
-    .summary .empty { color: #555; font-size: 0.95rem; }
-    .error { color: var(--red); font-weight: 600; margin-top: 0.75rem; display: none; }
-    input[type="text"], input[type="email"], input[type="tel"], textarea { min-height: 44px; }
-    input:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--lilac); outline-offset: 2px; }
-    .submit-btn { min-height: 48px; }
-    @media (min-width: 640px) { h1 { font-size: 1.8rem; } }
+    :root { --lilac:#d4c4e0; --sage:#6b7c6a; --sage-dark:#4a5a4a; --cream:#f8f6f3; --red:#c0392b; --green:#2e7d32; --text:#2c2c2c; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; color:var(--text); background:#fafafa; line-height:1.45; padding-bottom:90px; }
+    header { position:sticky; top:0; z-index:50; background:#fff; border-bottom:1px solid #eee; display:flex; align-items:center; justify-content:space-between; padding:0.5rem 1rem; }
+    .logo { display:flex; align-items:center; gap:0.5rem; text-decoration:none; color:inherit; }
+    .logo img { height:38px; width:auto; }
+    .logo-text { font-weight:700; color:var(--sage-dark); }
+    .logo-sub { font-size:0.62rem; color:var(--sage); letter-spacing:0.4px; }
+    .back { color:var(--sage); text-decoration:none; font-size:0.9rem; }
+    main { max-width:760px; margin:0 auto; }
+    h1 { font-size:1.45rem; color:var(--sage-dark); margin:1rem 1rem 0.25rem; }
+    .lead { margin:0 1rem 0.5rem; color:#555; }
+    .notices { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin:0.75rem 1rem; }
+    .notices div { background:var(--cream); border-radius:10px; padding:0.6rem 0.7rem; font-size:0.85rem; border-left:4px solid var(--sage); }
+    .notices strong { display:block; color:var(--sage-dark); font-size:0.8rem; text-transform:uppercase; letter-spacing:0.4px; }
+    .grid { display:grid; grid-template-columns:1fr; gap:0.75rem; margin:1rem; }
+    .card { background:#fff; border:1px solid #eee; border-radius:14px; overflow:hidden; display:flex; flex-direction:column; }
+    .card.featured { border-color:var(--sage); }
+    .swatch { height:96px; display:flex; align-items:flex-end; padding:0.6rem 0.8rem; background:linear-gradient(135deg,var(--cream),var(--lilac)); color:var(--sage-dark); font-style:italic; font-size:0.9rem; }
+    .card.featured .swatch { background:linear-gradient(135deg,#e7ece4,var(--cream)); }
+    .body { padding:0.75rem 0.85rem 0.9rem; display:flex; flex-direction:column; gap:0.5rem; }
+    .title { display:flex; justify-content:space-between; gap:0.5rem; align-items:flex-start; }
+    .title h3 { font-size:1.05rem; color:var(--sage-dark); }
+    .badge { font-size:0.72rem; font-weight:700; border-radius:999px; padding:0.15rem 0.55rem; white-space:nowrap; }
+    .badge.in { background:#e3f3e4; color:var(--green); }
+    .badge.out { background:#eee; color:#888; }
+    .blurb { font-size:0.88rem; color:#555; }
+    .price { font-weight:700; }
+    .price small { font-weight:400; color:#888; }
+    .chips { display:flex; flex-wrap:wrap; gap:0.4rem; }
+    .chip { border:1px solid #ccc; background:#fff; border-radius:999px; padding:0.35rem 0.8rem; font-size:0.85rem; min-height:36px; cursor:pointer; }
+    .chip[aria-pressed="true"] { border-color:var(--sage-dark); background:var(--sage-dark); color:#fff; }
+    .buy { display:flex; gap:0.5rem; align-items:center; }
+    .stepper { display:flex; border:1px solid #ccc; border-radius:10px; overflow:hidden; }
+    .stepper button { width:40px; min-height:44px; border:none; background:#f4f4f4; font-size:1.2rem; cursor:pointer; }
+    .stepper span { width:36px; display:flex; align-items:center; justify-content:center; font-weight:700; }
+    .add { flex:1; min-height:44px; border:none; border-radius:10px; background:var(--red); color:#fff; font-weight:700; font-size:1rem; cursor:pointer; }
+    .add:disabled { background:#ccc; cursor:not-allowed; }
+    .card.soldout { opacity:0.65; }
+    .low { font-size:0.8rem; color:var(--red); font-weight:600; }
+    .cartbar { position:fixed; left:0; right:0; bottom:0; z-index:60; background:var(--sage-dark); color:#fff; display:flex; align-items:center; justify-content:space-between; padding:0.7rem 1rem; gap:0.75rem; transform:translateY(110%); transition:transform .2s; }
+    .cartbar.show { transform:none; }
+    .cartbar button { background:#fff; color:var(--sage-dark); border:none; border-radius:10px; padding:0.6rem 1rem; font-weight:700; min-height:44px; cursor:pointer; }
+    #checkout, #confirm { background:#fff; margin:1rem; border-radius:14px; border:1px solid #eee; padding:1rem; }
+    h2 { color:var(--sage-dark); font-size:1.2rem; margin-bottom:0.5rem; }
+    .line { display:flex; justify-content:space-between; align-items:center; padding:0.45rem 0; border-bottom:1px solid #f0f0f0; font-size:0.95rem; gap:0.5rem; }
+    .line button { background:none; border:none; color:var(--red); cursor:pointer; font-size:0.85rem; }
+    label { display:block; margin:0.7rem 0 0.25rem; font-weight:600; font-size:0.92rem; }
+    input[type=text],input[type=tel],input[type=email],textarea { width:100%; padding:0.7rem; border:1px solid #ccc; border-radius:8px; font-size:1rem; }
+    textarea { min-height:70px; }
+    .radio { display:flex; gap:0.5rem; align-items:flex-start; font-weight:400; }
+    .radio input { width:20px; height:20px; margin-top:0.15rem; }
+    .help { font-size:0.82rem; color:#666; }
+    .error { color:var(--red); font-size:0.9rem; min-height:1.2em; margin-top:0.5rem; }
+    .submit { width:100%; min-height:50px; margin-top:0.5rem; border:none; border-radius:10px; background:var(--red); color:#fff; font-weight:700; font-size:1.05rem; cursor:pointer; }
+    .empty { color:#888; font-size:0.9rem; }
+    [hidden] { display:none !important; }
+    footer { text-align:center; font-size:0.8rem; color:#666; padding:1.5rem 1rem; }
+    @media (min-width:640px) { .grid { grid-template-columns:1fr 1fr; } .notices { grid-template-columns:repeat(4,1fr); } }
   </style>
 </head>
 <body>
   <header>
-    <a href="index.html" style="text-decoration:none;">
-      <div class="logo-text">IENN</div>
-      <div class="logo-sub">INLAND EMPIRE NATIVE NURSERY</div>
+    <a href="index.html" class="logo">
+      <img src="images/ienn-logo-sage.png" alt="Inland Empire Native Nursery logo">
+      <div><div class="logo-text">IENN</div><div class="logo-sub">INLAND EMPIRE NATIVE NURSERY</div></div>
     </a>
-    <a href="index.html" style="color: var(--sage-dark); text-decoration: none; font-size: 0.95rem; padding: 0.75rem 0.5rem; min-height: 44px; display: inline-flex; align-items: center;">← Back</a>
+    <a href="index.html" class="back">← Home</a>
   </header>
-  <main>
-  <main>
-<main>
-  <h1>Place Your Order</h1>
 
-  <section class="notice" aria-labelledby="notice-title">
-    <h2 id="notice-title">Pickup &amp; Details</h2>
-    <ul>
-      <li><span class="ico" aria-hidden="true">📅</span><span><b>Pickup only</b>Saturdays 10 AM – 2 PM weekly. Other days/times available case-by-case — just note it below.</span></li>
-      <li><span class="ico" aria-hidden="true">💵</span><span><b>Payment</b>Cash or Zelle.</span></li>
-      <li><span class="ico" aria-hidden="true">📍</span><span><b>Location</b>Fontana area, near Sierra Ave &amp; Baseline Rd, roughly within 10 minutes of the 210 freeway. Exact directions after we confirm your order. Grand Terrace pickup possible case-by-case (mention in notes).</span></li>
-      <li><span class="ico" aria-hidden="true">✅</span><span><b>Confirmation</b>We will confirm your order and send pickup details ASAP.</span></li>
-    </ul>
-  </section>
+  <main>
+    <div id="shop">
+      <h1>Shop native plants</h1>
+      <p class="lead">Pick a size, tap Add, check out in under a minute. No payment online.</p>
 
-  <h2>1. Choose your plants</h2>
-  <p class="hint">Tap + or − to set how many of each you'd like.</p>
-  <div class="plants" id="plant-list">
-    <div class="plant-card" data-plant="Blue Pyramid Cypress">
-      <div class="plant-info">
-        <h3 id="blue-pyramid-name">Blue Pyramid Cypress</h3>
-        <div class="plant-meta">1-gallon • In stock</div>
-      </div>
-      <div class="stepper" role="group" aria-labelledby="blue-pyramid-name">
-        <button type="button" class="minus" aria-label="Remove one Blue Pyramid Cypress">&minus;</button>
-        <label class="sr-only" for="qty-blue-pyramid">Quantity of Blue Pyramid Cypress</label>
-        <input type="number" id="qty-blue-pyramid" name="blue-pyramid" min="0" max="99" value="0" inputmode="numeric">
-        <button type="button" class="plus" aria-label="Add one Blue Pyramid Cypress">+</button>
-      </div>
+      <section class="notices" aria-label="Pickup, payment and location">
+        <div><strong>Pickup</strong>Saturdays 10 AM – 2 PM</div>
+        <div><strong>Payment</strong>Cash or Zelle</div>
+        <div><strong>Location</strong>Fontana near Sierra &amp; Baseline (~10 min from the 210)</div>
+        <div><strong>Grand Terrace</strong>Delivery/service case-by-case</div>
+      </section>
+
+      <section class="grid" id="grid" aria-live="polite"><p class="empty">Loading plants…</p></section>
+
+      <section id="checkout" aria-labelledby="co-h">
+        <h2 id="co-h">Checkout</h2>
+        <div id="cart-lines"><p class="empty">Your cart is empty — add a plant above.</p></div>
+        <form id="order-form" novalidate>
+          <label class="radio"><input type="radio" name="fulfillment" value="Saturday pickup in Fontana (10 AM-2 PM)" checked><span>Saturday pickup in Fontana (10 AM – 2 PM)</span></label>
+          <label class="radio"><input type="radio" name="fulfillment" value="Grand Terrace delivery request (case-by-case)"><span>Request Grand Terrace delivery <span class="help">(case-by-case, we'll confirm)</span></span></label>
+          <label for="name">Name</label><input type="text" id="name" name="name" autocomplete="name" required>
+          <label for="phone">Phone</label><input type="tel" id="phone" name="phone" autocomplete="tel" required>
+          <label for="email">Email</label><input type="email" id="email" name="email" autocomplete="email" required>
+          <label for="notes">Notes</label><textarea id="notes" name="notes" placeholder="Preferred pickup time, Grand Terrace area, questions…"></textarea>
+          <p class="error" id="form-error" role="alert"></p>
+          <button type="submit" class="submit">Place order</button>
+          <p class="help" style="margin-top:0.5rem;">We confirm availability and price, then send pickup directions. Pay cash or Zelle at pickup.</p>
+        </form>
+      </section>
     </div>
-    <div class="plant-card" data-plant="Woolly Blue Curls">
-      <div class="plant-info">
-        <h3 id="woolly-blue-name">Woolly Blue Curls</h3>
-        <div class="plant-meta">4-inch • Limited</div>
-      </div>
-      <div class="stepper" role="group" aria-labelledby="woolly-blue-name">
-        <button type="button" class="minus" aria-label="Remove one Woolly Blue Curls">&minus;</button>
-        <label class="sr-only" for="qty-woolly-blue">Quantity of Woolly Blue Curls</label>
-        <input type="number" id="qty-woolly-blue" name="woolly-blue" min="0" max="99" value="0" inputmode="numeric">
-        <button type="button" class="plus" aria-label="Add one Woolly Blue Curls">+</button>
-      </div>
-    </div>
-    <div class="plant-card" data-plant="Sticky Monkeyflower">
-      <div class="plant-info">
-        <h3 id="monkeyflower-name">Sticky Monkeyflower</h3>
-        <div class="plant-meta">1-gallon • In stock</div>
-      </div>
-      <div class="stepper" role="group" aria-labelledby="monkeyflower-name">
-        <button type="button" class="minus" aria-label="Remove one Sticky Monkeyflower">&minus;</button>
-        <label class="sr-only" for="qty-monkeyflower">Quantity of Sticky Monkeyflower</label>
-        <input type="number" id="qty-monkeyflower" name="monkeyflower" min="0" max="99" value="0" inputmode="numeric">
-        <button type="button" class="plus" aria-label="Add one Sticky Monkeyflower">+</button>
-      </div>
-    </div>
-    <div class="plant-card" data-plant="Yarrow">
-      <div class="plant-info">
-        <h3 id="yarrow-name">Yarrow</h3>
-        <div class="plant-meta">4-inch • In stock</div>
-      </div>
-      <div class="stepper" role="group" aria-labelledby="yarrow-name">
-        <button type="button" class="minus" aria-label="Remove one Yarrow">&minus;</button>
-        <label class="sr-only" for="qty-yarrow">Quantity of Yarrow</label>
-        <input type="number" id="qty-yarrow" name="yarrow" min="0" max="99" value="0" inputmode="numeric">
-        <button type="button" class="plus" aria-label="Add one Yarrow">+</button>
-      </div>
-    </div>
+
+    <section id="confirm" hidden aria-live="polite">
+      <h2>Thanks — your order request is ready!</h2>
+      <p id="confirm-note" class="help"></p>
+      <div id="confirm-lines" style="margin:0.75rem 0;"></div>
+      <p><strong>Next steps</strong></p>
+      <ul style="margin:0.25rem 0 0.75rem 1.2rem; font-size:0.95rem;">
+        <li>We'll confirm your plants, sizes and price.</li>
+        <li>Pickup: Saturdays 10 AM – 2 PM in Fontana near Sierra &amp; Baseline (~10 min from the 210). Exact address sent on confirmation.</li>
+        <li>Payment: cash or Zelle.</li>
+        <li>Grand Terrace delivery/service: case-by-case, we'll reach out.</li>
+      </ul>
+      <button class="submit" id="shop-again" type="button">Back to shop</button>
+    </section>
+  </main>
+
+  <div class="cartbar" id="cartbar" role="region" aria-label="Cart">
+    <div><strong id="cart-count">0 plants</strong><div class="help" style="color:#dfe5de;" id="cart-summary"></div></div>
+    <button type="button" id="go-checkout">Checkout →</button>
   </div>
 
-  <section class="summary" aria-labelledby="summary-title">
-    <h2 id="summary-title">Your selection</h2>
-    <div id="summary-body" aria-live="polite"><p class="empty">No plants selected yet.</p></div>
-  </section>
-
-  <h2>2. Your details</h2>
-  <form id="order-form" action="mailto:hello@inlandempirenativenursery.com" method="post" enctype="text/plain">
-    <label for="name">Your Name</label>
-    <input type="text" id="name" name="name" autocomplete="name" required>
-
-    <label for="email">Email</label>
-    <input type="email" id="email" name="email" autocomplete="email" required>
-
-    <label for="phone">Phone (optional)</label>
-    <input type="tel" id="phone" name="phone" autocomplete="tel">
-
-    <label for="notes">Notes (pickup day preference, Grand Terrace request, questions, etc.)</label>
-    <textarea id="notes" name="notes" placeholder="Example: Prefer Saturday 11am, or Grand Terrace pickup if possible."></textarea>
-
-    <p class="error" id="qty-error" role="alert">Please choose at least one plant above.</p>
-    <button type="submit" class="submit-btn">Submit Order</button>
-  </form>
-</main>
-
-  <footer>
-    Inland Empire Native Nursery • Pickup-only • Fontana / Grand Terrace area<br>
-    Cash or Zelle • We confirm and send directions after you order.
-  </footer>
+  <footer>Inland Empire Native Nursery • Saturdays 10 AM – 2 PM • Fontana (Sierra &amp; Baseline) • Cash or Zelle • Grand Terrace case-by-case<br>
+    <a href="mailto:hello@inlandempirenativenursery.com" style="color:#666;">hello@inlandempirenativenursery.com</a></footer>
 
   <script>
-    (function () {
-      var cards = Array.from(document.querySelectorAll('.plant-card'));
-      var summary = document.getElementById('summary-body');
-      function clamp(v) { v = parseInt(v, 10); return isNaN(v) || v < 0 ? 0 : Math.min(v, 99); }
-      function update() {
-        var items = [];
-        cards.forEach(function (card) {
-          var input = card.querySelector('input');
-          var q = clamp(input.value); input.value = q;
-          card.classList.toggle('selected', q > 0);
-          card.querySelector('.minus').disabled = q === 0;
-          if (q > 0) items.push({ name: card.dataset.plant, q: q });
-        });
-        if (!items.length) { summary.innerHTML = '<p class="empty">No plants selected yet.</p>'; }
-        else {
-          var total = items.reduce(function (a, i) { return a + i.q; }, 0);
-          var ul = document.createElement('ul');
-          items.forEach(function (i) { var li = document.createElement('li'); li.textContent = i.q + ' × ' + i.name; ul.appendChild(li); });
-          var p = document.createElement('p'); p.textContent = total + (total === 1 ? ' plant' : ' plants') + ' total';
-          p.style.fontWeight = '600'; p.style.marginTop = '0.5rem';
-          summary.innerHTML = ''; summary.appendChild(ul); summary.appendChild(p);
-          document.getElementById('qty-error').style.display = 'none';
-        }
-        return items;
-      }
-      cards.forEach(function (card) {
-        var input = card.querySelector('input');
-        card.querySelector('.plus').addEventListener('click', function () { input.value = clamp(input.value) + 1; update(); });
-        card.querySelector('.minus').addEventListener('click', function () { input.value = clamp(input.value) - 1; update(); });
-        input.addEventListener('input', update);
-      });
-      update();
-      document.getElementById('order-form').addEventListener('submit', function (e) {
-        var items = update();
-        if (!items.length) { e.preventDefault(); var err = document.getElementById('qty-error'); err.style.display = 'block'; err.scrollIntoView({ block: 'center' }); return; }
-        var notes = document.getElementById('notes');
-        var list = items.map(function (i) { return i.name + ': ' + i.q; }).join(', ');
-        notes.value = notes.value.replace(/\n*Requested quantities: .*$/, '');
-        notes.value = (notes.value ? notes.value + '\n\n' : '') + 'Requested quantities: ' + list;
-      });
-    })();
+  // ===== CONFIG: paste an Apps Script / endpoint URL here to POST orders as JSON instead of mailto =====
+  var CONFIG = {
+    ORDER_ENDPOINT: "",                       // e.g. "https://script.google.com/macros/s/XXXX/exec"
+    ORDER_EMAIL: "hello@inlandempirenativenursery.com",
+    INVENTORY_URL: "plants.json",
+    CART_KEY: "ienn-cart-v1"
+  };
+
+  var plants = [], cart = load();
+  var $ = function (s) { return document.querySelector(s); };
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+  function load() { try { return JSON.parse(localStorage.getItem(CONFIG.CART_KEY)) || []; } catch (e) { return []; } }
+  function save() { try { localStorage.setItem(CONFIG.CART_KEY, JSON.stringify(cart)); } catch (e) {} }
+  function priceText(p) { return typeof p.price === "number" ? "$" + p.price.toFixed(2) : "Price on confirmation"; }
+  function count() { return cart.reduce(function (n, l) { return n + l.qty; }, 0); }
+
+  function renderGrid() {
+    var g = $("#grid");
+    if (!plants.length) { g.innerHTML = '<p class="empty">No plants listed right now — check back soon.</p>'; return; }
+    var sorted = plants.slice().sort(function (a, b) { return (b.inStock - a.inStock) || (b.featured - a.featured); });
+    g.innerHTML = sorted.map(function (p) {
+      var low = p.inStock && typeof p.qty === "number" && p.qty <= 5 ? '<span class="low">Only ' + p.qty + ' left</span>' : "";
+      return '<article class="card' + (p.featured ? " featured" : "") + (p.inStock ? "" : " soldout") + '" data-id="' + esc(p.id) + '">' +
+        '<div class="swatch">' + esc(p.botanical || "California native") + '</div>' +
+        '<div class="body"><div class="title"><h3>' + esc(p.name) + '</h3>' +
+        (p.inStock ? '<span class="badge in">● Available</span>' : '<span class="badge out">Sold out</span>') + '</div>' +
+        '<p class="blurb">' + esc(p.blurb) + '</p>' +
+        '<div class="price">' + priceText(p) + ' <small>• sizes to confirm</small></div>' + low +
+        '<div class="chips" role="group" aria-label="Size">' + (p.sizes || []).map(function (s, i) {
+          return '<button type="button" class="chip" data-size="' + esc(s) + '" aria-pressed="' + (i === 0) + '"' + (p.inStock ? "" : " disabled") + '>' + esc(s) + '</button>'; }).join("") + '</div>' +
+        '<div class="buy"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease"' + (p.inStock ? "" : " disabled") + '>−</button><span class="q">1</span><button type="button" data-step="1" aria-label="Increase"' + (p.inStock ? "" : " disabled") + '>+</button></div>' +
+        '<button type="button" class="add"' + (p.inStock ? "" : " disabled") + '>' + (p.inStock ? "Add — get yours now" : "Sold out") + '</button></div>' +
+        '</div></article>';
+    }).join("");
+  }
+
+  function renderCart() {
+    var n = count();
+    $("#cart-count").textContent = n + (n === 1 ? " plant" : " plants");
+    $("#cart-summary").textContent = cart.map(function (l) { return l.qty + "× " + l.name; }).join(", ");
+    $("#cartbar").classList.toggle("show", n > 0);
+    $("#cart-lines").innerHTML = n ? cart.map(function (l, i) {
+      return '<div class="line"><span>' + l.qty + '× ' + esc(l.name) + ' <span class="help">(' + esc(l.size) + ')</span></span><button type="button" data-remove="' + i + '">Remove</button></div>'; }).join("")
+      : '<p class="empty">Your cart is empty — add a plant above.</p>';
+  }
+
+  function addToCart(p, size, qty) {
+    var ex = cart.find(function (l) { return l.id === p.id && l.size === size; });
+    if (ex) ex.qty = Math.min(99, ex.qty + qty); else cart.push({ id: p.id, name: p.name, size: size, qty: qty });
+    save(); renderCart();
+  }
+
+  $("#grid").addEventListener("click", function (e) {
+    var card = e.target.closest(".card"); if (!card) return;
+    var p = plants.find(function (x) { return x.id === card.dataset.id; }); if (!p || !p.inStock) return;
+    var t = e.target;
+    if (t.classList.contains("chip")) { card.querySelectorAll(".chip").forEach(function (c) { c.setAttribute("aria-pressed", c === t); }); }
+    else if (t.dataset.step) { var q = card.querySelector(".q"); q.textContent = Math.max(1, Math.min(99, +q.textContent + +t.dataset.step)); }
+    else if (t.classList.contains("add")) {
+      var chip = card.querySelector('.chip[aria-pressed="true"]');
+      addToCart(p, chip ? chip.dataset.size : "standard", +card.querySelector(".q").textContent);
+      t.textContent = "Added ✓"; setTimeout(function () { t.textContent = "Add — get yours now"; }, 1200);
+    }
+  });
+  $("#cart-lines").addEventListener("click", function (e) { if (e.target.dataset.remove != null) { cart.splice(+e.target.dataset.remove, 1); save(); renderCart(); } });
+  $("#go-checkout").addEventListener("click", function () { $("#checkout").scrollIntoView({ behavior: "smooth" }); });
+  $("#shop-again").addEventListener("click", function () { $("#confirm").hidden = true; $("#shop").hidden = false; window.scrollTo(0, 0); });
+
+  function submitOrder(order) {
+    if (CONFIG.ORDER_ENDPOINT) {
+      // text/plain avoids a CORS preflight with Apps Script doPost(e) -> JSON.parse(e.postData.contents)
+      return fetch(CONFIG.ORDER_ENDPOINT, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(order) })
+        .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return "sent"; });
+    }
+    var body = ["Name: " + order.name, "Phone: " + order.phone, "Email: " + order.email, "", "Plants:"]
+      .concat(order.items.map(function (l) { return "- " + l.qty + " x " + l.name + " (" + l.size + ")"; }),
+        ["", "Fulfillment: " + order.fulfillment, "", "Notes: " + (order.notes || "-")]).join("\n");
+    window.location.href = "mailto:" + CONFIG.ORDER_EMAIL + "?subject=" + encodeURIComponent("Plant order - " + order.name) + "&body=" + encodeURIComponent(body);
+    return Promise.resolve("mailto");
+  }
+
+  $("#order-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var form = e.target, err = $("#form-error");
+    var f = {}; ["name","phone","email","notes"].forEach(function (k) { f[k] = form.elements.namedItem(k); });
+    f.fulfillment = { value: (form.querySelector('input[name="fulfillment"]:checked') || {}).value || "Saturday pickup" };
+    if (!cart.length) { err.textContent = "Add at least one plant first."; return; }
+    if (!f.name.value.trim() || !f.phone.value.trim() || !f.email.value || !f.email.checkValidity()) { err.textContent = "Please enter your name, phone, and a valid email."; return; }
+    err.textContent = "";
+    var order = { name: f.name.value.trim(), phone: f.phone.value.trim(), email: f.email.value.trim(), fulfillment: f.fulfillment.value,
+      notes: f.notes.value.trim(), items: cart.slice(), submittedAt: new Date().toISOString() };
+    submitOrder(order).then(function (how) {
+      $("#confirm-note").textContent = how === "mailto" ? "Your email app should open with the order filled in — please hit Send so we receive it." : "We received your order and will be in touch soon.";
+      $("#confirm-lines").innerHTML = order.items.map(function (l) { return '<div class="line"><span>' + l.qty + '× ' + esc(l.name) + ' (' + esc(l.size) + ')</span></div>'; }).join("") +
+        '<p class="help" style="margin-top:0.5rem;">' + esc(order.fulfillment) + '</p>';
+      cart = []; save(); renderCart(); form.reset();
+      $("#shop").hidden = true; $("#confirm").hidden = false; window.scrollTo(0, 0);
+    }).catch(function () { err.textContent = "Couldn't send right now. Please email " + CONFIG.ORDER_EMAIL + " or try again."; });
+  });
+
+  fetch(CONFIG.INVENTORY_URL, { cache: "no-store" }).then(function (r) { return r.json(); })
+    .then(function (d) {
+      plants = d.plants || [];
+      // drop cart lines for plants that are gone or sold out
+      cart = cart.filter(function (l) { return plants.some(function (p) { return p.id === l.id && p.inStock; }); }); save();
+      renderGrid(); renderCart();
+    })
+    .catch(function () { $("#grid").innerHTML = '<p class="empty">Couldn\'t load plants. Please email ' + esc(CONFIG.ORDER_EMAIL) + ' to order.</p>'; });
+  renderCart();
   </script>
 </body>
 </html>

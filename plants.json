@@ -1,0 +1,12 @@
+{
+  "_readme": "Edit this file to update the shop. inStock true/false controls the badge; qty (number or null) is optional and shown as 'Only N left' when 5 or fewer. price: a number in dollars, or \"ask\". Sizes marked placeholder until confirmed.",
+  "updated": "2026-10-20",
+  "plants": [
+    { "id": "ca-buckwheat", "name": "California Buckwheat", "botanical": "Eriogonum fasciculatum", "featured": true, "blurb": "Tough, drought-loving shrub with cream-pink flower clusters pollinators adore.", "sizes": ["1-gallon"], "price": "ask", "inStock": true, "qty": null },
+    { "id": "white-sage", "name": "White Sage", "botanical": "Salvia apiana", "featured": true, "blurb": "Silvery, fragrant foliage; thrives in full sun and dry soil.", "sizes": ["1-gallon"], "price": "ask", "inStock": true, "qty": null },
+    { "id": "blue-pyramid-cypress", "name": "Blue Pyramid Cypress", "botanical": "", "featured": false, "blurb": "Blue-gray evergreen for screening and structure.", "sizes": ["1-gallon"], "price": "ask", "inStock": true, "qty": null },
+    { "id": "woolly-blue-curls", "name": "Woolly Blue Curls", "botanical": "Trichostema lanatum", "featured": false, "blurb": "Fuzzy violet-blue spikes; a hummingbird favorite.", "sizes": ["4-inch"], "price": "ask", "inStock": true, "qty": 3 },
+    { "id": "sticky-monkeyflower", "name": "Sticky Monkeyflower", "botanical": "Diplacus aurantiacus", "featured": false, "blurb": "Bright orange blooms spring to summer.", "sizes": ["1-gallon"], "price": "ask", "inStock": true, "qty": null },
+    { "id": "yarrow", "name": "Yarrow", "botanical": "Achillea millefolium", "featured": false, "blurb": "Feathery leaves, flat white flower heads, very easy.", "sizes": ["4-inch"], "price": "ask", "inStock": true, "qty": null }
+  ]
+}
