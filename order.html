@@ -107,6 +107,13 @@
     #confirm-total { display:flex; justify-content:space-between; font-weight:700; border-top:1px solid #eee; padding-top:0.5rem; }
     .cartbar { background:linear-gradient(#fbfaf7,#f4f2ec); box-shadow:inset 0 2px 5px rgba(0,0,0,.06), 0 -2px 8px rgba(0,0,0,.06); }
     @media (prefers-reduced-motion:reduce) { .summary li.drop { animation:none; } }
+    /* polish: minimal usability additions (no restyle) */
+    .steps small { display:block; font-size:0.7rem; color:#888; font-weight:400; line-height:1.2; }
+    .lead { margin:0 1rem 0.25rem; font-size:0.95rem; color:#444; }
+    .lead b { color:var(--sage-dark); }
+    .nw { white-space:nowrap; }
+    .summary .rm { padding:0 0.75rem; }
+    .ph .leaf { font-size:1.6rem; opacity:.55; }
     input:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible { outline:3px solid var(--sage-dark); outline-offset:2px; }
     footer { text-align:center; font-size:0.8rem; color:#555; margin-top:2rem; padding:1rem; }
   </style>
@@ -122,8 +129,9 @@
 
 <main>
   <h1>Place Your Order</h1>
+  <p class="lead"><b>Connecting people to native plants.</b> Want a yard full of bees, butterflies and hummingbirds? Local natives are hard to find, so we grow them here in Fontana and make pickup simple.</p>
 
-  <section class="confirm" id="confirm" hidden tabindex="-1" aria-labelledby="confirm-title">
+  <section class="confirm" id="confirm" hidden tabindex="-1" aria-labelledby="confirm-title" aria-live="polite">
     <div class="tk-head"><h2 id="confirm-title">Thank you — your order is in!</h2><span>PICKUP TICKET</span></div>
     <div class="tk-body">
       <p id="confirm-id" class="confirm-id"></p>
@@ -132,7 +140,7 @@
       <p class="pickup-line">Pickup: Fontana · Saturdays 10 AM – 2 PM</p>
       <p>Exact address after we confirm. Andrew will email you to confirm your pickup.</p>
       <p class="fine-print">Other pickup times available case by case upon request.<br>Grand Terrace pickup available upon request.</p>
-      <p class="confirm-contact">Questions or changes? Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909) 609-9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a></p>
+      <p class="confirm-contact">Questions or changes? Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a></p>
       <button type="button" id="new-order">Start a new order</button>
     </div>
   </section>
@@ -142,18 +150,20 @@
     <ul>
       <li><span aria-hidden="true">📅</span><span><b>Pickup: Fontana · Saturdays 10 AM – 2 PM</b>Pickup only — reserve here, pick up on Saturday.</span></li>
       <li><span aria-hidden="true">💵</span><span><b>Payment</b>Cash or Zelle.</span></li>
-      <li><span aria-hidden="true">📍</span><span><b>Location</b>Fontana area, near Sierra Ave &amp; Baseline Rd, roughly within 10 minutes of the 210 freeway. Exact directions after we confirm your order.</span></li>
+      <li><span aria-hidden="true">📍</span><span><b>Location</b>Fontana. We share the exact address after we confirm your order.</span></li>
       <li><span aria-hidden="true">✅</span><span><b>Confirmation</b>We will confirm your order and send pickup details ASAP.</span></li>
-      <li><span aria-hidden="true">📞</span><span><b>Questions?</b>Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909) 609-9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a></span></li>
+      <li><span aria-hidden="true">📞</span><span><b>Questions?</b>Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a></span></li>
     </ul>
     <p class="fine-print">Other pickup times available case by case upon request.<br>Grand Terrace pickup available upon request.</p>
   </section>
 
-  <ol class="steps" aria-label="How it works"><li class="on"><span class="n">1</span>Select</li><li><span class="n">2</span>Reserve</li><li><span class="n">3</span>Pick up</li></ol>
+  <h2 class="sr-only" id="steps-title">How it works</h2>
+  <ol class="steps" id="steps"><li class="on"><span class="n">1</span>Select<small>Pick plants &amp; sizes</small></li><li><span class="n">2</span>Reserve<small>Nothing charged online</small></li><li><span class="n">3</span>Pick up<small>Saturday in Fontana</small></li></ol>
   <h2 id="shop-title">1. Select your plants</h2>
   <p class="hint">Tap a size, set how many, and add it to your tray. We hold it for pickup.</p>
+  <p class="hint">2-inch ($3) and quarter tree pot ($10) sizes: <b>Ask us</b>, available on request. Add them in Notes and we'll confirm.</p>
   <p class="inv-status" id="inv-status" role="status" hidden></p>
-  <div class="grid" id="plant-list" aria-labelledby="shop-title" aria-busy="false"></div>
+  <div class="grid" id="plant-list" aria-busy="false"></div>
 
   <section class="summary" id="review" aria-labelledby="summary-title" tabindex="-1">
     <h2 id="summary-title">Your tray</h2>
@@ -191,6 +201,7 @@
     <label for="notes">Notes (pickup day preference, questions, etc.)</label>
     <textarea id="notes" name="notes" placeholder="Example: Prefer Saturday 11am."></textarea>
 
+    <p class="fine-print">Privacy: we only use your info to fill your order and never sell it. To delete it, email us or call/text Andrew at <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a>.</p>
     <p class="error" id="qty-error" role="alert">Please add at least one plant to your order.</p>
     <p class="error" id="server-error" role="alert"></p>
     <button type="submit" class="submit-btn">Reserve for pickup</button>
@@ -204,9 +215,10 @@
   </div>
 
   <footer>
-    Inland Empire Native Nursery • Pickup-only • Fontana area<br>
+    <b>Connecting people to native plants.</b> Every native you plant feeds local bees, butterflies and birds.<br>
+    Inland Empire Native Nursery • Pickup-only • Fontana<br>
     Cash or Zelle • We confirm and send directions after you order.<br>
-    Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909) 609-9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a>
+    Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a>
   </footer>
 
   <script>
@@ -245,13 +257,17 @@
       function money(n) { return "$" + (Math.round(n * 100) / 100).toFixed(2); }
       function slug(t) { return String(t).toLowerCase().replace(/\(.*?\)/g, "").trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
       function clamp(v) { v = parseInt(v, 10); return isNaN(v) || v < 1 ? 1 : Math.min(v, 99); }
+      var ASK_KEYS = ['2"', 'Tree pot'];   // on-request sizes (no weekly counts): "Ask us", never addable
+      function askSize(z) { return !!z && ASK_KEYS.indexOf(z.key) >= 0; }
+      function canAdd(z) { return !!z && !askSize(z) && (z.qty == null || z.qty > 0); }   // qty null on a counted size = offline/unknown, still orderable
       function zstate(z) { return z.qty == null ? "ask" : z.qty > 0 ? "ok" : "out"; }
-      function pstate(p) { var st = p.sizes.map(zstate); return st.indexOf("ok") >= 0 ? "ok" : st.indexOf("ask") >= 0 ? "ask" : "out"; }
+      function pstate(p) { var c = p.sizes.filter(function (z) { return !askSize(z); });
+        if (c.some(function (z) { return z.qty > 0; })) return "ok"; if (!c.length || c.some(function (z) { return z.qty == null; })) return "ask"; return "out"; }
       function byId(id) { return PLANTS.find(function (p) { return p.id === id; }); }
       function sizeOf(p, k) { return p && p.sizes.find(function (z) { return z.key === k; }); }
       function lines() {
         return Object.keys(cart).map(function (k) { var i = k.lastIndexOf("|"), p = byId(k.slice(0, i)), z = sizeOf(p, k.slice(i + 1));
-          return p && z && zstate(z) !== "out" ? { key: k, p: p, z: z, q: cart[k], total: cart[k] * z.price } : null; }).filter(Boolean);
+          return p && z && canAdd(z) ? { key: k, p: p, z: z, q: cart[k], total: cart[k] * z.price } : null; }).filter(Boolean);
       }
       function appeal(p) { var t = (p.name + " " + p.botanical).toLowerCase(); for (var i = 0; i < APPEAL_KEYWORDS.length; i++) if (t.indexOf(APPEAL_KEYWORDS[i]) >= 0) return i; return 999; }
       function sortPlants(a) { var r = { ok: 0, ask: 1, out: 2 }; return a.sort(function (x, y) { return r[pstate(x)] - r[pstate(y)] || appeal(x) - appeal(y) || x.name.localeCompare(y.name); }); }
@@ -263,37 +279,42 @@
           var ps = pstate(p), card = el("article", { class: "card" + (ps === "out" ? " sold-out" : ""), "aria-labelledby": p.id + "-name" });
           card.dataset.id = p.id;
           var ph = el("div", { class: "ph" });
-          if (p.image) ph.appendChild(el("img", { src: p.image, alt: p.name, loading: "lazy" })); else { ph.textContent = "Photo coming soon"; ph.setAttribute("aria-hidden", "true"); }
+          if (p.image) ph.appendChild(el("img", { src: p.image, alt: p.name, loading: "lazy" })); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }  // image slot kept: set p.image
           card.appendChild(ph);
           var b = el("div", { class: "body" });
           var h3 = el("h3", { id: p.id + "-name" }); h3.appendChild(el("span", { class: "slot", "aria-hidden": "true" }, String.fromCharCode(65 + Math.floor(idx / 6)) + (idx % 6 + 1))); h3.appendChild(document.createTextNode(p.name)); b.appendChild(h3);
           if (p.botanical) b.appendChild(el("span", { class: "note" }, p.botanical));
           b.appendChild(el("span", { class: "badge " + ps }, ps === "ok" ? "Available" : ps === "ask" ? ON_REQUEST : "Sold out"));
-          var pick = p.sizes.find(function (z) { return zstate(z) === "ok"; }) || p.sizes.find(function (z) { return zstate(z) === "ask"; }) || p.sizes[0];
+          var pick = p.sizes.find(function (z) { return !askSize(z) && zstate(z) === "ok"; }) || p.sizes.find(canAdd) || p.sizes.find(function (z) { return !askSize(z); }) || null;
           var fs = el("fieldset", { class: "chips" }); fs.appendChild(el("legend", {}, "Size"));
           var info = el("span", { class: "price" });
-          function showInfo() { var st = zstate(pick); info.textContent = st === "ok" ? (pick.qty <= 5 ? "Only " + pick.qty + " left" : "In stock") : st === "ask" ? ON_REQUEST + " — we'll confirm" : "Sold out in this size"; }
+          var add;
+          function showInfo() { var ok = canAdd(pick);
+            info.textContent = !pick ? "Ask us — add it in Notes and we'll confirm" : !ok ? "Sold out in this size" : pick.qty == null ? "We'll confirm availability" : pick.qty <= 5 ? "Only " + pick.qty + " left" : "In stock";
+            if (add) { add.disabled = !ok; add.textContent = ok ? "Add to order" : !pick ? "Ask us" : "Sold out"; }
+            [minus, inp, plus].forEach(function (x) { if (x) x.disabled = !ok; }); }
+          var minus, inp, plus;
           p.sizes.forEach(function (z) {
-            var st = zstate(z), c = el("button", { type: "button", class: "chip" + (st === "out" ? " chip-out" : st === "ask" ? " chip-request" : ""), "aria-pressed": z === pick ? "true" : "false" },
-              z.label + " · $" + z.price + (st === "out" ? " · sold out" : st === "ask" ? " · on request" : ""));
+            var st = askSize(z) ? "ask" : zstate(z) === "out" ? "out" : "ok", c = el("button", { type: "button", class: "chip" + (st === "out" ? " chip-out" : st === "ask" ? " chip-request" : ""), "aria-pressed": z === pick ? "true" : "false" },
+              z.label + " · $" + z.price + (st === "out" ? " · sold out" : st === "ask" ? " · Ask us" : ""));
             c.disabled = st === "out";
-            c.addEventListener("click", function () { pick = z; fs.querySelectorAll(".chip").forEach(function (x) { x.setAttribute("aria-pressed", x === c ? "true" : "false"); }); showInfo(); });
+            if (st === "ask") { c.removeAttribute("aria-pressed"); c.addEventListener("click", function () { info.textContent = "Ask us: add \u201c" + z.label + "\u201d in Notes below and we'll confirm."; }); }
+            else c.addEventListener("click", function () { pick = z; fs.querySelectorAll(".chip:not(.chip-request)").forEach(function (x) { x.setAttribute("aria-pressed", x === c ? "true" : "false"); }); showInfo(); });
             fs.appendChild(c);
           });
           b.appendChild(fs); b.appendChild(info); showInfo();
           var row = el("div", { class: "row" });
           var stp = el("div", { class: "stepper", role: "group", "aria-label": "Quantity of " + p.name });
-          var minus = el("button", { type: "button", "aria-label": "Fewer " + p.name }, "−");
-          var inp = el("input", { type: "number", min: "1", max: "99", value: "1", inputmode: "numeric", "aria-label": "Quantity of " + p.name });
-          var plus = el("button", { type: "button", "aria-label": "More " + p.name }, "+");
-          [minus, inp, plus].forEach(function (x) { x.disabled = ps === "out"; stp.appendChild(x); });
+          minus = el("button", { type: "button", "aria-label": "Fewer " + p.name }, "−");
+          inp = el("input", { type: "number", min: "1", max: "99", value: "1", inputmode: "numeric", "aria-label": "Quantity of " + p.name });
+          plus = el("button", { type: "button", "aria-label": "More " + p.name }, "+");
+          [minus, inp, plus].forEach(function (x) { stp.appendChild(x); });
           minus.addEventListener("click", function () { inp.value = clamp(inp.value - 1); });
           plus.addEventListener("click", function () { inp.value = clamp(+inp.value + 1); });
-          var add = el("button", { type: "button", class: "add" }, ps === "out" ? "Sold out" : "Add to order");
-          add.disabled = ps === "out";
+          add = el("button", { type: "button", class: "add" }, "Add to order"); showInfo();
           var msg = el("div", { class: "incart", "aria-live": "polite" });
           add.addEventListener("click", function () {
-            if (zstate(pick) === "out") return;
+            if (!canAdd(pick)) return;
             var k = p.id + "|" + pick.key, want = (cart[k] || 0) + clamp(inp.value);
             if (pick.qty != null && want > pick.qty) { want = pick.qty; msg.textContent = "Only " + pick.qty + " available — added the max."; }
             else msg.textContent = "✓ Added — " + want + " × " + pick.label + " in your order";
@@ -315,7 +336,7 @@
         else {
           var ul = el("ul");
           ls.forEach(function (l) {
-            var li = el("li", l.key === lastAdded ? { class: "drop" } : {}); li.appendChild(el("span", {}, l.q + " × " + l.p.name + " (" + l.z.label + ") @ $" + l.z.price + " = " + money(l.total)));
+            var li = el("li", l.key === lastAdded ? { class: "drop" } : {}); var ls_ = el("span", {}, l.q + " × " + l.p.name + " "); ls_.appendChild(el("span", { class: "nw" }, "(" + l.z.label + ")")); ls_.appendChild(document.createTextNode(" @ $" + l.z.price + " = ")); ls_.appendChild(el("span", { class: "nw" }, money(l.total))); li.appendChild(ls_);
             var rm = el("button", { type: "button", class: "rm", "aria-label": "Remove " + l.p.name + " " + l.z.label }, "Remove");
             rm.addEventListener("click", function () { delete cart[l.key]; save(); update(); });
             li.appendChild(rm); ul.appendChild(li);
@@ -330,6 +351,7 @@
         return ls;
       }
 
+      function setStep(n) { document.querySelectorAll("#steps li").forEach(function (li, i) { li.classList.toggle("on", i === n - 1); }); }
       function fieldErr(id, msg) { var f = document.getElementById(id); f.setAttribute("aria-invalid", msg ? "true" : "false"); document.getElementById(id + "-err").textContent = msg || ""; return !msg; }
       function v(id) { return document.getElementById(id).value.trim(); }
       var form = document.getElementById("order-form"), btn = form.querySelector(".submit-btn"), serr = document.getElementById("server-error");
@@ -341,7 +363,7 @@
         ct.appendChild(el("small", { class: "tax-note" }, "Taxes included"));
         var c = document.getElementById("confirm"); c.hidden = false; form.hidden = true;
         cart = {}; save(); update();
-        setTimeout(function () { c.focus(); c.scrollIntoView({ block: "start" }); }, 0);
+        setStep(3); setTimeout(function () { c.focus({ preventScroll: true }); window.scrollTo({ top: Math.max(0, c.getBoundingClientRect().top + window.pageYOffset - 8), behavior: "smooth" }); }, 50);
       }
       function mailtoHref(ls, f) {
         var body = "Name: " + f.name + "\nPickup: " + v("pickup") + "\nPayment: " + v("payment") + "\nRef: " + f.name + "\nEmail: " + f.email + "\nPhone: " + f.phone + "\n\n" + ls.map(function (l) { return l.q + " x " + l.p.name + " (" + l.z.label + ") $" + l.z.price; }).join("\n") +
@@ -380,13 +402,14 @@
           });
       });
       document.getElementById("new-order").addEventListener("click", function () {
-        form.reset(); form.hidden = false; document.getElementById("confirm").hidden = true; update(); window.scrollTo(0, 0);
+        form.reset(); form.hidden = false; document.getElementById("confirm").hidden = true; setStep(1); update();
+        document.getElementById("steps").scrollIntoView({ behavior: "smooth", block: "start" });
       });
 
       function fromInventory(d) {
         return (d.plants || []).map(function (p) {
           return { id: slug(p.name), name: p.name, fullName: p.fullName || p.name, botanical: p.botanical || "", image: p.image || "",
-            sizes: (p.sizes || []).map(function (z) { return { key: z.key, label: z.size || SIZE_LABELS[z.key] || z.key, price: Number(z.price), qty: z.qty == null ? null : Number(z.qty) }; }) };
+            sizes: (p.sizes || []).map(function (z) { return { key: z.key, label: z.size || SIZE_LABELS[z.key] || z.key, price: isFinite(Number(z.price)) && z.price !== "" && z.price != null ? Number(z.price) : PRICES[z.key], qty: z.qty == null ? null : Number(z.qty) }; }) };
         });
       }
       function fallback() {
@@ -399,8 +422,8 @@
         params.forEach(function (v, k) {
           var parts = k.split("|"), p = PLANTS.find(function (x) { return x.id === parts[0] || x.id.indexOf(parts[0] + "-") === 0 || parts[0].indexOf(x.id) === 0; }), q = parseInt(v, 10);
           if (!p || !(q > 0)) return;
-          var z = (parts[1] && p.sizes.find(function (s) { return s.key === parts[1] || s.label === parts[1]; })) || p.sizes.find(function (s) { return zstate(s) !== "out"; });
-          if (z && zstate(z) !== "out") cart[p.id + "|" + z.key] = Math.min(q, z.qty == null ? 99 : z.qty, 99);
+          var z = (parts[1] && p.sizes.find(function (s) { return s.key === parts[1] || s.label === parts[1]; })) || p.sizes.find(canAdd);
+          if (canAdd(z)) cart[p.id + "|" + z.key] = Math.min(q, z.qty == null ? 99 : z.qty, 99);
         });
         save();
       }
