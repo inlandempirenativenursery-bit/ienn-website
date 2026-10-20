@@ -198,6 +198,7 @@
     @keyframes sk { to { background-position: -200% 0; } }
     .shop-status { font-size: 0.85rem; color: #6a5a2a; background: #fff8e6; padding: 0.4rem 0.6rem; border-radius: 6px; }
     .shop-status.live { color: #2e7d32; background: #eaf5ea; }
+    .plant-img { overflow: hidden; }
     .plant-img img { width: 100%; height: 100%; object-fit: cover; }
     .size-sel { min-height: 36px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.85rem; }
     body.has-cart { padding-bottom: 70px; }
@@ -290,6 +291,7 @@
     <p style="margin-top:0.5rem;">Questions? Call or text Andrew: <a href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> • <a href="sms:+19096099373">Text</a> • <a href="mailto:hello@inlandempirenativenursery.com">Email</a></p>
   </footer>
   <script src="promos.js"></script>
+  <script src="plant-photos.js"></script>
   <script src="inventory.js"></script>
   <script>
   /* Shop grid renders entirely from the inventory feed (INVENTORY_URL in inventory.js). */
@@ -314,7 +316,7 @@
     function card(p, idx) {
       var c = el('article', 'plant-card'), body = el('div', 'plant-info'), sz = p.sizes[0], qty = 1;
       var img = el('div', 'plant-img');
-      if (p.image) { var im = document.createElement('img'); im.src = p.image; im.alt = p.name; im.loading = 'lazy'; img.appendChild(im); } else { img.setAttribute('aria-hidden', 'true'); img.textContent = p.name.charAt(0); }
+      if (p.image) { var im = document.createElement('img'); im.src = p.image; if (p.srcset) { im.srcset = p.srcset; im.sizes = '(max-width: 600px) 45vw, 260px'; } im.alt = p.name; im.loading = 'lazy'; im.decoding = 'async'; img.appendChild(im); } else { img.setAttribute('aria-hidden', 'true'); img.textContent = p.name.charAt(0); }
       c.appendChild(img); c.appendChild(body);
       var h3 = el('h3'); var sl = el('span', 'slot', String.fromCharCode(65 + Math.floor(idx / 6)) + (idx % 6 + 1)); sl.setAttribute('aria-hidden', 'true'); h3.appendChild(sl); h3.appendChild(document.createTextNode(p.name)); body.appendChild(h3); if (p.botanical) body.appendChild(el('div', 'bot', p.botanical));
       var badge = el('span'), meta = el('div', 'size'), add = el('button', 'add-btn'), ask = el('div', 'ask-line');

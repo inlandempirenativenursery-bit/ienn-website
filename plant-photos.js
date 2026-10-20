@@ -1,0 +1,7 @@
+/* Plant photos (Eric-approved picks, see docs/photo-credits.md). Key = slug of the common name, matched case-insensitively.
+   No entry => leaf placeholder (Deergrass: no photo yet; Showy milkweed: catalogue photo looks like Woollypod, held back). */
+var IENN_PHOTOS = ["white-sage","sticky-monkeyflower","narrow-leaf-milkweed","black-sage","california-buckwheat","california-encelia","california-poppy","desert-marigold","matilija-poppy","morning-glory","rock-monkeyflower","scarlet-bugler","showy-penstemon","sugarbush","woollypod-milkweed","yarrow","yucca"];
+var IENN_PHOTO_ALIAS = { "narrowleaf-milkweed": "narrow-leaf-milkweed", "buckwheat": "california-buckwheat", "encelia": "california-encelia", "bush-sunflower": "california-encelia", "poppy": "california-poppy", "matilija": "matilija-poppy", "woolly-pod-milkweed": "woollypod-milkweed", "woollypod": "woollypod-milkweed", "chaparral-yucca": "yucca", "our-lord-s-candle": "yucca", "monkeyflower": "sticky-monkeyflower", "penstemon": "showy-penstemon", "wild-morning-glory": "morning-glory", "island-morning-glory": "morning-glory" };
+function ienPhoto(name) { var k = String(name || "").toLowerCase().replace(/\(.*?\)/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); k = IENN_PHOTO_ALIAS[k] || k;
+  return IENN_PHOTOS.indexOf(k) < 0 ? null : { src: "images/plants/" + k + ".jpg", srcset: "images/plants/" + k + "-400.jpg 400w, images/plants/" + k + ".jpg 800w" }; }
+if (typeof module !== "undefined") module.exports = { ienPhoto: ienPhoto, IENN_PHOTOS: IENN_PHOTOS };

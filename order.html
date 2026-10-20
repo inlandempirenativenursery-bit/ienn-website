@@ -28,7 +28,8 @@
     .card.in-cart { border-color:var(--sage); box-shadow:0 0 0 2px rgba(107,124,106,.25); }
     .card.sold-out { opacity:.75; }
     .ph { aspect-ratio:5/2; background:linear-gradient(135deg,var(--cream),#ecebe6); display:flex; align-items:center; justify-content:center; color:#8a8f88; font-size:0.85rem; }
-    .ph img { width:100%; height:100%; object-fit:cover; }
+    .ph { position:relative; overflow:hidden; }
+    .ph img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
     .body { padding:0.9rem; display:flex; flex-direction:column; gap:0.6rem; flex:1; }
     .card h3 { font-size:1.1rem; color:var(--sage-dark); line-height:1.3; }
     .badge { align-self:flex-start; font-size:0.8rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:999px; }
@@ -220,6 +221,7 @@
     Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a>
   </footer>
 
+  <script src="plant-photos.js"></script>
   <script>
     /* ===== IENN SETTINGS =====
        APPS_SCRIPT_URL: the existing IENN inventory/invoice web app (/exec). The page reads ?view=inventory from it
@@ -278,7 +280,7 @@
           var ps = pstate(p), card = el("article", { class: "card" + (ps === "out" ? " sold-out" : ""), "aria-labelledby": p.id + "-name" });
           card.dataset.id = p.id;
           var ph = el("div", { class: "ph" });
-          if (p.image) ph.appendChild(el("img", { src: p.image, alt: p.name, loading: "lazy" })); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }  // image slot kept: set p.image
+          if (p.image) ph.appendChild(el("img", p.srcset ? { src: p.image, srcset: p.srcset, sizes: "(max-width: 600px) 45vw, 260px", alt: p.name, loading: "lazy", decoding: "async" } : { src: p.image, alt: p.name, loading: "lazy", decoding: "async" })); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }  // image slot kept: set p.image
           card.appendChild(ph);
           var b = el("div", { class: "body" });
           var h3 = el("h3", { id: p.id + "-name" }); h3.appendChild(el("span", { class: "slot", "aria-hidden": "true" }, String.fromCharCode(65 + Math.floor(idx / 6)) + (idx % 6 + 1))); h3.appendChild(document.createTextNode(p.name)); b.appendChild(h3);
@@ -407,13 +409,13 @@
 
       function fromInventory(d) {
         return (d.plants || []).map(function (p) {
-          return { id: slug(p.name), name: p.name, fullName: p.fullName || p.name, botanical: p.botanical || "", image: p.image || "",
+          return { id: slug(p.name), name: p.name, fullName: p.fullName || p.name, botanical: p.botanical || "", image: p.image || (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).src || "", srcset: p.image ? "" : (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).srcset || "",
             sizes: (p.sizes || []).map(function (z) { return { key: z.key, label: z.size || SIZE_LABELS[z.key] || z.key, price: isFinite(Number(z.price)) && z.price !== "" && z.price != null ? Number(z.price) : PRICES[z.key], qty: z.qty == null ? null : Number(z.qty) }; }) };
         });
       }
       function fallback() {
         return FALLBACK_PLANTS.map(function (p) { var nb = split(p.name);
-          return { id: slug(nb[0]), name: nb[0], fullName: p.name, botanical: nb[1], image: "", sizes: p.sizes.map(function (k) { return { key: k, label: SIZE_LABELS[k], price: PRICES[k], qty: null }; }) }; });
+          return { id: slug(nb[0]), name: nb[0], fullName: p.name, botanical: nb[1], image: (typeof ienPhoto === "function" && ienPhoto(nb[0]) || {}).src || "", srcset: (typeof ienPhoto === "function" && ienPhoto(nb[0]) || {}).srcset || "", sizes: p.sizes.map(function (k) { return { key: k, label: SIZE_LABELS[k], price: PRICES[k], qty: null }; }) }; });
       }
       var params = new URLSearchParams(location.search), prefilled = false;
       function prefill() { // home-page cart link: order.html?white-sage=2 or ?white-sage|1%20gal=1 (slug or slug|size)

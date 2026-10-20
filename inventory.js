@@ -60,8 +60,9 @@ var IENN = (function () {
     var rank = { in: 0, low: 1, unknown: 2, out: 3 }, best = out.reduce(function (a, s) { return rank[s.status] < rank[a] ? s.status : a; }, "out");
     if (!out.length) best = "request";
     IENN_REQUEST_SIZES.forEach(function (z) { out.push({ size: z, qty: null, price: IENN_SIZE_PRICES[z], status: "request" }); });
+    var img = String(pick(r, ["image", "imageurl", "photo", "img"]) || ""), ph = img || typeof ienPhoto !== "function" ? null : ienPhoto(name);
     return { id: String(pick(r, ["id", "slug", "sku"]) || slug(name)), name: name.trim(), botanical: bot ? String(bot) : "", note: String(pick(r, ["note", "description", "notes", "blurb"]) || ""),
-      image: String(pick(r, ["image", "imageurl", "photo", "img"]) || ""), priority: num(pick(r, ["priority", "popularity", "rank", "sort", "order"])),
+      image: img || (ph ? ph.src : ""), srcset: ph ? ph.srcset : "", priority: num(pick(r, ["priority", "popularity", "rank", "sort", "order"])),
       color: String(pick(r, ["color", "flowercolor", "bloom"]) || ""), sizes: out, status: best };
   }
   function sortList(a) {
