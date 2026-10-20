@@ -50,3 +50,31 @@ Printable plant list (?view=plantlist) / CSV for flyers, Saturdays, partners
 8. **Name matching.** Stock is matched by common name (the part before "(...)"). Renaming a plant in Catalog mid-week can split its stock. Rename right after a weekly count.
 9. **Public access.** The web app must be "Anyone" for the website. That exposes counts and the printable list publicly, but no customer data: GET returns only plants, sizes, prices and counts.
 10. **Keep internal edits small.** The only changes to existing code are 3 one-line patches (doGet, doPost, submitInvoice) and one optional button.
+
+## Promo banner (Fall / Spring / Summer sales)
+
+**Integration — one line** on any page (after `window.IENN_CONFIG = { EXEC_URL: "<.../exec>" }`, or put `data-exec-url="<.../exec>"` on the tag):
+
+```html
+<script src="js/promo-banner.js" defer></script>
+```
+
+**Turn a promo on/off:** edit the **Promos** tab in the inventory tool spreadsheet. Set *Active* to `yes` (or tick the checkbox) and check the dates. Set it to `No` to turn it off. Changes show on the site within about 60 seconds (cache). No code change and no redeploy needed.
+
+| Column | Meaning |
+|---|---|
+| Active | `yes`/`y`/`true`/checkbox = on. Anything else = off. |
+| Title | Banner heading, e.g. "Fall sale". |
+| Message | Banner body text. |
+| Start date | First day shown (inclusive), `yyyy-mm-dd` or `m/d/yyyy` or a sheet date. |
+| End date | Last day shown (inclusive). **Blank = no end** (runs until Active is set to No). |
+| Discount note | Optional bold line, e.g. a discount. Left blank / "set before activating" = not shown. |
+| ID | Optional. Customers who dismiss a banner don’t see it again until its ID changes. If blank, the ID is built from the title + start date, so changing those re-shows it. |
+
+Dates use Pacific time (America/Los_Angeles). Rows with unreadable dates are skipped. If several promos are active, the first one in sheet order that the customer hasn’t dismissed is shown. Headers are matched by name, so you can reorder the columns.
+
+**One-time setup:** paste the updated `apps-script/ienn-api.gs` into the project, run `ienn_setupPromosTab_` once from the editor (creates the tab with Fall/Spring/Summer example rows, all **Active = No**, dates and messages are placeholders to adjust), then **Deploy → Manage deployments → Edit → Version: New version → Deploy** so `?api=promos` goes live on the same `/exec` URL.
+
+Behavior: modal overlay over the shop (the shop isn’t changed). Dismiss with **Shop now**, the × button or Esc. Fails silently if the sheet can’t be reached. Preview with `?promo=preview` on the page URL (sample data, never remembered). Restyle with CSS variables `--promo-bg`, `--promo-fg`, `--promo-accent`, `--promo-accent-fg`, `--promo-radius`, `--promo-font`, `--promo-backdrop`.
+
+Tests: `node tests/promos.test.js` (sheet/date logic) and `PUPPETEER_PATH=... node tests/promo-banner.browser.test.js` (modal).

@@ -192,6 +192,12 @@ function ienn_api_doGet_(e) {
       var out = JSON.stringify(ienn_plants_(false)); c.put("ienn_inventory", out, CFG_IENN.CACHE_SECONDS);
       return ContentService.createTextOutput(out).setMimeType(ContentService.MimeType.JSON);
     }
+    if (p.api === "promos") {
+      var pc = CacheService.getScriptCache(), ph = pc.get("ienn_promos");
+      if (ph) return ContentService.createTextOutput(ph).setMimeType(ContentService.MimeType.JSON);
+      var po = JSON.stringify(ienn_activePromos_()); pc.put("ienn_promos", po, 60);
+      return ContentService.createTextOutput(po).setMimeType(ContentService.MimeType.JSON);
+    }
     if (p.api === "plantlist" && p.format === "csv")
       return ContentService.createTextOutput(ienn_exportPlantListCsv_(p.instock === "1")).setMimeType(ContentService.MimeType.CSV).downloadAsFile("ienn-plant-list.csv");
     return ienn_json_({ ok: false, error: "unknown_api" });
@@ -336,4 +342,51 @@ function ienn_redirectToWebsite_() {
                  : "<p>Online ordering is on our website. Questions: " + ienn_esc_(CFG_IENN.CONTACT) + ".</p>";
   return HtmlService.createHtmlOutput("<!doctype html><meta charset='utf-8'><body style='font:16px system-ui;padding:24px'>" + body + "</body>")
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+// ---------------------------------------------------------------- promos
+// Team edits the "Promos" tab: set Active = yes (and dates) to show a banner on the website.
+// GET <exec>?api=promos -> {promos:[{id,title,message,start,end,discountNote}]} (active + in date range, LA time; cached 60s)
+var IENN_PROMO_SHEET = "Promos";
+var IENN_PROMO_HEADERS = ["Active", "Title", "Message", "Start date", "End date", "Discount note", "ID"];
+/** Run ONCE from the editor: creates the Promos tab with headers + example rows (all inactive). */
+function ienn_setupPromosTab_() {
+  var ss = ienn_ss_();
+  if (ss.getSheetByName(IENN_PROMO_SHEET)) return "Promos tab already exists";
+  var sh = ss.insertSheet(IENN_PROMO_SHEET);
+  sh.appendRow(IENN_PROMO_HEADERS); sh.setFrozenRows(1);
+  sh.getRange(2, 1, 3, 7).setValues([
+    ["No", "Fall sale", "PLACEHOLDER - write the customer message before activating.", "2026-11-01", "2026-11-30", "set before activating", ""],
+    ["No", "Spring sale", "PLACEHOLDER - adjust dates and message before activating.", "2027-03-01", "2027-03-31", "set before activating", ""],
+    ["No", "Summer sale", "PLACEHOLDER - adjust dates and message before activating.", "2027-06-01", "2027-06-30", "set before activating", ""]
+  ]);
+  sh.getRange(2, 4, 3, 2).setNumberFormat("yyyy-mm-dd");
+  return "Promos tab created (examples are inactive; dates are placeholders)";
+}
+function ienn_promoDay_(v, tz) {
+  if (v === "" || v == null) return "";
+  if (Object.prototype.toString.call(v) === "[object Date]") return isNaN(v) ? null : Utilities.formatDate(v, tz, "yyyy-MM-dd");
+  var m = String(v).trim().match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) return m[1] + "-" + ("0" + m[2]).slice(-2) + "-" + ("0" + m[3]).slice(-2);
+  m = String(v).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (m) return m[3] + "-" + ("0" + m[1]).slice(-2) + "-" + ("0" + m[2]).slice(-2);
+  return null; // unparseable -> promo skipped
+}
+function ienn_activePromos_(now) {
+  var tz = "America/Los_Angeles", sh = ienn_ss_().getSheetByName(IENN_PROMO_SHEET);
+  if (!sh || sh.getLastRow() < 2) return { promos: [] };
+  var today = Utilities.formatDate(now || new Date(), tz, "yyyy-MM-dd"), t = ienn_rows_(sh), out = [];
+  var c = { a: t.col(["active", "on"]), ti: t.col(["title"]), m: t.col(["message", "title/message"]), s: t.col(["start date", "start"]),
+            e: t.col(["end date", "end"]), d: t.col(["discount note", "discount"]), id: t.col(["id"]) };
+  if (c.a < 0 || c.s < 0) return { promos: [] };
+  t.rows.forEach(function (r) {
+    var a = r[c.a]; if (!(a === true || /^(yes|y|true|on|1)$/i.test(String(a).trim()))) return;
+    var s = ienn_promoDay_(r[c.s], tz), e = c.e < 0 ? "" : ienn_promoDay_(r[c.e], tz);
+    if (!s || e === null || today < s || (e && today > e)) return;
+    var title = c.ti < 0 ? "" : String(r[c.ti] || "").trim(), id = c.id < 0 ? "" : String(r[c.id] || "").trim();
+    out.push({ id: id || (ienn_norm_(title).replace(/[^a-z0-9]+/g, "-") + "-" + s), title: title,
+      message: c.m < 0 ? "" : String(r[c.m] || "").trim(), start: s, end: e || null,
+      discountNote: c.d < 0 || /set before activating/i.test(String(r[c.d])) ? "" : String(r[c.d] || "").trim() });
+  });
+  return { promos: out };
 }
