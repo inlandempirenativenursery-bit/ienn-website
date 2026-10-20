@@ -55,10 +55,11 @@
     .plant-info h3 { font-size: 1rem; color: var(--sage-dark); }
     .plant-meta { font-size: 0.85rem; color: #666; }
     .qty { display: flex; align-items: center; gap: 0.5rem; }
-    .qty input { width: 60px; padding: 0.4rem; text-align: center; border: 1px solid #ccc; border-radius: 6px; }
+    .qty label { margin: 0; }
+    .qty input { width: 64px; min-height: 44px; padding: 0.4rem; font-size: 1rem; text-align: center; border: 1px solid #ccc; border-radius: 6px; }
     form { margin: 1rem; }
     label { display: block; margin: 0.75rem 0 0.25rem; font-weight: 600; font-size: 0.95rem; }
-    input[type="text"], input[type="email"], textarea {
+    input[type="text"], input[type="email"], input[type="tel"], textarea {
       width: 100%;
       padding: 0.7rem;
       border: 1px solid #ccc;
@@ -78,87 +79,139 @@
       margin-top: 1rem;
       cursor: pointer;
     }
+    .submit-btn:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--sage-dark); outline-offset: 2px; }
+    .fine { font-size: 0.85rem; color: #555; margin-top: 0.75rem; }
     .submit-btn:hover { background: #a93226; }
-    footer { text-align: center; font-size: 0.8rem; color: #666; margin-top: 2rem; padding: 1rem; }
+    footer { text-align: center; font-size: 0.8rem; color: #555; margin-top: 2rem; padding: 1rem; }
+    main { max-width: 720px; margin: 0 auto; }
+    h2 { font-size: 1.15rem; color: var(--sage-dark); margin: 1.5rem 1rem 0.25rem; }
+    .hint { margin: 0 1rem; font-size: 0.9rem; color: #555; }
+    .notice h2 { margin: 0 0 0.5rem; }
+    .notice ul { list-style: none; display: grid; gap: 0.6rem; }
+    .notice li { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.25rem; }
+    .notice .ico { font-size: 1.1rem; line-height: 1.4; }
+    .notice b { color: var(--sage-dark); display: block; }
+    .plant-card { gap: 0.75rem; flex-wrap: wrap; transition: border-color .15s, background .15s; }
+    .plant-card.selected { border-color: var(--sage); background: #f3f6f2; }
+    .plant-info { flex: 1 1 180px; min-width: 0; }
+    .plant-info h3 { font-size: 1.05rem; }
+    .stepper { display: flex; align-items: center; border: 1px solid #ccc; border-radius: 10px; overflow: hidden; }
+    .stepper button { width: 44px; height: 44px; border: none; background: var(--cream); color: var(--sage-dark); font-size: 1.4rem; font-weight: 700; cursor: pointer; touch-action: manipulation; }
+    .stepper button:active { background: var(--lilac); }
+    .stepper button:disabled { color: #aaa; cursor: default; }
+    .stepper input { width: 52px; height: 44px; border: none; border-left: 1px solid #ccc; border-right: 1px solid #ccc; text-align: center; font-size: 1.05rem; -moz-appearance: textfield; }
+    .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .summary { margin: 1rem; padding: 1rem; border: 2px dashed var(--sage); border-radius: 10px; background: #fff; }
+    .summary h2 { margin: 0 0 0.5rem; font-size: 1.05rem; }
+    .summary ul { padding-left: 1.2rem; }
+    .summary .empty { color: #555; font-size: 0.95rem; }
+    .error { color: var(--red); font-weight: 600; margin-top: 0.75rem; display: none; }
+    input[type="text"], input[type="email"], input[type="tel"], textarea { min-height: 44px; }
+    input:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--lilac); outline-offset: 2px; }
+    .submit-btn { min-height: 48px; }
+    @media (min-width: 640px) { h1 { font-size: 1.8rem; } }
   </style>
 </head>
 <body>
   <header>
-    <div>
+    <a href="index.html" style="text-decoration:none;">
       <div class="logo-text">IENN</div>
       <div class="logo-sub">INLAND EMPIRE NATIVE NURSERY</div>
-    </div>
-    <a href="index.html" style="color: var(--sage); text-decoration: none; font-size: 0.9rem;">← Back</a>
+    </a>
+    <a href="index.html" style="color: var(--sage-dark); text-decoration: none; font-size: 0.95rem; padding: 0.75rem 0.5rem; min-height: 44px; display: inline-flex; align-items: center;">← Back</a>
   </header>
-
+  <main>
+  <main>
+<main>
   <h1>Place Your Order</h1>
 
-  <div class="notice">
-    <strong>Pickup & Details</strong><br>
-    • Saturdays 10 AM – 2 PM weekly. Other days/times available case-by-case — just note it below.<br>
-    • Payment: Cash or Zelle.<br>
-    • Location: Fontana area, near Sierra Ave & Baseline Rd, roughly within 10 minutes of the 210 freeway. Exact directions after we confirm your order. Grand Terrace pickup possible case-by-case (mention in notes).<br>
-    • We will confirm your order and send pickup details ASAP.
-  </div>
+  <section class="notice" aria-labelledby="notice-title">
+    <h2 id="notice-title">Pickup &amp; Details</h2>
+    <ul>
+      <li><span class="ico" aria-hidden="true">📅</span><span><b>Pickup only</b>Saturdays 10 AM – 2 PM weekly. Other days/times available case-by-case — just note it below.</span></li>
+      <li><span class="ico" aria-hidden="true">💵</span><span><b>Payment</b>Cash or Zelle.</span></li>
+      <li><span class="ico" aria-hidden="true">📍</span><span><b>Location</b>Fontana area, near Sierra Ave &amp; Baseline Rd, roughly within 10 minutes of the 210 freeway. Exact directions after we confirm your order. Grand Terrace pickup possible case-by-case (mention in notes).</span></li>
+      <li><span class="ico" aria-hidden="true">✅</span><span><b>Confirmation</b>We will confirm your order and send pickup details ASAP.</span></li>
+    </ul>
+  </section>
 
+  <h2>1. Choose your plants</h2>
+  <p class="hint">Tap + or − to set how many of each you'd like.</p>
   <div class="plants" id="plant-list">
-    <div class="plant-card">
+    <div class="plant-card" data-plant="Blue Pyramid Cypress">
       <div class="plant-info">
-        <h3>Blue Pyramid Cypress</h3>
+        <h3 id="blue-pyramid-name">Blue Pyramid Cypress</h3>
         <div class="plant-meta">1-gallon • In stock</div>
       </div>
-      <div class="qty">
-        <label>Qty</label>
-        <input type="number" name="blue-pyramid" min="0" value="0">
+      <div class="stepper" role="group" aria-labelledby="blue-pyramid-name">
+        <button type="button" class="minus" aria-label="Remove one Blue Pyramid Cypress">&minus;</button>
+        <label class="sr-only" for="qty-blue-pyramid">Quantity of Blue Pyramid Cypress</label>
+        <input type="number" id="qty-blue-pyramid" name="blue-pyramid" min="0" max="99" value="0" inputmode="numeric">
+        <button type="button" class="plus" aria-label="Add one Blue Pyramid Cypress">+</button>
       </div>
     </div>
-    <div class="plant-card">
+    <div class="plant-card" data-plant="Woolly Blue Curls">
       <div class="plant-info">
-        <h3>Woolly Blue Curls</h3>
+        <h3 id="woolly-blue-name">Woolly Blue Curls</h3>
         <div class="plant-meta">4-inch • Limited</div>
       </div>
-      <div class="qty">
-        <label>Qty</label>
-        <input type="number" name="woolly-blue" min="0" value="0">
+      <div class="stepper" role="group" aria-labelledby="woolly-blue-name">
+        <button type="button" class="minus" aria-label="Remove one Woolly Blue Curls">&minus;</button>
+        <label class="sr-only" for="qty-woolly-blue">Quantity of Woolly Blue Curls</label>
+        <input type="number" id="qty-woolly-blue" name="woolly-blue" min="0" max="99" value="0" inputmode="numeric">
+        <button type="button" class="plus" aria-label="Add one Woolly Blue Curls">+</button>
       </div>
     </div>
-    <div class="plant-card">
+    <div class="plant-card" data-plant="Sticky Monkeyflower">
       <div class="plant-info">
-        <h3>Sticky Monkeyflower</h3>
+        <h3 id="monkeyflower-name">Sticky Monkeyflower</h3>
         <div class="plant-meta">1-gallon • In stock</div>
       </div>
-      <div class="qty">
-        <label>Qty</label>
-        <input type="number" name="monkeyflower" min="0" value="0">
+      <div class="stepper" role="group" aria-labelledby="monkeyflower-name">
+        <button type="button" class="minus" aria-label="Remove one Sticky Monkeyflower">&minus;</button>
+        <label class="sr-only" for="qty-monkeyflower">Quantity of Sticky Monkeyflower</label>
+        <input type="number" id="qty-monkeyflower" name="monkeyflower" min="0" max="99" value="0" inputmode="numeric">
+        <button type="button" class="plus" aria-label="Add one Sticky Monkeyflower">+</button>
       </div>
     </div>
-    <div class="plant-card">
+    <div class="plant-card" data-plant="Yarrow">
       <div class="plant-info">
-        <h3>Yarrow</h3>
+        <h3 id="yarrow-name">Yarrow</h3>
         <div class="plant-meta">4-inch • In stock</div>
       </div>
-      <div class="qty">
-        <label>Qty</label>
-        <input type="number" name="yarrow" min="0" value="0">
+      <div class="stepper" role="group" aria-labelledby="yarrow-name">
+        <button type="button" class="minus" aria-label="Remove one Yarrow">&minus;</button>
+        <label class="sr-only" for="qty-yarrow">Quantity of Yarrow</label>
+        <input type="number" id="qty-yarrow" name="yarrow" min="0" max="99" value="0" inputmode="numeric">
+        <button type="button" class="plus" aria-label="Add one Yarrow">+</button>
       </div>
     </div>
   </div>
 
+  <section class="summary" aria-labelledby="summary-title">
+    <h2 id="summary-title">Your selection</h2>
+    <div id="summary-body" aria-live="polite"><p class="empty">No plants selected yet.</p></div>
+  </section>
+
+  <h2>2. Your details</h2>
   <form id="order-form" action="mailto:hello@inlandempirenativenursery.com" method="post" enctype="text/plain">
     <label for="name">Your Name</label>
-    <input type="text" id="name" name="name" required>
+    <input type="text" id="name" name="name" autocomplete="name" required>
 
     <label for="email">Email</label>
-    <input type="email" id="email" name="email" required>
+    <input type="email" id="email" name="email" autocomplete="email" required>
 
     <label for="phone">Phone (optional)</label>
-    <input type="text" id="phone" name="phone">
+    <input type="tel" id="phone" name="phone" autocomplete="tel">
 
     <label for="notes">Notes (pickup day preference, Grand Terrace request, questions, etc.)</label>
     <textarea id="notes" name="notes" placeholder="Example: Prefer Saturday 11am, or Grand Terrace pickup if possible."></textarea>
 
+    <p class="error" id="qty-error" role="alert">Please choose at least one plant above.</p>
     <button type="submit" class="submit-btn">Submit Order</button>
   </form>
+</main>
 
   <footer>
     Inland Empire Native Nursery • Pickup-only • Fontana / Grand Terrace area<br>
@@ -166,11 +219,47 @@
   </footer>
 
   <script>
-    document.getElementById('order-form').addEventListener('submit', function(e) {
-      const quantities = Array.from(document.querySelectorAll('.qty input')).map(i => `${i.name}: ${i.value}`).join(', ');
-      const notesField = document.getElementById('notes');
-      notesField.value = (notesField.value ? notesField.value + '\n\n' : '') + 'Requested quantities: ' + quantities;
-    });
+    (function () {
+      var cards = Array.from(document.querySelectorAll('.plant-card'));
+      var summary = document.getElementById('summary-body');
+      function clamp(v) { v = parseInt(v, 10); return isNaN(v) || v < 0 ? 0 : Math.min(v, 99); }
+      function update() {
+        var items = [];
+        cards.forEach(function (card) {
+          var input = card.querySelector('input');
+          var q = clamp(input.value); input.value = q;
+          card.classList.toggle('selected', q > 0);
+          card.querySelector('.minus').disabled = q === 0;
+          if (q > 0) items.push({ name: card.dataset.plant, q: q });
+        });
+        if (!items.length) { summary.innerHTML = '<p class="empty">No plants selected yet.</p>'; }
+        else {
+          var total = items.reduce(function (a, i) { return a + i.q; }, 0);
+          var ul = document.createElement('ul');
+          items.forEach(function (i) { var li = document.createElement('li'); li.textContent = i.q + ' × ' + i.name; ul.appendChild(li); });
+          var p = document.createElement('p'); p.textContent = total + (total === 1 ? ' plant' : ' plants') + ' total';
+          p.style.fontWeight = '600'; p.style.marginTop = '0.5rem';
+          summary.innerHTML = ''; summary.appendChild(ul); summary.appendChild(p);
+          document.getElementById('qty-error').style.display = 'none';
+        }
+        return items;
+      }
+      cards.forEach(function (card) {
+        var input = card.querySelector('input');
+        card.querySelector('.plus').addEventListener('click', function () { input.value = clamp(input.value) + 1; update(); });
+        card.querySelector('.minus').addEventListener('click', function () { input.value = clamp(input.value) - 1; update(); });
+        input.addEventListener('input', update);
+      });
+      update();
+      document.getElementById('order-form').addEventListener('submit', function (e) {
+        var items = update();
+        if (!items.length) { e.preventDefault(); var err = document.getElementById('qty-error'); err.style.display = 'block'; err.scrollIntoView({ block: 'center' }); return; }
+        var notes = document.getElementById('notes');
+        var list = items.map(function (i) { return i.name + ': ' + i.q; }).join(', ');
+        notes.value = notes.value.replace(/\n*Requested quantities: .*$/, '');
+        notes.value = (notes.value ? notes.value + '\n\n' : '') + 'Requested quantities: ' + list;
+      });
+    })();
   </script>
 </body>
 </html>
