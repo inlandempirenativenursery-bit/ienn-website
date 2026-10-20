@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,7 +52,8 @@
       align-items: center;
       justify-content: center;
     }
-    .disclaimer { margin-top: 1rem; font-size: 0.78rem; color: #666; line-height: 1.4; }
+    .disclaimer { margin-top: 1rem; font-size: 0.85rem; color: #444; line-height: 1.4; }
+    .skip { position:absolute; left:-999px; } .skip:focus { left:1rem; top:1rem; background:#fff; padding:0.5rem; z-index:200; }
     .order-btn:hover { background: #a93226; }
     .hero {
       background: linear-gradient(180deg, var(--cream) 0%, #fff 100%);
@@ -141,7 +143,7 @@
       padding: 1.5rem 1rem;
       font-size: 0.85rem;
     }
-    footer a { color: #ddd; }
+    footer a { color: #fff; }
     @media (min-width: 700px) {
       .hero h1 { font-size: 2.2rem; }
       .plant-grid { grid-template-columns: repeat(3, 1fr); }
@@ -150,17 +152,19 @@
   </style>
 </head>
 <body>
+  <a class="skip" href="#main">Skip to content</a>
   <header>
-    <a href="#" class="logo">
+    <a href="index.html" class="logo">
       <img src="images/ienn-logo-sage.png" alt="Inland Empire Native Nursery logo">
       <div>
         <div class="logo-text">IENN</div>
         <div class="logo-sub">INLAND EMPIRE NATIVE NURSERY</div>
       </div>
     </a>
-    <a href="https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec?view=customer" class="order-btn" rel="noopener">Place Order Now</a>
+    <a href="order.html" class="order-btn">Place Order Now</a>
   </header>
 
+  <main id="main">
   <section class="hero">
     <h1>Locally grown California native plants for the Inland Empire</h1>
     <p>Healthy, climate-adapted plants ready for pickup. No shipping — just plants that thrive here.</p>
@@ -171,7 +175,7 @@
     <p style="font-size:0.95rem; color:#555; margin-bottom:0.5rem;">Updated weekly from our nursery counts.</p>
     <div class="plant-grid">
       <div class="plant-card">
-        <div class="plant-img">Photo</div>
+        <div class="plant-img" aria-hidden="true">Photo</div>
         <div class="plant-info">
           <h3>Blue Pyramid Cypress</h3>
           <div class="plant-meta">1-gallon</div>
@@ -179,7 +183,7 @@
         </div>
       </div>
       <div class="plant-card">
-        <div class="plant-img">Photo</div>
+        <div class="plant-img" aria-hidden="true">Photo</div>
         <div class="plant-info">
           <h3>Woolly Blue Curls</h3>
           <div class="plant-meta">4-inch</div>
@@ -187,7 +191,7 @@
         </div>
       </div>
       <div class="plant-card">
-        <div class="plant-img">Photo</div>
+        <div class="plant-img" aria-hidden="true">Photo</div>
         <div class="plant-info">
           <h3>Sticky Monkeyflower</h3>
           <div class="plant-meta">1-gallon</div>
@@ -195,7 +199,7 @@
         </div>
       </div>
       <div class="plant-card">
-        <div class="plant-img">Photo</div>
+        <div class="plant-img" aria-hidden="true">Photo</div>
         <div class="plant-info">
           <h3>Yarrow</h3>
           <div class="plant-meta">4-inch</div>
@@ -247,12 +251,16 @@
   <section class="cta-section" id="order">
     <h2 style="color:var(--sage-dark);">Ready to plant something that works here?</h2>
     <p style="margin:0.75rem 0 1.25rem;">Place your order and pick up locally.</p>
-    <a href="https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec?view=customer" class="order-btn" rel="noopener">Place Order Now</a>
-    <p class="disclaimer">Availability varies by season and stock • Local pickup only (Fontana area); payment by cash or Zelle • Plant care and native-planting info is general guidance • Photos are representative.</p>
+    <a href="order.html" class="order-btn">Place Order Now</a>
+    <p style="margin-top:0.75rem;"><a href="order.html" style="color:var(--sage-dark);">Or use our simple email order form</a></p>
+    <p class="disclaimer">Availability varies by season and stock • Local pickup only (Fontana area); payment by cash or Zelle • Plant care and native-planting info is general guidance • Photos are representative • Plant survival depends on site and care and is not guaranteed • Prices confirmed at order; CA sales tax applied as required [TODO: confirm].</p>
   </section>
+
+  </main>
 
   <footer>
     <p>Inland Empire Native Nursery • Pickup-only • Fontana / Grand Terrace area</p>
     <p style="margin-top:0.5rem;"><a href="mailto:hello@inlandempirenativenursery.com">Contact</a> • inlandempirenativenursery.com</p>
+    <p style="margin-top:0.5rem;">&copy; 2026 Inland Empire Native Nursery. All rights reserved.</p>
   </footer>
 </body></html>
