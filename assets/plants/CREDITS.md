@@ -8,7 +8,6 @@ All photos are used with the photographers' permission. Files were only resized 
 | sticky-monkeyflower.jpg | Sticky monkeyflower | IENN nursery photo (IENN plant catalogue, `photos/sticky-mf.jpg`) | n/a | © Inland Empire Native Nursery |
 | black-sage.jpg | Black sage | IENN nursery photo (IENN plant catalogue, `photos/black-sage.jpg`) | n/a | © Inland Empire Native Nursery |
 | narrow-leaf-milkweed.jpg | Narrow-leaf milkweed | IENN nursery photo (IENN plant catalogue, `photos/nl-milkweed.jpg`) | n/a | © Inland Empire Native Nursery |
-| showy-milkweed.jpg | Showy milkweed | IENN nursery photo (IENN plant catalogue, `photos/showy-milkweed.jpg`) | n/a | © Inland Empire Native Nursery |
 | woollypod-milkweed.jpg | Woollypod milkweed | IENN nursery photo (IENN plant catalogue, `photos/woollypod.jpg`) | n/a | © Inland Empire Native Nursery |
 | california-poppy.jpg | California poppy | IENN nursery photo (IENN plant catalogue, `photos/poppy.jpg`) | n/a | © Inland Empire Native Nursery |
 | desert-marigold.jpg | Desert marigold | IENN nursery photo (IENN plant catalogue, `photos/desert-marigold.jpg`) | n/a | © Inland Empire Native Nursery |
@@ -23,7 +22,9 @@ All photos are used with the photographers' permission. Files were only resized 
 | california-buckwheat.jpg | California buckwheat | keithwg1 via iNaturalist (linked in the IENN catalogue; used with permission) | https://static.inaturalist.org/photos/202777363/large.jpg (observation URL not recorded) | All rights reserved, used with permission |
 | california-encelia.jpg | California encelia | keithwg1 via iNaturalist (linked in the IENN catalogue; used with permission) | https://static.inaturalist.org/photos/484970961/large.jpg (observation URL not recorded) | All rights reserved, used with permission |
 | morning-glory.jpg | Morning glory | keithwg1 via iNaturalist (linked in the IENN catalogue; used with permission) | https://static.inaturalist.org/photos/286285846/large.jpg (observation URL not recorded) | All rights reserved, used with permission |
+| showy-milkweed.jpg | Showy milkweed | Jasper Shide via Wikimedia Commons (replaces the catalogue file showy-milkweed.jpg, whose plant ID was unconfirmed and which the catalogue page didn't use) | https://commons.wikimedia.org/wiki/File:Asclepias_speciosa_-_Showy_Milkweed_(7-15-24)_02.jpg | CC0 1.0, https://creativecommons.org/publicdomain/zero/1.0/ |
+| deergrass.jpg | Deergrass | Daderot via Wikimedia Commons (Leaning Pine Arboretum) | https://commons.wikimedia.org/wiki/File:Muhlenbergia_rigens_-_Leaning_Pine_Arboretum_-_DSC05642.JPG | CC0 1.0, https://creativecommons.org/publicdomain/zero/1.0/ |
 
-Blue Pyramid Cypress and Deergrass have no approved photo yet, so their cards show "Photo coming soon".
+Blue Pyramid Cypress has no approved photo yet, so its card shows "Photo coming soon".
 
 Credit line for any public use: "Photo: Eric BG via iNaturalist" / "Photo: keithwg1 via iNaturalist" / "IENN nursery photo".
