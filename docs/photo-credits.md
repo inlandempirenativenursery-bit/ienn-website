@@ -12,7 +12,6 @@ Eric-approved ★ picks from `docs/photo-choices/README.md` (board v2). Files li
 | desert-marigold.jpg | Desert marigold | Catalogue (Eric/IENN), `photos/desert-marigold.jpg` | n/a |
 | matilija-poppy.jpg | Matilija poppy | Catalogue (Eric/IENN), `photos/matilija.jpg` | n/a |
 | rock-monkeyflower.jpg | Rock monkeyflower | Catalogue (Eric/IENN), `photos/rock-mf.jpg` | n/a |
-| woollypod-milkweed.jpg | Woollypod milkweed | Catalogue (Eric/IENN), `photos/woollypod.jpg` | n/a |
 | california-buckwheat.jpg | California buckwheat | iNat ericbg2 (photo 173751713) | https://www.inaturalist.org/observations/103767717 |
 | scarlet-bugler.jpg | Scarlet bugler | iNat ericbg2 (photo 178761875) | https://www.inaturalist.org/observations/106417087 |
 | showy-penstemon.jpg | Showy penstemon | iNat ericbg2 (photo 518394642) | https://www.inaturalist.org/observations/288271649 |
@@ -21,9 +20,10 @@ Eric-approved ★ picks from `docs/photo-choices/README.md` (board v2). Files li
 | yarrow.jpg | Yarrow | Catalogue → Eric's iNat photo (ericbg2, photo 516277271); observation URL not recorded | https://static.inaturalist.org/photos/516277271/large.jpg |
 | california-encelia.jpg | California encelia | Catalogue → iNat keithwg1 (photo 484970961). **Used with Keith's permission (Oct 2026).** | https://static.inaturalist.org/photos/484970961/large.jpg |
 | morning-glory.jpg | Morning glory | Catalogue → iNat keithwg1 (photo 286285846). **Used with Keith's permission (Oct 2026).** | https://static.inaturalist.org/photos/286285846/large.jpg |
+| deergrass.jpg | Deergrass | "Deergrass (Muhlenbergia rigens)" by Matt Berger, iNaturalist, licensed CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Resized only. Card shows "Photo: Matt Berger, CC BY 4.0" linked to the observation. | https://www.inaturalist.org/observations/154662347 |
 
 Eric's photos (catalogue and ericbg2) are © Eric Bo Garcia / IENN. The keithwg1 photos are © Keith and used with his permission.
 
 ## Still on the leaf placeholder
-- **Deergrass:** neither source has a photo.
-- **Showy milkweed:** the catalogue's `showy-milkweed.jpg` looks like Woollypod (*A. eriocarpa*), not *A. speciosa*, so it's held back until Eric confirms or sends a real Showy milkweed photo.
+- **Showy milkweed:** Eric is still choosing a photo.
+- **Woollypod milkweed:** Robo flagged that the catalogue's `showy-milkweed.jpg` and `woollypod.jpg` look swapped, so neither file (nor anything made from them) is used until Eric confirms.

@@ -114,6 +114,8 @@
     .lead b { color:var(--sage-dark); }
     .nw { white-space:nowrap; }
     .summary .rm { padding:0 0.75rem; }
+    .photo-credit { margin:0; padding:0.15rem 0.9rem 0; font-size:0.7rem; color:#6b6f69; }
+    .photo-credit a { color:inherit; }
     .ph .leaf { font-size:1.6rem; opacity:.55; }
     input:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible { outline:3px solid var(--sage-dark); outline-offset:2px; }
     footer { text-align:center; font-size:0.8rem; color:#555; margin-top:2rem; padding:1rem; }
@@ -286,6 +288,8 @@
           var ph = el("div", { class: "ph" });
           if (p.image) ph.appendChild(el("img", p.srcset ? { src: p.image, srcset: p.srcset, sizes: "(max-width: 600px) 45vw, 260px", alt: p.name, loading: "lazy", decoding: "async" } : { src: p.image, alt: p.name, loading: "lazy", decoding: "async" })); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }  // image slot kept: set p.image
           card.appendChild(ph);
+          var cr = p.image && typeof ienPhoto === "function" && ienPhoto(p.name); cr = cr && cr.src === p.image && cr.credit;
+          if (cr) { var cp = el("p", { class: "photo-credit" }); cp.appendChild(el("a", { href: cr.url, target: "_blank", rel: "noopener" }, cr.text)); card.appendChild(cp); }
           var b = el("div", { class: "body" });
           var h3 = el("h3", { id: p.id + "-name" }); h3.appendChild(el("span", { class: "slot", "aria-hidden": "true" }, String.fromCharCode(65 + Math.floor(idx / 6)) + (idx % 6 + 1))); h3.appendChild(document.createTextNode(p.name)); b.appendChild(h3);
           if (p.botanical) b.appendChild(el("span", { class: "note" }, p.botanical));
