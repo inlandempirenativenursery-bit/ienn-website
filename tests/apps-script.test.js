@@ -101,7 +101,7 @@ t('reply draft fills template from IENN Invoices, keeps placeholders, never send
   assert.match(d.body, /2 × White Sage \(4-inch pot\) @ \$6 = \$12\.00/);
   assert.match(d.body, /Total: \$12\.00 \(taxes included\)/); assert.doesNotMatch(d.body, /Tax \(/); assert.match(d.body, /Call or text Andrew: \(909\) 609-9373/);
   assert.match(d.body, /Payment status: Not paid yet/); assert.match(d.body, /Payment: Cash or Zelle at time of pickup\. \(you chose Zelle\)/);
-  assert.match(d.body, /Pickup location: \{\{PICKUP_ADDRESS\}\} \(Fontana area, near Sierra Ave & Baseline Rd\)/); assert.match(d.body, /Pickup schedule: Saturdays 10 AM – 2 PM/); assert.match(d.body, /Your pickup date: Saturday, October 24, 2026/); assert.match(d.body, /Grand Terrace pickup available upon request\./); assert.match(d.body, /\{\{PICKUP_ADDRESS\}\}/);
+  assert.match(d.body, /Pickup location: \{\{PICKUP_ADDRESS\}\} \(Fontana area, near Sierra & Baseline, about 10 minutes from the 210\)/); assert.match(d.body, /Pickup schedule: Saturdays 10 AM – 2 PM/); assert.match(d.body, /Your pickup date: Saturday, October 24, 2026/); assert.match(d.body, /Grand Terrace pickup available upon request\./); assert.match(d.body, /\{\{PICKUP_ADDRESS\}\}/);
   assert.match(d.body, /Your notes: Saturday 11am\n/); assert.match(d.body, /Our notes: Ready Saturday!/);
 });
 

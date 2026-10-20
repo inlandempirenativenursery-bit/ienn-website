@@ -10,7 +10,7 @@ Keep this file and `RESPONSE_TEMPLATE` in `IENN_Drafts.gs` in sync.
 | `{{ITEMS}}` | One line per item: qty × plant (size) @ $price = $line total (prices include tax) |
 | `{{TOTAL}}` | Sum of the displayed prices (taxes included) |
 | `{{PICKUP_ADDRESS}}` | **Stays as a placeholder.** The exact address isn't known yet, so type it in before sending (or set `PICKUP_ADDRESS` in `IENN_Config.gs`) |
-| `{{PICKUP_AREA}}` | "Fontana area, near Sierra Ave & Baseline Rd" (context) |
+| `{{PICKUP_AREA}}` | "Fontana area, near Sierra & Baseline, about 10 minutes from the 210" (context) |
 | `{{PICKUP_SCHEDULE}}` | "Saturdays 10 AM – 2 PM" |
 | `{{PICKUP_DATE}}` | First Saturday on or after the order date (Pacific). Verify it before sending |
 | `{{PAYMENT_TERMS}}` / `{{PAYMENT_CHOICE}}` | "Cash or Zelle at time of pickup." plus the customer's choice |

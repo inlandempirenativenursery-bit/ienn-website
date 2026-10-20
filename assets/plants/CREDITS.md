@@ -23,7 +23,7 @@ Single photo set: `assets/plants/<slug>.jpg` (800px max) and `<slug>-400.jpg` (4
 | deergrass.jpg | Deergrass | "Muhlenbergia rigens - Leaning Pine Arboretum - DSC05642" by Daderot, Wikimedia Commons, CC0 1.0 (public domain dedication, verified on the file page Oct 20, 2026). From main 9f30bea. | https://commons.wikimedia.org/wiki/File:Muhlenbergia_rigens_-_Leaning_Pine_Arboretum_-_DSC05642.JPG |
 | showy-milkweed.jpg | Showy milkweed | "Asclepias speciosa - Showy Milkweed (7-15-24) 02" by Jasper Shide, Wikimedia Commons, CC0 1.0 (verified on the file page Oct 20, 2026). From main 9f30bea; not the catalogue file. | https://commons.wikimedia.org/wiki/File:Asclepias_speciosa_-_Showy_Milkweed_(7-15-24)_02.jpg |
 | toyon.jpg | Toyon | Eric Bo Garcia (ericbg2) via iNaturalist, 2022-12-15, Willits, CA, US | https://www.inaturalist.org/observations/144448253 |
-| woolly-blue-curls.jpg | Woolly blue curls | Eric Bo Garcia (ericbg2) via iNaturalist, 2025-05-16, Elaine Ave, Fontana, CA, US | https://www.inaturalist.org/observations/282646314 |
+| woolly-blue-curls.jpg | Woolly blue curls | Eric Bo Garcia (ericbg2) via iNaturalist, 2025-05-16, Inland Empire, CA | https://www.inaturalist.org/observations/282646314 |
 
 Eric's photos (catalogue and ericbg2) are © Eric Bo Garcia / IENN. The keithwg1 photos are © Keith and used with his permission. Deergrass and showy milkweed are CC0 1.0 (Wikimedia Commons).
 
