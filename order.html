@@ -121,9 +121,7 @@
     </a>
     <a href="index.html" style="color: var(--sage-dark); text-decoration: none; font-size: 0.95rem; padding: 0.75rem 0.5rem; min-height: 44px; display: inline-flex; align-items: center;">← Back</a>
   </header>
-  <main>
-  <main>
-<main>
+  <main id="main">
   <h1>Place Your Order</h1>
 
   <section class="notice" aria-labelledby="notice-title">
@@ -133,6 +131,17 @@
       <li><span class="ico" aria-hidden="true">💵</span><span><b>Payment</b>Cash or Zelle.</span></li>
       <li><span class="ico" aria-hidden="true">📍</span><span><b>Location</b>Fontana area, near Sierra Ave &amp; Baseline Rd, roughly within 10 minutes of the 210 freeway. Exact directions after we confirm your order. Grand Terrace pickup possible case-by-case (mention in notes).</span></li>
       <li><span class="ico" aria-hidden="true">✅</span><span><b>Confirmation</b>We will confirm your order and send pickup details ASAP.</span></li>
+    </ul>
+  </section>
+
+  <section class="notice" aria-labelledby="terms-title">
+    <h2 id="terms-title">Order terms</h2>
+    <ul>
+      <li><span class="ico" aria-hidden="true">📝</span><span><b>Order request</b>Submitting this form sends an order request, not a completed purchase. Nothing is charged online.</span></li>
+      <li><span class="ico" aria-hidden="true">🌱</span><span><b>Availability</b>Stock changes weekly. We confirm what is available before pickup.</span></li>
+      <li><span class="ico" aria-hidden="true">💲</span><span><b>Pricing</b>We confirm prices and your total before pickup. [TODO: add prices and state whether CA sales tax is included or added.]</span></li>
+      <li><span class="ico" aria-hidden="true">🚫</span><span><b>No shipping or installs</b>Pickup only. We can refer you to partner landscapers for installation.</span></li>
+      <li><span class="ico" aria-hidden="true">🌵</span><span><b>Plant care</b>Plants are healthy at pickup. How they do after planting depends on site, watering, and care, and survival isn't guaranteed. [TODO: confirm return/replacement policy, if any.]</span></li>
     </ul>
   </section>
 
@@ -200,7 +209,7 @@
     <input type="text" id="name" name="name" autocomplete="name" required>
 
     <label for="email">Email</label>
-    <input type="email" id="email" name="email" autocomplete="email" required>
+    <input type="email" id="email" name="email" autocomplete="email" inputmode="email" required>
 
     <label for="phone">Phone (optional)</label>
     <input type="tel" id="phone" name="phone" autocomplete="tel">
@@ -208,14 +217,19 @@
     <label for="notes">Notes (pickup day preference, Grand Terrace request, questions, etc.)</label>
     <textarea id="notes" name="notes" placeholder="Example: Prefer Saturday 11am, or Grand Terrace pickup if possible."></textarea>
 
+    <p class="fine"><strong>Privacy:</strong> We use your name, email, phone, and notes only to confirm and fulfill your order and to contact you about pickup. We don't sell or share your personal information. To see, correct, or delete your information, email <a href="mailto:hello@inlandempirenativenursery.com">hello@inlandempirenativenursery.com</a>. [TODO: owner to review; add a full privacy policy page.]</p>
+    <p class="fine">Submitting opens your email app with the order filled in. Press Send there to finish. If nothing opens, email us at <a href="mailto:hello@inlandempirenativenursery.com">hello@inlandempirenativenursery.com</a>.</p>
+
     <p class="error" id="qty-error" role="alert">Please choose at least one plant above.</p>
-    <button type="submit" class="submit-btn">Submit Order</button>
+    <button type="submit" class="submit-btn">Submit Order Request</button>
   </form>
 </main>
 
   <footer>
     Inland Empire Native Nursery • Pickup-only • Fontana / Grand Terrace area<br>
-    Cash or Zelle • We confirm and send directions after you order.
+    Cash or Zelle • We confirm and send directions after you order.<br>
+    <a href="mailto:hello@inlandempirenativenursery.com" style="color: var(--sage-dark);">hello@inlandempirenativenursery.com</a><br>
+    &copy; 2026 Inland Empire Native Nursery. All rights reserved.
   </footer>
 
   <script>
