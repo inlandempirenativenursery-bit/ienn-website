@@ -69,3 +69,10 @@ The IENN inventory/invoice Apps Script web app is the **single source of truth**
 The home-page cards come from the same `?view=inventory` feed, loaded by `inventory.js` (`INVENTORY_URL`). It reads the raw `getInitial()` JSON from `apps-script/IENN_Website.gs` (`iennInventory()`), a list of plant objects, or JSONP (`&callback=`). Until the endpoint is deployed, the URL returns HTML, so the grid shows a short fallback list marked "Ask about availability" (never "Available"). Sort order: `sort` value if present, otherwise white sage and monkeyflowers first, then flowering plants, with out-of-stock plants last. Low-stock threshold: `IENN_LOW_STOCK` (5). The cart hands off to `order.html?slug=qty` or `?slug|size=qty`.
 
 See `MERGE-NOTES.md` for what replaced Kobe's Sold-ledger back end, and which markup hooks the design pass relies on.
+
+
+## Plant photos
+
+Cards show `assets/plants/<plant-id>.jpg`, where the id is the slug of the common name (for example "White Sage" becomes `white-sage`). The ids that have a photo are listed in `PLANT_PHOTOS` in `order.html`. To add a photo, save it at about 800px wide as JPEG in `assets/plants/`, add its id to `PLANT_PHOTOS`, and credit it in `assets/plants/CREDITS.md`. Plants without a photo show "Photo coming soon".
+
+Optional override from the sheet: add a **Photo** column (also matched: Photo URL, Image, Image URL, Picture) to the inventory tool's **Catalog** tab with a full image URL. The `?view=inventory` JSON then returns it as `image`, and it wins over the local file (`CATALOG_PHOTO_HEADERS` in `IENN_Config.gs`, `iennCatalogPhotos_()` in `IENN_Stock.gs`). Redeploy the Apps Script for this to take effect.

@@ -26,14 +26,14 @@ function iennRoute_(e) {
   try { return iennJson_(iennInventory(), p.callback); } catch (err) { return iennJson_({ ok: false, error: String(err.message || err) }, p.callback); }
 }
 
-/** {version:3, taxPct, sizes:[{key,label,price,tracked}], plants:[{name, fullName, botanical, sizes:[{key,size,price,qty}]}]}
+/** {version:3, taxPct, sizes:[{key,label,price,tracked}], plants:[{name, fullName, botanical, image, sizes:[{key,size,price,qty}]}]}
     qty: number for tracked sizes (0 = sold out), null for untracked sizes (= "Available on request"). Prices include tax. */
 function iennInventory() {
-  var init = getInitial() || {}, avail = iennAvailable_(), seen = {}, names = [];
+  var init = getInitial() || {}, avail = iennAvailable_(), photos = iennCatalogPhotos_(), seen = {}, names = [];
   (init.plants || []).concat(iennCatalogNames_()).forEach(function (n) { var k = iennKey_(n); if (k && !seen[k]) { seen[k] = 1; names.push(n); } });
   var plants = names.map(function (full) {
     var nb = iennSplit_(full), a = avail[iennKey_(full)] || {};
-    return { name: nb[0], fullName: full, botanical: nb[1],
+    return { name: nb[0], fullName: full, botanical: nb[1], image: photos[iennKey_(full)] || photos[iennKey_(nb[0])] || '',
       sizes: IENN_SIZES.map(function (s) { return { key: s.key, size: s.label, price: s.price, qty: s.tracked ? (a[s.key] || 0) : null }; }) };
   });
   return { version: 3, updated: new Date().toISOString(), taxIncluded: true, onRequestLabel: IENN_ON_REQUEST_LABEL, contactPhone: IENN_CONTACT_PHONE,

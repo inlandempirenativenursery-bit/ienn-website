@@ -87,3 +87,11 @@ function iennCatalogNames_() {
   var v = sh.getDataRange().getValues(), c = iennCol_(v[0] || [], CATALOG_NAME_HEADERS); if (c < 0) return [];
   return v.slice(1).map(function (r) { return String(r[c] || '').trim(); }).filter(String);
 }
+/** Optional Photo column in Catalog: { plantKey: url }. Missing column -> {} (website uses assets/plants/<id>.jpg). */
+function iennCatalogPhotos_() {
+  var sh = iennSs_().getSheetByName(IENN_CATALOG_SHEET); if (!sh) return {};
+  var v = sh.getDataRange().getValues(), h = v[0] || [], c = iennCol_(h, CATALOG_NAME_HEADERS), ph = iennCol_(h, CATALOG_PHOTO_HEADERS), out = {};
+  if (c < 0 || ph < 0) return out;
+  v.slice(1).forEach(function (r) { var n = String(r[c] || '').trim(), u = String(r[ph] || '').trim(); if (n && u) out[iennKey_(n)] = u; });
+  return out;
+}

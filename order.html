@@ -28,7 +28,7 @@
     .card.in-cart { border-color:var(--sage); box-shadow:0 0 0 2px rgba(107,124,106,.25); }
     .card.sold-out { opacity:.75; }
     .ph { aspect-ratio:5/2; background:linear-gradient(135deg,var(--cream),#ecebe6); display:flex; align-items:center; justify-content:center; color:#8a8f88; font-size:0.85rem; }
-    .ph img { width:100%; height:100%; object-fit:cover; }
+    .ph { overflow:hidden; } .ph img { display:block; width:100%; height:100%; object-fit:cover; }
     .body { padding:0.9rem; display:flex; flex-direction:column; gap:0.6rem; flex:1; }
     .card h3 { font-size:1.1rem; color:var(--sage-dark); line-height:1.3; }
     .badge { align-self:flex-start; font-size:0.8rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:999px; }
@@ -217,6 +217,9 @@
       { name: "Sticky Monkeyflower",  sizes: ['1 gal'] },
       { name: "Yarrow",               sizes: ['4"'] }
     ];
+    /* Local plant photos: assets/plants/<plant-id>.jpg (id = slug of the common name, e.g. "white-sage").
+       A Photo column in the inventory sheet overrides this. Credits: assets/plants/CREDITS.md */
+    var PLANT_PHOTOS = ["black-sage", "california-buckwheat", "california-encelia", "california-poppy", "desert-marigold", "matilija-poppy", "morning-glory", "narrow-leaf-milkweed", "rock-monkeyflower", "scarlet-bugler", "showy-milkweed", "showy-penstemon", "sticky-monkeyflower", "sugarbush", "toyon", "white-sage", "woolly-blue-curls", "woollypod-milkweed", "yarrow", "yucca"];
     var ORDER_EMAIL = "hello@inlandempirenativenursery.com"; // mailto fallback only if the order endpoint fails
   </script>
   <script>
@@ -247,7 +250,9 @@
           var ps = pstate(p), card = el("article", { class: "card" + (ps === "out" ? " sold-out" : ""), "aria-labelledby": p.id + "-name" });
           card.dataset.id = p.id;
           var ph = el("div", { class: "ph" });
-          if (p.image) ph.appendChild(el("img", { src: p.image, alt: p.name, loading: "lazy" })); else { ph.textContent = "Photo coming soon"; ph.setAttribute("aria-hidden", "true"); }
+          var src = p.image || (PLANT_PHOTOS.indexOf(p.id) >= 0 ? "assets/plants/" + p.id + ".jpg" : "");
+          function noPhoto() { ph.textContent = "Photo coming soon"; ph.setAttribute("aria-hidden", "true"); }
+          if (src) { var im = el("img", { src: src, alt: p.name, loading: "lazy", decoding: "async", width: "800", height: "600" }); im.onerror = noPhoto; ph.appendChild(im); } else noPhoto();
           card.appendChild(ph);
           var b = el("div", { class: "body" });
           b.appendChild(el("h3", { id: p.id + "-name" }, p.name));

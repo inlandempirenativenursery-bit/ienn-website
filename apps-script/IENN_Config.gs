@@ -47,6 +47,8 @@ var IENN_STATUSES = ['New', 'Claimed', 'Paid', 'Picked up', 'Cancelled'];
 var SUBMISSION_DATE_HEADERS = ['week', 'week of', 'week start', 'date', 'timestamp', 'submitted', 'submitted at'];
 var CATALOG_ID_HEADERS = ['id', 'plant id', 'plantid'];
 var CATALOG_NAME_HEADERS = ['name', 'common name', 'plant', 'plant name'];
+/* Optional Catalog column: full image URL (or site-relative path) that overrides the website's assets/plants/<id>.jpg. Leave blank to use the local photo. */
+var CATALOG_PHOTO_HEADERS = ['photo', 'photo url', 'image', 'image url', 'picture'];
 
 /** Prices by size (confirmed by Eric). Keys are the size names the existing tool uses. */
 var IENN_SIZES = [
