@@ -98,11 +98,11 @@ var PROMO_TITLE_HEADERS = ['title', 'name'];
 var PROMO_MESSAGE_HEADERS = ['message', 'text', 'body'];
 var PROMO_START_HEADERS = ['start date', 'start', 'from'];
 var PROMO_END_HEADERS = ['end date', 'end', 'until', 'to'];
-var PROMO_DISCOUNT_HEADERS = ['discount note', 'discount', 'note'];
-var PROMO_BOTTOM_HEADERS = ['bottom info', 'footer', 'info', 'details', 'fine print']; // optional footer strip on the banner; blank = Discount note + 'Ends <date>' + pickup fine print
-var IENN_PROMO_HEADERS = ['Active', 'Title', 'Message', 'Start date', 'End date', 'Discount note', 'Bottom info'];
+var PROMO_DISCOUNT_HEADERS = ['highlight', 'discount note', 'discount', 'note']; // 'Highlight' (old 'Discount note' header still accepted). Team prefers no discounts/percentages.
+var PROMO_BOTTOM_HEADERS = ['bottom info', 'footer', 'info', 'details', 'fine print']; // optional footer strip on the banner; blank = 'Ends <date>' + pickup fine print (+ Highlight only if filled in)
+var IENN_PROMO_HEADERS = ['Active', 'Title', 'Message', 'Start date', 'End date', 'Highlight', 'Bottom info'];
 var IENN_PROMO_EXAMPLES = [
-  ['No', 'Fall Sale', 'EXAMPLE: Fall is the best time to plant natives. Reserve yours now.', '2026-11-01', '2026-11-30', 'e.g. describe the discount here', 'EXAMPLE: 15% off 1 gal plants · Ends Nov 30\nPickup Saturdays 10 AM–2 PM in Fontana'],
-  ['No', 'Spring Sale', 'EXAMPLE: Spring color is here. Reserve your plants for Saturday pickup.', '2027-03-01', '2027-04-30', '', ''],
-  ['No', 'Summer Sale', 'EXAMPLE: Summer picks for hot, dry gardens.', '2027-06-01', '2027-07-31', '', '']
+  ['No', 'Fall Sale', 'EXAMPLE: Native plants are available now. Fall is the best time to get plants started, with cool weather and winter rains to help roots settle in.', '2026-11-01', '2026-11-30', '', 'Ends Nov 30 · Pickup Saturdays 10 AM–2 PM in Fontana · Taxes included\nGrand Terrace pickup available upon request. Other pickup times available case by case upon request.'],
+  ['No', 'Spring Sale', 'EXAMPLE: Spring is the last window to get plants in before summer heat. Reserve yours for Saturday pickup.', '2027-03-01', '2027-04-30', '', ''],
+  ['No', 'Summer Sale', 'EXAMPLE: Summer is a great time to plan your fall garden. Browse what we grow and reserve tough, water-wise natives for Saturday pickup.', '2027-06-01', '2027-07-31', '', '']
 ];

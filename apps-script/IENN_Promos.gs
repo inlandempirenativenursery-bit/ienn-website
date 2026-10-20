@@ -24,7 +24,7 @@ function iennPickPromo_(values, today) {
     var s = iennPromoDay_(get('s')), e = iennPromoDay_(get('e'));
     if (s === null || e === null) continue;
     if ((s && today < s) || (e && today > e)) continue;
-    return { title: title, message: String(get('m') || '').trim(), start: s, end: e, discountNote: String(get('d') || '').trim(), bottomInfo: String(get('b') || '').trim() };
+    return { title: title, message: String(get('m') || '').trim(), start: s, end: e, highlight: String(get('d') || '').trim(), discountNote: String(get('d') || '').trim(), bottomInfo: String(get('b') || '').trim() };
   }
   return null;
 }
