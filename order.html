@@ -268,6 +268,10 @@
           if (p) p.inStock = /^(true|yes|1|y)$/i.test((c[1] || "").trim());
         });
       }
+      // Prefill from home-page cart: order.html?blue-pyramid=2&yarrow=1 (sets qty for the plant's default size)
+      var params = new URLSearchParams(location.search), pre = false;
+      PLANTS.forEach(function (p) { if (params.has(p.id)) { var q = parseInt(params.get(p.id), 10); if (q > 0) { cart[p.id + "|" + p.sizes[0]] = Math.min(q, 99); pre = true; } } });
+      if (pre) save();
       if (STOCK_CSV_URL) fetch(STOCK_CSV_URL).then(function (r) { if (!r.ok) throw 0; return r.text(); }).then(function (t) { applyCsv(t); render(); }).catch(function () {});
       render();
     })();
