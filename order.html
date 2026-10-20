@@ -110,6 +110,36 @@
     input[type="text"], input[type="email"], input[type="tel"], textarea { min-height: 44px; }
     input:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--lilac); outline-offset: 2px; }
     .submit-btn { min-height: 48px; }
+    /* Shop flow (reuses existing palette) */
+    .plants .plant-card { display: grid; grid-template-columns: 88px 1fr; align-items: start; }
+    .plant-img { width: 88px; height: 88px; border-radius: 8px; background: #e8e8e8; display: flex; align-items: center; justify-content: center; color: #999; font-size: 0.8rem; }
+    .plant-img img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+    .plant-card .plant-info p { font-size: 0.9rem; color: #555; margin: 0.15rem 0 0.4rem; }
+    .badge { display: inline-block; font-size: 0.8rem; font-weight: 700; padding: 0.15rem 0.55rem; border-radius: 999px; }
+    .badge.in { background: #e3efe1; color: #2f6b2f; border: 1px solid #8fbf8a; }
+    .badge.low { background: #e3efe1; color: #2f6b2f; border: 1px solid #8fbf8a; }
+    .badge.out { background: #eee; color: #666; border: 1px solid #ccc; }
+    .plant-card.oos { opacity: 0.65; }
+    .buy { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+    .sizes { display: flex; gap: 0.4rem; flex-wrap: wrap; border: 0; }
+    .sizes label { margin: 0; font-weight: 600; font-size: 0.9rem; }
+    .sizes input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+    .sizes span { display: inline-flex; align-items: center; min-height: 44px; padding: 0 0.8rem; border: 1px solid #ccc; border-radius: 10px; cursor: pointer; background: #fff; }
+    .sizes input:checked + span { border-color: var(--sage); background: #f3f6f2; color: var(--sage-dark); box-shadow: inset 0 0 0 1px var(--sage); }
+    .sizes input:disabled + span { color: #aaa; cursor: default; text-decoration: line-through; }
+    .sizes input:focus-visible + span { outline: 3px solid var(--lilac); outline-offset: 2px; }
+    .add-btn { min-height: 44px; min-width: 88px; padding: 0 1rem; border: none; border-radius: 10px; background: var(--red); color: #fff; font-weight: 700; font-size: 1rem; cursor: pointer; }
+    .add-btn:hover { background: #a93226; }
+    .add-btn:disabled { background: #ccc; color: #666; cursor: not-allowed; }
+    .summary li { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; }
+    .remove-btn { min-height: 44px; min-width: 44px; border: 1px solid #ccc; border-radius: 8px; background: var(--cream); color: var(--sage-dark); cursor: pointer; font-size: 0.9rem; padding: 0 0.6rem; }
+    .summary ul { list-style: none; padding-left: 0; }
+    .cartbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom)); background: var(--sage-dark); color: #fff; font-weight: 700; }
+    .cartbar[hidden] { display: none; }
+    .cartbar-btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.1rem; background: var(--red); color: #fff; border-radius: 8px; text-decoration: none; }
+    body.has-cart { padding-bottom: 90px; }
+    input.invalid { border-color: var(--red); }
+    @media (min-width: 900px) { .cartbar { left: auto; right: 1rem; bottom: 1rem; border-radius: 10px; } }
     @media (min-width: 640px) { h1 { font-size: 1.8rem; } }
   </style>
 </head>
@@ -145,62 +175,15 @@
     </ul>
   </section>
 
-  <h2>1. Choose your plants</h2>
-  <p class="hint">Tap + or − to set how many of each you'd like.</p>
-  <div class="plants" id="plant-list">
-    <div class="plant-card" data-plant="Blue Pyramid Cypress">
-      <div class="plant-info">
-        <h3 id="blue-pyramid-name">Blue Pyramid Cypress</h3>
-        <div class="plant-meta">1-gallon • In stock</div>
-      </div>
-      <div class="stepper" role="group" aria-labelledby="blue-pyramid-name">
-        <button type="button" class="minus" aria-label="Remove one Blue Pyramid Cypress">&minus;</button>
-        <label class="sr-only" for="qty-blue-pyramid">Quantity of Blue Pyramid Cypress</label>
-        <input type="number" id="qty-blue-pyramid" name="blue-pyramid" min="0" max="99" value="0" inputmode="numeric">
-        <button type="button" class="plus" aria-label="Add one Blue Pyramid Cypress">+</button>
-      </div>
-    </div>
-    <div class="plant-card" data-plant="Woolly Blue Curls">
-      <div class="plant-info">
-        <h3 id="woolly-blue-name">Woolly Blue Curls</h3>
-        <div class="plant-meta">4-inch • Limited</div>
-      </div>
-      <div class="stepper" role="group" aria-labelledby="woolly-blue-name">
-        <button type="button" class="minus" aria-label="Remove one Woolly Blue Curls">&minus;</button>
-        <label class="sr-only" for="qty-woolly-blue">Quantity of Woolly Blue Curls</label>
-        <input type="number" id="qty-woolly-blue" name="woolly-blue" min="0" max="99" value="0" inputmode="numeric">
-        <button type="button" class="plus" aria-label="Add one Woolly Blue Curls">+</button>
-      </div>
-    </div>
-    <div class="plant-card" data-plant="Sticky Monkeyflower">
-      <div class="plant-info">
-        <h3 id="monkeyflower-name">Sticky Monkeyflower</h3>
-        <div class="plant-meta">1-gallon • In stock</div>
-      </div>
-      <div class="stepper" role="group" aria-labelledby="monkeyflower-name">
-        <button type="button" class="minus" aria-label="Remove one Sticky Monkeyflower">&minus;</button>
-        <label class="sr-only" for="qty-monkeyflower">Quantity of Sticky Monkeyflower</label>
-        <input type="number" id="qty-monkeyflower" name="monkeyflower" min="0" max="99" value="0" inputmode="numeric">
-        <button type="button" class="plus" aria-label="Add one Sticky Monkeyflower">+</button>
-      </div>
-    </div>
-    <div class="plant-card" data-plant="Yarrow">
-      <div class="plant-info">
-        <h3 id="yarrow-name">Yarrow</h3>
-        <div class="plant-meta">4-inch • In stock</div>
-      </div>
-      <div class="stepper" role="group" aria-labelledby="yarrow-name">
-        <button type="button" class="minus" aria-label="Remove one Yarrow">&minus;</button>
-        <label class="sr-only" for="qty-yarrow">Quantity of Yarrow</label>
-        <input type="number" id="qty-yarrow" name="yarrow" min="0" max="99" value="0" inputmode="numeric">
-        <button type="button" class="plus" aria-label="Add one Yarrow">+</button>
-      </div>
-    </div>
+  <h2 id="shop">1. Choose your plants</h2>
+  <p class="hint">Pick a size, set how many, then tap <b>Add</b>. 1-gallon is our best value for most yards.</p>
+  <div class="plants" id="plant-list" aria-live="polite">
+    <noscript><p class="hint">Turn on JavaScript to use the plant picker, or email your list to hello@inlandempirenativenursery.com.</p></noscript>
   </div>
 
-  <section class="summary" aria-labelledby="summary-title">
-    <h2 id="summary-title">Your selection</h2>
-    <div id="summary-body" aria-live="polite"><p class="empty">No plants selected yet.</p></div>
+  <section class="summary" id="cart" aria-labelledby="summary-title">
+    <h2 id="summary-title">Your order</h2>
+    <div id="summary-body" aria-live="polite"><p class="empty">No plants added yet.</p></div>
   </section>
 
   <h2>2. Your details</h2>
@@ -220,10 +203,24 @@
     <p class="fine"><strong>Privacy:</strong> We use your name, email, phone, and notes only to confirm and fulfill your order and to contact you about pickup. We don't sell or share your personal information. To see, correct, or delete your information, email <a href="mailto:hello@inlandempirenativenursery.com">hello@inlandempirenativenursery.com</a>. [TODO: owner to review; add a full privacy policy page.]</p>
     <p class="fine">Submitting opens your email app with the order filled in. Press Send there to finish. If nothing opens, email us at <a href="mailto:hello@inlandempirenativenursery.com">hello@inlandempirenativenursery.com</a>.</p>
 
-    <p class="error" id="qty-error" role="alert">Please choose at least one plant above.</p>
+    <p class="error" id="qty-error" role="alert">Please add at least one plant above.</p>
+    <p class="error" id="form-error" role="alert">Please enter your name and a valid email.</p>
     <button type="submit" class="submit-btn">Submit Order Request</button>
   </form>
+
+  <section class="notice confirm" id="confirm" aria-labelledby="confirm-title" tabindex="-1" hidden>
+    <h2 id="confirm-title">Order request ready ✅</h2>
+    <p>Your email app should open with this order filled in. <b>Press Send there to finish.</b> We'll reply to confirm stock, your total, and pickup details.</p>
+    <div id="confirm-body"></div>
+    <p class="fine">Email didn't open? Send this list to <a href="mailto:hello@inlandempirenativenursery.com">hello@inlandempirenativenursery.com</a>.</p>
+    <button type="button" class="submit-btn" id="new-order">Start a new order</button>
+  </section>
 </main>
+
+  <div class="cartbar" id="cartbar" hidden>
+    <span id="cartbar-count">0 plants</span>
+    <a href="#cart" class="cartbar-btn">Review order</a>
+  </div>
 
   <footer>
     Inland Empire Native Nursery • Pickup-only • Fontana / Grand Terrace area<br>
@@ -233,45 +230,142 @@
   </footer>
 
   <script>
+    /* ===== PLANT LIST: edit stock here (one place) =====
+       stock = how many on hand for that size. 0 = Out of stock (Add is disabled).
+       img = optional photo path, e.g. "images/yarrow.jpg"; leave "" for the placeholder.
+       [TODO: hook this list to a Google Sheet (published CSV) so stock updates without editing code.]
+       [TODO: add prices once confirmed; none are shown on purpose.] */
+    var PLANTS = [
+      { id: 'blue-pyramid', name: 'Blue Pyramid Cypress', note: 'Upright evergreen screen. [TODO: confirm — Arizona cypress, not a CA native]', img: '',
+        sizes: [{ size: '1-gallon', stock: 12 }] },
+      { id: 'woolly-blue', name: 'Woolly Blue Curls', note: 'Fragrant purple blooms, loves sun and dry soil.', img: '',
+        sizes: [{ size: '4-inch', stock: 3 }, { size: '1-gallon', stock: 0 }] },
+      { id: 'monkeyflower', name: 'Sticky Monkeyflower', note: 'Orange blooms spring to summer; hummingbird favorite.', img: '',
+        sizes: [{ size: '1-gallon', stock: 15 }] },
+      { id: 'yarrow', name: 'Yarrow', note: 'Tough, low-water groundcover with flat white flowers.', img: '',
+        sizes: [{ size: '4-inch', stock: 20 }, { size: '1-gallon', stock: 8 }] }
+    ];
+    var LOW_STOCK = 5;
+  </script>
+  <script>
     (function () {
-      var cards = Array.from(document.querySelectorAll('.plant-card'));
+      var KEY = 'ienn-cart-v1';
+      var list = document.getElementById('plant-list');
       var summary = document.getElementById('summary-body');
-      function clamp(v) { v = parseInt(v, 10); return isNaN(v) || v < 0 ? 0 : Math.min(v, 99); }
-      function update() {
-        var items = [];
-        cards.forEach(function (card) {
-          var input = card.querySelector('input');
-          var q = clamp(input.value); input.value = q;
-          card.classList.toggle('selected', q > 0);
-          card.querySelector('.minus').disabled = q === 0;
-          if (q > 0) items.push({ name: card.dataset.plant, q: q });
-        });
-        if (!items.length) { summary.innerHTML = '<p class="empty">No plants selected yet.</p>'; }
-        else {
-          var total = items.reduce(function (a, i) { return a + i.q; }, 0);
-          var ul = document.createElement('ul');
-          items.forEach(function (i) { var li = document.createElement('li'); li.textContent = i.q + ' × ' + i.name; ul.appendChild(li); });
-          var p = document.createElement('p'); p.textContent = total + (total === 1 ? ' plant' : ' plants') + ' total';
-          p.style.fontWeight = '600'; p.style.marginTop = '0.5rem';
-          summary.innerHTML = ''; summary.appendChild(ul); summary.appendChild(p);
-          document.getElementById('qty-error').style.display = 'none';
-        }
-        return items;
+      var bar = document.getElementById('cartbar');
+      var cart = [];
+      try { cart = JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { cart = []; }
+      function stockOf(id, size) {
+        var p = PLANTS.filter(function (x) { return x.id === id; })[0]; if (!p) return 0;
+        var s = p.sizes.filter(function (x) { return x.size === size; })[0]; return s ? s.stock : 0;
       }
-      cards.forEach(function (card) {
-        var input = card.querySelector('input');
-        card.querySelector('.plus').addEventListener('click', function () { input.value = clamp(input.value) + 1; update(); });
-        card.querySelector('.minus').addEventListener('click', function () { input.value = clamp(input.value) - 1; update(); });
-        input.addEventListener('input', update);
+      cart = cart.filter(function (i) { return stockOf(i.id, i.size) > 0; });
+      function save() { try { localStorage.setItem(KEY, JSON.stringify(cart)); } catch (e) {} }
+      function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+      function clamp(v, max) { v = parseInt(v, 10); return isNaN(v) || v < 1 ? 1 : Math.min(v, max); }
+
+      PLANTS.forEach(function (p) {
+        var total = p.sizes.reduce(function (a, s) { return a + s.stock; }, 0);
+        var card = el('div', 'plant-card' + (total ? '' : ' oos'));
+        var img = el('div', 'plant-img');
+        if (p.img) { var im = document.createElement('img'); im.src = p.img; im.alt = p.name; im.loading = 'lazy'; img.appendChild(im); }
+        else { img.textContent = 'Photo'; img.setAttribute('aria-hidden', 'true'); }
+        var info = el('div', 'plant-info');
+        var h = el('h3', null, p.name); h.id = p.id + '-name';
+        info.appendChild(h); info.appendChild(el('p', null, p.note));
+        var badge = el('span', 'badge');
+        info.appendChild(badge);
+        var buy = el('div', 'buy');
+        var fs = el('fieldset', 'sizes'); var lg = el('legend', 'sr-only', 'Size for ' + p.name); fs.appendChild(lg);
+        var first = null;
+        p.sizes.forEach(function (s) {
+          var lab = document.createElement('label'); var r = document.createElement('input');
+          r.type = 'radio'; r.name = 'size-' + p.id; r.value = s.size; r.disabled = s.stock <= 0;
+          if (!r.disabled && (!first || s.size === '1-gallon')) first = r;
+          lab.appendChild(r); lab.appendChild(el('span', null, s.size + (s.stock <= 0 ? ' (out)' : ''))); fs.appendChild(lab);
+        });
+        if (first) first.checked = true;
+        var step = el('div', 'stepper'); step.setAttribute('role', 'group'); step.setAttribute('aria-label', 'Quantity of ' + p.name);
+        var minus = el('button', 'minus', '\u2212'); minus.type = 'button'; minus.setAttribute('aria-label', 'One fewer ' + p.name);
+        var q = document.createElement('input'); q.type = 'number'; q.min = '1'; q.value = '1'; q.inputMode = 'numeric'; q.setAttribute('aria-label', 'Quantity of ' + p.name);
+        var plus = el('button', 'plus', '+'); plus.type = 'button'; plus.setAttribute('aria-label', 'One more ' + p.name);
+        step.appendChild(minus); step.appendChild(q); step.appendChild(plus);
+        var add = el('button', 'add-btn', total ? 'Add' : 'Out of stock'); add.type = 'button';
+        buy.appendChild(fs); buy.appendChild(step); buy.appendChild(add);
+        card.appendChild(img); card.appendChild(info); card.appendChild(buy);
+        list.appendChild(card);
+
+        function sel() { var c = fs.querySelector('input:checked'); return c ? c.value : null; }
+        function refresh() {
+          var size = sel(); var st = size ? stockOf(p.id, size) : 0;
+          var inCart = cart.filter(function (i) { return i.id === p.id && i.size === size; }).reduce(function (a, i) { return a + i.qty; }, 0);
+          var left = Math.max(st - inCart, 0);
+          if (!total) { badge.className = 'badge out'; badge.textContent = 'Out of stock'; }
+          else if (st > 0 && st <= LOW_STOCK) { badge.className = 'badge low'; badge.textContent = 'Get yours now \u2022 only ' + st + ' left'; }
+          else { badge.className = 'badge in'; badge.textContent = 'Available'; }
+          q.max = String(Math.max(left, 1)); q.value = clamp(q.value, Math.max(left, 1));
+          minus.disabled = !left || +q.value <= 1; plus.disabled = !left || +q.value >= left; q.disabled = !left;
+          add.disabled = !left; add.textContent = !total ? 'Out of stock' : (left ? 'Add' : 'Max added');
+        }
+        fs.addEventListener('change', function () { q.value = 1; refresh(); });
+        minus.addEventListener('click', function () { q.value = +q.value - 1; refresh(); });
+        plus.addEventListener('click', function () { q.value = +q.value + 1; refresh(); });
+        q.addEventListener('change', refresh);
+        add.addEventListener('click', function () {
+          var size = sel(); if (!size || add.disabled) return;
+          var n = clamp(q.value, +q.max);
+          var ex = cart.filter(function (i) { return i.id === p.id && i.size === size; })[0];
+          if (ex) ex.qty += n; else cart.push({ id: p.id, name: p.name, size: size, qty: n });
+          save(); q.value = 1; render();
+          add.textContent = 'Added \u2713'; setTimeout(refresh, 900);
+        });
+        p.refresh = refresh;
       });
-      update();
-      document.getElementById('order-form').addEventListener('submit', function (e) {
-        var items = update();
-        if (!items.length) { e.preventDefault(); var err = document.getElementById('qty-error'); err.style.display = 'block'; err.scrollIntoView({ block: 'center' }); return; }
+
+      function count() { return cart.reduce(function (a, i) { return a + i.qty; }, 0); }
+      function render() {
+        PLANTS.forEach(function (p) { p.refresh && p.refresh(); });
+        var n = count();
+        bar.hidden = !n; document.body.classList.toggle('has-cart', !!n);
+        document.getElementById('cartbar-count').textContent = n + (n === 1 ? ' plant' : ' plants') + ' in order';
+        summary.innerHTML = '';
+        if (!n) { summary.appendChild(el('p', 'empty', 'No plants added yet.')); return; }
+        var ul = el('ul');
+        cart.forEach(function (i, idx) {
+          var li = el('li'); li.appendChild(el('span', null, i.qty + ' \u00d7 ' + i.name + ' (' + i.size + ')'));
+          var rm = el('button', 'remove-btn', 'Remove'); rm.type = 'button'; rm.setAttribute('aria-label', 'Remove ' + i.name + ' ' + i.size);
+          rm.addEventListener('click', function () { cart.splice(idx, 1); save(); render(); });
+          li.appendChild(rm); ul.appendChild(li);
+        });
+        summary.appendChild(ul);
+        var t = el('p', null, n + (n === 1 ? ' plant' : ' plants') + ' total'); t.style.fontWeight = '600'; summary.appendChild(t);
+        document.getElementById('qty-error').style.display = 'none';
+      }
+      render();
+
+      var form = document.getElementById('order-form');
+      form.setAttribute('novalidate', '');
+      form.addEventListener('submit', function (e) {
+        var name = document.getElementById('name'), email = document.getElementById('email');
+        var okName = name.value.trim().length > 0, okEmail = email.checkValidity() && email.value.trim().length > 0;
+        name.classList.toggle('invalid', !okName); email.classList.toggle('invalid', !okEmail);
+        name.setAttribute('aria-invalid', String(!okName)); email.setAttribute('aria-invalid', String(!okEmail));
+        if (!count()) { e.preventDefault(); var err = document.getElementById('qty-error'); err.style.display = 'block'; err.scrollIntoView({ block: 'center' }); return; }
+        if (!okName || !okEmail) { e.preventDefault(); document.getElementById('form-error').style.display = 'block'; (okName ? email : name).focus(); return; }
+        document.getElementById('form-error').style.display = 'none';
+        var lines = cart.map(function (i) { return i.name + ' (' + i.size + '): ' + i.qty; });
         var notes = document.getElementById('notes');
-        var list = items.map(function (i) { return i.name + ': ' + i.q; }).join(', ');
-        notes.value = notes.value.replace(/\n*Requested quantities: .*$/, '');
-        notes.value = (notes.value ? notes.value + '\n\n' : '') + 'Requested quantities: ' + list;
+        notes.value = notes.value.replace(/\n*Requested quantities: [\s\S]*$/, '');
+        notes.value = (notes.value ? notes.value + '\n\n' : '') + 'Requested quantities: ' + lines.join(', ');
+        /* Delivery method unchanged: the form's mailto action. See TESTING.md for alternatives. */
+        var cb = document.getElementById('confirm-body'); cb.innerHTML = '';
+        var ul = el('ul'); lines.forEach(function (l) { ul.appendChild(el('li', null, l)); }); cb.appendChild(ul);
+        var c = document.getElementById('confirm'); c.hidden = false;
+        setTimeout(function () { c.scrollIntoView({ block: 'start' }); c.focus(); }, 50);
+      });
+      document.getElementById('new-order').addEventListener('click', function () {
+        cart = []; save(); form.reset(); document.getElementById('confirm').hidden = true; render();
+        document.getElementById('shop').scrollIntoView({ block: 'start' });
       });
     })();
   </script>
