@@ -1,0 +1,257 @@
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inland Empire Native Nursery | IENN</title>
+  <link rel="icon" href="images/logo-circle-lilac.jpg" type="image/jpeg">
+  <style>
+    :root {
+      --lilac: #d4c4e0;
+      --sage: #6b7c6a;
+      --sage-dark: #4a5a4a;
+      --cream: #f8f6f3;
+      --red: #c0392b;
+      --text: #2c2c2c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
+      line-height: 1.5;
+      background: #fff;
+      padding-bottom: 80px;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      background: #fff;
+      border-bottom: 1px solid #eee;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 1rem;
+    }
+    .logo { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: inherit; }
+    .logo img { height: 42px; width: auto; }
+    .logo-text { font-weight: 700; font-size: 1.05rem; color: var(--sage-dark); }
+    .logo-sub { font-size: 0.65rem; color: var(--sage); letter-spacing: 0.4px; }
+    .order-btn {
+      background: var(--red);
+      color: #fff;
+      border: none;
+      padding: 0.7rem 1.1rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .order-btn:hover { background: #a93226; }
+    .hero {
+      background: linear-gradient(180deg, var(--cream) 0%, #fff 100%);
+      padding: 2.5rem 1.25rem 2rem;
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: 1.75rem;
+      color: var(--sage-dark);
+      margin-bottom: 0.75rem;
+      line-height: 1.25;
+    }
+    .hero p {
+      font-size: 1.05rem;
+      margin: 0 auto 1.25rem;
+      color: #555;
+      max-width: 90%;
+    }
+    section { padding: 2rem 1.25rem; }
+    h2 { color: var(--sage-dark); margin-bottom: 0.75rem; font-size: 1.4rem; }
+    .problem, .guide { margin-bottom: 1.5rem; }
+    .plan-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    .step {
+      background: var(--cream);
+      padding: 1rem;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .step-number {
+      background: var(--sage);
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .plants {
+      background: #fafafa;
+    }
+    .plant-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    .plant-card {
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #eee;
+      display: flex;
+      flex-direction: column;
+    }
+    .plant-img {
+      height: 110px;
+      background: #e8e8e8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      font-size: 0.8rem;
+    }
+    .plant-info { padding: 0.6rem 0.7rem 0.8rem; }
+    .plant-info h3 { font-size: 0.95rem; margin-bottom: 0.2rem; color: var(--sage-dark); }
+    .plant-meta { font-size: 0.8rem; color: #666; }
+    .stock { font-size: 0.75rem; color: var(--sage); margin-top: 0.25rem; font-weight: 600; }
+    .cta-section {
+      background: var(--lilac);
+      text-align: center;
+      padding: 2.5rem 1.25rem;
+    }
+    footer {
+      background: var(--sage-dark);
+      color: #fff;
+      text-align: center;
+      padding: 1.5rem 1rem;
+      font-size: 0.85rem;
+    }
+    footer a { color: #ddd; }
+    @media (min-width: 700px) {
+      .hero h1 { font-size: 2.2rem; }
+      .plant-grid { grid-template-columns: repeat(3, 1fr); }
+      section { max-width: 800px; margin: 0 auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="#" class="logo">
+      <img src="images/logo-circle-lilac.jpg" alt="IENN logo">
+      <div>
+        <div class="logo-text">IENN</div>
+        <div class="logo-sub">INLAND EMPIRE NATIVE NURSERY</div>
+      </div>
+    </a>
+    <a href="https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec?view=customer" class="order-btn">Place Order Now</a>
+  </header>
+
+  <section class="hero">
+    <h1>Locally grown California native plants for the Inland Empire</h1>
+    <p>Healthy, climate-adapted plants ready for pickup. No shipping — just plants that thrive here.</p>
+    <a href="https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec?view=customer" class="order-btn">Place Order Now</a>
+  </section>
+
+  <section class="plants" id="plants">
+    <h2>Available now</h2>
+    <p style="font-size:0.95rem; color:#555; margin-bottom:0.5rem;">Updated weekly from our nursery counts.</p>
+    <div class="plant-grid">
+      <div class="plant-card">
+        <div class="plant-img">Photo</div>
+        <div class="plant-info">
+          <h3>Blue Pyramid Cypress</h3>
+          <div class="plant-meta">1-gallon</div>
+          <div class="stock">In stock</div>
+        </div>
+      </div>
+      <div class="plant-card">
+        <div class="plant-img">Photo</div>
+        <div class="plant-info">
+          <h3>Woolly Blue Curls</h3>
+          <div class="plant-meta">4-inch</div>
+          <div class="stock">Limited</div>
+        </div>
+      </div>
+      <div class="plant-card">
+        <div class="plant-img">Photo</div>
+        <div class="plant-info">
+          <h3>Sticky Monkeyflower</h3>
+          <div class="plant-meta">1-gallon</div>
+          <div class="stock">In stock</div>
+        </div>
+      </div>
+      <div class="plant-card">
+        <div class="plant-img">Photo</div>
+        <div class="plant-info">
+          <h3>Yarrow</h3>
+          <div class="plant-meta">4-inch</div>
+          <div class="stock">In stock</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="problem">
+    <h2>Tired of plants that don’t make it?</h2>
+    <p>Big-box plants often fail in our hot, dry Inland Empire climate. You waste money, water, and time on plants that were never meant for this place.</p>
+  </section>
+
+  <section class="guide">
+    <h2>We’re local growers who get it</h2>
+    <p>IENN focuses on California native plants suited to the Inland Empire. We grow them so you can plant with confidence.</p>
+    <p style="margin-top:0.75rem; font-style:italic; color:#666; font-size:0.9rem;">Certified arborist &amp; field botanist background • Pickup-only • Fontana / Grand Terrace area</p>
+  </section>
+
+  <section class="plan">
+    <h2>Simple 3-step plan</h2>
+    <div class="plan-steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <div><strong>Browse</strong><br>See what’s available</div>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <div><strong>Order</strong><br>Place your order online</div>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <div><strong>Pickup</strong><br>Collect in the Fontana area</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="success">
+    <h2>What success looks like</h2>
+    <p>Plants that actually thrive in the Inland Empire — less water, fewer replacements, and a landscape that fits the place.</p>
+  </section>
+
+  <section class="failure">
+    <h2>Skip the frustration</h2>
+    <p>Avoid dead plants, high water bills, and the cycle of replacing things that were never a good fit.</p>
+  </section>
+
+  <section class="cta-section" id="order">
+    <h2 style="color:var(--sage-dark);">Ready to plant something that works here?</h2>
+    <p style="margin:0.75rem 0 1.25rem;">Place your order and pick up locally.</p>
+    <a href="https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec?view=customer" class="order-btn">Place Order Now</a>
+  </section>
+
+  <footer>
+    <p>Inland Empire Native Nursery • Pickup-only • Fontana / Grand Terrace area</p>
+    <p style="margin-top:0.5rem;"><a href="mailto:hello@inlandempirenativenursery.com">Contact</a> • inlandempirenativenursery.com</p>
+  </footer>
+</body></html>
