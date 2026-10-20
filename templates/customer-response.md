@@ -10,7 +10,7 @@ Hi {{first name}},
 Thanks for your order with Inland Empire Native Nursery! Here are the details for order #{{Invoice no}}:
 
 {{Items — qty x plant (size) @ price = line total}}
-Total: ${{Total}} (sales tax included)
+Total: ${{Total}} (taxes included)
 
 Payment: {{Paid? "Paid (Cash/Zelle) — thank you!" : "Not yet paid. We accept cash or Zelle at pickup."}}
 Fulfillment: {{Saturday pickup in Fontana / Grand Terrace delivery request}}
@@ -22,7 +22,8 @@ Your notes: {{Notes}}
 Our response: {{Our response}}
 
 See you soon,
-Inland Empire Native Nursery
+Andrew — Inland Empire Native Nursery
+Call/text (909) 609-9373
 
 ---
-After sending (Web Orders tab): put your name in **Claimed by**, fill **Pickup address sent**, **Our response**, set **Status** (Confirmed / Picked up), and **Paid** / **Payment method** when paid.
+Andrew handles web orders (Claimed by defaults to Andrew; change it if someone covers). After sending, fill **Pickup address sent**, **Our response**, set **Status** (Confirmed / Picked up), and **Paid** / **Payment method** when paid.

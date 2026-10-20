@@ -139,7 +139,7 @@
     // Existing IENN Apps Script web-app /exec URL (with apps-script/ienn-api.gs installed).
     // Inventory = EXEC_URL?api=inventory, orders = EXEC_URL?api=order. Leave "" until deployed (orders then use mailto).
     EXEC_URL: "",                             // e.g. "https://script.google.com/macros/s/XXXX/exec"
-    // Prices by size only (keep in sync with CFG_IENN.SIZES in apps-script/ienn-api.gs). No tax shown on the site.
+    // Prices by size only (keep in sync with CFG_IENN.SIZES in apps-script/ienn-api.gs). Prices are tax-included; "Taxes included" appears only next to totals.
     SIZES: [
       { key: '2"', label: "2-inch", price: 3, aliases: ["2 in", "2-inch", "2 inch"] },
       { key: '4"', label: "4-inch", price: 6, aliases: ["4 in", "4-inch", "4 inch"] },
@@ -147,7 +147,7 @@
       { key: "1 gal", label: "1-gallon", price: 15, aliases: ["1 gal", "1-gallon", "1 gallon"] }
     ],
     ORDER_EMAIL: "hello@inlandempirenativenursery.com",
-    CONTACT_TEXT: "Please call, text, or email hello@inlandempirenativenursery.com to order.",
+    CONTACT_TEXT: "Please call or text Andrew at (909) 609-9373, or email hello@inlandempirenativenursery.com, to order.",
     // Used only when the sheet has no Rank column. Others follow alphabetically.
     POPULARITY: ["White Sage", "Sticky Monkeyflower", "California Buckwheat", "Woolly Blue Curls", "Yarrow"],
     CART_KEY: "ienn-cart-v3",
@@ -218,8 +218,9 @@
       (p.inStock ? '<span class="badge in">● Available</span>' : '<span class="badge out">Sold out</span>') + '</div>' +
       (p.blurb ? '<p class="blurb">' + esc(p.blurb) + '</p>' : '') +
       '<div class="price">' + priceText(first) + '</div><span class="low"></span>' +
+      (p.sizes.some(function (z) { return z.qty === null; }) ? '<p class="help">' + esc(p.sizes.filter(function (z) { return z.qty === null; }).map(function (z) { return z.label; }).join(' & ')) + ': available on request — ask us in your order notes or call/text Andrew (909) 609-9373.</p>' : '') +
       '<div class="chips" role="group" aria-label="Size">' + p.sizes.map(function (s) {
-        return '<button type="button" class="chip" data-size="' + esc(s.size) + '" aria-pressed="' + (s === first) + '"' + (s.qty > 0 ? "" : " disabled") + '>' + esc(s.label) + (typeof s.price === "number" ? " · " + money(s.price) : "") + (s.qty > 0 ? "" : s.qty === null ? " · ask us" : " · sold out") + '</button>'; }).join("") + '</div>' +
+        return '<button type="button" class="chip" data-size="' + esc(s.size) + '" aria-pressed="' + (s === first) + '"' + (s.qty > 0 ? "" : " disabled") + '>' + esc(s.label) + (typeof s.price === "number" ? " · " + money(s.price) : "") + (s.qty > 0 ? "" : s.qty === null ? " · available on request — ask us" : " · sold out") + '</button>'; }).join("") + '</div>' +
       '<div class="buy"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease"' + (p.inStock ? "" : " disabled") + '>−</button><span class="q">1</span><button type="button" data-step="1" aria-label="Increase"' + (p.inStock ? "" : " disabled") + '>+</button></div>' +
       '<button type="button" class="add"' + (p.inStock ? "" : " disabled") + '>' + (p.inStock ? "Add — get yours now" : "Sold out") + '</button></div></div></article>';
   }
@@ -239,12 +240,12 @@
   function renderCart() {
     var n = count();
     $("#cart-count").textContent = n + (n === 1 ? " plant" : " plants");
-    $("#cart-summary").textContent = (n ? "Total " + money(subtotal()) + " • " : "") + cart.map(function (l) { return l.qty + "× " + l.name; }).join(", ");
+    $("#cart-summary").textContent = (n ? "Total " + money(subtotal()) + " (taxes included) • " : "") + cart.map(function (l) { return l.qty + "× " + l.name; }).join(", ");
     $("#cartbar").classList.toggle("show", n > 0);
     $("#cart-lines").innerHTML = n ? cart.map(function (l, i) {
       return '<div class="line"><span>' + l.qty + '× ' + esc(l.name) + ' <span class="help">(' + esc(l.label || l.size) + ')</span></span><span>' +
         (typeof l.price === "number" ? money(l.price * l.qty) : "TBD") + ' <button type="button" data-remove="' + i + '">Remove</button></span></div>'; }).join("") +
-        '<div class="line"><strong>Total</strong><strong>' + money(subtotal()) + '</strong></div><p class="help">Prices include sales tax. Pay cash or Zelle at pickup.</p>'
+        '<div class="line"><strong>Total</strong><strong>' + money(subtotal()) + '</strong></div><p class="help">Taxes included. Pay cash or Zelle at pickup.</p>'
       : '<p class="empty">Your cart is empty — add a plant above.</p>';
   }
   function addToCart(p, s, qty) {
@@ -276,7 +277,7 @@
         .then(function (j) { if (j && j.ok === false) { var er = new Error(j.message || j.error || "rejected"); er.data = j; throw er; } return { how: "sent", orderId: j && j.orderId, subtotal: j && j.subtotal }; });
     }
     var body = ["Name: " + order.name, "Phone: " + order.phone, "Email: " + order.email, "", "Plants:"]
-      .concat(order.items.map(function (l) { return "- " + l.qty + " x " + l.name + " (" + (l.label || l.size) + ")" + (typeof l.price === "number" ? " = " + money(l.price * l.qty) : ""); }), ["Total (tax included): " + money(order.subtotal)],
+      .concat(order.items.map(function (l) { return "- " + l.qty + " x " + l.name + " (" + (l.label || l.size) + ")" + (typeof l.price === "number" ? " = " + money(l.price * l.qty) : ""); }), ["Total (taxes included): " + money(order.subtotal)],
         ["", "Fulfillment: " + order.fulfillment, "", "Notes: " + (order.notes || "-")]).join("\n");
     window.location.href = "mailto:" + CONFIG.ORDER_EMAIL + "?subject=" + encodeURIComponent("Plant order - " + order.name) + "&body=" + encodeURIComponent(body);
     return Promise.resolve({ how: "mailto" });
@@ -299,7 +300,7 @@
       $("#confirm-id").textContent = res.orderId ? "Order #" + res.orderId : "";
       $("#confirm-note").textContent = res.how === "mailto" ? "Your email app should open with the order filled in — please hit Send so we receive it." : "We received your order and will be in touch soon.";
       $("#confirm-lines").innerHTML = order.items.map(function (l) { return '<div class="line"><span>' + l.qty + '× ' + esc(l.name) + ' (' + esc(l.label || l.size) + ')</span><span>' + (typeof l.price === "number" ? money(l.price * l.qty) : "TBD") + '</span></div>'; }).join("") +
-        '<div class="line"><strong>Total (tax included)</strong><strong>' + money(res.total != null ? res.total : order.subtotal) + '</strong></div>' +
+        '<div class="line"><strong>Total (taxes included)</strong><strong>' + money(res.total != null ? res.total : order.subtotal) + '</strong></div>' +
         '<p class="help" style="margin-top:0.5rem;">' + esc(order.fulfillment) + '</p>';
       cart = []; save(); renderCart(); form.reset();
       $("#shop").hidden = true; $("#confirm").hidden = false; window.scrollTo(0, 0);

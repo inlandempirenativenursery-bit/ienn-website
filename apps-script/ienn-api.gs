@@ -34,6 +34,9 @@ var CFG_IENN = {
   // submitInvoice() emails the customer a receipt when customerEmail is set. Web orders are unpaid
   // requests, so by default we DON'T pass the email (team replies with the template instead).
   SEND_CUSTOMER_RECEIPT: false,
+  ORDER_OWNER: "Andrew",                   // owns order-to-pickup; default for Web Orders "Claimed by"
+  CONTACT: "Andrew, call/text (909) 609-9373",
+  WEBSITE_ORDER_URL: "",                   // public order.html URL; used by the optional ?view=customer redirect
   LOGO_URL: "",                            // public URL of the existing logo, if any (repo is private)
   CACHE_SECONDS: 30,
   MAX_QTY_PER_LINE: 200
@@ -226,7 +229,7 @@ function ienn_placeOrder_(o) {
       if (have < n.qty) short.push({ name: n.name, size: CFG_IENN.SIZE_LABELS[n.size], requested: n.qty, available: have });
     });
     if (short.length) return { ok: false, error: "insufficient_stock", short: short,
-      message: "Not enough stock: " + short.map(function (x) { return x.name + " " + x.size + (x.available == null ? " (ask us)" : " (wanted " + x.requested + ", have " + x.available + ")"); }).join("; ") };
+      message: "Not enough stock: " + short.map(function (x) { return x.name + " " + x.size + (x.available == null ? " (available on request — ask us)" : " (wanted " + x.requested + ", have " + x.available + ")"); }).join("; ") };
 
     var lines = order.map(function (n) { return { plant: n.plant, size: n.size, qty: String(n.qty), amt: ienn_money_(n.qty * CFG_IENN.PRICES[n.size]) }; });
     var grand = order.reduce(function (t, n) { return t + n.qty * CFG_IENN.PRICES[n.size]; }, 0);
@@ -236,11 +239,11 @@ function ienn_placeOrder_(o) {
     // Web Orders row first so the team email (inside submitInvoice) can link to it.
     var ss = ienn_ss_(), wsh = ienn_sheet_(CFG_IENN.WEB_ORDERS_SHEET, IENN_WEB_HEADERS);
     wsh.appendRow(["(pending)", new Date(), s(o.name), s(o.phone, 40), s(o.email, 120), s(o.fulfillment, 120), itemsText, ienn_money_(grand),
-      s(o.notes, 2000), "New", "No", "", "", "", ""]);
+      s(o.notes, 2000), "New", "No", "", CFG_IENN.ORDER_OWNER, "", ""]);
     var row = wsh.getLastRow(), link = ss.getUrl() + "#gid=" + wsh.getSheetId() + "&range=A" + row;
     var note = ["WEBSITE ORDER — " + s(o.name) + " • " + s(o.phone, 40) + " • " + s(o.email, 120), "Fulfillment: " + s(o.fulfillment, 120),
       "Customer notes: " + (s(o.notes, 2000) || "-"), "Order details / claim: " + link,
-      "One person claims it (Web Orders → Claimed by) and replies using ienn_buildCustomerReply_."].join("\n");
+      CFG_IENN.ORDER_OWNER + " claims & handles this order (Web Orders → Claimed by) and replies using ienn_buildCustomerReply_."].join("\n");
     var data = { date: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd"), paid: "unpaid", payment: "",
       customerEmail: CFG_IENN.SEND_CUSTOMER_RECEIPT ? s(o.email, 120) : "", discType: "none", discAmt: "", note: note,
       lines: lines, subtotal: ienn_money_(sub), tax: ienn_money_(tax), grand: ienn_money_(grand), source: "website" };
@@ -252,7 +255,7 @@ function ienn_placeOrder_(o) {
       if (!invno) throw new Error("submitInvoice returned no invno");
     } catch (subErr) {
       wsh.getRange(row, 10).setValue("FAILED: " + String(subErr && subErr.message || subErr));
-      return { ok: false, error: "invoice_failed", message: "We couldn't record your order. Please call, text or email us." };
+      return { ok: false, error: "invoice_failed", message: "We couldn't record your order. Please contact " + CFG_IENN.CONTACT + "." };
     }
     wsh.getRange(row, 1).setValue(invno);
     ienn_recordSale_(lines, invno, "website", live.week);   // no-op if the patched submitInvoice already recorded it
@@ -262,7 +265,7 @@ function ienn_placeOrder_(o) {
 
 // ---------------------------------------------------------------- printable list + CSV
 function ienn_esc_(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
-function ienn_avail_(q) { return q == null ? "ask" : (q > 0 ? q + " available" : "sold out"); }
+function ienn_avail_(q) { return q == null ? "Available on request — ask us" : (q > 0 ? q + " available" : "sold out"); }
 function ienn_sorted_(inStockOnly) {
   return ienn_plants_(inStockOnly).plants.sort(function (a, b) { return (b.inStock - a.inStock) || a.name.localeCompare(b.name); });
 }
@@ -280,13 +283,13 @@ function ienn_plantListHtml_(inStockOnly) {
     "@media print{.bar{display:none}body{margin:0}}</style></head><body>" +
     (CFG_IENN.LOGO_URL ? "<img src='" + ienn_esc_(CFG_IENN.LOGO_URL) + "' alt='IENN logo' style='height:56px'>" : "") +
     "<h1>Inland Empire Native Nursery — Plant List</h1><div>Availability as of " + Utilities.formatDate(new Date(), tz, "MMM d, yyyy h:mm a") + "</div>" +
-    "<div class='info'><b>Pickup:</b> Saturdays 10 AM – 2 PM &nbsp;•&nbsp; <b>Payment:</b> Cash or Zelle &nbsp;•&nbsp; <b>Location:</b> Fontana near Sierra &amp; Baseline (~10 min from the 210) &nbsp;•&nbsp; <b>Grand Terrace:</b> delivery/service case-by-case. Prices include sales tax.</div>" +
+    "<div class='info'><b>Pickup:</b> Saturdays 10 AM – 2 PM &nbsp;•&nbsp; <b>Payment:</b> Cash or Zelle &nbsp;•&nbsp; <b>Location:</b> Fontana near Sierra &amp; Baseline (~10 min from the 210) &nbsp;•&nbsp; <b>Grand Terrace:</b> delivery/service case-by-case. Questions: " + ienn_esc_(CFG_IENN.CONTACT) + "</div>" +
     "<div class='bar'><button onclick='window.print()'>Print / Save as PDF</button>" +
     "<a target='_top' href='" + base + "?view=plantlist" + (inStockOnly ? "" : "&instock=1") + "'>" + (inStockOnly ? "Show all plants" : "In-stock only") + "</a>" +
     "<a target='_top' href='" + base + "?api=plantlist&format=csv" + (inStockOnly ? "&instock=1" : "") + "'>Download CSV</a></div>" +
     "<table><thead><tr><th>Plant</th>" + Object.keys(CFG_IENN.PRICES).map(function (s) { return "<th>" + CFG_IENN.SIZE_LABELS[s] + "</th>"; }).join("") + "</tr></thead><tbody>" +
     (rows || "<tr><td colspan='5'>No plants listed.</td></tr>") + "</tbody></table>" +
-    "<p><small>2-inch and quarter tree pot aren't in the weekly count — ask for availability.</small></p></body></html>";
+    "<p><small>2-inch and quarter tree pot: available on request — ask us (" + ienn_esc_(CFG_IENN.CONTACT) + ").</small></p></body></html>";
   return HtmlService.createHtmlOutput(html).setTitle("IENN Plant List").setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 function ienn_exportPlantListCsv_(inStockOnly) {
@@ -295,7 +298,7 @@ function ienn_exportPlantListCsv_(inStockOnly) {
   var head = ["Plant", "Botanical"].concat(sizes.map(function (s) { return CFG_IENN.SIZE_LABELS[s] + " price"; }), sizes.map(function (s) { return CFG_IENN.SIZE_LABELS[s] + " available"; }));
   var lines = [head.map(q).join(",")];
   ienn_sorted_(inStockOnly).forEach(function (p) {
-    lines.push([p.name, p.botanical].concat(p.sizes.map(function (z) { return z.price; }), p.sizes.map(function (z) { return z.qty == null ? "ask" : z.qty; })).map(q).join(","));
+    lines.push([p.name, p.botanical].concat(p.sizes.map(function (z) { return z.price; }), p.sizes.map(function (z) { return z.qty == null ? "on request" : z.qty; })).map(q).join(","));
   });
   return lines.join("\n");
 }
@@ -310,13 +313,25 @@ function ienn_buildCustomerReply_(invoiceNo) {
   var paid = /^(yes|y|true|paid)$/i.test(String(rec["Paid"])), addr = String(rec["Pickup address sent"] || "").trim();
   var text = ["Hi " + String(rec["Name"]).split(" ")[0] + ",", "",
     "Thanks for your order with Inland Empire Native Nursery! Order #" + rec["Invoice no"] + ":", "",
-    String(rec["Items"]), "Total: $" + rec["Total (tax incl.)"] + " (sales tax included)", "",
+    String(rec["Items"]), "Total: $" + rec["Total (tax incl.)"] + " (taxes included)", "",
     "Payment: " + (paid ? "Paid" + (rec["Payment method"] ? " (" + rec["Payment method"] + ")" : "") + " — thank you!" : "Not yet paid. We accept cash or Zelle at pickup."),
     "Fulfillment: " + rec["Fulfillment"], "Pickup: Saturdays 10 AM – 2 PM.",
     "Pickup address: " + (addr || "[CONFIRM ORDER FIRST, then paste the exact Fontana address near Sierra & Baseline here]"),
     "Grand Terrace delivery/service is handled case-by-case — we'll confirm with you directly if you requested it.", "",
     "Your notes: " + (rec["Customer notes"] || "-"), "Our response: " + (rec["Our response"] || "[write response here]"), "",
-    "See you soon,", "Inland Empire Native Nursery"].join("\n");
+    "See you soon,", "Andrew — Inland Empire Native Nursery", "Call/text (909) 609-9373"].join("\n");
   console.log(text);
   return text;
+}
+
+// ---------------------------------------------------------------- optional: retire the public ?view=customer
+/** Optional one-line patch, first line of the existing doGet:
+ *    if (e && e.parameter && e.parameter.view === "customer") return ienn_redirectToWebsite_();
+ *  Sends anyone using the old Apps Script customer view to the website order page (the ONE public order path). */
+function ienn_redirectToWebsite_() {
+  var url = CFG_IENN.WEBSITE_ORDER_URL;
+  var body = url ? "<p>We've moved! Order at <a target='_top' href='" + ienn_esc_(url) + "'>" + ienn_esc_(url) + "</a>.</p><script>window.top.location.href=" + JSON.stringify(url) + ";</script>"
+                 : "<p>Online ordering is on our website. Questions: " + ienn_esc_(CFG_IENN.CONTACT) + ".</p>";
+  return HtmlService.createHtmlOutput("<!doctype html><meta charset='utf-8'><body style='font:16px system-ui;padding:24px'>" + body + "</body>")
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
