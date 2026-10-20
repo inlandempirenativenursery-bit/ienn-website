@@ -17,6 +17,7 @@ Fulfillment: Pickup – Fontana
 Pickup: Saturdays 10 AM – 2 PM.
 Pickup address: {{ONLY after the order is confirmed — exact Fontana address near Sierra & Baseline (~10 min from the 210)}}
 {{Only if requested in notes: Grand Terrace pickup available upon request — we'll confirm.}}
+{{Only if requested in notes: Other pickup times available case by case upon request — we'll confirm a time.}}
 
 Your notes: {{Notes}}
 Our response: {{Our response}}

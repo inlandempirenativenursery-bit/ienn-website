@@ -22,7 +22,7 @@ Andrew claims & handles it (Web Orders → Claimed by = Andrew) → replies with
 Printable plant list (?view=plantlist) / CSV for flyers, Saturdays, partners
 ```
 
-**Pickup only:** Fontana near Sierra & Baseline (~10 min from the 210), Saturdays 10 AM – 2 PM is the single pickup. The order page has no delivery choice. Grand Terrace pickup is available upon request; customers ask in their order notes, and the team email flags it.
+**Pickup only:** Fontana near Sierra & Baseline (~10 min from the 210), Saturdays 10 AM – 2 PM is the single pickup. The order page has no delivery choice. Grand Terrace pickup is available upon request, and other pickup times are available case by case upon request; customers ask in their order notes, and the team email flags it.
 
 ## Who does what each week
 | When | Who | Task |

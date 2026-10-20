@@ -289,7 +289,7 @@ function ienn_plantListHtml_(inStockOnly) {
     "<a target='_top' href='" + base + "?api=plantlist&format=csv" + (inStockOnly ? "&instock=1" : "") + "'>Download CSV</a></div>" +
     "<table><thead><tr><th>Plant</th>" + Object.keys(CFG_IENN.PRICES).map(function (s) { return "<th>" + CFG_IENN.SIZE_LABELS[s] + "</th>"; }).join("") + "</tr></thead><tbody>" +
     (rows || "<tr><td colspan='5'>No plants listed.</td></tr>") + "</tbody></table>" +
-    "<p><small>Grand Terrace pickup available upon request.<br>2-inch and quarter tree pot: available on request — ask us (" + ienn_esc_(CFG_IENN.CONTACT) + ").</small></p></body></html>";
+    "<p><small>Grand Terrace pickup available upon request.<br>Other pickup times available case by case upon request.<br>2-inch and quarter tree pot: available on request — ask us (" + ienn_esc_(CFG_IENN.CONTACT) + ").</small></p></body></html>";
   return HtmlService.createHtmlOutput(html).setTitle("IENN Plant List").setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 function ienn_exportPlantListCsv_(inStockOnly) {
@@ -300,7 +300,7 @@ function ienn_exportPlantListCsv_(inStockOnly) {
   ienn_sorted_(inStockOnly).forEach(function (p) {
     lines.push([p.name, p.botanical].concat(p.sizes.map(function (z) { return z.price; }), p.sizes.map(function (z) { return z.qty == null ? "on request" : z.qty; })).map(q).join(","));
   });
-  lines.push("", q("Pickup – Fontana near Sierra & Baseline, Saturdays 10 AM – 2 PM. Cash or Zelle. Grand Terrace pickup available upon request."));
+  lines.push("", q("Pickup – Fontana near Sierra & Baseline, Saturdays 10 AM – 2 PM. Cash or Zelle. Grand Terrace pickup available upon request. Other pickup times available case by case upon request."));
   return lines.join("\n");
 }
 
@@ -318,7 +318,8 @@ function ienn_buildCustomerReply_(invoiceNo) {
     "Payment: " + (paid ? "Paid" + (rec["Payment method"] ? " (" + rec["Payment method"] + ")" : "") + " — thank you!" : "Not yet paid. We accept cash or Zelle at pickup."),
     "Fulfillment: " + rec["Fulfillment"], "Pickup: Saturdays 10 AM – 2 PM.",
     "Pickup address: " + (addr || "[CONFIRM ORDER FIRST, then paste the exact Fontana address near Sierra & Baseline here]"),
-    /grand terrace/i.test(String(rec["Customer notes"] || "")) ? "Grand Terrace pickup is available upon request — we'll confirm the details with you." : "", "",
+    /grand terrace/i.test(String(rec["Customer notes"] || "")) ? "Grand Terrace pickup is available upon request — we'll confirm the details with you." : "",
+    /(time|day|sunday|weekday|other|earlier|later)/i.test(String(rec["Customer notes"] || "")) ? "Other pickup times are available case by case upon request — we'll confirm a time with you." : "", "",
     "Your notes: " + (rec["Customer notes"] || "-"), "Our response: " + (rec["Our response"] || "[write response here]"), "",
     "See you soon,", "Andrew — Inland Empire Native Nursery", "Call/text (909) 609-9373"].join("\n");
   console.log(text);
