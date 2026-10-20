@@ -2,7 +2,7 @@
 // Serves the repo statically and /exec (GET ?view=inventory|print|hub, POST orders) using the real .gs code over in-memory sheets.
 const http = require('http'), fs = require('fs'), path = require('path'), { load } = require('./gas-harness');
 const h = load(), root = path.join(__dirname, '..'), port = +process.argv[2] || 8822;
-const types = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.json': 'application/json', '.css': 'text/css' };
+const types = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.jpg': 'image/jpeg', '.json': 'application/json', '.css': 'text/css' };
 http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x');
   if (u.pathname === '/exec') {

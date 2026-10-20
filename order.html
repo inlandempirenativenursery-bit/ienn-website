@@ -28,7 +28,8 @@
     .card.in-cart { border-color:var(--sage); box-shadow:0 0 0 2px rgba(107,124,106,.25); }
     .card.sold-out { opacity:.75; }
     .ph { aspect-ratio:5/2; background:linear-gradient(135deg,var(--cream),#ecebe6); display:flex; align-items:center; justify-content:center; color:#8a8f88; font-size:0.85rem; }
-    .ph { overflow:hidden; } .ph img { display:block; width:100%; height:100%; object-fit:cover; }
+    .ph { position:relative; overflow:hidden; }
+    .ph img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
     .body { padding:0.9rem; display:flex; flex-direction:column; gap:0.6rem; flex:1; }
     .card h3 { font-size:1.1rem; color:var(--sage-dark); line-height:1.3; }
     .badge { align-self:flex-start; font-size:0.8rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:999px; }
@@ -78,16 +79,46 @@
     .confirm button { min-height:44px; padding:0 1rem; margin-top:0.75rem; border:1px solid var(--sage-dark); background:#fff; color:var(--sage-dark); border-radius:8px; font-weight:600; cursor:pointer; }
     .cartbar { position:fixed; left:0; right:0; bottom:0; background:#fff; border-top:1px solid #ddd; box-shadow:0 -2px 10px rgba(0,0,0,.08); padding:0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom)); display:flex; align-items:center; justify-content:space-between; gap:0.75rem; z-index:50; }
     .cartbar[hidden] { display:none; }
-    .cartbar a { min-height:44px; display:inline-flex; align-items:center; padding:0 1.2rem; background:var(--red); color:#fff; font-weight:700; border-radius:10px; text-decoration:none; }
+    .cartbar a { white-space:nowrap; min-height:44px; display:inline-flex; align-items:center; padding:0 1.2rem; background:var(--red); color:#fff; font-weight:700; border-radius:10px; text-decoration:none; }
     @media (min-width:960px) { .cartbar { left:auto; right:1.5rem; bottom:1.5rem; border:1px solid #ddd; border-radius:12px; } }
+    /* ---- subtle "select and go" pickup styling ---- */
+    .steps { display:flex; margin:0.75rem 1rem 0; list-style:none; border:1px solid #e3e1db; border-radius:10px; overflow:hidden; font-size:0.85rem; }
+    .steps li { flex:1; text-align:center; padding:0.5rem 0.25rem; color:#777; background:#fff; }
+    .steps li + li { border-left:1px solid #e3e1db; }
+    .steps .n { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:0.72rem; color:#999; margin-right:0.3rem; }
+    .steps li.on { background:var(--cream); color:var(--sage-dark); font-weight:700; }
+    .slot { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:0.72rem; letter-spacing:0.05em; color:#8a8f88; border:1px solid #e3e1db; border-radius:4px; padding:0 0.3rem; margin-right:0.4rem; vertical-align:2px; background:#fafaf8; }
+    .chips { gap:0.35rem; }
+    .chips .chip { border-radius:8px; min-height:44px; padding:0 0.75rem; font-size:0.88rem; }
+    .chip-request { border-style:dashed; color:#555; }
+    .chip-request[aria-pressed="true"] { background:var(--cream); color:var(--sage-dark); border-style:solid; }
+    .summary { border:1px solid #e3e1db; border-radius:14px; background:linear-gradient(#fbfaf7,#f6f4ef); box-shadow:inset 0 2px 6px rgba(0,0,0,.06), inset 0 -1px 0 #fff; }
+    .summary li.drop { animation:drop .35s cubic-bezier(.2,.8,.3,1); }
+    @keyframes drop { from { transform:translateY(-10px); opacity:0; } to { transform:none; opacity:1; } }
+    .tax-note { font-weight:400; color:#777; font-size:0.78rem; }
+    .fine-print { font-size:0.75rem; color:#888; margin-top:0.25rem; }
+    .pickup-line { font-weight:700; color:var(--sage-dark); }
+    .confirm { background:#fff; border:1px solid #d9d6cd; border-radius:12px; padding:0; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,.06); }
+    .confirm .tk-head { background:var(--sage-dark); padding:0.9rem 1.1rem; display:flex; justify-content:space-between; align-items:baseline; gap:0.5rem; }
+    .confirm .tk-head h2 { color:#fff; margin:0; font-size:1.05rem; }
+    .confirm .tk-head span { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:0.72rem; color:#fff; opacity:.8; }
+    .confirm .tk-body { padding:1rem 1.1rem 1.1rem; border-top:2px dashed #d9d6cd; }
+    .confirm .tk-body p { margin:0.35rem 0; }
+    .confirm-id { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:0.04em; }
+    #confirm-total { display:flex; justify-content:space-between; font-weight:700; border-top:1px solid #eee; padding-top:0.5rem; }
+    .cartbar { background:linear-gradient(#fbfaf7,#f4f2ec); box-shadow:inset 0 2px 5px rgba(0,0,0,.06), 0 -2px 8px rgba(0,0,0,.06); }
+    @media (prefers-reduced-motion:reduce) { .summary li.drop { animation:none; } }
+    /* polish: minimal usability additions (no restyle) */
+    .steps small { display:block; font-size:0.7rem; color:#888; font-weight:400; line-height:1.2; }
+    .lead { margin:0 1rem 0.25rem; font-size:0.95rem; color:#444; }
+    .lead b { color:var(--sage-dark); }
+    .nw { white-space:nowrap; }
+    .summary .rm { padding:0 0.75rem; }
+    .photo-credit { margin:0; padding:0.15rem 0.9rem 0; font-size:0.7rem; color:#6b6f69; }
+    .photo-credit a { color:inherit; }
+    .ph .leaf { font-size:1.6rem; opacity:.55; }
     input:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible { outline:3px solid var(--sage-dark); outline-offset:2px; }
     footer { text-align:center; font-size:0.8rem; color:#555; margin-top:2rem; padding:1rem; }
-      .tagline { margin:-0.3rem 1rem 0.25rem; color:var(--sage-dark); font-style:italic; }
-    .subhead { margin:0 1rem 0.75rem; }
-    .steps { list-style:none; padding:0; margin:0 1rem 1rem; display:grid; grid-template-columns:repeat(3,1fr); gap:0.5rem; }
-    .steps li { background:#fff; border:1px solid #eee; border-radius:10px; padding:0.6rem; font-size:0.85rem; line-height:1.3; }
-    .steps b { display:flex; align-items:center; gap:0.35rem; margin-bottom:0.2rem; color:var(--sage-dark); }
-    .step-n { display:inline-flex; align-items:center; justify-content:center; width:1.4rem; height:1.4rem; border-radius:50%; background:var(--sage-dark); color:#fff; font-size:0.8rem; }
   </style>
 </head>
 <body>
@@ -101,48 +132,44 @@
 
 <main>
   <h1>Place Your Order</h1>
-  <p class="tagline">Connecting people to native plants</p>
-  <p class="subhead">Grow a garden of plants native to the Inland Empire. Reserve online, pick up in Fontana.</p>
-  <ol class="steps" aria-label="How it works">
-    <li><b><span class="step-n" aria-hidden="true">1</span>Select</b><span>Pick your plants and sizes.</span></li>
-    <li><b><span class="step-n" aria-hidden="true">2</span>Reserve</b><span>Send your order. Cash or Zelle at time of pickup.</span></li>
-    <li><b><span class="step-n" aria-hidden="true">3</span>Pick up</b><span>Grab them Saturday in Fontana.</span></li>
-  </ol>
+  <p class="lead"><b>Connecting people to native plants.</b> Want a yard full of bees, butterflies and hummingbirds? Local natives are hard to find, so we grow them here in Fontana and make pickup simple.</p>
 
-  <section class="confirm" id="confirm" hidden tabindex="-1" aria-labelledby="confirm-title">
-    <h2 id="confirm-title">Thank you — your order is in!</h2>
-    <p id="confirm-id" class="confirm-id"></p>
-    <ul id="confirm-list"></ul>
-    <p id="confirm-total"></p>
-    <p><b>Next step:</b> We will confirm your order and send pickup details ASAP by email.</p>
-    <p class="confirm-pickup"><b>Pickup:</b> Fontana area, near Sierra Ave &amp; Baseline Rd · Saturdays 10 AM – 2 PM (exact address after confirmation).</p>
-    <p class="confirm-payment"><b>Payment:</b> Cash or Zelle at time of pickup.</p>
-    <p class="fine-print">Grand Terrace pickup available upon request.</p>
-    <p class="fine-print">Other pickup times available case by case upon request.</p>
-    <p class="confirm-contact">Questions or changes? Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909) 609-9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a></p>
-    <button type="button" id="new-order">Start a new order</button>
+  <section class="confirm" id="confirm" hidden tabindex="-1" aria-labelledby="confirm-title" aria-live="polite">
+    <div class="tk-head"><h2 id="confirm-title">Thank you — your order is in!</h2><span>PICKUP TICKET</span></div>
+    <div class="tk-body">
+      <p id="confirm-id" class="confirm-id"></p>
+      <ul id="confirm-list"></ul>
+      <p id="confirm-total"></p>
+      <p class="pickup-line">Pickup: Fontana · Saturdays 10 AM – 2 PM</p>
+      <p>Exact address after we confirm. Andrew will email you to confirm your pickup.</p>
+      <p class="fine-print">Other pickup times available case by case upon request.<br>Grand Terrace pickup available upon request.</p>
+      <p class="confirm-contact">Questions or changes? Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a></p>
+      <button type="button" id="new-order">Start a new order</button>
+    </div>
   </section>
 
   <section class="notice" aria-labelledby="notice-title">
     <h2 id="notice-title">Pickup &amp; Details</h2>
     <ul>
-      <li><span aria-hidden="true">📅</span><span><b>Pickup only</b>Saturdays 10 AM – 2 PM weekly.</span></li>
+      <li><span aria-hidden="true">📅</span><span><b>Pickup: Fontana · Saturdays 10 AM – 2 PM</b>Pickup only — reserve here, pick up on Saturday.</span></li>
       <li><span aria-hidden="true">💵</span><span><b>Payment</b>Cash or Zelle at time of pickup.</span></li>
-      <li><span aria-hidden="true">📍</span><span><b>Location</b>Fontana area, near Sierra Ave &amp; Baseline Rd · Saturdays 10 AM – 2 PM. Roughly within 10 minutes of the 210 freeway. Exact directions after we confirm your order.</span></li>
+      <li><span aria-hidden="true">📍</span><span><b>Location</b>Fontana. We share the exact address after we confirm your order.</span></li>
       <li><span aria-hidden="true">✅</span><span><b>Confirmation</b>We will confirm your order and send pickup details ASAP.</span></li>
-      <li><span aria-hidden="true">📞</span><span><b>Questions?</b>Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909) 609-9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a></span></li>
+      <li><span aria-hidden="true">📞</span><span><b>Questions?</b>Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a></span></li>
     </ul>
-    <p class="fine-print">Grand Terrace pickup available upon request.</p>
-    <p class="fine-print">Other pickup times available case by case upon request.</p>
+    <p class="fine-print">Other pickup times available case by case upon request.<br>Grand Terrace pickup available upon request.</p>
   </section>
 
-  <h2 id="shop-title">1. Choose your plants</h2>
-  <p class="hint">Pick a size and quantity, then tap Add to order. Soon you'll be planting natives at home.</p>
+  <h2 class="sr-only" id="steps-title">How it works</h2>
+  <ol class="steps" id="steps"><li class="on"><span class="n">1</span>Select<small>Pick plants &amp; sizes</small></li><li><span class="n">2</span>Reserve<small>Nothing charged online</small></li><li><span class="n">3</span>Pick up<small>Saturday in Fontana</small></li></ol>
+  <h2 id="shop-title">1. Select your plants</h2>
+  <p class="hint">Tap a size, set how many, and add it to your tray. We hold it for pickup.</p>
+  <p class="hint">2-inch ($3) and quarter tree pot ($10) sizes: <b>Ask us</b>, available on request. Add them in Notes and we'll confirm.</p>
   <p class="inv-status" id="inv-status" role="status" hidden></p>
-  <div class="grid" id="plant-list" aria-labelledby="shop-title" aria-busy="false"></div>
+  <div class="grid" id="plant-list" aria-busy="false"></div>
 
   <section class="summary" id="review" aria-labelledby="summary-title" tabindex="-1">
-    <h2 id="summary-title">Your order</h2>
+    <h2 id="summary-title">Your tray</h2>
     <div id="summary-body" aria-live="polite"></div>
   </section>
 
@@ -163,9 +190,10 @@
 
     <label for="pickup">Pickup</label>
     <select id="pickup" name="pickup">
-      <option>Saturday 10 AM – 2 PM (Fontana area)</option>
-      <option>Other day/time — I'll note it below</option>
+      <option>Fontana · Saturdays 10 AM – 2 PM</option>
+      <option>Fontana · other time (request, note below)</option>
     </select>
+    <p class="fine-print">Other pickup times available case by case upon request. Grand Terrace pickup available upon request.</p>
 
     <label for="payment">Payment at pickup</label>
     <select id="payment" name="payment">
@@ -176,9 +204,10 @@
     <label for="notes">Notes (pickup day preference, questions, etc.)</label>
     <textarea id="notes" name="notes" placeholder="Example: Prefer Saturday 11am."></textarea>
 
+    <p class="fine-print">Privacy: we only use your info to fill your order and never sell it. To delete it, email us or call/text Andrew at <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a>.</p>
     <p class="error" id="qty-error" role="alert">Please add at least one plant to your order.</p>
     <p class="error" id="server-error" role="alert"></p>
-    <button type="submit" class="submit-btn">Reserve your plants</button>
+    <button type="submit" class="submit-btn">Reserve for pickup</button>
   </form>
 
 </main>
@@ -189,11 +218,12 @@
   </div>
 
   <footer>
-    Inland Empire Native Nursery • Pickup-only • Fontana area<br>
-    Cash or Zelle at time of pickup. • We confirm and send directions after you order.<br>
-    Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909) 609-9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a>
+    Inland Empire Native Nursery • Pickup: Fontana · Saturdays 10 AM – 2 PM<br>
+    Cash or Zelle at time of pickup • We confirm and send directions after you order.<br>
+    Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a>
   </footer>
 
+  <script src="plant-photos.js"></script>
   <script>
     /* ===== IENN SETTINGS =====
        APPS_SCRIPT_URL: the existing IENN inventory/invoice web app (/exec). The page reads ?view=inventory from it
@@ -208,9 +238,12 @@
     var ON_REQUEST = "Available on request";   // 2" and Tree pot (not counted yet)
     var CONTACT_PHONE = "(909) 609-9373", CONTACT_TEL = "+19096099373";   // Andrew, call/text fallback
     /* Appeal sort (earlier keyword = shown first); plants with stock come first, sold out last. */
-    var APPEAL_KEYWORDS = ["white sage", "salvia apiana", "monkeyflower", "mimulus", "diplacus", "poppy", "eschscholzia",
-      "penstemon", "sage", "salvia", "buckwheat", "eriogonum", "milkweed", "asclepias", "lupine", "lupinus", "woolly blue curls",
-      "trichostema", "ceanothus", "lilac", "yarrow", "achillea", "verbena", "aster", "fuchsia", "epilobium", "coreopsis", "sunflower", "encelia"];
+    /* Default order (an explicit feed/sheet rank still wins): popular + colorful first. */
+    var APPEAL_KEYWORDS = ["white sage", "salvia apiana", "sticky monkeyflower", "diplacus aurantiacus", "rock monkeyflower", "diplacus calycinus",
+      "monkeyflower", "mimulus", "diplacus", "california poppy", "eschscholzia", "showy penstemon", "penstemon spectabilis", "scarlet bugler",
+      "penstemon centranthifolius", "matilija", "romneya", "milkweed", "asclepias", "penstemon", "poppy", "sage", "salvia", "buckwheat", "eriogonum",
+      "lupine", "lupinus", "woolly blue curls", "trichostema", "ceanothus", "lilac", "yarrow", "achillea", "verbena", "aster", "fuchsia", "epilobium",
+      "coreopsis", "sunflower", "encelia", "marigold", "baileya", "morning glory", "calystegia"];
     /* OFFLINE FALLBACK ONLY (live inventory unreachable and nothing cached). Stock unknown -> "Available on request". */
     var FALLBACK_PLANTS = [
       { name: "Blue Pyramid Cypress", sizes: ['1 gal'] },
@@ -218,9 +251,6 @@
       { name: "Sticky Monkeyflower",  sizes: ['1 gal'] },
       { name: "Yarrow",               sizes: ['4"'] }
     ];
-    /* Local plant photos: assets/plants/<plant-id>.jpg (id = slug of the common name, e.g. "white-sage").
-       A Photo column in the inventory sheet overrides this. Credits: assets/plants/CREDITS.md */
-    var PLANT_PHOTOS = ["black-sage", "california-buckwheat", "california-encelia", "california-poppy", "deergrass", "desert-marigold", "matilija-poppy", "morning-glory", "narrow-leaf-milkweed", "rock-monkeyflower", "scarlet-bugler", "showy-milkweed", "showy-penstemon", "sticky-monkeyflower", "sugarbush", "toyon", "white-sage", "woolly-blue-curls", "woollypod-milkweed", "yarrow"];
     var ORDER_EMAIL = "hello@inlandempirenativenursery.com"; // mailto fallback only if the order endpoint fails
   </script>
   <script>
@@ -233,61 +263,71 @@
       function money(n) { return "$" + (Math.round(n * 100) / 100).toFixed(2); }
       function slug(t) { return String(t).toLowerCase().replace(/\(.*?\)/g, "").trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
       function clamp(v) { v = parseInt(v, 10); return isNaN(v) || v < 1 ? 1 : Math.min(v, 99); }
+      var ASK_KEYS = ['2"', 'Tree pot'];   // on-request sizes (no weekly counts): "Ask us", never addable
+      function askSize(z) { return !!z && ASK_KEYS.indexOf(z.key) >= 0; }
+      function canAdd(z) { return !!z && !askSize(z) && (z.qty == null || z.qty > 0); }   // qty null on a counted size = offline/unknown, still orderable
       function zstate(z) { return z.qty == null ? "ask" : z.qty > 0 ? "ok" : "out"; }
-      function pstate(p) { var st = p.sizes.map(zstate); return st.indexOf("ok") >= 0 ? "ok" : st.indexOf("ask") >= 0 ? "ask" : "out"; }
+      function pstate(p) { var c = p.sizes.filter(function (z) { return !askSize(z); });
+        if (c.some(function (z) { return z.qty > 0; })) return "ok"; if (!c.length || c.some(function (z) { return z.qty == null; })) return "ask"; return "out"; }
       function byId(id) { return PLANTS.find(function (p) { return p.id === id; }); }
       function sizeOf(p, k) { return p && p.sizes.find(function (z) { return z.key === k; }); }
       function lines() {
         return Object.keys(cart).map(function (k) { var i = k.lastIndexOf("|"), p = byId(k.slice(0, i)), z = sizeOf(p, k.slice(i + 1));
-          return p && z && zstate(z) !== "out" ? { key: k, p: p, z: z, q: cart[k], total: cart[k] * z.price } : null; }).filter(Boolean);
+          return p && z && canAdd(z) ? { key: k, p: p, z: z, q: cart[k], total: cart[k] * z.price } : null; }).filter(Boolean);
       }
       function appeal(p) { var t = (p.name + " " + p.botanical).toLowerCase(); for (var i = 0; i < APPEAL_KEYWORDS.length; i++) if (t.indexOf(APPEAL_KEYWORDS[i]) >= 0) return i; return 999; }
-      function sortPlants(a) { var r = { ok: 0, ask: 1, out: 2 }; return a.sort(function (x, y) { return r[pstate(x)] - r[pstate(y)] || appeal(x) - appeal(y) || x.name.localeCompare(y.name); }); }
+      function rk(p) { return p.rank == null || p.rank === "" || isNaN(Number(p.rank)) ? 1e9 : Number(p.rank); }
+      function sortPlants(a) { var r = { ok: 0, ask: 1, out: 2 }; return a.sort(function (x, y) { return r[pstate(x)] - r[pstate(y)] || rk(x) - rk(y) || appeal(x) - appeal(y) || x.name.localeCompare(y.name); }); }
       function split(full) { var m = /^(.*?)\s*\((.*)\)\s*$/.exec(full || ""); return m ? [m[1], m[2]] : [String(full || "").trim(), ""]; }
 
       function render() {
         list.innerHTML = ""; list.setAttribute("aria-busy", "false");
-        PLANTS.forEach(function (p) {
+        PLANTS.forEach(function (p, idx) {
           var ps = pstate(p), card = el("article", { class: "card" + (ps === "out" ? " sold-out" : ""), "aria-labelledby": p.id + "-name" });
           card.dataset.id = p.id;
           var ph = el("div", { class: "ph" });
-          var src = p.image || (PLANT_PHOTOS.indexOf(p.id) >= 0 ? "assets/plants/" + p.id + ".jpg" : "");
-          function noPhoto() { ph.textContent = "Photo coming soon"; ph.setAttribute("aria-hidden", "true"); }
-          if (src) { var im = el("img", { src: src, alt: p.name, loading: "lazy", decoding: "async", width: "800", height: "600" }); im.onerror = noPhoto; ph.appendChild(im); } else noPhoto();
+          if (p.image) ph.appendChild(el("img", p.srcset ? { src: p.image, srcset: p.srcset, sizes: "(max-width: 600px) 45vw, 260px", alt: p.name, loading: "lazy", decoding: "async" } : { src: p.image, alt: p.name, loading: "lazy", decoding: "async" })); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }  // image slot kept: set p.image
           card.appendChild(ph);
+          var cr = p.image && typeof ienPhoto === "function" && ienPhoto(p.name); cr = cr && cr.src === p.image && cr.credit;
+          if (cr) { var cp = el("p", { class: "photo-credit" }); cp.appendChild(el("a", { href: cr.url, target: "_blank", rel: "noopener" }, cr.text)); card.appendChild(cp); }
           var b = el("div", { class: "body" });
-          b.appendChild(el("h3", { id: p.id + "-name" }, p.name));
+          var h3 = el("h3", { id: p.id + "-name" }); h3.appendChild(el("span", { class: "slot", "aria-hidden": "true" }, String.fromCharCode(65 + Math.floor(idx / 6)) + (idx % 6 + 1))); h3.appendChild(document.createTextNode(p.name)); b.appendChild(h3);
           if (p.botanical) b.appendChild(el("span", { class: "note" }, p.botanical));
-          b.appendChild(el("span", { class: "badge " + ps }, ps === "ok" ? "Available" : ps === "ask" ? ON_REQUEST : "Sold out"));
-          var pick = p.sizes.find(function (z) { return zstate(z) === "ok"; }) || p.sizes.find(function (z) { return zstate(z) === "ask"; }) || p.sizes[0];
+          b.appendChild(el("span", { class: "badge " + ps }, ps === "ok" ? "Available · Get yours now" : ps === "ask" ? ON_REQUEST : "Sold out"));
+          var pick = p.sizes.find(function (z) { return !askSize(z) && zstate(z) === "ok"; }) || p.sizes.find(canAdd) || p.sizes.find(function (z) { return !askSize(z); }) || null;
           var fs = el("fieldset", { class: "chips" }); fs.appendChild(el("legend", {}, "Size"));
           var info = el("span", { class: "price" });
-          function showInfo() { var st = zstate(pick); info.textContent = st === "ok" ? (pick.qty <= 5 ? "Only " + pick.qty + " left" : "In stock") : st === "ask" ? ON_REQUEST + " — we'll confirm" : "Sold out in this size"; }
+          var add;
+          function showInfo() { var ok = canAdd(pick);
+            info.textContent = !pick ? "Ask us — add it in Notes and we'll confirm" : !ok ? "Sold out in this size" : pick.qty == null ? "We'll confirm availability" : pick.qty <= 5 ? "Only " + pick.qty + " left in " + pick.label : pick.qty + " left in " + pick.label;
+            if (add) { add.disabled = !ok; add.textContent = ok ? "Add to order" : !pick ? "Ask us" : "Sold out"; }
+            [minus, inp, plus].forEach(function (x) { if (x) x.disabled = !ok; }); }
+          var minus, inp, plus;
           p.sizes.forEach(function (z) {
-            var st = zstate(z), c = el("button", { type: "button", class: "chip" + (st === "out" ? " chip-out" : st === "ask" ? " chip-request" : ""), "aria-pressed": z === pick ? "true" : "false" },
-              z.label + " · $" + z.price + (st === "out" ? " · sold out" : st === "ask" ? " · on request" : ""));
+            var st = askSize(z) ? "ask" : zstate(z) === "out" ? "out" : "ok", c = el("button", { type: "button", class: "chip" + (st === "out" ? " chip-out" : st === "ask" ? " chip-request" : ""), "aria-pressed": z === pick ? "true" : "false" },
+              z.label + " · $" + z.price + (st === "out" ? " · sold out" : st === "ask" ? " · Ask us" : ""));
             c.disabled = st === "out";
-            c.addEventListener("click", function () { pick = z; fs.querySelectorAll(".chip").forEach(function (x) { x.setAttribute("aria-pressed", x === c ? "true" : "false"); }); showInfo(); });
+            if (st === "ask") { c.removeAttribute("aria-pressed"); c.addEventListener("click", function () { info.textContent = "Ask us: add \u201c" + z.label + "\u201d in Notes below and we'll confirm."; }); }
+            else c.addEventListener("click", function () { pick = z; fs.querySelectorAll(".chip:not(.chip-request)").forEach(function (x) { x.setAttribute("aria-pressed", x === c ? "true" : "false"); }); showInfo(); });
             fs.appendChild(c);
           });
           b.appendChild(fs); b.appendChild(info); showInfo();
           var row = el("div", { class: "row" });
           var stp = el("div", { class: "stepper", role: "group", "aria-label": "Quantity of " + p.name });
-          var minus = el("button", { type: "button", "aria-label": "Fewer " + p.name }, "−");
-          var inp = el("input", { type: "number", min: "1", max: "99", value: "1", inputmode: "numeric", "aria-label": "Quantity of " + p.name });
-          var plus = el("button", { type: "button", "aria-label": "More " + p.name }, "+");
-          [minus, inp, plus].forEach(function (x) { x.disabled = ps === "out"; stp.appendChild(x); });
+          minus = el("button", { type: "button", "aria-label": "Fewer " + p.name }, "−");
+          inp = el("input", { type: "number", min: "1", max: "99", value: "1", inputmode: "numeric", "aria-label": "Quantity of " + p.name });
+          plus = el("button", { type: "button", "aria-label": "More " + p.name }, "+");
+          [minus, inp, plus].forEach(function (x) { stp.appendChild(x); });
           minus.addEventListener("click", function () { inp.value = clamp(inp.value - 1); });
           plus.addEventListener("click", function () { inp.value = clamp(+inp.value + 1); });
-          var add = el("button", { type: "button", class: "add" }, ps === "out" ? "Sold out" : "Add to order");
-          add.disabled = ps === "out";
+          add = el("button", { type: "button", class: "add" }, "Add to order"); showInfo();
           var msg = el("div", { class: "incart", "aria-live": "polite" });
           add.addEventListener("click", function () {
-            if (zstate(pick) === "out") return;
+            if (!canAdd(pick)) return;
             var k = p.id + "|" + pick.key, want = (cart[k] || 0) + clamp(inp.value);
             if (pick.qty != null && want > pick.qty) { want = pick.qty; msg.textContent = "Only " + pick.qty + " available — added the max."; }
             else msg.textContent = "✓ Added — " + want + " × " + pick.label + " in your order";
-            cart[k] = Math.min(want, 99); save(); inp.value = 1; update();
+            cart[k] = Math.min(want, 99); lastAdded = k; save(); inp.value = 1; update();
           });
           row.appendChild(stp); row.appendChild(add);
           b.appendChild(row); b.appendChild(msg);
@@ -296,6 +336,7 @@
         update();
       }
 
+      var lastAdded = null;
       function update() {
         var ls = lines(), count = ls.reduce(function (a, l) { return a + l.q; }, 0), sub = ls.reduce(function (a, l) { return a + l.total; }, 0);
         document.querySelectorAll(".card").forEach(function (c) { c.classList.toggle("in-cart", ls.some(function (l) { return l.p.id === c.dataset.id; })); });
@@ -304,7 +345,7 @@
         else {
           var ul = el("ul");
           ls.forEach(function (l) {
-            var li = el("li"); li.appendChild(el("span", {}, l.q + " × " + l.p.name + " (" + l.z.label + ") @ $" + l.z.price + " = " + money(l.total)));
+            var li = el("li", l.key === lastAdded ? { class: "drop" } : {}); var ls_ = el("span", {}, l.q + " × " + l.p.name + " "); ls_.appendChild(el("span", { class: "nw" }, "(" + l.z.label + ")")); ls_.appendChild(document.createTextNode(" @ $" + l.z.price + " = ")); ls_.appendChild(el("span", { class: "nw" }, money(l.total))); li.appendChild(ls_);
             var rm = el("button", { type: "button", class: "rm", "aria-label": "Remove " + l.p.name + " " + l.z.label }, "Remove");
             rm.addEventListener("click", function () { delete cart[l.key]; save(); update(); });
             li.appendChild(rm); ul.appendChild(li);
@@ -315,10 +356,11 @@
           document.getElementById("qty-error").style.display = "none";
         }
         document.getElementById("cartbar").hidden = count === 0;
-        document.getElementById("cartbar-count").textContent = count + (count === 1 ? " item" : " items") + " · " + money(sub);
+        document.getElementById("cartbar-count").textContent = count + (count === 1 ? " item" : " items") + " · " + money(sub) + " · Taxes included";
         return ls;
       }
 
+      function setStep(n) { document.querySelectorAll("#steps li").forEach(function (li, i) { li.classList.toggle("on", i === n - 1); }); }
       function fieldErr(id, msg) { var f = document.getElementById(id); f.setAttribute("aria-invalid", msg ? "true" : "false"); document.getElementById(id + "-err").textContent = msg || ""; return !msg; }
       function v(id) { return document.getElementById(id).value.trim(); }
       var form = document.getElementById("order-form"), btn = form.querySelector(".submit-btn"), serr = document.getElementById("server-error");
@@ -330,7 +372,7 @@
         ct.appendChild(el("small", { class: "tax-note" }, "Taxes included"));
         var c = document.getElementById("confirm"); c.hidden = false; form.hidden = true;
         cart = {}; save(); update();
-        setTimeout(function () { c.focus(); c.scrollIntoView({ block: "start" }); }, 0);
+        setStep(3); setTimeout(function () { c.focus({ preventScroll: true }); window.scrollTo({ top: Math.max(0, c.getBoundingClientRect().top + window.pageYOffset - 8), behavior: "smooth" }); }, 50);
       }
       function mailtoHref(ls, f) {
         var body = "Name: " + f.name + "\nPickup: " + v("pickup") + "\nPayment: " + v("payment") + "\nRef: " + f.name + "\nEmail: " + f.email + "\nPhone: " + f.phone + "\n\n" + ls.map(function (l) { return l.q + " x " + l.p.name + " (" + l.z.label + ") $" + l.z.price; }).join("\n") +
@@ -351,7 +393,7 @@
         fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })   // text/plain = no CORS preflight
           .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
           .then(function (r) {
-            btn.disabled = false; btn.textContent = "Reserve your plants";
+            btn.disabled = false; btn.textContent = "Reserve for pickup";
             if (r.ok) return showConfirm(ls, r.orderId, r.total != null ? r.total : sub);
             if (r.error === "stock" && r.problems) {
               r.problems.forEach(function (pb) { PLANTS.forEach(function (p) { if (p.name === pb.plant) { var z = sizeOf(p, pb.sizeKey); if (z) { z.qty = pb.available; var k = p.id + "|" + z.key; if (pb.available > 0) cart[k] = Math.min(cart[k] || 0, pb.available); else delete cart[k]; } } }); });
@@ -360,7 +402,7 @@
             serr.textContent = r.message || "Sorry, something went wrong. Please try again."; serr.style.display = "block"; document.getElementById("review").focus();
           })
           .catch(function () {   // order NOT placed: keep the cart, offer call/text and email
-            btn.disabled = false; btn.textContent = "Reserve your plants";
+            btn.disabled = false; btn.textContent = "Reserve for pickup";
             serr.innerHTML = ""; serr.appendChild(document.createTextNode("We couldn't send your order just now. Your cart is saved. Please try again, or call or text Andrew: "));
             serr.appendChild(el("a", { class: "contact-tel", href: "tel:" + CONTACT_TEL }, CONTACT_PHONE)); serr.appendChild(document.createTextNode(" · "));
             serr.appendChild(el("a", { class: "contact-sms", href: "sms:" + CONTACT_TEL + "?&body=" + encodeURIComponent("Plant order: " + ls.map(function (l) { return l.q + " x " + l.p.name + " (" + l.z.label + ")"; }).join(", ")) }, "Text your order"));
@@ -369,18 +411,19 @@
           });
       });
       document.getElementById("new-order").addEventListener("click", function () {
-        form.reset(); form.hidden = false; document.getElementById("confirm").hidden = true; update(); window.scrollTo(0, 0);
+        form.reset(); form.hidden = false; document.getElementById("confirm").hidden = true; setStep(1); update();
+        document.getElementById("steps").scrollIntoView({ behavior: "smooth", block: "start" });
       });
 
       function fromInventory(d) {
         return (d.plants || []).map(function (p) {
-          return { id: slug(p.name), name: p.name, fullName: p.fullName || p.name, botanical: p.botanical || "", image: p.image || "",
-            sizes: (p.sizes || []).map(function (z) { return { key: z.key, label: z.size || SIZE_LABELS[z.key] || z.key, price: Number(z.price), qty: z.qty == null ? null : Number(z.qty) }; }) };
+          return { id: slug(p.name), name: p.name, fullName: p.fullName || p.name, botanical: p.botanical || "", rank: p.rank != null ? p.rank : p.priority != null ? p.priority : p.sort, image: p.image || (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).src || "", srcset: p.image ? "" : (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).srcset || "",
+            sizes: (p.sizes || []).map(function (z) { return { key: z.key, label: z.size || SIZE_LABELS[z.key] || z.key, price: isFinite(Number(z.price)) && z.price !== "" && z.price != null ? Number(z.price) : PRICES[z.key], qty: z.qty == null ? null : Number(z.qty) }; }) };
         });
       }
       function fallback() {
         return FALLBACK_PLANTS.map(function (p) { var nb = split(p.name);
-          return { id: slug(nb[0]), name: nb[0], fullName: p.name, botanical: nb[1], image: "", sizes: p.sizes.map(function (k) { return { key: k, label: SIZE_LABELS[k], price: PRICES[k], qty: null }; }) }; });
+          return { id: slug(nb[0]), name: nb[0], fullName: p.name, botanical: nb[1], image: (typeof ienPhoto === "function" && ienPhoto(nb[0]) || {}).src || "", srcset: (typeof ienPhoto === "function" && ienPhoto(nb[0]) || {}).srcset || "", sizes: p.sizes.map(function (k) { return { key: k, label: SIZE_LABELS[k], price: PRICES[k], qty: null }; }) }; });
       }
       var params = new URLSearchParams(location.search), prefilled = false;
       function prefill() { // home-page cart link: order.html?white-sage=2 or ?white-sage|1%20gal=1 (slug or slug|size)
@@ -388,8 +431,8 @@
         params.forEach(function (v, k) {
           var parts = k.split("|"), p = PLANTS.find(function (x) { return x.id === parts[0] || x.id.indexOf(parts[0] + "-") === 0 || parts[0].indexOf(x.id) === 0; }), q = parseInt(v, 10);
           if (!p || !(q > 0)) return;
-          var z = (parts[1] && p.sizes.find(function (s) { return s.key === parts[1] || s.label === parts[1]; })) || p.sizes.find(function (s) { return zstate(s) !== "out"; });
-          if (z && zstate(z) !== "out") cart[p.id + "|" + z.key] = Math.min(q, z.qty == null ? 99 : z.qty, 99);
+          var z = (parts[1] && p.sizes.find(function (s) { return s.key === parts[1] || s.label === parts[1]; })) || p.sizes.find(canAdd);
+          if (canAdd(z)) cart[p.id + "|" + z.key] = Math.min(q, z.qty == null ? 99 : z.qty, 99);
         });
         save();
       }

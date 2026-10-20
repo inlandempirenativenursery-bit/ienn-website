@@ -73,7 +73,7 @@ See `MERGE-NOTES.md` for what replaced Kobe's Sold-ledger back end, and which ma
 
 ## Plant photos
 
-Cards show `assets/plants/<plant-id>.jpg`, where the id is the slug of the common name (for example "White Sage" becomes `white-sage`). The ids that have a photo are listed in `PLANT_PHOTOS` in `order.html`. To add a photo, save it at about 800px wide as JPEG in `assets/plants/`, add its id to `PLANT_PHOTOS`, and credit it in `assets/plants/CREDITS.md`. Plants without a photo show "Photo coming soon".
+Cards show `assets/plants/<plant-id>.jpg`, where the id is the slug of the common name (for example "White Sage" becomes `white-sage`). The ids that have a photo are listed in `IENN_PHOTOS` in `plant-photos.js`. To add a photo, save it at about 800px wide as JPEG in `assets/plants/` (plus a 400px `<plant-id>-400.jpg`), add its id to `IENN_PHOTOS`, and credit it in `assets/plants/CREDITS.md`. Plants without a photo show "Photo coming soon".
 
 Optional override from the sheet: add a **Photo** column (also matched: Photo URL, Image, Image URL, Picture) to the inventory tool's **Catalog** tab with a full image URL. The `?view=inventory` JSON then returns it as `image`, and it wins over the local file (`CATALOG_PHOTO_HEADERS` in `IENN_Config.gs`, `iennCatalogPhotos_()` in `IENN_Stock.gs`). Redeploy the Apps Script for this to take effect.
 
