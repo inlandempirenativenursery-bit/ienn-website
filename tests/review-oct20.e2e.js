@@ -23,7 +23,7 @@ const uncounted = { version: 3, baseline: null, plants: counted.plants.map(p => 
     const bg = await page.locator('.card').first().locator('.chip').nth(2).evaluate(e => getComputedStyle(e).backgroundColor);
     assert.notStrictEqual(bg, 'rgb(46, 125, 50)', 'chip not green before tap');
     assert.strictEqual(await page.locator('.card').nth(1).locator('.chip', { hasText: '4-inch' }).count(), 0, 'qty-0 chip hidden');
-    const c0 = page.locator('.card').first(); assert.ok(await c0.locator('.add').isDisabled()); assert.match(await c0.locator('.add').textContent(), /Pick a size/);
+    const c0 = page.locator('.card').first(); assert.strictEqual(await c0.locator('.add').textContent(), 'Add to tray'); await c0.locator('.add').click(); assert.strictEqual(await c0.locator('.size-hint').textContent(), 'Choose a size first'); assert.strictEqual(await page.locator('#cartbar').isHidden(), true, 'no add without size');
     await c0.locator('.chip', { hasText: '1-gal' }).click();
     assert.strictEqual(await c0.locator('.chip', { hasText: '1-gal' }).getAttribute('aria-pressed'), 'true');
     assert.strictEqual(await c0.locator('.chip', { hasText: '1-gal' }).evaluate(e => getComputedStyle(e).backgroundColor), 'rgb(46, 125, 50)');

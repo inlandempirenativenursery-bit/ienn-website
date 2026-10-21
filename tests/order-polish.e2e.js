@@ -37,7 +37,7 @@ const feed = () => ({ version: 3, updated: new Date().toISOString(), taxIncluded
     const mf = page.locator('.card', { hasText: 'Sticky Monkeyflower' });
     assert.strictEqual(await mf.locator('.chip', { hasText: '4-inch' }).count(), 0, '0-qty chip hidden');
     assert.ok(await mf.locator('.add').isEnabled(), 'single counted size => Add works'); assert.strictEqual(await mf.locator('.chip[aria-pressed="true"]').count(), 0, 'single size not highlighted');
-    const ya = page.locator('.card', { hasText: 'Yarrow' }); assert.ok(await ya.locator('.add').isDisabled()); assert.strictEqual(await ya.locator('.add').textContent(), 'Pick a size');
+    const ya = page.locator('.card', { hasText: 'Yarrow' }); assert.strictEqual(await ya.locator('.add').textContent(), 'Add to tray'); await ya.locator('.add').click(); assert.strictEqual(await ya.locator('.size-hint').textContent(), 'Choose a size first');
     await mf.locator('.chip', { hasText: '1-gal' }).click(); assert.ok(await mf.locator('.ask-note').isVisible(), 'qty 4 < 5 => Ask us');
     for (const c of await page.locator('.chip-request').all()) assert.notStrictEqual(await c.evaluate(e => getComputedStyle(e).textDecorationLine), 'line-through');
     assert.ok(!/\d+ left|Only \d|NaN/.test(await page.locator('#plant-list').innerText()), 'no exact counts');

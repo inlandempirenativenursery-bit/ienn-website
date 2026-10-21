@@ -206,6 +206,12 @@
     .cartbar .cb-sum.bump { animation:bump 200ms ease-out; }
     .confirm .tk-head h2 .tk-check { opacity:1; font-family:inherit; font-weight:700; display:inline-flex; align-items:center; justify-content:center; width:1.5rem; height:1.5rem; margin-right:0.45rem; border-radius:50%; background:#fff; color:var(--sage-dark); font-size:0.95rem; vertical-align:-2px; color:var(--sage-dark) !important; animation:pop 260ms ease-out; }
     @keyframes pop { 0% { transform:scale(.6); opacity:0; } 100% { transform:scale(1); opacity:1; } }
+    .size-hint { margin:0; font-size:0.8rem; font-weight:600; color:#8a5a00; min-height:0; }
+    .size-hint:empty { display:none; }
+    .chips.nudge .chip:not(.chip-request) { border-color:var(--honey-edge); box-shadow:0 0 0 2px rgba(232,176,75,.45); }
+    .chips.nudge { animation:nudge 320ms ease-out; }
+    @keyframes nudge { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-3px); } 75% { transform:translateX(3px); } }
+    @media (prefers-reduced-motion:reduce) { .chips.nudge { animation:none; } }
     @media (prefers-reduced-motion:reduce) { .card, .card .add { transition:none; } .card:hover, .card.lift, .card .add:active:not(:disabled) { transform:none; } .cartbar .cb-sum.bump, .confirm .tk-head h2 .tk-check { animation:none; } }
   </style>
 </head>
@@ -404,7 +410,8 @@
             var ok = canAdd(pick), st = pick ? IENNStock.sizeState(pick, (cart[p.id + "|" + pick.key] || 0) + want()) : null;
             info.textContent = "";
             ask.hidden = !(st === "ask");
-            if (add) { add.disabled = !ok; add.textContent = !pick ? "Pick a size" : ok ? "Add" : "Ask us"; }
+            if (add) { add.disabled = false; add.textContent = "Add to tray"; add.dataset.ready = ok ? "1" : "0"; }
+            if (pick) hint.textContent = "";
             if (inp && pick) inp.max = String(IENNStock.maxQty(pick));
             [minus, inp, plus].forEach(function (x) { if (x) x.disabled = !ok; });
           }
@@ -414,12 +421,12 @@
             c.setAttribute("aria-label", z.label + ", $" + z.price + (rq ? ", available on request" : ""));
             c.addEventListener("click", function () {
               fs.querySelectorAll(".chip").forEach(function (x) { x.setAttribute("aria-pressed", x === c ? "true" : "false"); });
-              if (rq) { pick = null; showInfo(); info.textContent = ON_REQUEST + ": add \u201c" + z.label + "\u201d in Notes and we'll confirm."; if (add) { add.disabled = true; add.textContent = "Add in Notes"; } return; }
+              if (rq) { pick = null; showInfo(); info.textContent = ON_REQUEST + ": add \u201c" + z.label + "\u201d in Notes and we'll confirm."; return; }
               pick = z; inp.value = Math.min(want(), IENNStock.maxQty(z)); showInfo();
             });
             fs.appendChild(c);
           });
-          b.appendChild(fs); b.appendChild(info); b.appendChild(ask);
+          var hint = el("p", { class: "size-hint", "aria-live": "polite" }); b.appendChild(fs); b.appendChild(hint); b.appendChild(info); b.appendChild(ask);
           var row = el("div", { class: "row" });
           var stp = el("div", { class: "stepper", role: "group", "aria-label": "Quantity of " + p.name });
           minus = el("button", { type: "button", "aria-label": "Fewer " + p.name }, "−");
@@ -431,10 +438,14 @@
           plus.addEventListener("click", function () { var nv = clamp(+inp.value + 1); inp.value = cap(nv); showInfo(); if (pick && pick.qty != null && nv > pick.qty) ask.hidden = false; });
           inp.addEventListener("input", function () { showInfo(); });
           inp.addEventListener("change", function () { var raw = clamp(inp.value); inp.value = cap(raw); showInfo(); if (pick && pick.qty != null && raw > pick.qty) ask.hidden = false; });
-          add = el("button", { type: "button", class: "add" }, "Pick a size");
+          add = el("button", { type: "button", class: "add" }, "Add to tray");
           var msg = el("div", { class: "incart", "aria-live": "polite" });
           add.addEventListener("click", function () {
-            if (!canAdd(pick)) return;
+            if (!canAdd(pick)) {
+              if (fs.querySelector('.chip-request[aria-pressed="true"]')) { hint.textContent = "This size is by request: add it in Notes and we'll confirm."; return; }
+              hint.textContent = "Choose a size first"; fs.classList.remove("nudge"); void fs.offsetWidth; fs.classList.add("nudge"); return;
+            }
+            hint.textContent = "";
             var k = p.id + "|" + pick.key, wantN = (cart[k] || 0) + clamp(inp.value), mx = IENNStock.maxQty(pick);
             if (pick.qty != null && wantN > mx) { wantN = mx; ask.hidden = false; msg.textContent = "✓ Added what we have. Want more? Ask us."; }
             else msg.textContent = "✓ Added " + wantN + " × " + pick.label;
