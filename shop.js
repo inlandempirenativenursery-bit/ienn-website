@@ -213,9 +213,9 @@
     var ct = document.getElementById("confirm-total"); ct.textContent = "Total: " + money(total) + " ";
     ct.appendChild(el("small", { class: "tax-note" }, "Taxes included"));
     saveLastOrder(ls, orderId, total);
-    var c = document.getElementById("confirm"); c.hidden = false; document.getElementById("last-order-link").hidden = true; form.reset(); closeCheckout();
+    document.getElementById("last-order-link").hidden = true; form.reset(); closeCheckout();
     cart = {}; save(); update();
-    setTimeout(function () { c.focus({ preventScroll: true }); window.scrollTo({ top: Math.max(0, c.getBoundingClientRect().top + window.pageYOffset - 8), behavior: "smooth" }); }, 50);
+    openConfirm();
   }
   function mailtoHref(ls, f) {
     var body = "Name: " + f.name + "\nPickup: " + PICKUP + "\nPayment: " + v("payment") + "\nRef: " + f.name + "\nEmail: " + f.email + "\nPhone: " + f.phone + "\n\n" + ls.map(function (l) { return l.q + " x " + l.p.name + " (" + l.z.label + ") $" + l.z.price; }).join("\n") +
@@ -264,16 +264,52 @@
     o.items.forEach(function (x) { cl.appendChild(el("li", {}, x.qty + " \u00d7 " + x.name + " (" + x.size + ") \u2014 " + money(x.total))); });
     document.getElementById("confirm-notices").hidden = true;
     var ct = document.getElementById("confirm-total"); ct.textContent = "Total: " + money(o.total) + " "; ct.appendChild(el("small", { class: "tax-note" }, "Taxes included"));
-    var c = document.getElementById("confirm"); c.hidden = false; document.getElementById("last-order-link").hidden = true;
-    setTimeout(function () { c.focus({ preventScroll: true }); window.scrollTo({ top: Math.max(0, c.getBoundingClientRect().top + window.pageYOffset - 90), behavior: "smooth" }); }, 30);
+    document.getElementById("last-order-link").hidden = true;
+    openConfirm();
   }
-  document.getElementById("back-to-plants").addEventListener("click", function () {
-    form.reset(); document.getElementById("confirm").hidden = true; document.getElementById("last-order-link").hidden = !lastOrder(); update();
-    document.getElementById("plant-list").scrollIntoView({ behavior: "smooth", block: "start" });
+  /* Thank-you modal: overlay + dialog card. Closes on ×, Esc, click outside, or Back to plants. Focus stays inside while open. */
+  var tyPrev = null;
+  function openConfirm() {
+    var ov = document.getElementById("confirm-overlay"), c = document.getElementById("confirm");
+    tyPrev = document.activeElement; ov.hidden = false; c.hidden = false; c.scrollTop = 0;
+    document.documentElement.classList.add("ty-open");
+    setTimeout(function () { c.focus({ preventScroll: true }); }, 30);
+  }
+  function closeConfirm() {
+    var ov = document.getElementById("confirm-overlay"); if (ov.hidden) return;
+    form.reset(); ov.hidden = true; document.getElementById("confirm").hidden = true;
+    document.documentElement.classList.remove("ty-open");
+    document.getElementById("last-order-link").hidden = !lastOrder(); update();
+    var pl = document.getElementById("plant-list"); if (pl) pl.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (tyPrev && tyPrev.focus && document.contains(tyPrev) && tyPrev !== document.body) tyPrev.focus({ preventScroll: true });
+  }
+  document.getElementById("confirm-close").addEventListener("click", closeConfirm);
+  document.getElementById("confirm-overlay").addEventListener("click", function (e) { if (e.target === this) closeConfirm(); });
+  document.addEventListener("keydown", function (e) {
+    var ov = document.getElementById("confirm-overlay"); if (ov.hidden) return;
+    if (e.key === "Escape") { e.preventDefault(); closeConfirm(); return; }
+    if (e.key === "Tab") {
+      var f = [].filter.call(document.getElementById("confirm").querySelectorAll("button,a[href]"), function (x) { return x.offsetParent !== null; });
+      if (!f.length) return; var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && (document.activeElement === first || document.activeElement.id === "confirm")) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
   });
+  document.getElementById("back-to-plants").addEventListener("click", closeConfirm);
   document.getElementById("view-order").addEventListener("click", showLastOrder);
   document.getElementById("view-order-2").addEventListener("click", showLastOrder);
   document.getElementById("last-order-link").hidden = !lastOrder();
+  /* Preview for review/screenshots: order.html?confirm=preview shows the thank-you modal with EXAMPLE data (nothing saved or sent). */
+  if (/[?&]confirm=preview\b/.test(location.search)) setTimeout(function () {
+    document.getElementById("confirm-id").textContent = "Order number: INV-EXAMPLE";
+    var cl = document.getElementById("confirm-list"); cl.innerHTML = "";
+    var ex = [], tot = 0; /* real catalog names/prices from the loaded list; no made-up prices */
+    PLANTS.some(function (p) { var z = (p.sizes || []).filter(function (z) { return isFinite(z.price) && ASK_KEYS.indexOf(z.key) < 0; })[0]; if (z) ex.push([ex.length ? 1 : 2, p.name, z.label, z.price]); return ex.length >= 2; });
+    ex.forEach(function (x) { tot += x[0] * x[3]; cl.appendChild(el("li", {}, x[0] + " \u00d7 " + x[1] + " (" + x[2] + ") \u2014 " + money(x[0] * x[3]))); });
+    document.getElementById("confirm-notices").hidden = true;
+    var ct = document.getElementById("confirm-total"); ct.textContent = "Total: " + money(tot) + " "; ct.appendChild(el("small", { class: "tax-note" }, "Taxes included"));
+    openConfirm();
+  }, 1200);
 
 
   })();
