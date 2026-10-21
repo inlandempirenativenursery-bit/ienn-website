@@ -27,11 +27,11 @@
  *  S7. Three columns are added to the right of IENN Invoices if missing: Status (New / Claimed / Paid / Picked up /
  *      Cancelled), Handled by, Our response. That is the only change to existing sheets. Submissions are never edited.
  */
-var IENN_INVENTORY_SPREADSHEET_ID = '';   // '' = the spreadsheet this script is bound to; else the ID of "IENN Inventory"
+var IENN_INVENTORY_SPREADSHEET_ID = '1klPpRNuoNtdUDmCwpqYaQuQOKYvgku4AhKOFpTVR3Vw';   // '' = the spreadsheet this script is bound to; else the ID of "IENN Inventory"
 var IENN_SUBMISSIONS_SHEET = 'Submissions';
 var IENN_CATALOG_SHEET = 'Catalog';
-var IENN_INVOICES_SPREADSHEET_ID = '';    // '' = same spreadsheet; else ID of the spreadsheet holding IENN Invoices
-var IENN_INVOICES_SHEET = 'IENN Invoices';
+var IENN_INVOICES_SPREADSHEET_ID = '1sGCDid99h7WsWsOrG2jyD2Nh9mprrNaS9dIV2vtS-Zs';    // '' = same spreadsheet; else ID of the spreadsheet holding IENN Invoices
+var IENN_INVOICES_SHEET = 'Invoices';   // live invoice v4 tab name
 var INVOICE_ID_HEADERS = ['invoice', 'invoice #', 'invoice no', 'invoice number', 'number', 'id', 'order id'];
 var INVOICE_DATE_HEADERS = ['timestamp', 'created', 'submitted', 'date'];
 var INVOICE_EMAIL_HEADERS = ['customer email', 'email', 'customeremail'];
@@ -43,12 +43,25 @@ var INVOICE_QTY_HEADERS = ['qty', 'quantity'];
 var INVOICE_PAID_HEADERS = ['paid', 'paid?'];
 var INVOICE_PAYMENT_HEADERS = ['payment', 'payment method'];
 var IENN_STATUS_COLUMNS = ['Status', 'Handled by', 'Our response'];   // added to IENN Invoices if missing
-var IENN_STATUSES = ['New', 'Claimed', 'Paid', 'Picked up', 'Cancelled'];
-var SUBMISSION_DATE_HEADERS = ['week', 'week of', 'week start', 'date', 'timestamp', 'submitted', 'submitted at'];
+var IENN_STATUSES = ['New', 'Claimed', 'Confirmed', 'Paid', 'Picked up', 'Cancelled'];
+/* The exact pickup address is ONLY put in a reply draft once the order has one of these statuses (Andrew confirmed it). */
+var IENN_CONFIRMED_STATUSES = ['Confirmed', 'Paid', 'Picked up'];
+/* Checked in THIS order (first alias that has a readable date wins). Inventory v4 stores 'week' as '2026-W42' text and 'at' as epoch ms. */
+var SUBMISSION_DATE_HEADERS = ['at', 'submitted at', 'timestamp', 'submitted', 'date', 'week', 'week of', 'week start'];
 var CATALOG_ID_HEADERS = ['id', 'plant id', 'plantid'];
-var CATALOG_NAME_HEADERS = ['name', 'common name', 'plant', 'plant name'];
+var CATALOG_NAME_HEADERS = ['name', 'common name', 'common', 'plant', 'plant name'];
+var CATALOG_LATIN_HEADERS = ['latin', 'botanical', 'botanical name', 'scientific name'];   // optional; appended as "Name (Latin)"
 /* Optional Catalog column: full image URL (or site-relative path) that overrides the website's assets/plants/<id>.jpg. Leave blank to use the local photo. */
 var CATALOG_PHOTO_HEADERS = ['photo', 'photo url', 'image', 'image url', 'picture'];
+/* Optional Catalog column "Pin" (or "Featured"): a number pins in that order (1 first); other text (yes, x) pins after the numbered ones.
+   Blank / "no" / "n" / "false" = not pinned. iennSetup adds the "Pin" header if missing. */
+var CATALOG_PIN_HEADERS = ['pin', 'pinned', 'featured'];
+var IENN_PIN_HEADER = 'Pin';
+/* Optional Catalog column "Badge": free text shown as a badge on the plant (feed field `badge`, '' when blank/missing). iennSetup adds the header if missing. */
+var CATALOG_BADGE_HEADERS = ['badge'];
+var IENN_BADGE_HEADER = 'Badge';
+/* Popularity sort on the website: units ordered in the last N days (Invoices, Cancelled excluded). */
+var IENN_POPULAR_DAYS = 90;
 
 /** Prices by size (confirmed by Eric). Keys are the size names the existing tool uses. */
 var IENN_SIZES = [
@@ -63,7 +76,7 @@ var IENN_MAX_QTY_PER_LINE = 99;
 
 /** Team notification is done by the existing submitInvoice. Keep false to avoid a duplicate email.
     Set true (and fill the placeholders) only if submitInvoice turns out NOT to email the team. */
-var IENN_EXTRA_TEAM_EMAIL = false;
+var IENN_EXTRA_TEAM_EMAIL = true;   // live: one email To Andrew, CC Eric + Keith
 
 /** Andrew owns order-to-pickup. New orders get Handled by = Andrew; the claim action defaults to Andrew. */
 var IENN_ORDER_OWNER = 'Andrew';
@@ -78,13 +91,17 @@ var TEAM_EMAIL_CC = [
 var TEAM_EMAILS = [TEAM_EMAIL_TO].concat(TEAM_EMAIL_CC);   // everyone on order emails (kept for compatibility)
 
 /** Customer reply drafts (never sent automatically). Keep {{...}} until confirmed. */
+/* EXACT addresses: used ONLY in the confirmed reply draft (iennConfirmAndDraft). Never in the website feed, the automatic
+   customer email, the team alert or the print list. Fill these in Apps Script only, never in the public repo. */
 var PICKUP_ADDRESS = '{{PICKUP_ADDRESS}}';
+var PICKUP_ALT_ADDRESS = '{{PICKUP_ALT_ADDRESS}}'   // alternate, available on request;
+var PICKUP_UNCONFIRMED_TEXT = 'Exact address sent once your order is confirmed';
 var DEFAULT_PAYMENT_METHOD = 'Cash or Zelle at time of pickup';  // no Zelle handle until confirmed
 var PICKUP_CITY = 'Fontana';
 var PICKUP_AREA = 'Fontana area, near Sierra & Baseline, about 10 minutes from the 210';   // context only; exact address goes in PICKUP_ADDRESS once confirmed
 var PAYMENT_TERMS = 'Cash or Zelle at time of pickup.';
 var PICKUP_SCHEDULE = 'Saturdays 10 a.m. – 2 p.m.';
-var PICKUP_FINE_PRINT = ['Grand Terrace pickup available upon request.', 'Other pickup times available case by case upon request.'];
+var PICKUP_FINE_PRINT = ['Other pickup times available case by case upon request.'];
 var SIGN_OFF = 'Thank you for supporting native plants!\nInland Empire Native Nursery';
 
 /* ---- Promos tab (website banner) ----

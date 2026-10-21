@@ -7,7 +7,8 @@
  * Logo: uses the locked logo file from the website as-is (IENN_LOGO_URL); not redrawn or recoloured.
  */
 var IENN_LOGO_URL = 'https://www.inlandempirenativenursery.com/images/ienn-logo-IMG_2773.jpg'; // set to where the site is hosted
-var IENN_WEBSITE_URL = 'https://inlandempirenativenursery-bit.github.io/ienn-website/order.html';             // set to the live order page
+var IENN_WEBSITE_URL = 'https://www.inlandempirenativenursery.com/order.html';
+var IENN_SHOP_URL = 'https://www.inlandempirenativenursery.com/';             // set to the live order page
 var IENN_APPEAL_KEYWORDS = ['white sage', 'salvia apiana', 'monkeyflower', 'mimulus', 'diplacus', 'poppy', 'eschscholzia', 'penstemon',
   'sage', 'salvia', 'buckwheat', 'eriogonum', 'milkweed', 'asclepias', 'lupine', 'woolly blue curls', 'ceanothus', 'yarrow', 'achillea',
   'verbena', 'aster', 'fuchsia', 'epilobium', 'coreopsis', 'encelia'];
@@ -39,7 +40,7 @@ function iennPrintHtml_() {
     '<div class="sub">' + date + ' · Prices by size, taxes included · Numbers = available now · "On request" = ask us</div></div></header>' +
     '<div class="btns"><a href="javascript:window.print()">Print</a><a href="?view=print&format=pdf">Export PDF</a><a href="?view=print&format=csv">Export CSV</a></div>' +
     '<table><thead><tr><th>Plant</th>' + head + '</tr></thead><tbody>' + rows + '</tbody></table>' +
-    '<p class="sub">Pickup only · Fontana area · Saturdays 10 a.m. – 2 p.m. · Cash or Zelle at time of pickup · Call or text Andrew: <a href="tel:' + IENN_CONTACT_TEL + '">' + IENN_CONTACT_PHONE + '</a></p><p class="sub" style="font-size:10px">Grand Terrace pickup available upon request.</p><p class="sub fine-print" style="font-size:10px">Other pickup times available case by case upon request.</p></body></html>';
+    '<p class="sub">Pickup only · Fontana area · Saturdays 10 a.m. – 2 p.m. · Cash or Zelle at time of pickup · Call or text Andrew: <a href="tel:' + IENN_CONTACT_TEL + '">' + IENN_CONTACT_PHONE + '</a></p><p class="sub fine-print" style="font-size:10px">Other pickup times available case by case upon request.</p></body></html>';
 }
 
 function iennPrintCsv_() {
@@ -88,6 +89,6 @@ function iennHubHtml_() {
     link(exec, 'Counts &amp; invoices', 'Weekly counts (internal view)') +
     link(invUrl, 'Orders', count('New') + ' New · ' + count('Claimed') + ' Claimed · ' + count('Paid') + ' Paid, awaiting pickup') +
     link(exec + '?view=print', 'Print plant list', 'Print, PDF or CSV') +
-    link(IENN_WEBSITE_URL, 'Website shop', 'What customers see') +
+    link(IENN_SHOP_URL, 'Website shop', 'What customers see') +
     '</div><p style="font-size:13px;color:#555">Andrew handles orders from New to Picked up: New → Claimed → Paid → Picked up. Reply with IENN menu › Draft reply.</p></body></html>';
 }

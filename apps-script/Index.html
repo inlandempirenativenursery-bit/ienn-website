@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>IENN team invoice (internal)</title>
+<style>
+:root { --green:#71776D; --gray:#6B6B6B; --line:#D5D5D5; --light:#F3F6F3; --dark:#222; --pad:clamp(12px,4vw,24px); }
+* { box-sizing: border-box; }
+body { margin:0; font:16px/1.35 system-ui,-apple-system,sans-serif; color:var(--dark); background:#fff; padding:var(--pad); padding-bottom:max(48px, env(safe-area-inset-bottom)); }
+header { display:grid; grid-template-columns:1fr auto; gap:12px; align-items:center; margin-bottom:20px; }
+.brand h1 { margin:0; color:var(--green); font-size:clamp(1.05rem,4.5vw,1.4rem); line-height:1.15; }
+.meta { color:var(--gray); font-size:.85rem; margin-top:2px; }
+.est { color:#9a9a9a; font-size:.72rem; font-weight:400; letter-spacing:.06em; margin-top:2px; margin-bottom:8px; }
+label.field { display:block; font-size:.8rem; color:var(--gray); margin-bottom:12px; }
+input, select { width:100%; font:inherit; padding:10px 12px; border:1px solid var(--line); border-radius:8px; min-height:44px; background:#fff; }
+.lines { display:grid; gap:10px; }
+.line-head { display:flex; justify-content:space-between; align-items:center; }
+.line-head button { background:none; border:0; color:var(--gray); font:inherit; font-size:.8rem; min-height:32px; padding:0 6px; }
+.add-line { width:100%; min-height:44px; margin:10px 0 14px; border:1.5px dashed var(--green); border-radius:10px; background:#fff; color:var(--green); font:inherit; font-weight:700; }
+.line { display:grid; gap:8px; padding:12px; background:var(--light); border-radius:10px; }
+.row3 { display:grid; grid-template-columns:minmax(0,1.4fr) 88px minmax(96px,0.7fr); gap:8px; }
+.line h2 { margin:0; font-size:.75rem; color:var(--green); text-transform:uppercase; }
+.line .lbl { display:block; font-size:.72rem; color:var(--gray); margin:0 0 4px; }
+.totals { margin:8px 0 16px; display:grid; gap:8px; max-width:22rem; margin-left:auto; }
+.total-row { display:flex; justify-content:flex-end; align-items:center; gap:10px; font-weight:600; }
+.total-row.grand { font-weight:700; border-top:1px solid var(--line); padding-top:8px; }
+.total-row .muted { color:var(--gray); font-weight:500; }
+.total-row input { width:110px; font-weight:inherit; }
+.actions { display:grid; gap:10px; }
+.actions button { width:100%; min-height:48px; border:0; border-radius:10px; font:inherit; font-weight:700; color:#fff; background:var(--green); }
+.legal { font-size:.72rem; font-style:italic; color:var(--gray); text-align:center; max-width:40rem; margin:28px auto 0; }
+@media (min-width:720px) {
+  body { max-width:720px; margin:0 auto; }
+  .line { position:relative; grid-template-columns:minmax(0,1.7fr) minmax(0,1fr) 80px minmax(96px,0.8fr); align-items:end; padding-right:52px; }
+  .line h2 { display:none; }
+  .line .line-head { position:absolute; top:8px; right:8px; }
+  .line .row3 { display:contents; }
+}
+.status { margin-top:10px; padding:8px; border-radius:6px; font-size:.9rem; display:none; }
+.ok { background:#e8f5e9; color:#2e7d32; }
+.err { background:#ffebee; color:#c62828; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <h1>INLAND EMPIRE<br>NATIVE NURSERY</h1>
+    <p style="margin:4px 0;font-weight:700">Team invoice (internal) · <a href="?view=hub" target="_top">Team home</a> · <a href="?view=print" target="_top">Print list</a></p>
+    <div class="est">Established 2020</div>
+    <div class="meta">1 (909) 609-9373 · Fontana, CA 92336</div>
+  </div>
+</header>
+
+<label class="field">Your email (we’ll send a copy of the order)
+  <input type="email" id="customerEmail" placeholder="you@email.com" required>
+</label>
+
+<label class="field">Special notes for your order
+  <input type="text" id="note" placeholder="Anything we should know (pickup time, substitution, etc.)">
+</label>
+
+<div id="lines" class="lines"></div>
+<button type="button" class="add-line" id="btn-add">+ Add line</button>
+
+<div class="totals">
+  <div class="total-row"><span class="muted">Subtotal</span><input id="subtotal" readonly></div>
+  <div class="total-row"><span class="muted" id="tax-label">Tax 8.75%</span><input id="tax" readonly></div>
+  <div class="total-row grand"><span>TOTAL (tax included)</span><input id="grand" readonly></div>
+</div>
+
+<div class="actions">
+  <button type="button" id="btn-send">Place Order</button>
+</div>
+<div id="status" class="status"></div>
+
+<div class="legal">
+  All sales are final. Plants are sold as-is. No returns, exchanges, or refunds after pickup. Identity is as marked on this receipt. No warranty beyond defects obvious at the time of pickup. Pickup-only in the Fontana / Grand Terrace area.
+</div>
+
+<script>
+let plants = [], sizes = [], prices = { "2\"": 3, "4\"": 6, "Tree pot": 10, "1 gal": 15, taxPct: 8.75 };
+let stock = {};
+const root = document.getElementById("lines");
+
+function plantKey(name) {
+  const short = (name || "").split(" (")[0].trim().toLowerCase();
+  return short;
+}
+
+function availableFor(plantFull, size) {
+  if (!stock || (size !== "4\"" && size !== "1 gal")) return null;
+  const key = plantKey(plantFull);
+  for (const k in stock) {
+    if (plantKey(k) === key || k.toLowerCase().includes(key) || key.includes(k.toLowerCase())) {
+      return stock[k][size] || 0;
+    }
+  }
+  return 0;
+}
+
+function renumber() {
+  root.querySelectorAll(".line").forEach((row, i) => {
+    row.querySelector("h2").textContent = "Line " + (i + 1);
+    const rm = row.querySelector(".rm");
+    if (rm) rm.style.visibility = root.children.length > 1 ? "visible" : "hidden";
+  });
+}
+
+function updateAvailable(row) {
+  const plant = row.querySelector(".plant").value;
+  const size = row.querySelector(".size").value;
+  const availEl = row.querySelector(".avail");
+  const qtyInput = row.querySelector(".qty");
+  const avail = availableFor(plant, size);
+  if (avail === null) {
+    availEl.textContent = "";
+    qtyInput.removeAttribute("max");
+  } else {
+    availEl.textContent = avail > 0 ? avail + " available" : "Out of stock";
+    qtyInput.max = avail;
+    if (parseFloat(qtyInput.value) > avail) qtyInput.value = avail || "";
+    if (avail === 0) qtyInput.value = "";
+  }
+}
+
+function addLine() {
+  const el = document.createElement("article");
+  el.className = "line";
+  el.innerHTML = `<div class="line-head"><h2></h2><button type="button" class="rm">Remove</button></div>
+    <div>
+      <span class="lbl">Plant</span>
+      <select class="plant">${plants.map(p => `<option>${p}</option>`).join("")}</select>
+    </div>
+    <div class="row3">
+      <div><span class="lbl">Size</span><select class="size">${sizes.map(s => `<option>${s}</option>`).join("")}</select><div class="avail" style="font-size:.7rem;color:#6B6B6B;margin-top:2px;"></div></div>
+      <div><span class="lbl">Qty</span><input class="qty" inputmode="numeric" placeholder="1" min="0"></div>
+      <div><span class="lbl">Amount</span><input class="amt" inputmode="decimal" placeholder="$"></div>
+    </div>`;
+  el.querySelector(".rm").onclick = () => {
+    if (root.children.length <= 1) return;
+    el.remove();
+    renumber();
+    recalc();
+  };
+  el.querySelector(".plant").onchange = () => updateAvailable(el);
+  el.querySelector(".size").onchange = () => { updateAvailable(el); autoPrice(el); };
+  el.querySelector(".qty").oninput = () => autoPrice(el);
+  root.appendChild(el);
+  renumber();
+  updateAvailable(el);
+}
+
+function autoPrice(row) {
+  const size = row.querySelector(".size").value;
+  const qty = parseFloat(row.querySelector(".qty").value) || 0;
+  const unit = prices[size];
+  if (unit != null && qty > 0) {
+    row.querySelector(".amt").value = (unit * qty).toFixed(2);
+  }
+  recalc();
+}
+
+function money(n) { return (Number(n) || 0).toFixed(2); }
+function taxRate() { return (prices.taxPct || 8.75) / 100; }
+
+function recalc() {
+  let sum = 0;
+  document.querySelectorAll(".line").forEach((row) => {
+    const amt = parseFloat(row.querySelector(".amt").value);
+    if (!isNaN(amt)) sum += amt;
+  });
+  const grand = Math.max(0, sum);
+  const rate = taxRate();
+  const sub = grand / (1 + rate);
+  const tax = grand - sub;
+  document.getElementById("tax-label").textContent = "Tax " + (prices.taxPct || 8.75) + "%";
+  document.getElementById("subtotal").value = money(sub);
+  document.getElementById("tax").value = money(tax);
+  document.getElementById("grand").value = money(grand);
+}
+
+function collect() {
+  const lines = [];
+  document.querySelectorAll(".line").forEach((row) => {
+    const plant = row.querySelector(".plant").value;
+    const size = row.querySelector(".size").value;
+    const qty = row.querySelector(".qty").value.trim();
+    const amt = row.querySelector(".amt").value.trim();
+    if (plant && plant !== "Plant" && (qty || amt)) {
+      lines.push({ plant, size, qty: qty || "1", amt: amt || "0" });
+    }
+  });
+  return {
+    date: new Date().toISOString().slice(0,10),
+    paid: "unpaid",
+    payment: "",
+    customerEmail: document.getElementById("customerEmail").value.trim(),
+    discType: "none",
+    discAmt: "",
+    note: document.getElementById("note").value.trim(),
+    lines,
+    subtotal: document.getElementById("subtotal").value,
+    tax: document.getElementById("tax").value,
+    grand: document.getElementById("grand").value
+  };
+}
+
+function showStatus(msg, ok) {
+  const el = document.getElementById("status");
+  el.textContent = msg;
+  el.className = "status " + (ok ? "ok" : "err");
+  el.style.display = "block";
+}
+
+document.getElementById("btn-add").onclick = addLine;
+document.getElementById("lines").addEventListener("input", recalc);
+document.getElementById("lines").addEventListener("change", recalc);
+
+document.getElementById("btn-send").onclick = () => {
+  const data = collect();
+  if (!data.customerEmail || data.customerEmail.indexOf("@") < 1) {
+    showStatus("Please enter your email so we can send a copy", false);
+    return;
+  }
+  if (!data.lines.length) { showStatus("Add at least one plant", false); return; }
+  document.getElementById("btn-send").disabled = true;
+  google.script.run
+    .withSuccessHandler(res => {
+      document.getElementById("btn-send").disabled = false;
+      showStatus("Order placed! We’ll email you a copy. We’ll confirm pickup details.", true);
+      document.getElementById("note").value = "";
+      document.getElementById("customerEmail").value = "";
+      root.innerHTML = "";
+      addLine();
+      recalc();
+    })
+    .withFailureHandler(err => {
+      document.getElementById("btn-send").disabled = false;
+      showStatus(err.message || "Could not place order", false);
+    })
+    .iennSubmitInvoiceChecked(data);
+};
+
+google.script.run.withSuccessHandler(init => {
+  plants = ["Plant"].concat(init.plants);
+  sizes = ["Size"].concat(init.sizes);
+  prices = init.defaultPrices;
+  stock = init.stock || {};
+  root.innerHTML = "";
+  addLine();
+  recalc();
+}).getInitial();
+</script>
+</body>
+</html>
