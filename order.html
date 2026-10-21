@@ -307,6 +307,7 @@
 
   <script src="plant-photos.js"></script>
   <script src="stock-view.js"></script>
+  <script src="feed-order.js"></script>
   <script>
     /* ===== IENN SETTINGS =====
        APPS_SCRIPT_URL: the existing IENN inventory/invoice web app (/exec). The page reads ?view=inventory from it
@@ -360,7 +361,7 @@
       }
       function appeal(p) { var t = (p.name + " " + p.botanical).toLowerCase(); for (var i = 0; i < APPEAL_KEYWORDS.length; i++) if (t.indexOf(APPEAL_KEYWORDS[i]) >= 0) return i; return 999; }
       function rk(p) { return p.rank == null || p.rank === "" || isNaN(Number(p.rank)) ? 1e9 : Number(p.rank); }
-      function sortPlants(a) { var r = { ok: 0, ask: 1, out: 2 }; return a.sort(function (x, y) { return r[pstate(x)] - r[pstate(y)] || rk(x) - rk(y) || appeal(x) - appeal(y) || x.name.localeCompare(y.name); }); }
+      function sortPlants(a) { return IENNOrder.order(a); }   // feed order; server decides (see feed-order.js)
       function split(full) { var m = /^(.*?)\s*\((.*)\)\s*$/.exec(full || ""); return m ? [m[1], m[2]] : [String(full || "").trim(), ""]; }
 
       var BATCH = 12, shown = 0, io = null;
@@ -571,7 +572,7 @@
 
       function fromInventory(d) {
         return (d.plants || []).map(function (p) {
-          return { id: slug(p.name), name: p.name, fullName: p.fullName || p.name, botanical: p.botanical || "", badge: p.badge ? String(p.badge).trim() : "", rank: p.rank != null ? p.rank : p.priority != null ? p.priority : p.sort, image: p.image || (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).src || "", srcset: p.image ? "" : (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).srcset || "",
+          return { id: slug(p.name), name: p.name, fullName: p.fullName || p.name, botanical: p.botanical || "", badge: p.badge ? String(p.badge).trim() : "", rank: p.rank, pinned: p.pinned, image: p.image || (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).src || "", srcset: p.image ? "" : (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).srcset || "",
             sizes: (p.sizes || []).map(function (z) { return { key: z.key, label: z.size || SIZE_LABELS[z.key] || z.key, price: isFinite(Number(z.price)) && z.price !== "" && z.price != null ? Number(z.price) : PRICES[z.key], qty: z.qty == null ? null : Number(z.qty) }; }) };
         });
       }

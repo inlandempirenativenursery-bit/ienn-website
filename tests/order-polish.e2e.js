@@ -29,7 +29,7 @@ const feed = () => ({ version: 3, updated: new Date().toISOString(), taxIncluded
     const { ctx, page, errs } = await open(w); await page.evaluate(() => localStorage.clear()); await page.reload();
     await page.waitForSelector('.card:not(.skel)');
     const names = await page.locator('.card h3').allTextContents();
-    assert.match(names[0], /White Sage/, 'popular first: ' + names.join(','));
+    assert.match(names[0], /Yarrow/, 'feed order (no rank fields): ' + names.join(','));
     // review-oct20 rules: counted feed => all-zero plants hidden, 0-qty chips hidden, nothing preselected, no exact counts
     assert.strictEqual(await page.locator('.card', { hasText: 'Woolly Blue Curls' }).count(), 0, 'woolly (all 0) hidden');
     assert.strictEqual(await page.locator('.card', { hasText: 'Toyon' }).count(), 0, 'toyon (all 0) hidden');
