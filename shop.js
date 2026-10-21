@@ -255,12 +255,11 @@
   })();
 
   /* Badges: a manual `badge` string from the feed (sheet "Badge" column) always wins. Otherwise, only when the feed carries real
-     sales data: top plant = "#1 Selling", next 3 = "Popular". Prefer numeric `popularity` (>0), else `rank`. Never invented. One per card. */
+     sales data: top plant = "#1 Selling", next 3 = "Popular". Only numeric `popularity` > 0 counts; `rank` is never used. Never invented. One per card. */
   function autoBadges(raw) {
     var num = function (v) { return v != null && v !== "" && isFinite(Number(v)) ? Number(v) : null; }, out = {}, order;
     var pop = raw.filter(function (p) { return num(p.popularity) > 0; });
-    if (pop.length) order = pop.slice().sort(function (a, b) { return num(b.popularity) - num(a.popularity); });
-    else order = raw.filter(function (p) { return num(p.rank) != null; }).sort(function (a, b) { return num(a.rank) - num(b.rank); });
+    order = pop.slice().sort(function (a, b) { return num(b.popularity) - num(a.popularity); });
     order.slice(0, 4).forEach(function (p, i) { out[p.name] = i === 0 ? "top" : "pop"; });
     return out;
   }
