@@ -4,7 +4,7 @@
  * token = HMAC-SHA256(orderId) keyed with Script Property IENN_CONFIRM_SECRET (auto-created on first use).
  * The web app runs as the owner (nursery account), so the thank-you DRAFT lands in that Gmail. It is never sent.
  */
-var IENN_WEBAPP_URL = '';   // optional: the /exec URL, used only if ScriptApp.getService().getUrl() is empty or a /dev URL
+var IENN_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec';   // the ONE live deployment; always preferred (getUrl() can return /dev or an old deployment)
 var IENN_DRAFTS_URL = 'https://mail.google.com/mail/#drafts';
 var IENN_DRAFTS_ACCOUNT = 'NURSERY_ACCOUNT_PLACEHOLDER@example.com';
 
@@ -23,9 +23,9 @@ function iennSafeEqual_(a, b) {   // constant time for equal-length strings
   return diff === 0;
 }
 function iennWebAppUrl_() {
+  if (IENN_WEBAPP_URL && !/\/dev$/.test(IENN_WEBAPP_URL)) return IENN_WEBAPP_URL;
   var u = ''; try { u = ScriptApp.getService().getUrl() || ''; } catch (e) { u = ''; }
-  if ((!u || /\/dev$/.test(u)) && IENN_WEBAPP_URL) u = IENN_WEBAPP_URL;
-  return u;
+  return /\/dev$/.test(u) ? '' : u;   // never hand out a /dev link
 }
 function iennConfirmLink_(orderId) {
   var base = iennWebAppUrl_(); if (!base) return '';
