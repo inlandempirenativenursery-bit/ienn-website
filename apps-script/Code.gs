@@ -133,7 +133,10 @@ function getAvailableStock() {
   Object.keys(d).forEach(function (n) { out[n] = { '4"': d[n]['4"'].ready, '1 gal': d[n]['1 gal'].ready }; });
   return out;
 }
-/** { name: { '4"': {ready, onHand}, '1 gal': {...} } } from the latest week's Submissions. */
+/** { name: { '2"'|'4"'|'Tree pot'|'1 gal': {ready, onHand} } } from the latest week's Submissions.
+    stock.__counted (non-enumerable) = { sizeKey: true } for sizes the newest week actually has keys for;
+    2" and Tree pot were added Oct 2026, so older counts without them leave those sizes untracked ("On request"). */
+var IENN_COUNT_SIZES = [['2"', 'two', 'twoReady'], ['4"', 'four', 'fourReady'], ['Tree pot', 'tree', 'treeReady'], ['1 gal', 'gal1', 'gal1Ready']];
 function iennStockDetail_() {
   var ss = inventoryDb_();
   if (!ss) return {};
@@ -167,21 +170,25 @@ function iennStockDetail_() {
   }
 
   // Compile totals only from the most recent week
-  var stock = {};
+  var stock = {}, counted = {};
   Object.keys(latest).forEach(function (person) {
     var entry = latest[person];
     if (entry.week !== currentWeek) return;
     var counts = entry.counts || {};
     Object.keys(counts).forEach(function (plantId) {
       var name = idToName[plantId] || plantId;
-      if (!stock[name]) stock[name] = { '4"': { ready: 0, onHand: 0 }, '1 gal': { ready: 0, onHand: 0 } };
+      if (!stock[name]) { stock[name] = {}; IENN_COUNT_SIZES.forEach(function (z) { stock[name][z[0]] = { ready: 0, onHand: 0 }; }); }
       var c = counts[plantId] || {};
-      [['4"', 'four', 'fourReady'], ['1 gal', 'gal1', 'gal1Ready']].forEach(function (z) {
-        var oh = Number(c[z[1]]) || 0, rd = (c[z[2]] === undefined || c[z[2]] === null || c[z[2]] === '') ? oh : (Number(c[z[2]]) || 0);
+      IENN_COUNT_SIZES.forEach(function (z) {
+        var has = function (k) { return !(c[k] === undefined || c[k] === null || c[k] === ''); };
+        if (has(z[1]) || has(z[2])) counted[z[0]] = true;
+        var oh = Number(c[z[1]]) || 0, rd = has(z[2]) ? (Number(c[z[2]]) || 0) : oh;
         stock[name][z[0]].onHand += oh; stock[name][z[0]].ready += rd;
       });
     });
   });
+  // Sizes with any count key in the newest week (non-enumerable so callers iterating plant names never see it).
+  Object.defineProperty(stock, '__counted', { value: counted, enumerable: false });
   return stock;
 }
 

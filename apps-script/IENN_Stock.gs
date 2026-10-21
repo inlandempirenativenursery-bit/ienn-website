@@ -20,6 +20,10 @@ function iennSize_(s) {
   return null;
 }
 
+/** Is size s stock-tracked for this availability map? Always-tracked sizes (4", 1 gal) yes; optional sizes (2", Tree pot)
+    only when the newest count has data for them (avail.__counted). */
+function iennTracked_(s, avail) { return !!(s && (s.tracked || (avail && avail.__counted && avail.__counted[s.key]))); }
+
 /** Latest count date in Submissions (Date or null). */
 function iennBaselineDate_() {
   var sh = iennSs_().getSheetByName(IENN_SUBMISSIONS_SHEET); if (!sh) return null;
@@ -74,20 +78,22 @@ function iennSoldSince_(baseline) {
   return out;
 }
 
-/** { plantKey: { '4"': readyLeft, '1 gal': readyLeft, __extra: { '4"': n, '1 gal': n } } }.
-    Ready = fourReady/gal1Ready (missing key -> on hand) minus units sold since the latest count.
+/** { plantKey: { '4"': readyLeft, '1 gal': readyLeft, ['2"', 'Tree pot' when counted,] __extra: { sizeKey: n } } }.
+    Ready = <size>Ready (missing key -> on hand) minus units sold since the latest count. out.__counted (non-enumerable) lists optional sizes the newest count covers.
     __extra = on hand minus ready, floored at 0 (smaller plants not retail-ready yet). */
 function iennAvailable_(baseline) {
   if (baseline === undefined) baseline = iennBaselineDate_();
   var out = {}; if (!baseline) { out.__noBaseline = true; return out; }   // no count yet: every tracked qty is unknown (null), never 0
-  var base = (typeof iennStockDetail_ === 'function' ? iennStockDetail_() : null), sold = iennSoldSince_(baseline);
+  var base = (typeof iennStockDetail_ === 'function' ? iennStockDetail_() : null), sold = iennSoldSince_(baseline), counted = (base && base.__counted) || {};
+  Object.defineProperty(out, '__counted', { value: counted, enumerable: false });
+  var tracked = function (s) { return s.tracked || !!counted[s.key]; };
   if (!base) { base = {}; var g = getAvailableStock() || {}; Object.keys(g).forEach(function (n) { base[n] = {}; Object.keys(g[n]).forEach(function (z) { base[n][z] = { ready: Number(g[n][z]) || 0, onHand: Number(g[n][z]) || 0 }; }); }); }
   Object.keys(base).forEach(function (name) {
     var k = iennKey_(name); out[k] = out[k] || { __extra: {} };
-    IENN_SIZES.forEach(function (s) { if (!s.tracked) return; var c = (base[name] || {})[s.key] || { ready: 0, onHand: 0 };
+    IENN_SIZES.forEach(function (s) { if (!tracked(s)) return; var c = (base[name] || {})[s.key] || { ready: 0, onHand: 0 };
       out[k][s.key] = (out[k][s.key] || 0) + c.ready; out[k].__extra[s.key] = (out[k].__extra[s.key] || 0) + Math.max(0, c.onHand - c.ready); });
   });
-  Object.keys(out).forEach(function (k) { IENN_SIZES.forEach(function (s) { if (s.tracked) out[k][s.key] = Math.max(0, out[k][s.key] - (sold[k + '|' + s.key] || 0)); }); });
+  Object.keys(out).forEach(function (k) { IENN_SIZES.forEach(function (s) { if (tracked(s)) out[k][s.key] = Math.max(0, out[k][s.key] - (sold[k + '|' + s.key] || 0)); }); });
   return out;
 }
 
@@ -97,7 +103,7 @@ function iennStockCheck_(lines, avail) {
   var need = {}, problems = [], notices = [];
   if (!avail || avail.__noBaseline) return { problems: problems, notices: notices, message: '' };
   (lines || []).forEach(function (l) {
-    var s = iennSize_(l.size); if (!s || !s.tracked) return;
+    var s = iennSize_(l.size); if (!iennTracked_(s, avail)) return;
     var k = iennKey_(l.plant) + '|' + s.key; need[k] = need[k] || { plant: iennSplit_(l.plant)[0], s: s, qty: 0 }; need[k].qty += Number(l.qty || 0);
   });
   Object.keys(need).forEach(function (k) {
