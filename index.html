@@ -37,16 +37,15 @@
     }
     .logo { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: inherit; }
     .logo img { height: 64px; width: auto; display: block; }
-    .logo-text { font-weight: 700; font-size: 1.05rem; color: var(--sage-dark); }
     .steps-strip { display:flex; justify-content:center; gap:0.9rem; list-style:none; margin:0.5rem auto 0; padding:0.3rem 0.8rem; font-size:0.78rem; color:#4a5a4a; background:#f8f6f3; border:1px solid #e6e2da; border-radius:999px; width:max-content; max-width:100%; }
     .steps-strip li + li::before { content:"·"; margin-right:0.9rem; color:#9aa69a; }
     .steps-strip b { font-weight:700; color:#6b7c6a; }
-    .hdr-slogan { font-size:0.66rem; color:#888; font-style:italic; line-height:1.2; white-space:nowrap; }
-    @media (max-width:480px) { .hdr-slogan { font-size:0.56rem; letter-spacing:-0.1px; } }
+    .brand-name { font-weight:800; font-size:1.12rem; line-height:1.1; letter-spacing:-0.02em; color:#3d4b3d; text-shadow:0 1px 0 #fff, 0 2px 3px rgba(61,75,61,0.18); }
+    .hdr-slogan { font-weight:700; font-size:0.8rem; line-height:1.2; color:#2f6b2f; margin-top:0.15rem; text-shadow:0 1px 0 rgba(255,255,255,0.9); }
+    @media (max-width:480px) { .brand-name { font-size:0.98rem; } .hdr-slogan { font-size:0.72rem; } }
     .strip-wrap { display:flex; justify-content:flex-end; padding:0 1rem; margin-top:0.35rem; }
     .strip-wrap .steps-strip { margin:0; }
     @media (max-width:600px) { .strip-wrap { justify-content:center; } }
-    .logo-sub { font-size: 0.65rem; color: var(--sage); letter-spacing: 0.4px; }
     .order-btn {
       background: var(--red);
       color: #fff;
@@ -191,7 +190,6 @@
     @keyframes bump { from { transform: translateY(-6px); opacity: .4; } to { transform: none; opacity: 1; } }
     @media (prefers-reduced-motion: reduce) { .cart-bar.bump #cart-count { animation: none; } }
     /* consistency with order.html: badges, 44px targets, primary button */
-    .slogan { font-size: 0.85rem; letter-spacing: 0.04em; color: var(--sage); margin-bottom: 0.4rem; }
     .badge.in { background: #e6f4e7; color: #2e7d32; }
     .badge.low { background: #fff4d6; color: #7a5a00; }
     .badge.out { background: #eee; color: #666; }
@@ -242,8 +240,7 @@
     <a href="index.html" class="logo">
       <img src="images/ienn-logo-IMG_2773-600.jpg" width="52" height="64" alt="Inland Empire Native Nursery logo">
       <div>
-        <div class="logo-text">IENN</div>
-        <div class="logo-sub">INLAND EMPIRE NATIVE NURSERY</div>
+        <div class="brand-name">Inland Empire Native Nursery</div>
         <div class="hdr-slogan">Connecting people to native plants.</div>
       </div>
     </a>
@@ -255,18 +252,16 @@
   <div class="strip-wrap"><ol class="steps-strip" aria-label="How to order"><li><b>1.</b> Click</li><li><b>2.</b> Order</li><li><b>3.</b> Pick up</li></ol></div>
 
   <section class="hero">
-    <p class="slogan">Connecting people to native plants</p>
     <h1>Locally grown California native plants for the Inland Empire</h1>
-    <p>Healthy, climate-adapted plants ready for pickup. No shipping — just plants that thrive here.</p>
   </section>
 
   <section class="plants" id="plants">
     <h2>Shop native plants</h2>
-    <p style="font-size:0.95rem; color:#555; margin-bottom:0.5rem;">Pick a quantity, tap Add, then check out. Prices by pot size: 2" $3 • 4" $6 • Tree pot $10 • 1 gal $15. 2" and Tree pot are available on request. <a href="#" id="printlist-link" target="_blank" rel="noopener" style="color:var(--sage-dark)">Printable plant list</a></p>
     <p class="shop-status" id="shop-status" role="status">Loading live availability…</p>
     <div class="plant-grid" id="shop-grid" aria-busy="true">
       <div class="plant-card skel"></div><div class="plant-card skel"></div><div class="plant-card skel"></div><div class="plant-card skel"></div>
     </div>
+    <p class="printlist" style="text-align:center;margin-top:1rem;font-size:0.9rem;"><a href="#" id="printlist-link" target="_blank" rel="noopener" style="color:var(--sage-dark)">Printable plant list</a></p>
     <noscript><p><a href="order.html">Open the order form</a> to choose plants.</p></noscript>
   </section>
 
