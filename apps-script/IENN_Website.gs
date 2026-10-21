@@ -132,13 +132,13 @@ function iennTeamEmail_(id, data, meta) {
   var ok = function (a) { return a && !/PLACEHOLDER/i.test(a); };
   var to = ok(TEAM_EMAIL_TO) ? TEAM_EMAIL_TO : '', cc = TEAM_EMAIL_CC.filter(ok); if (!to && !cc.length) return false;
   if (!to) { to = cc.shift(); }
-  var link = iennConfirmLink_(id), direct = iennConfirmExecLink_(id), sheetUrl = iennInvoicesSheet_().getParent().getUrl() + '#gid=' + iennInvoicesSheet_().getSheetId();
+  var link = iennConfirmLink_(id), sheetUrl = iennInvoicesSheet_().getParent().getUrl() + '#gid=' + iennInvoicesSheet_().getSheetId();
   var reqs = iennRequestNote_(data.notices), notesOnly = String(data.note || '').replace(/^REQUEST: .*\n?/gm, '');
   var items = data.lines.map(function (l) { return l.qty + ' × ' + l.plant + ' (' + l.size + ') = $' + l.amt; });
   var body = 'A new order came in (' + (meta.source || 'customer view') + ').\n\nOrder: ' + id + '\nCustomer: ' + (meta.name || '') + ' <' + data.customerEmail + '>\n\n' +
     items.map(function (x) { return '  ' + x; }).join('\n') +
     '\n\nTotal: $' + data.grand + ' (taxes included)' + (reqs ? '\n\n' + reqs : '') + '\nNotes: ' + notesOnly + '\n\n' + IENN_ORDER_OWNER + ' is handling this order (order-to-pickup).' +
-    (link ? '\n\nCONFIRM ORDER (one tap, saves the thank-you email to Gmail Drafts, sends nothing): ' + link + (direct ? '\nIf that link does not work, try: ' + direct : '') : '') +
+    (link ? '\n\nCONFIRM ORDER (one tap, saves the thank-you email to Gmail Drafts, sends nothing): ' + link : '') +
     '\n\nView details: ' + sheetUrl + '\nIf someone else takes it, change Handled by in IENN Invoices.';
   var E = iennEsc_, html = '<div style="font-family:system-ui,Arial,sans-serif;font-size:15px;color:#2c2c2c;max-width:560px">' +
     '<p>A new order came in (' + E(meta.source || 'customer view') + ').</p><p><b>Order:</b> ' + E(id) + '<br><b>Customer:</b> ' + E(meta.name || '') + ' &lt;' + E(data.customerEmail) + '&gt;</p>' +
@@ -146,7 +146,7 @@ function iennTeamEmail_(id, data, meta) {
     (reqs ? '<p style="background:#fdecea;border-left:4px solid #c0392b;padding:8px"><b>' + E(reqs).replace(/\n/g, '<br>') + '</b></p>' : '') + '<p><b>Notes:</b><br>' + E(notesOnly).replace(/\n/g, '<br>') + '</p>' +
     (link ? '<p><a href="' + E(link) + '" style="display:inline-block;padding:14px 22px;background:#c0392b;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:17px">Confirm order</a><br>' +
       '<small>One tap: marks it Confirmed and saves the thank-you email (with the pickup address) in Gmail Drafts. Nothing is sent until you press Send there.</small>' +
-      (direct ? '<br><small style="color:#888">If the button does not work, try: ' + E(direct) + '</small>' : '') + '</p>' : '') +
+      '</p>' : '') +
     '<p>' + E(IENN_ORDER_OWNER) + ' is handling this order (order-to-pickup). <a href="' + E(sheetUrl) + '">View details</a>. If someone else takes it, change Handled by in IENN Invoices.</p></div>';
   MailApp.sendEmail({ to: to, cc: cc.join(','), subject: 'New IENN order ' + id + ' — ' + (meta.name || data.customerEmail), body: body, htmlBody: html });
   return true;

@@ -344,7 +344,7 @@ function buildCustomerReceiptText(payload, invno) {
     'We\u2019ll email to confirm your pickup time.',
     '',
     'LOCATION',
-    'Near Sierra & Baseline in Fontana, about 10 minutes from the 210. The exact address is sent after we confirm your order.',
+    'Fontana area, near Sierra & Baseline, about 10 minutes from the 210; exact address once your order is confirmed.',
     '',
     'PAYMENT',
     'Cash or Zelle at time of pickup.' + (payload.payment ? ' You chose: ' + payload.payment + '.' : ''),

@@ -1,7 +1,7 @@
 /**
  * IENN one-tap "Confirm order" link (in Andrew's new-order alert). Andrew never opens the script editor.
  *   Button: https://www.inlandempirenativenursery.com/confirm.html?id=IEN-…&t=<token> (fetches …/exec?action=confirm&…&format=json)
- *   Fallback: GET <web app>/exec?action=confirm&id=IEN-…&t=<token> (HTML page)
+ *   The alert carries ONLY the site link (no script.google.com link in emails); the direct HTML route still works for manual use.
  * token = HMAC-SHA256(orderId) keyed with Script Property IENN_CONFIRM_SECRET (auto-created on first use).
  * The web app runs as the owner (nursery account), so the thank-you DRAFT lands in that Gmail. It is never sent.
  */
@@ -34,7 +34,7 @@ function iennConfirmLink_(orderId) {
   if (!iennWebAppUrl_()) return '';
   return IENN_CONFIRM_PAGE + '?id=' + encodeURIComponent(orderId) + '&t=' + encodeURIComponent(iennConfirmToken_(orderId));
 }
-/** Plain fallback: the direct web-app link (same token, HTML page). */
+/** Direct web-app link (same token, HTML page). Editor/manual use only; never put in emails. */
 function iennConfirmExecLink_(orderId) {
   var base = iennWebAppUrl_(); if (!base) return '';
   return base + '?action=confirm&id=' + encodeURIComponent(orderId) + '&t=' + encodeURIComponent(iennConfirmToken_(orderId));

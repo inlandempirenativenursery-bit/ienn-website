@@ -27,26 +27,26 @@ function load() {
   const byId = { [INV_ID]: inv, [INVO_ID]: invo }, sent = [], drafts = [], lock = { held: false }, props = { INV_DB_ID: INVO_ID };
   const fmt = (d, tz, f) => { const p = new Intl.DateTimeFormat('en-CA', { timeZone: tz || 'America/Los_Angeles' }).format(new Date(d)); return f === 'yyyy' ? p.slice(0, 4) : f === 'MMMM d, yyyy' ? 'October 20, 2026' : p; };
   const RealDate = Date; class FDate extends RealDate { constructor(...a) { a.length ? super(...a) : super(now); } static now() { return now; } }
-  const logs = [];
+  const logs = [], pdfFail = { on: false };
   const ctx = {
     SpreadsheetApp: { getActive: () => { throw new Error('standalone project: getActive() is null'); }, openById: id => { if (!byId[id]) throw new Error('no ' + id); return byId[id]; },
       open: () => decoy, flush() {}, create: () => { throw new Error('must not create'); }, getUi: () => { throw new Error('no UI in standalone'); } },
     DriveApp: { getFilesByName: () => { let n = 1; return { hasNext: () => n-- > 0, next: () => ({}) }; } },
     PropertiesService: { getScriptProperties: () => ({ getProperty: k => props[k] || null, setProperty(k, v) { props[k] = String(v); } }) },
-    MailApp: { sendEmail: m => sent.push(m) }, GmailApp: { createDraft: (to, s, b) => { drafts.push({ to, subject: s, body: b }); return { getId: () => 'r-' + drafts.length }; }, sendEmail() { throw new Error('must never send via GmailApp'); } },
+    MailApp: { sendEmail: m => sent.push(m) }, GmailApp: { createDraft: (to, s, b, o) => { drafts.push({ to, subject: s, body: b, attachments: (o && o.attachments) || [] }); return { getId: () => 'r-' + drafts.length }; }, sendEmail() { throw new Error('must never send via GmailApp'); } },
     LockService: { getScriptLock: () => ({ tryLock() { if (lock.held) return false; return (lock.held = true); }, releaseLock() { lock.held = false; } }) },
     ContentService: { MimeType: { JSON: 'json', JAVASCRIPT: 'js', CSV: 'csv' }, createTextOutput: s => ({ s, setMimeType() { return this; }, downloadAsFile() { return this; }, getContent() { return s; } }) },
     HtmlService: { createHtmlOutput: h => ({ h, setTitle() { return this; }, getContent() { return h; } }),
       createHtmlOutputFromFile: f => ({ file: f, setTitle() { return this; }, setXFrameOptionsMode() { return this; }, addMetaTag() { return this; } }), XFrameOptionsMode: { ALLOWALL: 1 } },
     ScriptApp: { getService: () => ({ getUrl: () => 'https://script.google.com/macros/s/TEST/exec' }) },
-    Utilities: { formatDate: fmt, base64Encode: () => '', getUuid: () => require('crypto').randomUUID(), computeHmacSha256Signature: (v, k) => Array.from(require('crypto').createHmac('sha256', k).update(v).digest()).map(x => x > 127 ? x - 256 : x),
+    Utilities: { newBlob: (html, type, name) => { if (pdfFail.on) throw new Error('PDF conversion failed'); return { html, type, name, getAs(t) { return Object.assign({}, this, { type: t }); }, setName(n) { this.name = n; return this; }, getName() { return this.name; } }; }, formatDate: fmt, base64Encode: () => '', getUuid: () => require('crypto').randomUUID(), computeHmacSha256Signature: (v, k) => Array.from(require('crypto').createHmac('sha256', k).update(v).digest()).map(x => x > 127 ? x - 256 : x),
       base64EncodeWebSafe: a => Buffer.from(a.map(x => x & 255)).toString('base64').replace(/\+/g, '-').replace(/\//g, '_') }, Session: { getScriptTimeZone: () => 'America/Los_Angeles', getEffectiveUser: () => ({ getEmail: () => 'owner@x.co' }) }, Logger: { log: m => logs.push(String(m)) }, console: { log() {}, error: m => logs.push('ERR ' + m) }, Date: FDate, JSON, Math, Object, String, Number, Array, encodeURIComponent
   };
   vm.createContext(ctx);
   const dir = path.join(__dirname, '..', 'apps-script');
   ['Code.gs'].concat(fs.readdirSync(dir).filter(f => /^IENN_.*\.gs$/.test(f)).sort()).forEach(f => vm.runInContext(fs.readFileSync(path.join(dir, f), 'utf8'), ctx, { filename: f }));
   vm.runInContext("TEAM_EMAIL_TO = 'andrew@example.test'; TEAM_EMAIL_CC = ['eric@example.test', 'keith@example.test']; TEAM_EMAILS = [TEAM_EMAIL_TO].concat(TEAM_EMAIL_CC); PICKUP_ADDRESS = 'TEST ADDRESS 1'; PICKUP_ALT_ADDRESS = 'TEST ADDRESS 2';", ctx);   // repo config holds placeholders only
-  return { ctx, inv, invo, sent, drafts, lock, props, logs, setNow: x => (now = x) };
+  return { ctx, inv, invo, sent, drafts, lock, props, logs, pdfFail, setNow: x => (now = x) };
 }
 const post = (h, items, extra) => JSON.parse(h.ctx.doPost({ postData: { contents: JSON.stringify(Object.assign({ name: 'Ana Lopez', email: 'ana@example.com', phone: '9095550100', notes: 'Sat 11', pickup: 'Saturday', payment: 'Zelle', items }, extra)) } }).getContent());
 const J = x => JSON.parse(JSON.stringify(x));
@@ -104,7 +104,7 @@ t('customer copy is clean: no internal info, no exact address/ZIP, has Sierra & 
   const c = h.sent.find(m => m.to === 'ana@example.com'), b = c.body;
   assert.strictEqual(c.subject, 'Your Inland Empire Native Nursery order — IEN-2026-003');
   [/1710[5]/, /El[a]ine/, /P[i]co/, /Grand Terrace/, /92336/, /Website order/, /Status:/, /Handled by/, /docs\.google/, /9095550100/, /Ana Lopez/].forEach(r => assert.doesNotMatch(b + c.subject, r, String(r)));
-  ['Sierra & Baseline in Fontana, about 10 minutes from the 210', 'Saturdays 10 a.m. – 2 p.m., other times case by case on request', 'Cash or Zelle at time of pickup', 'We\u2019ll email to confirm your pickup time', 'plants@inlandempirenativenursery.com', 'Call or text Andrew', 'All sales are final', 'Your notes: Pickup preference: Saturday\nSat 11'].forEach(x => assert.ok(b.includes(x), x));
+  ['near Sierra & Baseline, about 10 minutes from the 210; exact address once your order is confirmed', 'Saturdays 10 a.m. – 2 p.m., other times case by case on request', 'Cash or Zelle at time of pickup', 'We\u2019ll email to confirm your pickup time', 'plants@inlandempirenativenursery.com', 'Call or text Andrew', 'All sales are final', 'Your notes: Pickup preference: Saturday\nSat 11'].forEach(x => assert.ok(b.includes(x), x));
   const team = h.sent.find(m => m.to === 'andrew@example.test'); assert.match(team.body, /Website order — Ana Lopez · 9095550100/);
   assert.match(h.invo.sheets.Invoices.rows.slice(-1)[0][7], /^Website order — Ana Lopez/);
   fs.writeFileSync('/tmp/ienn-customer.txt', 'Subject: ' + c.subject + '\n\n' + b); fs.writeFileSync('/tmp/ienn-team.txt', 'Subject: ' + team.subject + '\nCC: ' + team.cc + '\n\n' + team.body);
@@ -112,8 +112,11 @@ t('customer copy is clean: no internal info, no exact address/ZIP, has Sierra & 
 t('thank-you draft: warm lines, exact address, draft only, onOpen safe in standalone', () => {
   const h = load(); post(h, [{ plant: 'White sage (Salvia apiana)', sizeKey: '4"', qty: 1 }]); const n = h.sent.length;
   const d = h.ctx.iennConfirmAndDraftLatest();
-  ['Hi Ana Lopez', 'Thanks for ordering, and thanks for choosing us.', 'Confirming your pickup time: Saturday, October 24, 2026 (Saturdays 10 a.m. – 2 p.m.)', "Here's the location: TEST ADDRESS 1", 'Payment: Cash or Zelle at time of pickup (you chose Zelle).', "If you have any questions, don't hesitate to reach out.", 'Order number: IEN-2026-003', '(taxes included)', 'Other pickup times available case by case upon request.', 'Inland Empire Native Nursery']
-    .forEach(x => assert.ok(d.body.includes(x), x));
+  const want = ['Hi Ana Lopez,', 'Thanks for ordering, and thanks for choosing us.', 'Order number: IEN-2026-003', 'White sage, 4-inch pot, qty 1, $6.00', 'Total: $6.00 (taxes included)',
+    'Pickup: Saturdays 10 a.m. – 2 p.m. in Fontana (your pickup date: Saturday, October 24, 2026)', "Here's the location: TEST ADDRESS 1", 'Payment: Cash or Zelle at time of pickup.',
+    "If you have any questions, don't hesitate to reach out. Call or text Andrew: (909) 609-9373", 'Inland Empire Native Nursery'];
+  assert.strictEqual(d.body.trim(), want.join('\n\n'), d.body);
+  [/Grand Terrace|P[i]co|2243[0]/, /case by case|fine print|All sales are final/i, /Your notes|Sat 11/, /you chose/, /\bam\b|\bpm\b|AM|PM/].forEach(r => assert.doesNotMatch(d.body, r, String(r)));
   assert.strictEqual(h.sent.length, n, 'never sent'); assert.strictEqual(h.drafts.length, 1);
   assert.doesNotThrow(() => h.ctx.onOpen());
   fs.writeFileSync('/tmp/ienn-draft.txt', 'Subject: ' + d.subject + '\n\n' + d.body);
@@ -221,11 +224,12 @@ t('placeholder recipe: one Submissions row -> White sage 4" = 5, everything else
   f.plants.forEach(p => p.sizes.forEach(s => { if (s.qty !== null && !(p.name === 'White sage' && s.key === '4"')) assert.strictEqual(s.qty, 0, p.name + s.key); }));
 });
 const alertOf = h => h.sent.find(x => /CONFIRM ORDER/.test(x.body));
-t('json confirm: alert button -> confirm.html, direct exec fallback in text + HTML', () => {
+t('json confirm: alert button -> confirm.html; NO script.google.com link/fallback in text or HTML', () => {
   const h = load(), r = post(h, [{ plant: 'White sage (Salvia apiana)', sizeKey: '4"', qty: 1 }]), m = alertOf(h), tok = h.ctx.iennConfirmToken_(r.orderId);
   const page = 'https://www.inlandempirenativenursery.com/confirm.html?id=' + r.orderId + '&t=' + encodeURIComponent(tok), direct = 'https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec' + '?action=confirm&id=' + r.orderId + '&t=' + encodeURIComponent(tok);
   assert.strictEqual(linkOf(m), page); assert.ok(m.htmlBody.includes('href="' + page.replace(/&/g, '&amp;') + '"'));
-  assert.ok(m.body.includes('If that link does not work, try: ' + direct)); assert.ok(m.htmlBody.includes('If the button does not work, try: ' + direct.replace(/&/g, '&amp;')));
+  assert.ok(!m.body.includes(direct) && !m.htmlBody.includes(direct.replace(/&/g, '&amp;'))); assert.doesNotMatch(m.body + m.htmlBody, /script\.google\.com|does not work, try/);
+  const hrefs = [...m.htmlBody.matchAll(/href="([^"]+)"/g)].map(x => x[1]); assert.ok(hrefs.every(u => !/script\.google/.test(u)), hrefs.join(' '));
 });
 t('json confirm: good token -> {ok,confirmed,draft}, draft + Confirmed, no data; repeat -> already', () => {
   const h = load(), r = post(h, [{ plant: 'White sage (Salvia apiana)', sizeKey: '4"', qty: 1 }]), n = h.sent.length, id = r.orderId;
@@ -364,7 +368,7 @@ for (const other of ['https://script.google.com/macros/s/X/dev', 'https://script
   t('confirm link in alert uses the live AKfycby_ exec URL even when getUrl() = ' + other, () => {
     const h = load(); h.ctx.ScriptApp.getService = () => ({ getUrl: () => other });
     post(h, [{ plant: 'White sage (Salvia apiana)', sizeKey: '4"', qty: 1 }]); const m = h.sent.find(x => x.to === 'andrew@example.test'), u = linkOf(m);
-    assert.ok(u && u.startsWith('https://www.inlandempirenativenursery.com/confirm.html?id='), u); assert.ok(m.body.includes('try: ' + LIVE_EXEC + '?action=confirm&id='), 'fallback'); assert.ok(!(m.body + m.htmlBody).includes(other));
+    assert.ok(u && u.startsWith('https://www.inlandempirenativenursery.com/confirm.html?id='), u); assert.ok(!/script\.google\.com/.test(m.body + m.htmlBody), 'no exec link'); assert.ok(!(m.body + m.htmlBody).includes(other));
   });
   t('hub links use the live AKfycby_ exec URL even when getUrl() = ' + other, () => {
     const h = load(); h.ctx.ScriptApp.getService = () => ({ getUrl: () => other });
@@ -374,5 +378,23 @@ for (const other of ['https://script.google.com/macros/s/X/dev', 'https://script
 t('iennWebAppUrl_ never returns /dev, even if the constant is blank', () => {
   const h = load(); vm.runInContext("IENN_WEBAPP_URL = ''", h.ctx); h.ctx.ScriptApp.getService = () => ({ getUrl: () => 'https://script.google.com/macros/s/X/dev' });
   assert.strictEqual(h.ctx.iennWebAppUrl_(), '');
+});
+t('confirmed draft carries the PDF invoice IENN-Invoice-<id>.pdf (logo, items, total); second tap no second draft', () => {
+  const h = load(), r = post(h, [{ plant: 'White sage (Salvia apiana)', sizeKey: '4"', qty: 2 }]), id = r.orderId, tk = h.ctx.iennConfirmToken_(id);
+  h.ctx.doGet({ parameter: { action: 'confirm', id, t: tk, format: 'json' } }); h.ctx.doGet({ parameter: { action: 'confirm', id, t: tk, format: 'json' } });
+  assert.strictEqual(h.drafts.length, 1); const a = h.drafts[0].attachments; assert.strictEqual(a.length, 1);
+  assert.strictEqual(a[0].getName(), 'IENN-Invoice-' + id + '.pdf'); assert.strictEqual(a[0].type, 'application/pdf');
+  ['images/ienn-logo-IMG_2773.jpg', id, 'Ana Lopez', 'White sage', '$12.00', '10 a.m. – 2 p.m.'].forEach(x => assert.ok(a[0].html.includes(x), x));
+  assert.doesNotMatch(a[0].html, /Grand Terrace|P[i]co/);
+});
+t('PDF failure: draft still created without attachment, error logged, order Confirmed', () => {
+  const h = load(), r = post(h, [{ plant: 'White sage (Salvia apiana)', sizeKey: '4"', qty: 1 }]), id = r.orderId; h.pdfFail.on = true;
+  const out = JSON.parse(h.ctx.doGet({ parameter: { action: 'confirm', id, t: h.ctx.iennConfirmToken_(id), format: 'json' } }).getContent());
+  assert.strictEqual(out.ok, true); assert.strictEqual(h.drafts.length, 1); assert.strictEqual(h.drafts[0].attachments.length, 0);
+  assert.ok(h.logs.some(l => /invoice PDF failed for/.test(l))); assert.strictEqual(h.invo.sheets.Invoices.rows.slice(-1)[0][8], 'Confirmed');
+});
+t('unconfirmed manual draft gets no PDF and no address', () => {
+  const h = load(), r = post(h, [{ plant: 'White sage (Salvia apiana)', sizeKey: '4"', qty: 1 }]); h.ctx.iennDraftReply(r.orderId);
+  assert.strictEqual(h.drafts[0].attachments.length, 0); assert.doesNotMatch(h.drafts[0].body, ADDR);
 });
 console.log('\n' + pass + ' total tests passed');
