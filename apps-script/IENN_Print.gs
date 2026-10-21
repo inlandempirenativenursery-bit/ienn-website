@@ -78,7 +78,7 @@ function exportPlantListSheet() { return iennExportSheet(); }
 
 /** Internal home: one page with the four things the team uses. */
 function iennHubHtml_() {
-  var exec = ScriptApp.getService().getUrl(), inv = iennInvoicesSheet_(), invUrl = inv.getParent().getUrl() + '#gid=' + inv.getSheetId();
+  var exec = iennWebAppUrl_(), inv = iennInvoicesSheet_(), invUrl = inv.getParent().getUrl() + '#gid=' + inv.getSheetId();
   var open = iennInvoices_().filter(function (x) { return !/picked|cancel/i.test(String(x.status)); });
   var count = function (st) { return open.filter(function (x) { return String(x.status || 'New') === st; }).length; };
   var link = function (href, t, sub) { return '<a class="tile" href="' + iennEsc_(href) + '" target="_top"><b>' + t + '</b><span>' + sub + '</span></a>'; };

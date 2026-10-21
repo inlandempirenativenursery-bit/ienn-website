@@ -123,7 +123,7 @@ const linkOf = m => { const x = /CONFIRM ORDER[^\n]*?: (\S+)/.exec(m.body); retu
 const qs = u => Object.fromEntries(new URL(u).searchParams);
 t('confirm: alert is HTML + text, both carry the signed button link; no exact address', () => {
   const h = load(), r = post(h, [{ plant: 'White sage (Salvia apiana)', sizeKey: '4"', qty: 1 }]), m = h.sent.find(x => x.to === 'andrew@example.test');
-  const u = linkOf(m); assert.ok(u && u.startsWith('https://script.google.com/macros/s/TEST/exec?action=confirm&id=IEN-2026-003&t='), u);
+  const u = linkOf(m); assert.ok(u && u.startsWith('https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec?action=confirm&id=IEN-2026-003&t='), u);
   assert.ok(m.htmlBody.includes('>Confirm order</a>') && m.htmlBody.includes(u.replace(/&/g, '&amp;')));
   assert.ok(h.props.IENN_CONFIRM_SECRET && h.props.IENN_CONFIRM_SECRET.length >= 64, 'secret auto-created');
   assert.strictEqual(qs(u).t, h.ctx.iennConfirmToken_(r.orderId));
@@ -159,7 +159,7 @@ t('confirm: status Confirmed by hand but no draft yet -> draft created once', ()
 t('confirm route does not break ?view=inventory / default / print; /dev URL falls back to IENN_WEBAPP_URL', () => {
   const h = load(); const f = JSON.parse(h.ctx.doGet({ parameter: { view: 'inventory' } }).getContent()); assert.strictEqual(f.version, 3); assert.ok(f.plants.length >= 3);
   assert.strictEqual(h.ctx.doGet({ parameter: {} }).file, 'Index'); assert.ok(h.ctx.doGet({ parameter: { view: 'print' } }));
-  h.ctx.ScriptApp.getService = () => ({ getUrl: () => 'https://script.google.com/macros/s/X/dev' }); assert.strictEqual(h.ctx.iennWebAppUrl_(), 'https://script.google.com/macros/s/X/dev');
+  h.ctx.ScriptApp.getService = () => ({ getUrl: () => 'https://script.google.com/macros/s/X/dev' }); assert.strictEqual(h.ctx.iennWebAppUrl_(), 'https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec');
   vm.runInContext("IENN_WEBAPP_URL = 'https://script.google.com/macros/s/LIVE/exec'", h.ctx); assert.strictEqual(h.ctx.iennWebAppUrl_(), 'https://script.google.com/macros/s/LIVE/exec');
 });
 
@@ -335,5 +335,21 @@ t('?view=confirm alias: no token / bad token / wrong-id token change nothing; go
   const ok = h.ctx.doGet({ parameter: { view: 'confirm', orderId: id, t: h.ctx.iennConfirmToken_(id) } }).getContent();
   assert.match(ok, /confirmed/); assert.notStrictEqual(st(), before);
   assert.ok(h.invo.sheets.Invoices.getDataRange().getValues().some(r => r.includes(id) && r.includes('Confirmed')));
+});
+const LIVE_EXEC = 'https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec';
+for (const other of ['https://script.google.com/macros/s/X/dev', 'https://script.google.com/macros/s/AKfycbOLD1/exec']) {
+  t('confirm link in alert uses the live AKfycby_ exec URL even when getUrl() = ' + other, () => {
+    const h = load(); h.ctx.ScriptApp.getService = () => ({ getUrl: () => other });
+    post(h, [{ plant: 'White sage (Salvia apiana)', sizeKey: '4"', qty: 1 }]); const m = h.sent.find(x => x.to === 'andrew@example.test'), u = linkOf(m);
+    assert.ok(u && u.startsWith(LIVE_EXEC + '?action=confirm&id='), u); assert.ok(!(m.body + m.htmlBody).includes(other));
+  });
+  t('hub links use the live AKfycby_ exec URL even when getUrl() = ' + other, () => {
+    const h = load(); h.ctx.ScriptApp.getService = () => ({ getUrl: () => other });
+    const html = h.ctx.iennHubHtml_(); assert.ok(html.includes('href="' + LIVE_EXEC + '"'), 'hub exec'); assert.ok(!html.includes(other));
+  });
+}
+t('iennWebAppUrl_ never returns /dev, even if the constant is blank', () => {
+  const h = load(); vm.runInContext("IENN_WEBAPP_URL = ''", h.ctx); h.ctx.ScriptApp.getService = () => ({ getUrl: () => 'https://script.google.com/macros/s/X/dev' });
+  assert.strictEqual(h.ctx.iennWebAppUrl_(), '');
 });
 console.log('\n' + pass + ' total tests passed');
