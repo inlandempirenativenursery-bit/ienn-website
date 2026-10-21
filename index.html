@@ -37,8 +37,15 @@
     }
     .logo { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: inherit; }
     .logo img { height: 64px; width: auto; display: block; }
-    .logo-text { font-weight: 700; font-size: 1.05rem; color: var(--sage-dark); }
-    .logo-sub { font-size: 0.65rem; color: var(--sage); letter-spacing: 0.4px; }
+    .steps-strip { display:flex; justify-content:center; gap:0.9rem; list-style:none; margin:0.5rem auto 0; padding:0.3rem 0.8rem; font-size:0.78rem; color:#4a5a4a; background:#f8f6f3; border:1px solid #e6e2da; border-radius:999px; width:max-content; max-width:100%; }
+    .steps-strip li + li::before { content:"·"; margin-right:0.9rem; color:#9aa69a; }
+    .steps-strip b { font-weight:700; color:#6b7c6a; }
+    .brand-name { font-weight:800; font-size:1.12rem; line-height:1.1; letter-spacing:-0.02em; color:#3d4b3d; text-shadow:0 1px 0 #fff, 0 2px 3px rgba(61,75,61,0.18); }
+    .hdr-slogan { font-weight:700; font-size:0.8rem; line-height:1.2; color:#2f6b2f; margin-top:0.15rem; text-shadow:0 1px 0 rgba(255,255,255,0.9); }
+    @media (max-width:480px) { .brand-name { font-size:0.98rem; } .hdr-slogan { font-size:0.72rem; } }
+    .strip-wrap { display:flex; justify-content:flex-end; padding:0 1rem; margin-top:0.35rem; }
+    .strip-wrap .steps-strip { margin:0; }
+    @media (max-width:600px) { .strip-wrap { justify-content:center; } }
     .order-btn {
       background: var(--red);
       color: #fff;
@@ -103,36 +110,6 @@
       font-weight: 700;
       flex-shrink: 0;
     }
-    .plants {
-      background: #fafafa;
-    }
-    .plant-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
-      margin-top: 1rem;
-    }
-    .plant-card {
-      background: #fff;
-      border-radius: 10px;
-      overflow: hidden;
-      border: 1px solid #eee;
-      display: flex;
-      flex-direction: column;
-    }
-    .plant-img {
-      height: 110px;
-      background: #e8e8e8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #999;
-      font-size: 0.8rem;
-    }
-    .plant-info { padding: 0.6rem 0.7rem 0.8rem; }
-    .plant-info h3 { font-size: 0.95rem; margin-bottom: 0.2rem; color: var(--sage-dark); }
-    .plant-meta { font-size: 0.8rem; color: #666; }
-    .stock { font-size: 0.75rem; color: var(--sage); margin-top: 0.25rem; font-weight: 600; }
     .cta-section {
       background: var(--lilac);
       text-align: center;
@@ -149,84 +126,18 @@
     .ig-link { display:inline-flex; align-items:center; gap:0.35rem; min-height:44px; padding:0 0.25rem; color:inherit; font-weight:600; }
     @media (min-width: 700px) {
       .hero h1 { font-size: 2.2rem; }
-      .plant-grid { grid-template-columns: repeat(3, 1fr); }
       section { max-width: 800px; margin: 0 auto; }
     }
-    .plant-img { background: linear-gradient(135deg, var(--cream), var(--lilac)); color: var(--sage-dark); font-weight: 700; font-size: 1.6rem; height: 90px; }
-    .plant-info { display: flex; flex-direction: column; gap: 0.35rem; flex: 1; }
-    .bot { font-style: italic; font-size: 0.75rem; color: #777; }
-    .note { font-size: 0.78rem; color: #555; }
-    .badge { align-self: flex-start; font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 99px; }
-    .badge.in { background: #2e7d32; color: #fff; }
-    .badge.low { background: #f3c969; color: #4a3b00; }
-    .badge.out { background: #bbb; color: #333; }
-    .badge.ask { background: var(--cream); color: var(--sage-dark); border: 1px solid var(--sage); }
-    .size { font-size: 0.8rem; color: #666; }
-    .shop-row { display: flex; align-items: center; gap: 0.3rem; margin-top: auto; }
-    .shop-row button.step { width: 36px; height: 36px; border: 1px solid #ccc; background: #fff; border-radius: 6px; font-size: 1.1rem; }
-    .shop-row output { min-width: 1.5rem; text-align: center; font-weight: 600; }
-    .add-btn { width: 100%; min-height: 44px; border: 0; border-radius: 8px; background: var(--sage-dark); color: #fff; font-weight: 700; font-size: 0.95rem; cursor: pointer; }
-    .add-btn:disabled { background: #bbb; cursor: not-allowed; }
-    .cart-bar { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 2px solid var(--sage); display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 1rem; z-index: 50; box-shadow: 0 -2px 8px rgba(0,0,0,.08); }
-    .cart-bar[hidden] { display: none; }
-    #cart-count { font-weight: 700; color: var(--sage-dark); flex: 1; }
-    .cart-clear { background: none; border: 0; color: #666; text-decoration: underline; min-height: 44px; }
-    .cart-go { background: var(--red); color: #fff; text-decoration: none; font-weight: 700; padding: 0.7rem 1rem; border-radius: 8px; }
-    .slot { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.68rem; color: #8a8f88; border: 1px solid #e3e1db; border-radius: 4px; padding: 0 0.25rem; margin-right: 0.35rem; vertical-align: 2px; background: #fafaf8; }
-    .pills { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
-    .pill { min-height: 34px; padding: 0 0.3rem; border: 1px solid #c9c9c4; background: #fff; font-size: 0.8rem; border-radius: 6px; cursor: pointer; color: var(--text); }
-    .pill[aria-pressed="true"] { background: var(--sage-dark); border-color: var(--sage-dark); color: #fff; position: relative; }
-    .pill.req { border-style: dashed; color: #555; }
-    .pill.req[aria-pressed="true"] { background: var(--cream); color: var(--sage-dark); border-style: solid; }
-    .cart-bar { background: linear-gradient(#fbfaf7, #f4f2ec); box-shadow: inset 0 2px 5px rgba(0,0,0,.06), 0 -2px 8px rgba(0,0,0,.06); border-top: 1px solid #e3e1db; }
-    .cart-bar.bump #cart-count { animation: bump .35s cubic-bezier(.2,.8,.3,1); }
-    @keyframes bump { from { transform: translateY(-6px); opacity: .4; } to { transform: none; opacity: 1; } }
-    @media (prefers-reduced-motion: reduce) { .cart-bar.bump #cart-count { animation: none; } }
-    /* consistency with order.html: badges, 44px targets, primary button */
-    .slogan { font-size: 0.85rem; letter-spacing: 0.04em; color: var(--sage); margin-bottom: 0.4rem; }
-    .badge.in { background: #e6f4e7; color: #2e7d32; }
-    .badge.low { background: #fff4d6; color: #7a5a00; }
-    .badge.out { background: #eee; color: #666; }
-    .badge.ask { background: var(--cream); color: var(--sage-dark); border: 1px solid #ddd; }
-    .pill { min-height: 44px; font-size: 0.85rem; }
-    .shop-row button.step { width: 44px; height: 44px; }
-    .add-btn { background: var(--red); border-radius: 10px; }
-    .add-btn:disabled { background: #ccc; color: #666; }
-    .cart-go { white-space: nowrap; min-height: 44px; display: inline-flex; align-items: center; border-radius: 10px; }
-    .cart-clear { min-width: 44px; }
-    body.has-cart { padding-bottom: 96px; }
-    .ask-line { font-size: 0.75rem; color: #555; }
-    .ask-line[hidden] { display: none; }
-    /* review-oct20: neutral chips, green only after tap */
-    .pill { background: var(--cream); border: 1px solid var(--sage); color: var(--text); }
-    .pill[aria-pressed="true"], .pill.req[aria-pressed="true"] { background: #2e7d32; border-color: #2e7d32; color: #fff; border-style: solid; }
-    .toast { position: fixed; left: 50%; bottom: 80px; transform: translateX(-50%); background: var(--sage-dark); color: #fff; padding: 0.6rem 1rem; border-radius: 8px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 60; }
-    .toast.show { opacity: 1; }
-    .skel { min-height: 260px; background: linear-gradient(90deg,#f1f1f1 25%,#e6e6e6 50%,#f1f1f1 75%); background-size: 200% 100%; animation: sk 1.2s infinite; }
-    @keyframes sk { to { background-position: -200% 0; } }
-    .shop-status { font-size: 0.85rem; color: #6a5a2a; background: #fff8e6; padding: 0.4rem 0.6rem; border-radius: 6px; }
-    .shop-status.live { color: #2e7d32; background: #eaf5ea; }
-    .plant-img { overflow: hidden; }
-    .photo-credit { margin: 0; padding: 0.15rem 0.75rem 0; font-size: 0.7rem; color: #6b6f69; }
-    .photo-credit a { color: inherit; }
-    .plant-img img { width: 100%; height: 100%; object-fit: cover; }
-    .size-sel { min-height: 36px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.85rem; }
-    body.has-cart { padding-bottom: 70px; }
-    @media (min-width: 1000px) { .plant-grid { grid-template-columns: repeat(4, 1fr); } section.plants { max-width: 1000px; } }
       .header-right { display:flex; align-items:center; gap:0.25rem; }
     .ig-top { min-width:44px; flex-shrink:0; justify-content:center; color:var(--sage-dark); font-weight:600; font-size:0.85rem; text-decoration:none; }
     @media (max-width: 480px) { .ig-top-text { display:none; } .ig-top svg { width:22px; height:22px; } }
-    /* juicy preview: honey Add with push feel */
-    .add-btn { background:#e8b04b; color:#2c2c2c; box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 3px 0 #b98a2e; transition:transform 80ms ease-out, box-shadow 80ms ease-out; }
-    .add-btn:active:not(:disabled) { transform:translateY(2px); box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 1px 0 #b98a2e; }
-    .add-btn:disabled { box-shadow:none; }
-    .size-hint { margin:0.2rem 0 0; font-size:0.8rem; font-weight:600; color:#8a5a00; }
-    .size-hint:empty { display:none; }
-    .pills.nudge .pill { border-color:#b98a2e; box-shadow:0 0 0 2px rgba(232,176,75,.45); }
-    .pills.nudge { animation:nudge 320ms ease-out; }
-    @keyframes nudge { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-3px); } 75% { transform:translateX(3px); } }
-    @media (prefers-reduced-motion:reduce) { .pills.nudge { animation:none; } }
-    @media (prefers-reduced-motion:reduce) { .add-btn { transition:none; } .add-btn:active:not(:disabled) { transform:none; } }
+  </style>
+  <link rel="stylesheet" href="shop.css">
+  <style>
+    .shop { max-width:1080px; margin:0 auto; padding:0; }
+    .shop .inv-status[hidden] { display:none; }
+    body { padding-bottom:96px; }
+    .order-btn.co-btn { border:2px solid var(--red); }
   </style>
 </head>
 <body>
@@ -234,38 +145,33 @@
     <a href="index.html" class="logo">
       <img src="images/ienn-logo-IMG_2773-600.jpg" width="52" height="64" alt="Inland Empire Native Nursery logo">
       <div>
-        <div class="logo-text">IENN</div>
-        <div class="logo-sub">INLAND EMPIRE NATIVE NURSERY</div>
+        <div class="brand-name">Inland Empire Native Nursery</div>
+        <div class="hdr-slogan">Connecting people to native plants.</div>
       </div>
     </a>
     <div class="header-right">
       <a class="ig-link ig-top" target="_blank" rel="noopener" aria-label="Instagram (opens in a new tab)"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg><span class="ig-top-text">Instagram</span></a>
-      <a href="order.html" class="order-btn">Place Order Now</a>
+      <a href="#" class="order-btn co-btn is-empty" id="hdr-checkout" aria-disabled="true" title="Add a plant first">Check out</a>
     </div>
   </header>
+  <div class="strip-wrap"><ol class="steps-strip" aria-label="How to order"><li><b>1.</b> Click</li><li><b>2.</b> Order</li><li><b>3.</b> Pick up</li></ol></div>
 
   <section class="hero">
-    <p class="slogan">Connecting people to native plants</p>
-    <h1>Locally grown California native plants for the Inland Empire</h1>
-    <p>Healthy, climate-adapted plants ready for pickup. No shipping — just plants that thrive here.</p>
+    <h1>Growing the best native plants for the Inland Empire.</h1>
   </section>
 
-  <section class="plants" id="plants">
-    <h2>Shop native plants</h2>
-    <p style="font-size:0.95rem; color:#555; margin-bottom:0.5rem;">Pick a quantity, tap Add, then check out. Prices by pot size: 2" $3 • 4" $6 • Tree pot $10 • 1 gal $15. 2" and Tree pot are available on request. <a href="#" id="printlist-link" target="_blank" rel="noopener" style="color:var(--sage-dark)">Printable plant list</a></p>
-    <p class="shop-status" id="shop-status" role="status">Loading live availability…</p>
-    <div class="plant-grid" id="shop-grid" aria-busy="true">
-      <div class="plant-card skel"></div><div class="plant-card skel"></div><div class="plant-card skel"></div><div class="plant-card skel"></div>
-    </div>
+  <section class="shop plants" id="plants" aria-labelledby="shop-title">
+    <h2 id="shop-title" class="sr-only">Shop native plants</h2>
+    <p class="inv-status" id="inv-status" role="status" hidden></p>
+    <div class="grid" id="plant-list" aria-busy="false"></div>
+    <p class="printlist" style="text-align:center;margin-top:1rem;font-size:0.9rem;"><a href="#" id="printlist-link" target="_blank" rel="noopener" style="color:var(--sage-dark)">Printable plant list</a></p>
     <noscript><p><a href="order.html">Open the order form</a> to choose plants.</p></noscript>
   </section>
 
-  <div class="cart-bar" id="cart-bar" hidden>
-    <span id="cart-count">0 plants</span>
-    <button type="button" class="cart-clear" id="cart-clear">Clear</button>
-    <a href="order.html" class="cart-go" id="cart-go">Check out</a>
+  <div class="cartbar" id="cartbar" hidden>
+    <span id="cartbar-count" class="cb-sum" aria-live="polite">0 items</span>
+    <a href="#" id="cartbar-go" aria-disabled="true">Check out</a>
   </div>
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <section class="problem">
     <h2>Tired of plants that don’t make it?</h2>
@@ -308,8 +214,8 @@
 
   <section class="cta-section" id="order">
     <h2 style="color:var(--sage-dark);">Ready to plant something that works here?</h2>
-    <p style="margin:0.75rem 0 1.25rem;">Place your order and pick up locally.</p>
-    <a href="order.html" class="order-btn" rel="noopener">Place Order Now</a>
+    <p style="margin:0.75rem 0 1.25rem;">Add plants to your tray above, then check out.</p>
+    <p><a href="#plants" style="color:var(--sage-dark);font-weight:700;">See all plants ↑</a></p>
     <p class="disclaimer">Availability varies by season and stock • Local pickup only (Fontana area); Cash or Zelle at time of pickup • Plant care and native-planting info is general guidance • Photos are representative.</p>
   </section>
 
@@ -317,93 +223,13 @@
     <p>Inland Empire Native Nursery • Pickup: Fontana · Saturdays 10 a.m. – 2 p.m.</p>
     <p style="margin-top:0.5rem;">Questions? Call or text Andrew: <a href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> • <a href="sms:+19096099373">Text</a> • Email: <a href="mailto:plants@inlandempirenativenursery.com">plants@inlandempirenativenursery.com</a> • <a class="ig-link" target="_blank" rel="noopener"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>Follow us on Instagram</a></p>
   </footer>
-  <script>window.IENN_PROMO_OPTS = { cta: "Shop now", onShop: function () { location.href = "order.html"; } };</script>
+  <script>window.IENN_PROMO_OPTS = { cta: "Shop now", onShop: function () { var g = document.getElementById("plant-list"); if (g) g.scrollIntoView({ behavior: "smooth" }); } };</script>
   <script src="promo.js"></script>
   <script src="plant-photos.js"></script>
   <script src="feed-order.js"></script>
-  <script src="inventory.js"></script>
   <script src="stock-view.js"></script>
-  <script>
-  /* Shop grid renders entirely from the inventory feed (INVENTORY_URL in inventory.js). */
-  (function () {
-    var LABEL = { in: 'Available \u00b7 Get yours now', low: 'Low stock \u00b7 Get yours now', out: 'Not available', askus: 'Ask us \u00b7 Available by request', unknown: 'We\u2019ll confirm availability', request: 'Available on request' };
-    var CLS = { in: 'in', low: 'low', out: 'out', askus: 'ask', unknown: 'ask', request: 'ask' };
-    var KEY = 'ienn-cart', cart = {}, NAMES = {};
-    try { cart = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { cart = {}; }
-    var grid = document.getElementById('shop-grid'), info = document.getElementById('shop-status');
-    var bar = document.getElementById('cart-bar'), toastEl = document.getElementById('toast'), tTimer;
-    function save() { try { localStorage.setItem(KEY, JSON.stringify(cart)); } catch (e) {} }
-    function toast(m) { toastEl.textContent = m; toastEl.classList.add('show'); clearTimeout(tTimer); tTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 1800); }
-    function el(t, c, txt) { var e = document.createElement(t); if (c) e.className = c; if (txt != null) e.textContent = txt; return e; }
-    function money(n) { return n == null ? 'Price confirmed at order' : '$' + n + ' each'; }
-    function renderBar() {
-      var n = 0, q = [], total = 0, priced = true;
-      Object.keys(cart).forEach(function (k) { var c = cart[k]; if (c > 0) { n += c; q.push(encodeURIComponent(k) + '=' + c); var pr = (NAMES[k] || {}).price; if (pr == null) priced = false; else total += pr * c; } });
-      bar.hidden = n === 0; document.body.classList.toggle('has-cart', n > 0);
-      document.getElementById('cart-count').textContent = n + (n === 1 ? ' plant' : ' plants') + ' \u00b7 ' + (priced && n ? '$' + total.toFixed(2) + ' \u00b7 Taxes included' : 'price confirmed at order');
-      document.getElementById('cart-go').href = 'order.html' + (q.length ? '?' + q.join('&') + '&checkout=1' : '');
-    }
-    function zs(s) { return { key: s.size, qty: s.qty, extra: s.extra, canRequest: s.canRequest }; }
-    function card(p, idx) {
-      var c = el('article', 'plant-card'), body = el('div', 'plant-info'), qty = 1;
-      var counted = p.sizes.filter(function (s) { return s.status !== 'request'; }), sz = counted.length === 1 ? counted[0] : null;   // single size: usable, NOT highlighted
-      var img = el('div', 'plant-img');
-      if (p.image) { var im = document.createElement('img'); im.src = p.image; if (p.srcset) { im.srcset = p.srcset; im.sizes = '(max-width: 600px) 45vw, 260px'; } im.alt = p.name; im.loading = 'lazy'; im.decoding = 'async'; img.appendChild(im); } else { img.setAttribute('aria-hidden', 'true'); img.textContent = p.name.charAt(0); }
-      c.appendChild(img);
-      var cr = p.image && typeof ienPhoto === 'function' && ienPhoto(p.name); cr = cr && cr.src === p.image && cr.credit;
-      if (cr) { var cp = el('p', 'photo-credit'), ca = document.createElement('a'); ca.href = cr.url; ca.target = '_blank'; ca.rel = 'noopener'; ca.textContent = cr.text; cp.appendChild(ca); c.appendChild(cp); }
-      c.appendChild(body);
-      var h3 = el('h3'); var sl = el('span', 'slot', String.fromCharCode(65 + Math.floor(idx / 6)) + (idx % 6 + 1)); sl.setAttribute('aria-hidden', 'true'); h3.appendChild(sl); h3.appendChild(document.createTextNode(p.name)); body.appendChild(h3); if (p.botanical) body.appendChild(el('div', 'bot', p.botanical));
-      var badge = el('span'), meta = el('div', 'size'), add = el('button', 'add-btn'), ask = el('div', 'ask-line');
-      ask.innerHTML = 'Ask us: <a href="tel:' + IENN_TEL + '">call</a> or <a href="sms:' + IENN_TEL + '">text</a> ' + IENN_PHONE;
-      body.appendChild(badge);
-      var pills = el('div', 'pills'); pills.setAttribute('role', 'group'); pills.setAttribute('aria-label', 'Size of ' + p.name);
-      p.sizes.forEach(function (s) {
-        var b = el('button', 'pill' + (s.status === 'request' ? ' req' : ''), s.size); b.type = 'button';
-        b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', s.size + (s.price != null ? ', $' + s.price : '') + (s.status === 'request' ? ', on request' : s.status === 'out' ? ', not available' : ''));
-        b.onclick = function () { sz = s; qty = Math.min(qty, IENNStock.maxQty(zs(s))); out.textContent = qty; pills.querySelectorAll('.pill').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); sync(); };
-        pills.appendChild(b);
-      });
-      var hint = el('p', 'size-hint'); hint.setAttribute('aria-live', 'polite'); body.appendChild(pills); body.appendChild(hint);
-      body.appendChild(meta);
-      if (p.note) body.appendChild(el('div', 'note', p.note));
-      var row = el('div', 'shop-row'), mi = el('button', 'step', '\u2212'), out = el('output', '', '1'), pl = el('button', 'step', '+');
-      mi.type = pl.type = add.type = 'button'; mi.setAttribute('aria-label', 'One fewer ' + p.name); pl.setAttribute('aria-label', 'One more ' + p.name);
-      mi.onclick = function () { qty = Math.max(1, qty - 1); out.textContent = qty; sync(); }; pl.onclick = function () { var mx = sz ? IENNStock.maxQty(zs(sz)) : 99, hit = qty + 1 > mx; qty = Math.min(mx, qty + 1); out.textContent = qty; sync(); if (hit) ask.hidden = false; };
-      row.appendChild(mi); row.appendChild(out); row.appendChild(pl); body.appendChild(row); body.appendChild(add); body.appendChild(ask);
-      function sync() {
-        var ps = p.status === 'low' ? 'in' : p.status; badge.textContent = LABEL[ps]; badge.className = 'badge ' + CLS[ps];
-        add.textContent = 'Add to tray'; add.disabled = false;
-        if (!sz) { meta.textContent = 'Tap a size'; ask.hidden = true; mi.disabled = pl.disabled = true; return; }
-        hint.textContent = '';
-        var st = sz.status; mi.disabled = pl.disabled = false;
-        meta.textContent = (sz.size ? sz.size + ' \u2022 ' : '') + money(sz.price);
-        
-        ask.hidden = !(st === 'request' || IENNStock.sizeState(zs(sz), qty + (cart[p.id + '|' + sz.size] || 0)) === 'ask');
-        add.setAttribute('aria-label', 'Add ' + p.name + ' to tray');
-      }
-      add.onclick = function () { if (!sz) { hint.textContent = 'Choose a size first'; pills.classList.remove('nudge'); void pills.offsetWidth; pills.classList.add('nudge'); return; } if (sz.status === 'out') { hint.textContent = 'Not available right now. Ask us about it.'; return; } var k = p.id + (sz.size ? '|' + sz.size : ''), zz = zs(sz); NAMES[k] = { price: sz.price }; cart[k] = Math.min(IENNStock.maxQty(zz), (cart[k] || 0) + qty); var rq = sz.status === 'request' || IENNStock.isRequest(zz, cart[k]); sync(); save(); renderBar(); bar.classList.remove('bump'); void bar.offsetWidth; bar.classList.add('bump'); toast((rq ? 'Requested ' : 'Added ') + qty + ' \u00d7 ' + p.name + (rq ? ' (' + sz.size + ', we\u2019ll confirm)' : '')); };
-      sync(); return c;
-    }
-    document.getElementById('printlist-link').href = IENN_PRINTLIST_URL;
-    document.getElementById('cart-clear').onclick = function () { cart = {}; save(); renderBar(); toast('Cart cleared'); };
-    /* stock-view.js rules: no count yet => unknown (show all); counted => hide 0-qty sizes/plants; never exact counts */
-    function applyStock(list, d) {
-      list.forEach(function (p) { p.sizes.forEach(function (s) { s.key = s.size; }); });
-      var base = !!d && IENNStock.hasBaseline(d, list);
-      return IENNStock.view(list, base).map(function (p) {
-        p.sizes.forEach(function (s) { if (s.status !== 'request') s.status = s.qty == null ? 'unknown' : s.qty > 0 ? 'in' : 'askus'; });
-        var c = p.sizes.filter(function (s) { return s.status !== 'request'; });
-        p.status = !c.length ? 'request' : c.some(function (s) { return s.status === 'in'; }) ? 'in' : c.some(function (s) { return s.status === 'askus'; }) ? 'askus' : 'unknown'; return p; });
-    }
-    IENN.load(function (list, live, d) { list = applyStock(list, d);
-      grid.innerHTML = ''; grid.removeAttribute('aria-busy');
-      list.forEach(function (p, i) { p.sizes.forEach(function (s) { NAMES[p.id + (s.size ? '|' + s.size : '')] = { price: s.price }; }); grid.appendChild(card(p, i)); });
-      info.textContent = live ? 'Live availability from our nursery inventory.' : 'Live availability is loading or unavailable right now \u2014 add what you like, order, and we\u2019ll confirm what\u2019s in stock.';
-      info.className = live ? 'shop-status live' : 'shop-status';
-      renderBar();
-    });
-  })();
-  </script>
+  <script src="shop-settings.js"></script>
+  <script src="shop.js"></script>
+  <script>document.getElementById("printlist-link").href = APPS_SCRIPT_URL + "?view=print";</script>
   <script src="site-links.js"></script>
 </body></html>

@@ -59,7 +59,7 @@ const feed = () => ({ version: 3, updated: new Date().toISOString(), taxIncluded
     await page.locator('.card', { hasText: 'Yarrow' }).locator('.chip', { hasText: '4-inch' }).click(); await page.locator('.card', { hasText: 'Yarrow' }).locator('.add').click();
     const tot = await page.locator('#summary-body').innerText(); assert.match(tot, /Total: \$33\.00/); // 2x$6 (WS 4") + $15 (MF 1 gal) + $6 (Yarrow 4")
     assert.ok(!/Reserve/.test(await page.locator('body').innerText()), 'no Reserve wording');
-    assert.strictEqual(await page.locator('#cartbar-go').textContent(), 'Check out');
+    assert.match(await page.locator('#cartbar-go').textContent(), /^Check out \(\d+\)$/);
     await page.locator('#cartbar-go').click(); await page.waitForTimeout(400);
     assert.ok(await page.locator('#checkout').isVisible(), 'drawer opens'); assert.strictEqual(await page.locator('#checkout').getAttribute('aria-modal'), 'true');
     assert.match(await page.locator('#checkout').innerText(), /Sierra & Baseline[\s\S]*Cash or Zelle/); assert.ok(!/\d+ [A-Z][a-z]+ (Ave|St|Rd|Blvd)/.test(await page.locator('#checkout').innerText()), 'no street address');
@@ -96,20 +96,18 @@ const feed = () => ({ version: 3, updated: new Date().toISOString(), taxIncluded
     assert.deepStrictEqual(await se.locator('a').evaluateAll(a => a.map(x => x.getAttribute('href').split(':')[0])), ['tel', 'sms', 'mailto']);
     const links = await page.evaluate(() => [...document.querySelectorAll('a[href]')].map(a => ({ t: a.textContent.trim().slice(0, 30), h: a.getAttribute('href') })));
     out.push({ order_links: links, errs }); await ctx.close(); }
-  { const { ctx, page, errs } = await open(375, 'ok', 'index.html'); await page.waitForTimeout(800);
+  { const { ctx, page, errs } = await open(375, 'ok', 'index.html'); await page.waitForTimeout(1500);
     const links = await page.evaluate(() => [...document.querySelectorAll('a[href]')].map(a => ({ t: a.textContent.trim().slice(0, 30), h: a.getAttribute('href') })));
     for (const l of links) if (/^(order|index)\.html/.test(l.h)) { const r = await page.request.get(BASE + l.h.split('?')[0]); assert.strictEqual(r.status(), 200, l.h); }
     const btns = await page.evaluate(() => [...document.querySelectorAll('button')].filter(b => b.offsetParent).map(b => b.textContent.trim()));
-    assert.strictEqual(await page.locator('#shop-grid .pill[aria-pressed="true"]').count(), 0, 'home: no preselected size');
-    assert.strictEqual(await page.locator('#shop-grid .plant-card', { hasText: 'Toyon' }).count(), 0, 'home: all-zero plant hidden');
-    assert.ok(!/\d+ left|Only \d|Low stock/.test(await page.locator('#shop-grid').innerText()), 'home: no exact counts');
-    await page.locator('#shop-grid .plant-card').first().locator('.pill:not(.req)').first().click();
-    assert.strictEqual(await page.locator('#shop-grid .plant-card').first().locator('.pill[aria-pressed="true"]').evaluate(e => getComputedStyle(e).backgroundColor), 'rgb(46, 125, 50)');
-    const addb = page.locator('#shop-grid button:not([disabled])', { hasText: /Add/ }).first();
-    let cartOk = 'no add button';
-    if (await addb.count()) { await addb.click(); await page.waitForTimeout(300); cartOk = (await page.locator('#cart-bar').isVisible()) ? await page.locator('#cart-go').getAttribute('href') : 'cart bar hidden';
-      if (await page.locator('#cart-clear').isVisible()) { await page.click('#cart-clear'); cartOk += ' | clear->' + (await page.locator('#cart-bar').isHidden() ? 'hidden' : 'still visible'); } }
-    assert.ok(/order\.html\?.*checkout=1/.test(cartOk) && /clear->hidden/.test(cartOk), 'home cart: ' + cartOk); assert.deepStrictEqual(errs, []);
+    assert.strictEqual(await page.locator('#plant-list .chip[aria-pressed="true"]').count(), 0, 'home: no preselected size');
+    assert.strictEqual(await page.locator('#plant-list .card', { hasText: 'Toyon' }).count(), 0, 'home: all-zero plant hidden');
+    assert.ok(!/\d+ left|Only \d|Low stock/.test(await page.locator('#plant-list').innerText()), 'home: no exact counts');
+    const hc = page.locator('#plant-list .card:not(.skel)').first(); await hc.locator('.chip:not(.chip-request)').first().click();
+    assert.strictEqual(await hc.locator('.chip[aria-pressed="true"]').evaluate(e => getComputedStyle(e).backgroundColor), 'rgb(46, 125, 50)');
+    await hc.locator('.add').click(); await page.waitForTimeout(300);
+    const cartOk = (await page.locator('#cartbar').isVisible()) ? await page.locator('#hdr-checkout').getAttribute('href') : 'tray bar hidden';
+    assert.ok(/order\.html\?checkout=1/.test(cartOk), 'home cart: ' + cartOk); assert.deepStrictEqual(errs, []);
     out.push({ index_links: links, index_buttons: btns, cart: cartOk, overflow: await ovf(page), errs }); await ctx.close(); }
   await b.close(); console.log(JSON.stringify(out, null, 1));
 })().catch(e => { console.error(e); process.exit(1); });

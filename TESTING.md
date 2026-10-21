@@ -37,7 +37,7 @@ carries it). Kobe's styling stays as-is. The only additions are a few usability 
 | order: Start a new order | form back, ticket hidden ✅ |
 | order: tel:/sms: links (pickup box, ticket, privacy, footer) | `tel:+19096099373` / `sms:+19096099373` ✅ |
 | index: logo | was `#` (dead end) → `index.html` ✅ fixed |
-| index: Place Order Now ×2, Reserve for pickup | order.html (200) ✅ |
+| index: Shop plants ×2, Reserve for pickup | order.html (200) ✅ |
 | index: Add to cart → cart bar → Checkout | `order.html?white-sage|4"=1` prefill ✅; Clear hides bar ✅ |
 | index: Printable plant list | opens Apps Script `?view=print` (public). Works after redeploy; consider hiding if it's team-only |
 | index: call/text/email | tel/sms/mailto ✅ |

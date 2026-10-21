@@ -9,6 +9,7 @@
   <link rel="apple-touch-icon" href="images/ienn-logo-IMG_2773-180.jpg">
   <meta property="og:image" content="https://www.inlandempirenativenursery.com/images/ienn-logo-IMG_2773.jpg">
   <title>Order Plants | Inland Empire Native Nursery</title>
+  <link rel="stylesheet" href="shop.css">
   <style>
     :root { --lilac:#d4c4e0; --sage:#6b7c6a; --sage-dark:#4a5a4a; --cream:#f8f6f3; --red:#c0392b; --text:#2c2c2c; --green:#2e7d32; }
     * { box-sizing:border-box; margin:0; padding:0; }
@@ -17,8 +18,16 @@
     header { background:#fff; border-bottom:1px solid #eee; padding:0.75rem 1rem; display:flex; align-items:center; justify-content:space-between; }
     .logo { display:flex; align-items:center; gap:0.55rem; text-decoration:none; color:inherit; }
     .logo img { height:58px; width:auto; display:block; }
-    .logo-text { font-weight:700; color:var(--sage-dark); }
-    .logo-sub { font-size:0.7rem; color:var(--sage); }
+    .steps-strip { display:flex; justify-content:center; gap:0.9rem; list-style:none; margin:0.5rem auto 0; padding:0.3rem 0.8rem; font-size:0.78rem; color:#4a5a4a; background:#f8f6f3; border:1px solid #e6e2da; border-radius:999px; width:max-content; max-width:100%; }
+    .steps-strip li + li::before { content:"·"; margin-right:0.9rem; color:#9aa69a; }
+    .steps-strip b { font-weight:700; color:#6b7c6a; }
+    .brand-name { font-weight:800; font-size:1.12rem; line-height:1.1; letter-spacing:-0.02em; color:#3d4b3d; text-shadow:0 1px 0 #fff, 0 2px 3px rgba(61,75,61,0.18); }
+    .hdr-slogan { font-weight:700; font-size:0.8rem; line-height:1.2; color:#2f6b2f; margin-top:0.15rem; text-shadow:0 1px 0 rgba(255,255,255,0.9); }
+    @media (max-width:480px) { .brand-name { font-size:0.98rem; } .hdr-slogan { font-size:0.72rem; } }
+    .poppy { display:inline-block; vertical-align:middle; margin-left:0.4rem; width:36px; height:36px; image-rendering:pixelated; }
+    .confirm:not([hidden]) .poppy { animation:poppy-pop 400ms cubic-bezier(.3,1.6,.5,1) both; }
+    @keyframes poppy-pop { 0% { transform:scale(0.3); opacity:0; } 70% { transform:scale(1.15); opacity:1; } 100% { transform:scale(1); } }
+    @media (prefers-reduced-motion:reduce) { .confirm:not([hidden]) .poppy { animation:none; } }
     main { max-width:1080px; margin:0 auto; }
     h1 { font-size:1.5rem; color:var(--sage-dark); margin:1.25rem 1rem 0.5rem; }
     h2 { font-size:1.15rem; color:var(--sage-dark); margin:1.5rem 1rem 0.25rem; }
@@ -31,44 +40,6 @@
     .notice ul { list-style:none; display:grid; gap:0.6rem; }
     .notice li { display:grid; grid-template-columns:1.6rem 1fr; gap:0.25rem; }
     .notice b { color:var(--sage-dark); display:block; }
-    .grid { display:grid; grid-template-columns:1fr; gap:0.9rem; margin:1rem; }
-    @media (min-width:640px) { .grid { grid-template-columns:repeat(2,1fr); } h1 { font-size:1.8rem; } }
-    @media (min-width:960px) { .grid { grid-template-columns:repeat(3,1fr); } .ph { aspect-ratio:16/9; } }
-    .card { border:1px solid #e6e6e6; border-radius:12px; overflow:hidden; display:flex; flex-direction:column; background:#fff; transition:border-color .15s, box-shadow .15s; }
-    .card.in-cart { border-color:var(--sage); box-shadow:0 0 0 2px rgba(107,124,106,.25); }
-    .card.sold-out { opacity:.75; }
-    .ph { aspect-ratio:5/2; background:linear-gradient(135deg,var(--cream),#ecebe6); display:flex; align-items:center; justify-content:center; color:#8a8f88; font-size:0.85rem; }
-    .ph { position:relative; overflow:hidden; }
-    .ph img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-    .body { padding:0.9rem; display:flex; flex-direction:column; gap:0.6rem; flex:1; }
-    .card h3 { font-size:1.1rem; color:var(--sage-dark); line-height:1.3; }
-    .badge { align-self:flex-start; font-size:0.8rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:999px; }
-    .badge.ok { background:#e6f4e7; color:var(--green); }
-    .chip-out { text-decoration:line-through; color:#888; }
-    .cart-total { font-weight:700; margin-top:.5rem; }
-    .badge.ask { background:var(--cream); color:var(--sage-dark); border:1px solid #ddd; }
-    .price { font-size:0.95rem; font-weight:600; color:var(--text); min-height:0; }
-    .price:empty { display:none; }
-    .inv-status { margin:0.5rem 1rem; padding:0.6rem 0.8rem; border-radius:8px; background:#fff7e0; color:#5c4a00; font-size:0.9rem; }
-    .skel { min-height:240px; background:linear-gradient(90deg,#f3f2ef 25%,#faf9f7 50%,#f3f2ef 75%); background-size:200% 100%; animation:sh 1.2s infinite; }
-    @keyframes sh { to { background-position:-200% 0; } }
-    @media (prefers-reduced-motion:reduce) { .skel { animation:none; } }
-    .badge.out { background:#eee; color:#666; }
-    .note { font-size:0.85rem; color:#555; }
-    .chips { display:flex; flex-wrap:wrap; gap:0.4rem; border:0; }
-    .chips legend { font-size:0.8rem; color:#555; margin-bottom:0.25rem; }
-    .chip { min-height:44px; padding:0 1rem; border-radius:999px; border:1px solid #bbb; background:#fff; font-size:0.95rem; cursor:pointer; }
-    .chip[aria-pressed="true"] { border-color:var(--sage-dark); background:var(--sage-dark); color:#fff; }
-    .row { display:flex; gap:0.5rem; align-items:center; margin-top:auto; }
-    .stepper { display:flex; border:1px solid #ccc; border-radius:10px; overflow:hidden; }
-    .stepper button { width:44px; height:44px; border:none; background:var(--cream); color:var(--sage-dark); font-size:1.3rem; font-weight:700; cursor:pointer; touch-action:manipulation; }
-    .stepper button:disabled { color:#aaa; cursor:default; }
-    .stepper input { width:46px; height:44px; border:none; border-left:1px solid #ccc; border-right:1px solid #ccc; text-align:center; font-size:1rem; -moz-appearance:textfield; }
-    .stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
-    .add { flex:1; min-height:44px; border:none; border-radius:10px; background:var(--red); color:#fff; font-weight:700; font-size:1rem; cursor:pointer; }
-    .add:disabled { background:#ccc; color:#666; cursor:not-allowed; }
-    .incart { font-size:0.85rem; color:var(--green); font-weight:600; min-height:1.2em; }
-    .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
     .summary { margin:1rem; padding:1rem; border:2px dashed var(--sage); border-radius:10px; }
     .summary h2 { margin:0 0 0.5rem; font-size:1.05rem; }
     .summary li { display:flex; justify-content:space-between; align-items:center; gap:0.5rem; padding:0.3rem 0; list-style:none; border-bottom:1px solid #eee; }
@@ -87,20 +58,9 @@
     .confirm h2 { margin:0 0 0.5rem; color:var(--green); }
     .confirm ul { margin:0.5rem 0 0.75rem 1.2rem; }
     .confirm button { min-height:44px; padding:0 1rem; margin-top:0.75rem; border:1px solid var(--sage-dark); background:#fff; color:var(--sage-dark); border-radius:8px; font-weight:600; cursor:pointer; }
-    .cartbar { position:fixed; left:0; right:0; bottom:0; background:#fff; border-top:1px solid #ddd; box-shadow:0 -2px 10px rgba(0,0,0,.08); padding:0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom)); display:flex; align-items:center; justify-content:space-between; gap:0.75rem; z-index:50; }
-    .cartbar[hidden] { display:none; }
-    .cartbar a { white-space:nowrap; min-height:44px; display:inline-flex; align-items:center; padding:0 1.2rem; background:var(--red); color:#fff; font-weight:700; border-radius:10px; text-decoration:none; }
-    @media (min-width:960px) { .cartbar { left:auto; right:1.5rem; bottom:1.5rem; border:1px solid #ddd; border-radius:12px; } }
-    /* ---- subtle "select and go" pickup styling ---- */
-    .slot { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:0.72rem; letter-spacing:0.05em; color:#8a8f88; border:1px solid #e3e1db; border-radius:4px; padding:0 0.3rem; margin-right:0.4rem; vertical-align:2px; background:#fafaf8; }
-    .chips { gap:0.35rem; }
-    .chips .chip { border-radius:8px; min-height:44px; padding:0 0.75rem; font-size:0.88rem; }
-    .chip-request { border-style:dashed; color:#555; }
-    .chip-request[aria-pressed="true"] { background:var(--cream); color:var(--sage-dark); border-style:solid; }
     .summary { border:1px solid #e3e1db; border-radius:14px; background:linear-gradient(#fbfaf7,#f6f4ef); box-shadow:inset 0 2px 6px rgba(0,0,0,.06), inset 0 -1px 0 #fff; }
     .summary li.drop { animation:drop .35s cubic-bezier(.2,.8,.3,1); }
     @keyframes drop { from { transform:translateY(-10px); opacity:0; } to { transform:none; opacity:1; } }
-    .tax-note { font-weight:400; color:#777; font-size:0.78rem; }
     .fine-print { font-size:0.75rem; color:#888; margin-top:0.25rem; }
     .pickup-line { font-weight:700; color:var(--sage-dark); }
     .confirm { background:#fff; border:1px solid #d9d6cd; border-radius:12px; padding:0; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,.06); }
@@ -111,54 +71,17 @@
     .confirm .tk-body p { margin:0.35rem 0; }
     .confirm-id { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:0.04em; }
     #confirm-total { display:flex; justify-content:space-between; font-weight:700; border-top:1px solid #eee; padding-top:0.5rem; }
-    .cartbar { background:linear-gradient(#fbfaf7,#f4f2ec); box-shadow:inset 0 2px 5px rgba(0,0,0,.06), 0 -2px 8px rgba(0,0,0,.06); }
     @media (prefers-reduced-motion:reduce) { .summary li.drop { animation:none; } }
     /* polish: minimal usability additions (no restyle) */
     .lead { margin:0 1rem 0.25rem; font-size:0.95rem; color:#444; }
     .lead b { color:var(--sage-dark); }
-    .nw { white-space:nowrap; }
     .summary .rm { padding:0 0.75rem; }
-    .photo-credit { margin:0; padding:0.15rem 0.9rem 0; font-size:0.7rem; color:#6b6f69; }
-    .photo-credit a { color:inherit; }
-    .ph .leaf { font-size:1.6rem; opacity:.55; }
     input:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible { outline:3px solid var(--sage-dark); outline-offset:2px; }
-    /* review-oct20: neutral chips, green only when tapped; compact scroll-and-add layout */
-    .chips .chip { background:var(--cream); border:1px solid var(--sage); color:var(--text); }
-    .chips .chip[aria-pressed="true"] { background:var(--green); border-color:var(--green); color:#fff; }
-    .chips .chip-request { border-style:dashed; }
-    .ask-note { font-size:0.82rem; color:var(--sage-dark); background:var(--cream); border:1px solid #e3e1db; border-radius:8px; padding:0.3rem 0.5rem; }
-    .ask-note[hidden] { display:none; }
-    .stock-notes[hidden] { display:none; }
-    .stock-note { font-size:0.88rem; color:var(--sage-dark); background:var(--cream); border-left:3px solid var(--sage); border-radius:6px; padding:0.5rem 0.7rem; margin:0.5rem 0; }
-    .stock-problems { margin:0.4rem 0 0 1.1rem; padding:0; }
-    .stock-problems li { margin:0.2rem 0; }
-    .ask-note a { color:var(--sage-dark); font-weight:600; display:inline-flex; align-items:center; min-height:44px; padding:0 0.3rem; }
     .info .lead { font-size:0.85rem; }
     .hint { font-size:0.8rem; margin-top:0.4rem; }
-    .grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:0.6rem; margin:0.75rem 0.6rem; }
-    @media (min-width:640px) { .grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
-    @media (min-width:960px) { .grid { grid-template-columns:repeat(4,minmax(0,1fr)); } }
-    .ph, .grid .ph { aspect-ratio:1/1; }
-    .card .body { padding:0.6rem; gap:0.45rem; }
-    .card h3 { font-size:0.98rem; }
-    .card .slot { display:none; }
-    .card .note { font-size:0.75rem; font-style:italic; }
-    .card .badge { font-size:0.72rem; }
-    .card .chips .chip { flex:1 1 calc(50% - 0.35rem); min-width:0; padding:0 0.5rem; font-size:0.82rem; text-align:left; }
-    @media (min-width:640px) { .card .chips .chip { flex:1 1 auto; } }
-    .card .row { flex-direction:column; align-items:stretch; }
-    .card .stepper { justify-content:space-between; }
-    .card .stepper input { flex:1; width:auto; min-width:0; }
-    .card .add { min-height:48px; font-size:1.02rem; }
-    .grid-more { height:1px; }
     .details { margin:1rem; }
     .details summary { min-height:44px; display:flex; align-items:center; font-weight:700; color:var(--sage-dark); cursor:pointer; }
-    .cartbar .cb-sum { font-weight:700; }
-    .cartbar .cb-sum small { font-weight:400; color:#666; }
-    .contact-mail { display:inline-flex; align-items:center; min-height:44px; padding:0 0.25rem; color:var(--sage-dark); font-weight:600; word-break:break-all; }
-    .ig-link { display:inline-flex; align-items:center; gap:0.35rem; min-height:44px; padding:0 0.25rem; color:inherit; font-weight:600; }
     /* checkout drawer */
-    .cartbar button { white-space:nowrap; min-height:44px; padding:0 1.2rem; background:var(--red); color:#fff; font-weight:700; font-size:1rem; border:0; border-radius:10px; cursor:pointer; }
     .drawer-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:60; }
     .drawer { position:fixed; left:0; right:0; bottom:0; top:0; background:#fff; z-index:61; display:flex; flex-direction:column; transform:translateY(0); transition:transform .25s ease; }
     .drawer.closing { transform:translateY(100%); }
@@ -182,41 +105,9 @@
     .summary li { flex-wrap:wrap; }
     body.drawer-open { overflow:hidden; }
     footer { text-align:center; font-size:0.8rem; color:#555; margin-top:2rem; padding:1rem; }
-    /* subtle vending-machine push buttons (preview) */
-    .chips .chip, #cartbar-go, .submit-btn { transition:transform 80ms ease-out, box-shadow 80ms ease-out; }
-    .chips .chip { box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 2px 0 rgba(60,80,60,.18); }
-    .chips .chip:active { transform:translateY(1px); box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 1px 0 rgba(60,80,60,.18); }
-    .chips .chip[aria-pressed="true"] { transform:translateY(1px); box-shadow:inset 0 2px 3px rgba(0,0,0,.22); }
-    #cartbar-go, .submit-btn { box-shadow:inset 0 1px 0 rgba(255,255,255,.22), 0 3px 0 rgba(0,0,0,.22); }
-    #cartbar-go { min-height:46px; padding:0 1.3rem; }
-    #cartbar-go:active, .submit-btn:active { transform:translateY(2px); box-shadow:inset 0 1px 0 rgba(255,255,255,.15), 0 1px 0 rgba(0,0,0,.22); }
-    @media (prefers-reduced-motion:reduce) { .chips .chip, #cartbar-go, .submit-btn { transition:none; } .chips .chip:active, .chips .chip[aria-pressed="true"], #cartbar-go:active, .submit-btn:active { transform:none; } }
       .header-right { display:flex; align-items:center; gap:0.25rem; }
     .ig-top { min-width:44px; flex-shrink:0; justify-content:center; color:var(--sage-dark); font-weight:600; font-size:0.85rem; text-decoration:none; }
     @media (max-width: 380px) { .ig-top-text { display:none; } }
-    /* juicy preview: honey Add, tray bump, card lift, price tag, badge, friendly confirm */
-    :root { --honey:#e8b04b; --honey-edge:#b98a2e; }
-    .card { position:relative; transition:transform 140ms ease-out, box-shadow 140ms ease-out; }
-    @media (hover:hover) { .card:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(60,80,60,.14); } }
-    .card.lift { transform:translateY(-2px); box-shadow:0 6px 16px rgba(60,80,60,.14); }
-    .card .add { background:var(--honey); color:#2c2c2c; box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 3px 0 var(--honey-edge); transition:transform 80ms ease-out, box-shadow 80ms ease-out; }
-    .card .add:active:not(:disabled) { transform:translateY(2px); box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 1px 0 var(--honey-edge); }
-    .card .add:disabled { box-shadow:none; }
-    .ph { position:relative; }
-    .price-tag { position:absolute; left:6px; bottom:6px; background:var(--cream); color:var(--sage-dark); border:1px solid #e3e1db; border-radius:6px; padding:0 0.4rem; font-size:0.75rem; font-weight:700; line-height:1.5; box-shadow:0 1px 2px rgba(0,0,0,.08); }
-    .pick-badge { position:absolute; right:6px; top:6px; background:var(--lilac); color:#3a2f45; border-radius:99px; padding:0 0.5rem; font-size:0.7rem; font-weight:700; line-height:1.6; max-width:calc(100% - 12px); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    @keyframes bump { 0% { transform:scale(1); } 40% { transform:scale(1.08); } 100% { transform:scale(1); } }
-    .cartbar .cb-sum { display:inline-block; }
-    .cartbar .cb-sum.bump { animation:bump 200ms ease-out; }
-    .confirm .tk-head h2 .tk-check { opacity:1; font-family:inherit; font-weight:700; display:inline-flex; align-items:center; justify-content:center; width:1.5rem; height:1.5rem; margin-right:0.45rem; border-radius:50%; background:#fff; color:var(--sage-dark); font-size:0.95rem; vertical-align:-2px; color:var(--sage-dark) !important; animation:pop 260ms ease-out; }
-    @keyframes pop { 0% { transform:scale(.6); opacity:0; } 100% { transform:scale(1); opacity:1; } }
-    .size-hint { margin:0; font-size:0.8rem; font-weight:600; color:#8a5a00; min-height:0; }
-    .size-hint:empty { display:none; }
-    .chips.nudge .chip:not(.chip-request) { border-color:var(--honey-edge); box-shadow:0 0 0 2px rgba(232,176,75,.45); }
-    .chips.nudge { animation:nudge 320ms ease-out; }
-    @keyframes nudge { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-3px); } 75% { transform:translateX(3px); } }
-    @media (prefers-reduced-motion:reduce) { .chips.nudge { animation:none; } }
-    @media (prefers-reduced-motion:reduce) { .card, .card .add { transition:none; } .card:hover, .card.lift, .card .add:active:not(:disabled) { transform:none; } .cartbar .cb-sum.bump, .confirm .tk-head h2 .tk-check { animation:none; } }
   </style>
 </head>
 <body>
@@ -224,8 +115,8 @@
     <a href="index.html" class="logo" aria-label="Inland Empire Native Nursery home">
       <img src="images/ienn-logo-IMG_2773-600.jpg" width="47" height="58" alt="Inland Empire Native Nursery logo">
       <div>
-        <div class="logo-text">IENN</div>
-        <div class="logo-sub">INLAND EMPIRE NATIVE NURSERY</div>
+        <div class="brand-name">Inland Empire Native Nursery</div>
+        <div class="hdr-slogan">Connecting people to native plants.</div>
       </div>
     </a>
     <div class="header-right">
@@ -238,7 +129,7 @@
   <h1 class="sr-only">Shop native plants</h1>
 
   <section class="confirm" id="confirm" hidden tabindex="-1" aria-labelledby="confirm-title" aria-live="polite">
-    <div class="tk-head"><h2 id="confirm-title"><span class="tk-check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a5a4a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>Your order's in. See you Saturday!</h2><span>PICKUP TICKET</span></div>
+    <div class="tk-head"><h2 id="confirm-title"><span class="tk-check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a5a4a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>Your order's in. See you Saturday!<svg class="poppy" aria-hidden="true" focusable="false" width="36" height="36" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="3" y="0" width="1" height="1" fill="#e8731a"/><rect x="4" y="0" width="1" height="1" fill="#e8731a"/><rect x="7" y="0" width="1" height="1" fill="#e8731a"/><rect x="8" y="0" width="1" height="1" fill="#e8731a"/><rect x="2" y="1" width="1" height="1" fill="#e8731a"/><rect x="3" y="1" width="1" height="1" fill="#e8731a"/><rect x="4" y="1" width="1" height="1" fill="#e8731a"/><rect x="5" y="1" width="1" height="1" fill="#e8731a"/><rect x="6" y="1" width="1" height="1" fill="#e8731a"/><rect x="7" y="1" width="1" height="1" fill="#e8731a"/><rect x="8" y="1" width="1" height="1" fill="#e8731a"/><rect x="9" y="1" width="1" height="1" fill="#e8731a"/><rect x="1" y="2" width="1" height="1" fill="#e8731a"/><rect x="2" y="2" width="1" height="1" fill="#e8731a"/><rect x="3" y="2" width="1" height="1" fill="#f5a623"/><rect x="4" y="2" width="1" height="1" fill="#f5a623"/><rect x="5" y="2" width="1" height="1" fill="#f5a623"/><rect x="6" y="2" width="1" height="1" fill="#f5a623"/><rect x="7" y="2" width="1" height="1" fill="#f5a623"/><rect x="8" y="2" width="1" height="1" fill="#f5a623"/><rect x="9" y="2" width="1" height="1" fill="#f5a623"/><rect x="10" y="2" width="1" height="1" fill="#e8731a"/><rect x="1" y="3" width="1" height="1" fill="#e8731a"/><rect x="2" y="3" width="1" height="1" fill="#f5a623"/><rect x="3" y="3" width="1" height="1" fill="#f5a623"/><rect x="4" y="3" width="1" height="1" fill="#f5a623"/><rect x="5" y="3" width="1" height="1" fill="#7a3e0b"/><rect x="6" y="3" width="1" height="1" fill="#7a3e0b"/><rect x="7" y="3" width="1" height="1" fill="#f5a623"/><rect x="8" y="3" width="1" height="1" fill="#f5a623"/><rect x="9" y="3" width="1" height="1" fill="#f5a623"/><rect x="10" y="3" width="1" height="1" fill="#e8731a"/><rect x="1" y="4" width="1" height="1" fill="#e8731a"/><rect x="2" y="4" width="1" height="1" fill="#f5a623"/><rect x="3" y="4" width="1" height="1" fill="#f5a623"/><rect x="4" y="4" width="1" height="1" fill="#7a3e0b"/><rect x="5" y="4" width="1" height="1" fill="#7a3e0b"/><rect x="6" y="4" width="1" height="1" fill="#7a3e0b"/><rect x="7" y="4" width="1" height="1" fill="#7a3e0b"/><rect x="8" y="4" width="1" height="1" fill="#f5a623"/><rect x="9" y="4" width="1" height="1" fill="#f5a623"/><rect x="10" y="4" width="1" height="1" fill="#e8731a"/><rect x="1" y="5" width="1" height="1" fill="#e8731a"/><rect x="2" y="5" width="1" height="1" fill="#f5a623"/><rect x="3" y="5" width="1" height="1" fill="#f5a623"/><rect x="4" y="5" width="1" height="1" fill="#f5a623"/><rect x="5" y="5" width="1" height="1" fill="#7a3e0b"/><rect x="6" y="5" width="1" height="1" fill="#7a3e0b"/><rect x="7" y="5" width="1" height="1" fill="#f5a623"/><rect x="8" y="5" width="1" height="1" fill="#f5a623"/><rect x="9" y="5" width="1" height="1" fill="#f5a623"/><rect x="10" y="5" width="1" height="1" fill="#e8731a"/><rect x="1" y="6" width="1" height="1" fill="#e8731a"/><rect x="2" y="6" width="1" height="1" fill="#e8731a"/><rect x="3" y="6" width="1" height="1" fill="#f5a623"/><rect x="4" y="6" width="1" height="1" fill="#f5a623"/><rect x="5" y="6" width="1" height="1" fill="#f5a623"/><rect x="6" y="6" width="1" height="1" fill="#f5a623"/><rect x="7" y="6" width="1" height="1" fill="#f5a623"/><rect x="8" y="6" width="1" height="1" fill="#f5a623"/><rect x="9" y="6" width="1" height="1" fill="#f5a623"/><rect x="10" y="6" width="1" height="1" fill="#e8731a"/><rect x="2" y="7" width="1" height="1" fill="#e8731a"/><rect x="3" y="7" width="1" height="1" fill="#e8731a"/><rect x="4" y="7" width="1" height="1" fill="#e8731a"/><rect x="5" y="7" width="1" height="1" fill="#e8731a"/><rect x="6" y="7" width="1" height="1" fill="#e8731a"/><rect x="7" y="7" width="1" height="1" fill="#e8731a"/><rect x="8" y="7" width="1" height="1" fill="#e8731a"/><rect x="9" y="7" width="1" height="1" fill="#e8731a"/><rect x="5" y="8" width="1" height="1" fill="#4f7a3a"/><rect x="6" y="8" width="1" height="1" fill="#4f7a3a"/><rect x="2" y="9" width="1" height="1" fill="#6b9a4a"/><rect x="3" y="9" width="1" height="1" fill="#6b9a4a"/><rect x="5" y="9" width="1" height="1" fill="#4f7a3a"/><rect x="6" y="9" width="1" height="1" fill="#4f7a3a"/><rect x="3" y="10" width="1" height="1" fill="#6b9a4a"/><rect x="4" y="10" width="1" height="1" fill="#6b9a4a"/><rect x="5" y="10" width="1" height="1" fill="#4f7a3a"/><rect x="6" y="10" width="1" height="1" fill="#4f7a3a"/><rect x="5" y="11" width="1" height="1" fill="#4f7a3a"/><rect x="6" y="11" width="1" height="1" fill="#4f7a3a"/></svg></h2><span>PICKUP TICKET</span></div>
     <div class="tk-body">
       <p id="confirm-id" class="confirm-id"></p>
       <ul id="confirm-list"></ul>
@@ -256,6 +147,7 @@
   <h2 id="shop-title" class="sr-only">Select your plants</h2>
   <p class="inv-status" id="inv-status" role="status" hidden></p>
   <div class="grid" id="plant-list" aria-busy="false"></div>
+  <ol class="steps-strip" aria-label="How to order"><li><b>1.</b> Click</li><li><b>2.</b> Order</li><li><b>3.</b> Pick up</li></ol>
   <section class="info" id="pickup-info" aria-labelledby="info-title">
     <h2 id="info-title">Pickup &amp; payment</h2>
     <p class="lead"><b>Connecting people to native plants.</b> Grown in Fontana · pickup Saturdays 10 a.m. – 2 p.m. · Cash or Zelle at pickup, nothing charged online.</p>
@@ -315,313 +207,8 @@
   <script src="plant-photos.js"></script>
   <script src="stock-view.js"></script>
   <script src="feed-order.js"></script>
-  <script>
-    /* ===== IENN SETTINGS =====
-       APPS_SCRIPT_URL: the existing IENN inventory/invoice web app (/exec). The page reads ?view=inventory from it
-       and POSTs orders to it (see apps-script/ and README). Plants, stock and prices come from the inventory tool:
-       adding a plant = add it to the tool's Catalog; stock = the weekly counts minus orders since the last count. */
-    var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec";
-    var REFRESH_MINUTES = 5;
-    /* Prices by size. Shown only until live data loads; the server (IENN_Config.gs IENN_SIZES) is authoritative. */
-    var PRICES = { '2"': 3, '4"': 6, 'Tree pot': 10, '1 gal': 15 };
-    var SIZE_LABELS = { '2"': "2-inch pot", '4"': "4-inch pot", 'Tree pot': "Quarter tree pot", '1 gal': "1-gallon" };
-    /* All prices INCLUDE tax ($3/$6/$10/$15 are final). The server backs tax out for its records only. */
-    var ON_REQUEST = "Available on request";   // 2" and Tree pot (not counted yet)
-    var CONTACT_PHONE = "(909) 609-9373", CONTACT_TEL = "+19096099373";   // Andrew, call/text fallback
-    /* Appeal sort (earlier keyword = shown first); plants with stock come first, not available last. */
-    /* Default order (an explicit feed/sheet rank still wins): popular + colorful first. */
-    var APPEAL_KEYWORDS = ["white sage", "salvia apiana", "sticky monkeyflower", "diplacus aurantiacus", "rock monkeyflower", "diplacus calycinus",
-      "monkeyflower", "mimulus", "diplacus", "california poppy", "eschscholzia", "showy penstemon", "penstemon spectabilis", "scarlet bugler",
-      "penstemon centranthifolius", "matilija", "romneya", "milkweed", "asclepias", "penstemon", "poppy", "sage", "salvia", "buckwheat", "eriogonum",
-      "lupine", "lupinus", "woolly blue curls", "trichostema", "ceanothus", "lilac", "yarrow", "achillea", "verbena", "aster", "fuchsia", "epilobium",
-      "coreopsis", "sunflower", "encelia", "marigold", "baileya", "morning glory", "calystegia"];
-    /* OFFLINE FALLBACK ONLY (live inventory unreachable and nothing cached). Stock unknown -> "Available on request". */
-    var FALLBACK_PLANTS = [
-      { name: "Blue Pyramid Cypress", sizes: ['1 gal'] },
-      { name: "Woolly Blue Curls",    sizes: ['4"'] },
-      { name: "Sticky Monkeyflower",  sizes: ['1 gal'] },
-      { name: "Yarrow",               sizes: ['4"'] }
-    ];
-    var ORDER_EMAIL = "plants@inlandempirenativenursery.com"; // mailto fallback only if the order endpoint fails
-  </script>
-  <script>
-    (function () {
-      var KEY = "ienn-cart-v2", CACHE = "ienn-inventory-v2", cart = {}, PLANTS = [];
-      try { cart = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { cart = {}; }
-      var list = document.getElementById("plant-list"), status = document.getElementById("inv-status");
-      function save() { try { localStorage.setItem(KEY, JSON.stringify(cart)); } catch (e) {} }
-      function el(tag, attrs, text) { var e = document.createElement(tag); for (var a in attrs) e.setAttribute(a, attrs[a]); if (text != null) e.textContent = text; return e; }
-      function money(n) { return "$" + (Math.round(n * 100) / 100).toFixed(2); }
-      function slug(t) { return String(t).toLowerCase().replace(/\(.*?\)/g, "").trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
-      function clamp(v) { v = parseInt(v, 10); return isNaN(v) || v < 1 ? 1 : Math.min(v, 99); }
-      var ASK_KEYS = ['2"', 'Tree pot'];   // on-request sizes (no weekly counts): "Ask us", never addable
-      function askSize(z) { return !!z && ASK_KEYS.indexOf(z.key) >= 0; }
-      function canAdd(z) { return IENNStock.available(z); }   // qty null = offline/unknown (orderable); qty 0 only with canRequest
-      function zstate(z) { return z.qty == null ? "ask" : z.qty > 0 ? "ok" : "out"; }
-      function pstate(p) { var c = p.sizes.filter(function (z) { return !askSize(z); });
-        if (c.some(function (z) { return z.qty > 0; })) return "ok"; if (!c.length || c.some(function (z) { return z.qty == null || IENNStock.canReq(z); })) return "ask"; return "out"; }
-      function byId(id) { return PLANTS.find(function (p) { return p.id === id; }); }
-      function sizeOf(p, k) { return p && p.sizes.find(function (z) { return z.key === k; }); }
-      function lines() {
-        return Object.keys(cart).map(function (k) { var i = k.lastIndexOf("|"), p = byId(k.slice(0, i)), z = sizeOf(p, k.slice(i + 1));
-          return p && z && canAdd(z) ? { key: k, p: p, z: z, q: cart[k], total: cart[k] * z.price } : null; }).filter(Boolean);
-      }
-      function appeal(p) { var t = (p.name + " " + p.botanical).toLowerCase(); for (var i = 0; i < APPEAL_KEYWORDS.length; i++) if (t.indexOf(APPEAL_KEYWORDS[i]) >= 0) return i; return 999; }
-      function rk(p) { return p.rank == null || p.rank === "" || isNaN(Number(p.rank)) ? 1e9 : Number(p.rank); }
-      function sortPlants(a) { return IENNOrder.order(a); }   // feed order; server decides (see feed-order.js)
-      function split(full) { var m = /^(.*?)\s*\((.*)\)\s*$/.exec(full || ""); return m ? [m[1], m[2]] : [String(full || "").trim(), ""]; }
-
-      var BATCH = 12, shown = 0, io = null;
-      function render() {
-        list.innerHTML = ""; list.setAttribute("aria-busy", "false"); shown = 0; if (io) io.disconnect();
-        more(); update();
-      }
-      function more() {   // progressive render: next BATCH cards when the sentinel scrolls near view
-        var old = list.querySelector(".grid-more"); if (old) old.remove();
-        PLANTS.slice(shown, shown + BATCH).forEach(function (p, j) { list.appendChild(card(p, shown + j)); });
-        shown = Math.min(PLANTS.length, shown + BATCH);
-        if (shown < PLANTS.length) {
-          var s = el("div", { class: "grid-more", "aria-hidden": "true" }); list.appendChild(s);
-          if ("IntersectionObserver" in window) { io = new IntersectionObserver(function (es) { if (es.some(function (x) { return x.isIntersecting; })) { io.disconnect(); more(); update(); } }, { rootMargin: "800px" }); io.observe(s); }
-          else more();
-        }
-      }
-      var SHORT = { '2"': "2-inch", '4"': "4-inch", 'Tree pot': "Tree pot", '1 gal': "1-gal" };
-      function askNote() { var n = el("span", { class: "ask-note" }); n.appendChild(document.createTextNode("Ask us: "));
-        n.appendChild(el("a", { class: "contact-tel", href: "tel:" + CONTACT_TEL }, "call")); n.appendChild(document.createTextNode(" or "));
-        n.appendChild(el("a", { class: "contact-sms", href: "sms:" + CONTACT_TEL }, "text")); n.appendChild(document.createTextNode(" Andrew")); return n; }
-      function card(p, idx) {
-          var ps = pstate(p), card = el("article", { class: "card" + (ps === "out" ? " sold-out" : ""), "aria-labelledby": p.id + "-name" });
-          card.dataset.id = p.id;
-          var ph = el("div", { class: "ph" });
-          if (p.image) ph.appendChild(el("img", p.srcset ? { src: p.image, srcset: p.srcset, sizes: "(max-width: 600px) 48vw, 260px", alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" } : { src: p.image, alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" })); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }
-          var lo = p.sizes.filter(function (z) { return !askSize(z) && isFinite(z.price); }).map(function (z) { return z.price; });
-          if (lo.length) ph.appendChild(el("span", { class: "price-tag", "aria-hidden": "true" }, (lo.length > 1 ? "from $" : "$") + Math.min.apply(null, lo)));
-          if (p.badge) ph.appendChild(el("span", { class: "pick-badge" }, String(p.badge)));
-          if (p.badge) ph.removeAttribute("aria-hidden");
-          card.appendChild(ph);
-          card.addEventListener("touchstart", function () { card.classList.add("lift"); }, { passive: true });
-          ["touchend", "touchcancel"].forEach(function (t) { card.addEventListener(t, function () { setTimeout(function () { card.classList.remove("lift"); }, 160); }); });
-          var cr = p.image && typeof ienPhoto === "function" && ienPhoto(p.name); cr = cr && cr.src === p.image && cr.credit;
-          if (cr) { var cp = el("p", { class: "photo-credit" }); cp.appendChild(el("a", { href: cr.url, target: "_blank", rel: "noopener" }, cr.text)); card.appendChild(cp); }
-          var b = el("div", { class: "body" });
-          var h3 = el("h3", { id: p.id + "-name" }); h3.appendChild(el("span", { class: "slot", "aria-hidden": "true" }, String.fromCharCode(65 + Math.floor(idx / 6)) + (idx % 6 + 1))); h3.appendChild(document.createTextNode(p.name)); b.appendChild(h3);
-          if (p.botanical) b.appendChild(el("span", { class: "note" }, p.botanical));
-          var badge = el("span", { class: "badge " + ps }, ps === "ok" ? "Available · Get yours now" : ps === "ask" ? "We'll confirm availability" : ON_REQUEST);
-          b.appendChild(badge);
-          var pick = null, only = p.sizes.filter(function (z) { return !askSize(z); }); if (only.length === 1) pick = only[0];   // single size: selected for Add, but NOT highlighted
-          var fs = el("fieldset", { class: "chips" }); fs.appendChild(el("legend", {}, "Size"));
-          var info = el("span", { class: "price" }), ask = askNote(); ask.hidden = true;
-          var add, minus, inp, plus;
-          function want() { return clamp(inp ? inp.value : 1); }
-          function showInfo() {
-            var ok = canAdd(pick), st = pick ? IENNStock.sizeState(pick, (cart[p.id + "|" + pick.key] || 0) + want()) : null;
-            info.textContent = "";
-            ask.hidden = !(st === "ask");
-            if (add) { add.disabled = false; add.textContent = "Add to tray"; add.dataset.ready = ok ? "1" : "0"; }
-            if (pick) hint.textContent = "";
-            if (inp && pick) inp.max = String(IENNStock.maxQty(pick));
-            [minus, inp, plus].forEach(function (x) { if (x) x.disabled = !ok; });
-          }
-          p.sizes.forEach(function (z) {
-            var rq = askSize(z), c = el("button", { type: "button", class: "chip" + (rq ? " chip-request" : ""), "aria-pressed": "false" },
-              (SHORT[z.key] || z.label) + " $" + z.price + (rq ? " · ask" : ""));
-            c.setAttribute("aria-label", z.label + ", $" + z.price + (rq ? ", available on request" : ""));
-            c.addEventListener("click", function () {
-              fs.querySelectorAll(".chip").forEach(function (x) { x.setAttribute("aria-pressed", x === c ? "true" : "false"); });
-              if (rq) { pick = null; showInfo(); info.textContent = ON_REQUEST + ": add \u201c" + z.label + "\u201d in Notes and we'll confirm."; return; }
-              pick = z; inp.value = Math.min(want(), IENNStock.maxQty(z)); showInfo();
-            });
-            fs.appendChild(c);
-          });
-          var hint = el("p", { class: "size-hint", "aria-live": "polite" }); b.appendChild(fs); b.appendChild(hint); b.appendChild(info); b.appendChild(ask);
-          var row = el("div", { class: "row" });
-          var stp = el("div", { class: "stepper", role: "group", "aria-label": "Quantity of " + p.name });
-          minus = el("button", { type: "button", "aria-label": "Fewer " + p.name }, "−");
-          inp = el("input", { type: "number", min: "1", max: "99", value: "1", inputmode: "numeric", "aria-label": "Quantity of " + p.name });
-          plus = el("button", { type: "button", "aria-label": "More " + p.name }, "+");
-          [minus, inp, plus].forEach(function (x) { stp.appendChild(x); });
-          function cap(v) { return Math.min(clamp(v), pick ? IENNStock.maxQty(pick) : 99); }
-          minus.addEventListener("click", function () { inp.value = cap(inp.value - 1); showInfo(); });
-          plus.addEventListener("click", function () { var nv = clamp(+inp.value + 1); inp.value = cap(nv); showInfo(); if (pick && pick.qty != null && nv > pick.qty) ask.hidden = false; });
-          inp.addEventListener("input", function () { showInfo(); });
-          inp.addEventListener("change", function () { var raw = clamp(inp.value); inp.value = cap(raw); showInfo(); if (pick && pick.qty != null && raw > pick.qty) ask.hidden = false; });
-          add = el("button", { type: "button", class: "add" }, "Add to tray");
-          var msg = el("div", { class: "incart", "aria-live": "polite" });
-          add.addEventListener("click", function () {
-            if (!canAdd(pick)) {
-              if (fs.querySelector('.chip-request[aria-pressed="true"]')) { hint.textContent = "This size is by request: add it in Notes and we'll confirm."; return; }
-              hint.textContent = "Choose a size first"; fs.classList.remove("nudge"); void fs.offsetWidth; fs.classList.add("nudge"); return;
-            }
-            hint.textContent = "";
-            var k = p.id + "|" + pick.key, wantN = (cart[k] || 0) + clamp(inp.value), mx = IENNStock.maxQty(pick);
-            if (pick.qty != null && wantN > mx) { wantN = mx; ask.hidden = false; msg.textContent = "✓ Added what we have. Want more? Ask us."; }
-            else if (IENNStock.isRequest(pick, wantN)) { ask.hidden = false; msg.textContent = "✓ Added " + wantN + " × " + pick.label + " as a request. We'll confirm."; }
-            else msg.textContent = "✓ Added " + wantN + " × " + pick.label;
-            cart[k] = Math.min(wantN, 99); lastAdded = k; save(); inp.value = 1; update(); showInfo(); bumpTray();
-          });
-          row.appendChild(stp); row.appendChild(add);
-          b.appendChild(row); b.appendChild(msg); showInfo();
-          card.appendChild(b); return card;
-      }
-
-      var lastAdded = null;
-      function bumpTray() { var cb = document.getElementById("cartbar-count"); cb.classList.remove("bump"); void cb.offsetWidth; cb.classList.add("bump"); }
-      function update() {
-        var ls = lines(), count = ls.reduce(function (a, l) { return a + l.q; }, 0), sub = ls.reduce(function (a, l) { return a + l.total; }, 0);
-        document.querySelectorAll(".card").forEach(function (c) { c.classList.toggle("in-cart", ls.some(function (l) { return l.p.id === c.dataset.id; })); });
-        var sb = document.getElementById("summary-body"); sb.innerHTML = "";
-        if (!ls.length) sb.appendChild(el("p", { class: "empty" }, "No plants added yet."));
-        else {
-          var ul = el("ul");
-          ls.forEach(function (l) {
-            var li = el("li", l.key === lastAdded ? { class: "drop" } : {}); var ls_ = el("span", {}, l.q + " × " + l.p.name + " "); ls_.appendChild(el("span", { class: "nw" }, "(" + l.z.label + ")")); ls_.appendChild(document.createTextNode(" @ $" + l.z.price + " = ")); ls_.appendChild(el("span", { class: "nw" }, money(l.total))); li.appendChild(ls_);
-            var tq = el("span", { class: "tq", role: "group", "aria-label": "Quantity of " + l.p.name }), mx = IENNStock.maxQty(l.z);
-            var dm = el("button", { type: "button", "aria-label": "One fewer " + l.p.name }, "−"), dp = el("button", { type: "button", "aria-label": "One more " + l.p.name }, "+");
-            dm.addEventListener("click", function () { if (l.q <= 1) delete cart[l.key]; else cart[l.key] = l.q - 1; lastAdded = null; save(); update(); });
-            dp.addEventListener("click", function () { cart[l.key] = Math.min(l.q + 1, mx); lastAdded = null; save(); update(); });
-            dp.disabled = l.q >= mx; tq.appendChild(dm); tq.appendChild(el("span", { "aria-live": "polite" }, String(l.q))); tq.appendChild(dp); li.appendChild(tq);
-            var rm = el("button", { type: "button", class: "rm", "aria-label": "Remove " + l.p.name + " " + l.z.label }, "Remove");
-            rm.addEventListener("click", function () { delete cart[l.key]; save(); update(); });
-            li.appendChild(rm); ul.appendChild(li);
-          });
-          sb.appendChild(ul);
-          var tot = el("p", { class: "cart-total" }, "Total: " + money(sub) + " ");
-          tot.appendChild(el("small", { class: "tax-note" }, "Taxes included")); sb.appendChild(tot);
-          document.getElementById("qty-error").style.display = "none";
-        }
-        document.getElementById("cartbar").hidden = count === 0;
-        var cb = document.getElementById("cartbar-count"); cb.textContent = count + (count === 1 ? " item" : " items") + " · " + money(sub) + " "; cb.appendChild(el("small", {}, "tax incl."));
-        return ls;
-      }
-
-      var PICKUP = "Fontana (near Sierra & Baseline) · Saturdays 10 a.m. – 2 p.m.";
-      var drawer = document.getElementById("checkout"), backdrop = document.getElementById("checkout-backdrop"), opener = null;
-      function focusables() { return [].slice.call(drawer.querySelectorAll("button:not([disabled]),a[href],input,select,textarea")).filter(function (x) { return x.offsetParent !== null; }); }
-      function openCheckout() {
-        opener = document.activeElement; drawer.hidden = false; backdrop.hidden = false; drawer.classList.remove("closing");
-        document.body.classList.add("drawer-open"); update();
-        setTimeout(function () { document.getElementById("checkout-close").focus(); }, 30);
-      }
-      function closeCheckout() {
-        if (drawer.hidden) return; drawer.classList.add("closing"); backdrop.hidden = true; document.body.classList.remove("drawer-open");
-        setTimeout(function () { drawer.hidden = true; drawer.classList.remove("closing"); drawer.style.transform = ""; }, 200);
-        if (opener && opener.focus) opener.focus({ preventScroll: true });
-      }
-      window.iennOpenCheckout = openCheckout;
-      document.getElementById("cartbar-go").addEventListener("click", openCheckout);
-      document.getElementById("checkout-close").addEventListener("click", closeCheckout);
-      backdrop.addEventListener("click", closeCheckout);
-      document.addEventListener("keydown", function (e) {
-        if (drawer.hidden) return;
-        if (e.key === "Escape") { e.preventDefault(); closeCheckout(); }
-        else if (e.key === "Tab") { var f = focusables(); if (!f.length) return; var a = f[0], z = f[f.length - 1];
-          if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); } else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); } else if (!drawer.contains(document.activeElement)) { e.preventDefault(); a.focus(); } }
-      });
-      (function () { var head = document.getElementById("drawer-head"), y0 = null;   // swipe down on the header to close (phones)
-        head.addEventListener("touchstart", function (e) { y0 = e.touches[0].clientY; }, { passive: true });
-        head.addEventListener("touchmove", function (e) { if (y0 == null) return; var d = Math.max(0, e.touches[0].clientY - y0); drawer.style.transform = "translateY(" + d + "px)"; }, { passive: true });
-        head.addEventListener("touchend", function (e) { var d = y0 == null ? 0 : e.changedTouches[0].clientY - y0; y0 = null; drawer.style.transform = ""; if (d > 80) closeCheckout(); });
-      })();
-      function fieldErr(id, msg) { var f = document.getElementById(id); f.setAttribute("aria-invalid", msg ? "true" : "false"); document.getElementById(id + "-err").textContent = msg || ""; return !msg; }
-      function v(id) { return document.getElementById(id).value.trim(); }
-      var form = document.getElementById("order-form"), btn = form.querySelector(".submit-btn"), serr = document.getElementById("server-error");
-      function showConfirm(ls, orderId, total, notes) {
-        document.getElementById("confirm-id").textContent = orderId ? "Order number: " + orderId : "";
-        var cl = document.getElementById("confirm-list"); cl.innerHTML = "";
-        ls.forEach(function (l) { cl.appendChild(el("li", {}, l.q + " × " + l.p.name + " (" + l.z.label + ") — " + money(l.total))); });
-        var cn = document.getElementById("confirm-notices"); cn.innerHTML = ""; (notes || []).forEach(function (m) { cn.appendChild(el("p", { class: "stock-note" }, m)); }); cn.hidden = !(notes && notes.length);
-        var ct = document.getElementById("confirm-total"); ct.textContent = "Total: " + money(total) + " ";
-        ct.appendChild(el("small", { class: "tax-note" }, "Taxes included"));
-        var c = document.getElementById("confirm"); c.hidden = false; form.reset(); closeCheckout();
-        cart = {}; save(); update();
-        setTimeout(function () { c.focus({ preventScroll: true }); window.scrollTo({ top: Math.max(0, c.getBoundingClientRect().top + window.pageYOffset - 8), behavior: "smooth" }); }, 50);
-      }
-      function mailtoHref(ls, f) {
-        var body = "Name: " + f.name + "\nPickup: " + PICKUP + "\nPayment: " + v("payment") + "\nRef: " + f.name + "\nEmail: " + f.email + "\nPhone: " + f.phone + "\n\n" + ls.map(function (l) { return l.q + " x " + l.p.name + " (" + l.z.label + ") $" + l.z.price; }).join("\n") +
-          "\n\nNotes: " + f.notes;
-        return "mailto:" + ORDER_EMAIL + "?subject=" + encodeURIComponent("Plant order from " + f.name) + "&body=" + encodeURIComponent(body);
-      }
-      form.addEventListener("submit", function (e) {
-        e.preventDefault(); serr.style.display = "none";
-        var ls = update(), ok = true, f = { name: v("name"), email: v("email"), phone: v("phone"), notes: v("notes") };
-        ok = fieldErr("name", f.name ? "" : "Please enter your name.") && ok;
-        ok = fieldErr("email", /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email) ? "" : "Please enter a valid email so we can confirm pickup.") && ok;
-        ok = fieldErr("phone", !f.phone || f.phone.replace(/\D/g, "").length >= 10 ? "" : "Please enter a 10-digit phone number or leave it blank.") && ok;
-        if (!ls.length) { document.getElementById("qty-error").style.display = "block"; ok = false; }
-        if (!ok) { (form.querySelector("[aria-invalid=true]") || document.getElementById("review")).focus(); return; }
-        btn.disabled = true; btn.textContent = "Sending…";
-        var payload = { name: f.name, email: f.email, phone: f.phone, notes: f.notes, pickup: PICKUP, payment: v("payment"), items: ls.map(function (l) { return { plant: l.p.fullName, sizeKey: l.z.key, qty: l.q }; }) };
-        var sub = ls.reduce(function (a, l) { return a + l.total; }, 0);
-        fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })   // text/plain = no CORS preflight
-          .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-          .then(function (r) {
-            btn.disabled = false; btn.textContent = "Place order";
-            if (r.ok) return showConfirm(ls, r.orderId, r.total != null ? r.total : sub, IENNStock.notices(r));
-            serr.innerHTML = ""; serr.appendChild(document.createTextNode(r.message || "Sorry, something went wrong. Please try again."));
-            if (r.error === "stock") {   // order NOT placed: keep the tray as is so they can adjust; messages are text only
-              var pm = IENNStock.problems(r); if (pm.length) { var ul = el("ul", { class: "stock-problems" }); pm.forEach(function (m) { ul.appendChild(el("li", {}, m)); }); serr.appendChild(ul); }
-            }
-            serr.style.display = "block"; serr.scrollIntoView({ block: "nearest" }); document.getElementById("review").focus({ preventScroll: true });
-          })
-          .catch(function () {   // order NOT placed: keep the cart, offer call/text and email
-            btn.disabled = false; btn.textContent = "Place order";
-            serr.innerHTML = ""; serr.appendChild(document.createTextNode("We couldn't send your order just now. Your cart is saved. Please try again, or call or text Andrew: "));
-            serr.appendChild(el("a", { class: "contact-tel", href: "tel:" + CONTACT_TEL }, CONTACT_PHONE)); serr.appendChild(document.createTextNode(" · "));
-            serr.appendChild(el("a", { class: "contact-sms", href: "sms:" + CONTACT_TEL + "?&body=" + encodeURIComponent("Plant order: " + ls.map(function (l) { return l.q + " x " + l.p.name + " (" + l.z.label + ")"; }).join(", ")) }, "Text your order"));
-            serr.appendChild(document.createTextNode(" · ")); serr.appendChild(el("a", { class: "contact-mail", href: mailtoHref(ls, f) }, "Email your order"));
-            serr.style.display = "block";
-          });
-      });
-      document.getElementById("new-order").addEventListener("click", function () {
-        form.reset(); document.getElementById("confirm").hidden = true; update();
-        document.getElementById("plant-list").scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-
-      function fromInventory(d) {
-        return (d.plants || []).map(function (p) {
-          return { id: slug(p.name), name: p.name, fullName: p.fullName || p.name, botanical: p.botanical || "", badge: p.badge ? String(p.badge).trim() : "", rank: p.rank, pinned: p.pinned, image: p.image || (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).src || "", srcset: p.image ? "" : (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).srcset || "",
-            sizes: (p.sizes || []).map(function (z) { return { key: z.key, label: z.size || SIZE_LABELS[z.key] || z.key, price: isFinite(Number(z.price)) && z.price !== "" && z.price != null ? Number(z.price) : PRICES[z.key], qty: z.qty == null ? null : Number(z.qty), extra: z.extra == null ? null : Number(z.extra), canRequest: z.canRequest == null ? null : z.canRequest === true }; }) };
-        });
-      }
-      function fallback() {
-        return FALLBACK_PLANTS.map(function (p) { var nb = split(p.name);
-          return { id: slug(nb[0]), name: nb[0], fullName: p.name, botanical: nb[1], image: (typeof ienPhoto === "function" && ienPhoto(nb[0]) || {}).src || "", srcset: (typeof ienPhoto === "function" && ienPhoto(nb[0]) || {}).srcset || "", sizes: p.sizes.map(function (k) { return { key: k, label: SIZE_LABELS[k], price: PRICES[k], qty: null }; }) }; });
-      }
-      var params = new URLSearchParams(location.search), prefilled = false;
-      function prefill() { // home-page cart link: order.html?white-sage=2 or ?white-sage|1%20gal=1 (slug or slug|size)
-        if (prefilled) return; prefilled = true;
-        params.forEach(function (v, k) {
-          var parts = k.split("|"), p = PLANTS.find(function (x) { return x.id === parts[0] || x.id.indexOf(parts[0] + "-") === 0 || parts[0].indexOf(x.id) === 0; }), q = parseInt(v, 10);
-          if (!p || !(q > 0)) return;
-          var z = (parts[1] && p.sizes.find(function (s) { return s.key === parts[1] || s.label === parts[1]; })) || p.sizes.find(canAdd);
-          if (canAdd(z)) cart[p.id + "|" + z.key] = Math.min(q, IENNStock.maxQty(z));
-        });
-        save();
-      }
-      function use(l, msg, d, quick) { PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l))); if (!quick) prefill(); render(); if (quick) return; status.textContent = msg || ""; status.hidden = !msg;
-        if (params.get("checkout") === "1" && !autoOpened && lines().length) { autoOpened = true; openCheckout(); } }
-      var autoOpened = false;
-      function load() {
-        fetch(APPS_SCRIPT_URL + "?view=inventory", { cache: "no-store" }).then(function (r) { if (!r.ok) throw 0; return r.text(); }).then(function (t) {
-          var d = JSON.parse(t), l = fromInventory(d); if (!l.length) throw 0; if (window.iennPromo) window.iennPromo(d.promo);
-          try { localStorage.setItem(CACHE, JSON.stringify({ t: Date.now(), d: d })); } catch (e) {}
-          use(l, "", d);
-        }).catch(function () {
-          var c = null; try { c = JSON.parse(localStorage.getItem(CACHE)); } catch (e) {}
-          if (c && c.d) use(fromInventory(c.d), "Couldn't refresh live stock — showing the list from " + new Date(c.t).toLocaleString() + ". Stock may be out of date.", c.d);
-          else use(fallback(), "Live stock is unavailable right now — showing our offline plant list. Stock may be out of date; we'll confirm availability.");
-        });
-      }
-      for (var i = 0; i < 4; i++) list.appendChild(el("div", { class: "card skel", "aria-hidden": "true" }));
-      // Instant first paint: last cached feed, else the built-in list; the live feed then refreshes quietly.
-      (function () { var c = null; try { c = JSON.parse(localStorage.getItem(CACHE)); } catch (e) {}
-        try { if (c && c.d && fromInventory(c.d).length) use(fromInventory(c.d), "", c.d, true); else use(fallback(), "", null, true); } catch (e) {} })();
-      load();
-      setInterval(load, REFRESH_MINUTES * 60000);
-      document.addEventListener("visibilitychange", function () { if (!document.hidden) load(); });
-    })();
-  </script>
+  <script src="shop-settings.js"></script>
+  <script src="shop.js"></script>
   <script>window.IENN_PROMO_OPTS = { cta: "Shop now", onShop: function () { var g = document.getElementById("plant-list"); if (g) { g.scrollIntoView({ behavior: "smooth" }); var b = g.querySelector("button:not([disabled])"); if (b) b.focus({ preventScroll: true }); } } };</script>
   <script src="promo.js"></script>
   <script src="site-links.js"></script>
