@@ -47,7 +47,7 @@ const feed = () => ({ version: 3, updated: new Date().toISOString(), taxIncluded
     assert.deepStrictEqual(small, [], 'small targets: ' + small);
     // pickup shown once in pickup box
     assert.strictEqual(await page.locator('.notice').count(), 0, 'old pickup box merged into drawer'); assert.strictEqual(await page.locator('form').count(), 1, 'one form');
-    assert.match(await page.locator('#steps').innerText(), /Select[\s\S]*Check out[\s\S]*Pick up/);
+    assert.strictEqual(await page.locator('#steps').count(), 0, 'how-it-works removed'); assert.strictEqual(await page.locator('header img[alt="Inland Empire Native Nursery logo"]').count(), 1);
     assert.match(await page.locator('body').innerText(), /Connecting people to native plants/);
     assert.ok(!/\[TODO|Photo coming soon/.test(await page.locator('body').innerText()));
     if (w === 375) { await page.screenshot({ path: SHOTS + 'phone-top.png' }); await page.locator('#plant-list').scrollIntoViewIfNeeded(); await page.evaluate(() => document.getElementById('plant-list').scrollIntoView()); await page.screenshot({ path: SHOTS + 'phone-cards.png' }); }
@@ -85,7 +85,6 @@ const feed = () => ({ version: 3, updated: new Date().toISOString(), taxIncluded
     assert.match(await page.locator('#confirm').innerText(), /INV-1042[\s\S]*Total: \$33\.00/);
     const cb = await page.locator('#confirm').boundingBox(); assert.ok(cb.y >= -5 && cb.y < 200, 'confirm at top: ' + cb.y);
     assert.strictEqual(await page.evaluate(() => document.activeElement.id), 'confirm');
-    assert.match(await page.locator('#steps li.on').innerText(), /Pick up/);
     if (w === 375) await page.screenshot({ path: SHOTS + 'phone-confirm.png' }); else await page.screenshot({ path: SHOTS + 'desktop-confirm-1280.png' });
     await page.click('#new-order'); await page.waitForTimeout(600); assert.ok(await page.locator('#confirm').isHidden());
     out.push({ w, overflow: await ovf(page), errs }); assert.ok(!out.at(-1).overflow); assert.deepStrictEqual(errs, []); await ctx.close();

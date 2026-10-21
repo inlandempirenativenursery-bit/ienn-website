@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="canonical" href="https://www.inlandempirenativenursery.com/order.html">
   <meta property="og:url" content="https://www.inlandempirenativenursery.com/order.html">
+  <link rel="icon" href="images/ienn-logo-IMG_2773-32.jpg" type="image/jpeg">
+  <link rel="apple-touch-icon" href="images/ienn-logo-IMG_2773-180.jpg">
+  <meta property="og:image" content="https://www.inlandempirenativenursery.com/images/ienn-logo-IMG_2773.jpg">
   <title>Order Plants | Inland Empire Native Nursery</title>
   <style>
     :root { --lilac:#d4c4e0; --sage:#6b7c6a; --sage-dark:#4a5a4a; --cream:#f8f6f3; --red:#c0392b; --text:#2c2c2c; --green:#2e7d32; }
@@ -12,11 +15,16 @@
     html { scroll-behavior:smooth; }
     body { font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; color:var(--text); background:#fff; line-height:1.5; padding-bottom:96px; overflow-x:hidden; }
     header { background:#fff; border-bottom:1px solid #eee; padding:0.75rem 1rem; display:flex; align-items:center; justify-content:space-between; }
+    .logo { display:flex; align-items:center; gap:0.55rem; text-decoration:none; color:inherit; }
+    .logo img { height:58px; width:auto; display:block; }
     .logo-text { font-weight:700; color:var(--sage-dark); }
     .logo-sub { font-size:0.7rem; color:var(--sage); }
     main { max-width:1080px; margin:0 auto; }
     h1 { font-size:1.5rem; color:var(--sage-dark); margin:1.25rem 1rem 0.5rem; }
     h2 { font-size:1.15rem; color:var(--sage-dark); margin:1.5rem 1rem 0.25rem; }
+    .info { margin:1.5rem 1rem 0; padding:0.75rem 0.9rem; background:var(--cream); border-radius:10px; }
+    .info h2 { font-size:0.95rem; margin:0 0 0.3rem; color:var(--sage-dark); }
+    .info .lead, .info .hint { margin:0.2rem 0 0; }
     .hint { margin:0 1rem; font-size:0.9rem; color:#555; }
     .notice { background:var(--cream); border-left:4px solid var(--sage); margin:1rem; padding:1rem; border-radius:8px; font-size:0.95rem; }
     .notice h2 { margin:0 0 0.5rem; }
@@ -84,11 +92,6 @@
     .cartbar a { white-space:nowrap; min-height:44px; display:inline-flex; align-items:center; padding:0 1.2rem; background:var(--red); color:#fff; font-weight:700; border-radius:10px; text-decoration:none; }
     @media (min-width:960px) { .cartbar { left:auto; right:1.5rem; bottom:1.5rem; border:1px solid #ddd; border-radius:12px; } }
     /* ---- subtle "select and go" pickup styling ---- */
-    .steps { display:flex; margin:0.75rem 1rem 0; list-style:none; border:1px solid #e3e1db; border-radius:10px; overflow:hidden; font-size:0.85rem; }
-    .steps li { flex:1; text-align:center; padding:0.5rem 0.25rem; color:#777; background:#fff; }
-    .steps li + li { border-left:1px solid #e3e1db; }
-    .steps .n { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:0.72rem; color:#999; margin-right:0.3rem; }
-    .steps li.on { background:var(--cream); color:var(--sage-dark); font-weight:700; }
     .slot { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:0.72rem; letter-spacing:0.05em; color:#8a8f88; border:1px solid #e3e1db; border-radius:4px; padding:0 0.3rem; margin-right:0.4rem; vertical-align:2px; background:#fafaf8; }
     .chips { gap:0.35rem; }
     .chips .chip { border-radius:8px; min-height:44px; padding:0 0.75rem; font-size:0.88rem; }
@@ -111,7 +114,6 @@
     .cartbar { background:linear-gradient(#fbfaf7,#f4f2ec); box-shadow:inset 0 2px 5px rgba(0,0,0,.06), 0 -2px 8px rgba(0,0,0,.06); }
     @media (prefers-reduced-motion:reduce) { .summary li.drop { animation:none; } }
     /* polish: minimal usability additions (no restyle) */
-    .steps small { display:block; font-size:0.7rem; color:#888; font-weight:400; line-height:1.2; }
     .lead { margin:0 1rem 0.25rem; font-size:0.95rem; color:#444; }
     .lead b { color:var(--sage-dark); }
     .nw { white-space:nowrap; }
@@ -131,11 +133,7 @@
     .stock-problems { margin:0.4rem 0 0 1.1rem; padding:0; }
     .stock-problems li { margin:0.2rem 0; }
     .ask-note a { color:var(--sage-dark); font-weight:600; display:inline-flex; align-items:center; min-height:44px; padding:0 0.3rem; }
-    .top { margin:0.5rem 1rem 0; }
-    .top h1 { margin:0; font-size:1.2rem; }
-    .top .lead { margin:0.1rem 0 0; font-size:0.85rem; }
-    .steps { margin-top:0.5rem; }
-    .steps small { display:none; }
+    .info .lead { font-size:0.85rem; }
     .hint { font-size:0.8rem; margin-top:0.4rem; }
     .grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:0.6rem; margin:0.75rem 0.6rem; }
     @media (min-width:640px) { .grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
@@ -223,9 +221,12 @@
 </head>
 <body>
   <header>
-    <a href="index.html" style="text-decoration:none;">
-      <div class="logo-text">IENN</div>
-      <div class="logo-sub">INLAND EMPIRE NATIVE NURSERY</div>
+    <a href="index.html" class="logo" aria-label="Inland Empire Native Nursery home">
+      <img src="images/ienn-logo-IMG_2773-600.jpg" width="47" height="58" alt="Inland Empire Native Nursery logo">
+      <div>
+        <div class="logo-text">IENN</div>
+        <div class="logo-sub">INLAND EMPIRE NATIVE NURSERY</div>
+      </div>
     </a>
     <div class="header-right">
       <a class="ig-link ig-top" target="_blank" rel="noopener" aria-label="Instagram (opens in a new tab)"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg><span class="ig-top-text">Instagram</span></a>
@@ -234,10 +235,7 @@
   </header>
 
 <main>
-  <div class="top">
-    <h1>Shop native plants</h1>
-    <p class="lead"><b>Connecting people to native plants.</b> Grown in Fontana · pickup Saturdays · Cash or Zelle.</p>
-  </div>
+  <h1 class="sr-only">Shop native plants</h1>
 
   <section class="confirm" id="confirm" hidden tabindex="-1" aria-labelledby="confirm-title" aria-live="polite">
     <div class="tk-head"><h2 id="confirm-title"><span class="tk-check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a5a4a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>Your order's in. See you Saturday!</h2><span>PICKUP TICKET</span></div>
@@ -255,12 +253,14 @@
   </section>
 
 
-  <h2 class="sr-only" id="steps-title">How it works</h2>
-  <ol class="steps" id="steps"><li class="on"><span class="n">1</span>Select<small>Pick plants &amp; sizes</small></li><li><span class="n">2</span>Check out<small>Pay at pickup</small></li><li><span class="n">3</span>Pick up<small>Saturday in Fontana</small></li></ol>
   <h2 id="shop-title" class="sr-only">Select your plants</h2>
-  <p class="hint">Tap a size, then Add. 2-inch and tree pot sizes are available on request (add them in Notes).</p>
   <p class="inv-status" id="inv-status" role="status" hidden></p>
   <div class="grid" id="plant-list" aria-busy="false"></div>
+  <section class="info" id="pickup-info" aria-labelledby="info-title">
+    <h2 id="info-title">Pickup &amp; payment</h2>
+    <p class="lead"><b>Connecting people to native plants.</b> Grown in Fontana · pickup Saturdays 10 a.m. – 2 p.m. · Cash or Zelle at pickup, nothing charged online.</p>
+    <p class="hint">Tap a size, then Add. 2-inch and tree pot sizes are available on request (add them in Notes).</p>
+  </section>
 
 </main>
 
@@ -394,7 +394,7 @@
           var ps = pstate(p), card = el("article", { class: "card" + (ps === "out" ? " sold-out" : ""), "aria-labelledby": p.id + "-name" });
           card.dataset.id = p.id;
           var ph = el("div", { class: "ph" });
-          if (p.image) ph.appendChild(el("img", p.srcset ? { src: p.image, srcset: p.srcset, sizes: "(max-width: 600px) 48vw, 260px", alt: p.name, loading: "lazy", decoding: "async" } : { src: p.image, alt: p.name, loading: "lazy", decoding: "async" })); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }
+          if (p.image) ph.appendChild(el("img", p.srcset ? { src: p.image, srcset: p.srcset, sizes: "(max-width: 600px) 48vw, 260px", alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" } : { src: p.image, alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" })); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }
           var lo = p.sizes.filter(function (z) { return !askSize(z) && isFinite(z.price); }).map(function (z) { return z.price; });
           if (lo.length) ph.appendChild(el("span", { class: "price-tag", "aria-hidden": "true" }, (lo.length > 1 ? "from $" : "$") + Math.min.apply(null, lo)));
           if (p.badge) ph.appendChild(el("span", { class: "pick-badge" }, String(p.badge)));
@@ -500,13 +500,13 @@
       function focusables() { return [].slice.call(drawer.querySelectorAll("button:not([disabled]),a[href],input,select,textarea")).filter(function (x) { return x.offsetParent !== null; }); }
       function openCheckout() {
         opener = document.activeElement; drawer.hidden = false; backdrop.hidden = false; drawer.classList.remove("closing");
-        document.body.classList.add("drawer-open"); setStep(2); update();
+        document.body.classList.add("drawer-open"); update();
         setTimeout(function () { document.getElementById("checkout-close").focus(); }, 30);
       }
       function closeCheckout() {
         if (drawer.hidden) return; drawer.classList.add("closing"); backdrop.hidden = true; document.body.classList.remove("drawer-open");
         setTimeout(function () { drawer.hidden = true; drawer.classList.remove("closing"); drawer.style.transform = ""; }, 200);
-        setStep(1); if (opener && opener.focus) opener.focus({ preventScroll: true });
+        if (opener && opener.focus) opener.focus({ preventScroll: true });
       }
       window.iennOpenCheckout = openCheckout;
       document.getElementById("cartbar-go").addEventListener("click", openCheckout);
@@ -523,7 +523,6 @@
         head.addEventListener("touchmove", function (e) { if (y0 == null) return; var d = Math.max(0, e.touches[0].clientY - y0); drawer.style.transform = "translateY(" + d + "px)"; }, { passive: true });
         head.addEventListener("touchend", function (e) { var d = y0 == null ? 0 : e.changedTouches[0].clientY - y0; y0 = null; drawer.style.transform = ""; if (d > 80) closeCheckout(); });
       })();
-      function setStep(n) { document.querySelectorAll("#steps li").forEach(function (li, i) { li.classList.toggle("on", i === n - 1); }); }
       function fieldErr(id, msg) { var f = document.getElementById(id); f.setAttribute("aria-invalid", msg ? "true" : "false"); document.getElementById(id + "-err").textContent = msg || ""; return !msg; }
       function v(id) { return document.getElementById(id).value.trim(); }
       var form = document.getElementById("order-form"), btn = form.querySelector(".submit-btn"), serr = document.getElementById("server-error");
@@ -536,7 +535,7 @@
         ct.appendChild(el("small", { class: "tax-note" }, "Taxes included"));
         var c = document.getElementById("confirm"); c.hidden = false; form.reset(); closeCheckout();
         cart = {}; save(); update();
-        setStep(3); setTimeout(function () { c.focus({ preventScroll: true }); window.scrollTo({ top: Math.max(0, c.getBoundingClientRect().top + window.pageYOffset - 8), behavior: "smooth" }); }, 50);
+        setTimeout(function () { c.focus({ preventScroll: true }); window.scrollTo({ top: Math.max(0, c.getBoundingClientRect().top + window.pageYOffset - 8), behavior: "smooth" }); }, 50);
       }
       function mailtoHref(ls, f) {
         var body = "Name: " + f.name + "\nPickup: " + PICKUP + "\nPayment: " + v("payment") + "\nRef: " + f.name + "\nEmail: " + f.email + "\nPhone: " + f.phone + "\n\n" + ls.map(function (l) { return l.q + " x " + l.p.name + " (" + l.z.label + ") $" + l.z.price; }).join("\n") +
@@ -575,8 +574,8 @@
           });
       });
       document.getElementById("new-order").addEventListener("click", function () {
-        form.reset(); document.getElementById("confirm").hidden = true; setStep(1); update();
-        document.getElementById("steps").scrollIntoView({ behavior: "smooth", block: "start" });
+        form.reset(); document.getElementById("confirm").hidden = true; update();
+        document.getElementById("plant-list").scrollIntoView({ behavior: "smooth", block: "start" });
       });
 
       function fromInventory(d) {
@@ -600,7 +599,7 @@
         });
         save();
       }
-      function use(l, msg, d) { PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l))); prefill(); render(); status.textContent = msg || ""; status.hidden = !msg;
+      function use(l, msg, d, quick) { PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l))); if (!quick) prefill(); render(); if (quick) return; status.textContent = msg || ""; status.hidden = !msg;
         if (params.get("checkout") === "1" && !autoOpened && lines().length) { autoOpened = true; openCheckout(); } }
       var autoOpened = false;
       function load() {
@@ -615,6 +614,9 @@
         });
       }
       for (var i = 0; i < 4; i++) list.appendChild(el("div", { class: "card skel", "aria-hidden": "true" }));
+      // Instant first paint: last cached feed, else the built-in list; the live feed then refreshes quietly.
+      (function () { var c = null; try { c = JSON.parse(localStorage.getItem(CACHE)); } catch (e) {}
+        try { if (c && c.d && fromInventory(c.d).length) use(fromInventory(c.d), "", c.d, true); else use(fallback(), "", null, true); } catch (e) {} })();
       load();
       setInterval(load, REFRESH_MINUTES * 60000);
       document.addEventListener("visibilitychange", function () { if (!document.hidden) load(); });
