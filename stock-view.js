@@ -3,8 +3,9 @@
    extra = smaller, not-yet-ready plants on hand; canRequest = extra > 0. Works with the older feed too (no extra/canRequest).
    - No baseline (countDate/baseline null, or no field and no tracked qty > 0): stock UNKNOWN, show every plant
      ("We'll confirm availability"), never hide.
-   - Baseline (countDate set, or real stock detected): hide a size when qty == 0 and !canRequest; hide a plant with no
-     available tracked sizes.
+   - Baseline (countDate set, or real stock detected): show all plants. Zero-inventory plants are kept so shop.js can
+     sort them after plants with ready or available stock. Individual sizes with qty==0 && !canRequest are still
+     filtered from the size chips.
    - Never show exact counts. qty < LOW, chosen qty > qty, or qty 0 with canRequest => "Ask us" (still addable as a request).
    - canRequest: never cap the quantity at qty; the server accepts the extra as a request. */
 var IENNStock = (function () {
@@ -23,13 +24,11 @@ var IENNStock = (function () {
   function anyStock(p) { return (p.sizes || []).some(function (z) { return !isAsk(z) && (z.qty > 0 || canReq(z)); }); }
   /* tracked size can be added to the tray (qty null = unknown/offline: orderable, we confirm) */
   function available(z) { return !!z && !isAsk(z) && (z.qty == null || z.qty > 0 || canReq(z)); }
-  /* plants: [{sizes:[{key,qty,extra,canRequest,...}]}] -> filtered copy */
+  /* plants: [{sizes:[{key,qty,extra,canRequest,...}]}] -> filtered copy of sizes, but all plants kept */
   function view(plants, baseline) {
     return plants.map(function (p) {
-      var tracked = p.sizes.filter(function (z) { return !isAsk(z); });
       if (!baseline) return Object.assign({}, p, { sizes: p.sizes.map(function (z) { return isAsk(z) ? z : Object.assign({}, z, { qty: null }); }) });
-      var keep = p.sizes.filter(function (z) { return isAsk(z) || available(z); });
-      if (tracked.length && !keep.some(function (z) { return !isAsk(z); })) return null;
+      var keep = p.sizes.filter(function (z) { return isAsk(z) || available(z) || (z.qty != null && z.qty <= 0); }); // keep zeros so plant shows as out
       return Object.assign({}, p, { sizes: keep });
     }).filter(Boolean);
   }
