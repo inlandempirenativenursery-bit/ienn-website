@@ -29,9 +29,19 @@
   function split(full) { var m = /^(.*?)\s*\((.*)\)\s*$/.exec(full || ""); return m ? [m[1], m[2]] : [String(full || "").trim(), ""]; }
 
   var BATCH = 12, shown = 0, io = null;
+  /* Re-render safety (feed refresh ~5s after load, every few minutes, on tab focus):
+     - UI keeps each card's chosen size + stepper qty so a re-render restores them;
+     - a re-render waits while a pointer/touch is down on the grid, so a tap on Add is never split across old/new nodes;
+     - the previously revealed batch count is kept. */
+  var UI = {}, pressing = false, pendingRender = false;
+  list.addEventListener("pointerdown", function () { pressing = true; }, true);
+  function release() { if (!pressing) return; pressing = false; if (pendingRender) setTimeout(function () { if (!pressing && pendingRender) render(); }, 0); }
+  ["pointerup", "pointercancel"].forEach(function (t) { document.addEventListener(t, function () { setTimeout(release, 0); }, true); });
   function render() {
+    if (pressing) { pendingRender = true; return; } pendingRender = false;
+    var keep = shown;
     list.innerHTML = ""; list.setAttribute("aria-busy", "false"); shown = 0; if (io) io.disconnect();
-    more(); update();
+    more(); while (keep > shown && shown < PLANTS.length) more(); update();
   }
   function more() {   // progressive render: next BATCH cards when the sentinel scrolls near view
     var old = list.querySelector(".grid-more"); if (old) old.remove();
@@ -83,14 +93,16 @@
         if (inp && pick) inp.max = String(IENNStock.maxQty(pick));
         [minus, inp, plus].forEach(function (x) { if (x) x.disabled = !ok; });
       }
+      var saved = UI[p.id], savedZ = saved && sizes.find(function (z) { return z.key === saved.key && canAdd(z); });
+      if (savedZ) pick = savedZ;
       sizes.forEach(function (z) {
-        var rq = askSize(z) && !canAdd(z), c = el("button", { type: "button", class: "chip" + (rq ? " chip-request" : ""), "aria-pressed": BASELINE && z === pick ? "true" : "false" },
+        var rq = askSize(z) && !canAdd(z), c = el("button", { type: "button", class: "chip" + (rq ? " chip-request" : ""), "data-key": z.key, "aria-pressed": (BASELINE || savedZ) && z === pick ? "true" : "false" },
           (SHORT[z.key] || z.label) + " $" + z.price + (rq ? " · ask" : ""));
         c.setAttribute("aria-label", z.label + ", $" + z.price + (rq ? ", available on request" : ""));
         c.addEventListener("click", function () {
           fs.querySelectorAll(".chip").forEach(function (x) { x.setAttribute("aria-pressed", x === c ? "true" : "false"); });
           if (rq) { pick = null; showInfo(); info.textContent = ON_REQUEST + ": add \u201c" + z.label + "\u201d in Notes and we'll confirm."; return; }
-          pick = z; inp.value = Math.min(want(), IENNStock.maxQty(z)); showInfo();
+          pick = z; inp.value = Math.min(want(), IENNStock.maxQty(z)); remember(); showInfo();
         });
         fs.appendChild(c);
       });
@@ -101,10 +113,12 @@
       inp = el("input", { type: "number", min: "1", max: "99", value: "1", inputmode: "numeric", "aria-label": "Quantity of " + p.name });
       plus = el("button", { type: "button", "aria-label": "More " + p.name }, "+");
       [minus, inp, plus].forEach(function (x) { stp.appendChild(x); });
+      function remember() { UI[p.id] = { key: pick ? pick.key : (UI[p.id] && UI[p.id].key), qty: clamp(inp.value) }; }
+      if (saved && saved.qty > 1) inp.value = Math.min(saved.qty, pick ? IENNStock.maxQty(pick) : 99);
       function cap(v) { return Math.min(clamp(v), pick ? IENNStock.maxQty(pick) : 99); }
-      minus.addEventListener("click", function () { inp.value = cap(inp.value - 1); showInfo(); });
-      plus.addEventListener("click", function () { var nv = clamp(+inp.value + 1); inp.value = cap(nv); showInfo(); if (pick && pick.qty != null && nv > pick.qty) ask.hidden = false; });
-      inp.addEventListener("input", function () { showInfo(); });
+      minus.addEventListener("click", function () { inp.value = cap(inp.value - 1); remember(); showInfo(); });
+      plus.addEventListener("click", function () { var nv = clamp(+inp.value + 1); inp.value = cap(nv); remember(); showInfo(); if (pick && pick.qty != null && nv > pick.qty) ask.hidden = false; });
+      inp.addEventListener("input", function () { remember(); showInfo(); });
       inp.addEventListener("change", function () { var raw = clamp(inp.value); inp.value = cap(raw); showInfo(); if (pick && pick.qty != null && raw > pick.qty) ask.hidden = false; });
       add = el("button", { type: "button", class: "add" }, "Add to tray");
       var msg = el("div", { class: "incart", "aria-live": "polite" });
@@ -118,7 +132,7 @@
         if (pick.qty != null && wantN > mx) { wantN = mx; ask.hidden = false; msg.textContent = "✓ Added what we have. Want more? Ask us."; }
         else if (IENNStock.isRequest(pick, wantN)) { ask.hidden = false; msg.textContent = "✓ Added " + wantN + " × " + pick.label + " as a request. We'll confirm."; }
         else msg.textContent = "✓ Added " + wantN + " × " + pick.label;
-        cart[k] = Math.min(wantN, 99); lastAdded = k; save(); inp.value = 1; update(); showInfo(); bumpTray();
+        cart[k] = Math.min(wantN, 99); lastAdded = k; save(); inp.value = 1; remember(); update(); showInfo(); bumpTray();
       });
       row.appendChild(stp); row.appendChild(add);
       b.appendChild(row); b.appendChild(msg); showInfo();
@@ -348,7 +362,9 @@
     });
     save();
   }
-  function use(l, msg, d, quick) { BASELINE = IENNStock.hasBaseline(d, l); PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l))); if (!quick) prefill(); render(); if (quick) return; status.textContent = msg || ""; status.hidden = !msg;
+  var lastSig = null;
+  function use(l, msg, d, quick) { BASELINE = IENNStock.hasBaseline(d, l); PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l))); if (!quick) prefill();
+    var sig = JSON.stringify([BASELINE, PLANTS]); if (sig !== lastSig) { lastSig = sig; render(); } else update();   // same data: keep the grid as is if (quick) return; status.textContent = msg || ""; status.hidden = !msg;
     if (params.get("checkout") === "1" && !autoOpened && lines().length) { autoOpened = true; if (window.iennOpenCheckout) window.iennOpenCheckout(); } }
   var autoOpened = false;
   function load() {
