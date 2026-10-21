@@ -51,5 +51,21 @@ const uncounted = { version: 3, baseline: null, plants: counted.plants.map(p => 
     await page.locator('#review').scrollIntoViewIfNeeded(); await page.screenshot({ path: SHOTS + 'after-' + w + '-checkout.png', fullPage: w > 500 });
     assert.ok(await page.locator('.submit-btn').isEnabled()); assert.deepStrictEqual(errs, [], 'console ' + w);
     console.log('live', w, 'cards', n); await ctx.close(); }
+  // 4) home page cards: same rules (stock-view.js)
+  async function home(w, feed) { const ctx = await b.newContext({ viewport: { width: w, height: w < 500 ? 812 : 900 }, hasTouch: w < 500 }); const page = await ctx.newPage(); const errs = [];
+    page.on('pageerror', e => errs.push(String(e))); page.on('console', m => m.type() === 'error' && !/404|favicon/.test(m.text()) && errs.push(m.text()));
+    await page.route(/script\.google\.com/, r => feed ? r.fulfill({ contentType: 'application/json', body: JSON.stringify(feed) }) : r.continue());
+    await page.goto(BASE.replace('order.html', 'index.html')); await page.waitForSelector('#shop-grid .plant-card:not(.skel)', { timeout: 40000 }); await page.waitForTimeout(1200); return { ctx, page, errs }; }
+  { const { ctx, page, errs } = await home(375, counted);
+    assert.strictEqual(await page.locator('#shop-grid .plant-card:not(.skel)').count(), 2, 'home: Toyon hidden');
+    assert.strictEqual(await page.locator('#shop-grid .pill[aria-pressed="true"]').count(), 0);
+    const ws = page.locator('#shop-grid .plant-card:not(.skel)', { hasText: 'White Sage' }); await ws.locator('.pill', { hasText: '1 gal' }).click();
+    assert.ok(await ws.locator('.ask-line').isVisible(), 'home: qty 3 => Ask us'); assert.ok(!/\d+ left|Low stock/.test(await page.locator('#shop-grid').innerText()));
+    assert.deepStrictEqual(errs, []); await ctx.close(); }
+  { const { ctx, page, errs } = await home(375, uncounted);
+    assert.strictEqual(await page.locator('#shop-grid .plant-card:not(.skel)').count(), 3, 'home: no baseline => show all'); assert.deepStrictEqual(errs, []); await ctx.close(); }
+  for (const w of [375, 1280]) { const { ctx, page, errs } = await home(w, null);
+    await page.locator('#shop-grid').scrollIntoViewIfNeeded(); await page.screenshot({ path: SHOTS + 'home-after-' + w + '.png' });
+    assert.deepStrictEqual(errs, [], 'home console ' + w); console.log('home live', w, await page.locator('#shop-grid .plant-card:not(.skel)').count()); await ctx.close(); }
   assert.strictEqual(posts, 0, 'no order submitted'); await b.close(); console.log('review-oct20 e2e: all passed');
 })().catch(e => { console.error(e); process.exit(1); });

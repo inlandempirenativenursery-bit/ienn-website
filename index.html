@@ -192,6 +192,9 @@
     body.has-cart { padding-bottom: 96px; }
     .ask-line { font-size: 0.75rem; color: #555; }
     .ask-line[hidden] { display: none; }
+    /* review-oct20: neutral chips, green only after tap */
+    .pill { background: var(--cream); border: 1px solid var(--sage); color: var(--text); }
+    .pill[aria-pressed="true"], .pill.req[aria-pressed="true"] { background: #2e7d32; border-color: #2e7d32; color: #fff; border-style: solid; }
     .toast { position: fixed; left: 50%; bottom: 80px; transform: translateX(-50%); background: var(--sage-dark); color: #fff; padding: 0.6rem 1rem; border-radius: 8px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 60; }
     .toast.show { opacity: 1; }
     .skel { min-height: 260px; background: linear-gradient(90deg,#f1f1f1 25%,#e6e6e6 50%,#f1f1f1 75%); background-size: 200% 100%; animation: sk 1.2s infinite; }
@@ -296,6 +299,7 @@
   <script src="promo.js"></script>
   <script src="plant-photos.js"></script>
   <script src="inventory.js"></script>
+  <script src="stock-view.js"></script>
   <script>
   /* Shop grid renders entirely from the inventory feed (INVENTORY_URL in inventory.js). */
   (function () {
@@ -317,7 +321,8 @@
       document.getElementById('cart-go').href = 'order.html' + (q.length ? '?' + q.join('&') : '');
     }
     function card(p, idx) {
-      var c = el('article', 'plant-card'), body = el('div', 'plant-info'), sz = p.sizes[0], qty = 1;
+      var c = el('article', 'plant-card'), body = el('div', 'plant-info'), qty = 1;
+      var counted = p.sizes.filter(function (s) { return s.status !== 'request'; }), sz = counted.length === 1 ? counted[0] : null;   // single size: usable, NOT highlighted
       var img = el('div', 'plant-img');
       if (p.image) { var im = document.createElement('img'); im.src = p.image; if (p.srcset) { im.srcset = p.srcset; im.sizes = '(max-width: 600px) 45vw, 260px'; } im.alt = p.name; im.loading = 'lazy'; im.decoding = 'async'; img.appendChild(im); } else { img.setAttribute('aria-hidden', 'true'); img.textContent = p.name.charAt(0); }
       c.appendChild(img);
@@ -328,12 +333,11 @@
       var badge = el('span'), meta = el('div', 'size'), add = el('button', 'add-btn'), ask = el('div', 'ask-line');
       ask.innerHTML = 'Ask us: <a href="tel:' + IENN_TEL + '">call</a> or <a href="sms:' + IENN_TEL + '">text</a> ' + IENN_PHONE;
       body.appendChild(badge);
-      var firstIn = p.sizes.findIndex(function (s) { return s.status !== 'out' && s.status !== 'request'; }); if (firstIn > 0) sz = p.sizes[firstIn];
       var pills = el('div', 'pills'); pills.setAttribute('role', 'group'); pills.setAttribute('aria-label', 'Size of ' + p.name);
       p.sizes.forEach(function (s) {
         var b = el('button', 'pill' + (s.status === 'request' ? ' req' : ''), s.size); b.type = 'button';
-        b.setAttribute('aria-pressed', s === sz ? 'true' : 'false'); b.setAttribute('aria-label', s.size + (s.price != null ? ', $' + s.price : '') + (s.status === 'request' ? ', on request' : s.status === 'out' ? ', out of stock' : ''));
-        b.onclick = function () { sz = s; pills.querySelectorAll('.pill').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); sync(); };
+        b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', s.size + (s.price != null ? ', $' + s.price : '') + (s.status === 'request' ? ', on request' : s.status === 'out' ? ', out of stock' : ''));
+        b.onclick = function () { sz = s; qty = Math.min(qty, IENNStock.maxQty({ key: s.size, qty: s.qty })); out.textContent = qty; pills.querySelectorAll('.pill').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); sync(); };
         pills.appendChild(b);
       });
       body.appendChild(pills);
@@ -341,21 +345,32 @@
       if (p.note) body.appendChild(el('div', 'note', p.note));
       var row = el('div', 'shop-row'), mi = el('button', 'step', '\u2212'), out = el('output', '', '1'), pl = el('button', 'step', '+');
       mi.type = pl.type = add.type = 'button'; mi.setAttribute('aria-label', 'One fewer ' + p.name); pl.setAttribute('aria-label', 'One more ' + p.name);
-      mi.onclick = function () { qty = Math.max(1, qty - 1); out.textContent = qty; }; pl.onclick = function () { qty = Math.min(99, qty + 1); out.textContent = qty; };
+      mi.onclick = function () { qty = Math.max(1, qty - 1); out.textContent = qty; sync(); }; pl.onclick = function () { var mx = sz ? IENNStock.maxQty({ key: sz.size, qty: sz.qty }) : 99, hit = qty + 1 > mx; qty = Math.min(mx, qty + 1); out.textContent = qty; sync(); if (hit) ask.hidden = false; };
       row.appendChild(mi); row.appendChild(out); row.appendChild(pl); body.appendChild(row); body.appendChild(add); body.appendChild(ask);
       function sync() {
-        var st = sz.status; badge.textContent = LABEL[st]; badge.className = 'badge ' + CLS[st];
+        var ps = p.status === 'low' ? 'in' : p.status; badge.textContent = LABEL[ps]; badge.className = 'badge ' + CLS[ps];
+        if (!sz) { meta.textContent = 'Tap a size'; add.disabled = true; add.textContent = 'Pick a size'; ask.hidden = true; mi.disabled = pl.disabled = true; return; }
+        var st = sz.status; mi.disabled = pl.disabled = false;
         meta.textContent = (sz.size ? sz.size + ' \u2022 ' : '') + money(sz.price);
         add.disabled = st === 'out'; add.textContent = st === 'out' ? 'Sold out' : (st === 'request' ? 'Ask us' : 'Add to order');
-        ask.hidden = st !== 'request';
+        ask.hidden = !(st === 'request' || IENNStock.sizeState({ key: sz.size, qty: sz.qty }, qty + (cart[p.id + '|' + sz.size] || 0)) === 'ask');
         add.setAttribute('aria-label', 'Add ' + p.name + ' to cart');
       }
-      add.onclick = function () { var k = p.id + (sz.size ? '|' + sz.size : ''); NAMES[k] = { price: sz.price }; cart[k] = Math.min(99, (cart[k] || 0) + qty); save(); renderBar(); bar.classList.remove('bump'); void bar.offsetWidth; bar.classList.add('bump'); toast((sz.status === 'request' ? 'Requested ' : 'Added ') + qty + ' \u00d7 ' + p.name + (sz.status === 'request' ? ' (' + sz.size + ', we\u2019ll confirm)' : '')); };
+      add.onclick = function () { if (!sz) return; var k = p.id + (sz.size ? '|' + sz.size : ''); NAMES[k] = { price: sz.price }; cart[k] = Math.min(IENNStock.maxQty({ key: sz.size, qty: sz.qty }), (cart[k] || 0) + qty); sync(); save(); renderBar(); bar.classList.remove('bump'); void bar.offsetWidth; bar.classList.add('bump'); toast((sz.status === 'request' ? 'Requested ' : 'Added ') + qty + ' \u00d7 ' + p.name + (sz.status === 'request' ? ' (' + sz.size + ', we\u2019ll confirm)' : '')); };
       sync(); return c;
     }
     document.getElementById('printlist-link').href = IENN_PRINTLIST_URL;
     document.getElementById('cart-clear').onclick = function () { cart = {}; save(); renderBar(); toast('Cart cleared'); };
-    IENN.load(function (list, live) {
+    /* stock-view.js rules: no count yet => unknown (show all); counted => hide 0-qty sizes/plants; never exact counts */
+    function applyStock(list, d) {
+      list.forEach(function (p) { p.sizes.forEach(function (s) { s.key = s.size; }); });
+      var base = !!d && IENNStock.hasBaseline(d, list);
+      return IENNStock.view(list, base).map(function (p) {
+        p.sizes.forEach(function (s) { if (s.status !== 'request') s.status = s.qty == null ? 'unknown' : 'in'; });
+        var c = p.sizes.filter(function (s) { return s.status !== 'request'; });
+        p.status = !c.length ? 'request' : c.some(function (s) { return s.status === 'in'; }) ? 'in' : 'unknown'; return p; });
+    }
+    IENN.load(function (list, live, d) { list = applyStock(list, d);
       grid.innerHTML = ''; grid.removeAttribute('aria-busy');
       list.forEach(function (p, i) { p.sizes.forEach(function (s) { NAMES[p.id + (s.size ? '|' + s.size : '')] = { price: s.price }; }); grid.appendChild(card(p, i)); });
       info.textContent = live ? 'Live availability from our nursery inventory.' : 'Live availability is loading or unavailable right now \u2014 add what you like, order, and we\u2019ll confirm what\u2019s in stock.';

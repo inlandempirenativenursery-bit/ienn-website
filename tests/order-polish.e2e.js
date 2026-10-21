@@ -1,6 +1,5 @@
-// NOTE (review-oct20): chip preselection, sold-out chips and "Only N left" assertions below are superseded by Eric's Oct 20 review; see tests/review-oct20.e2e.js + tests/stock-view.test.js.
 // Browser tests for the polish pass. Serves the repo via python http.server on :8765 and mocks the Apps Script /exec.
-const { chromium } = require('playwright'); const assert = require('assert');
+const { chromium } = require(process.env.PW || 'playwright'); const assert = require('assert');
 const BASE = process.env.BASE || 'http://localhost:8765/', SHOTS = process.env.SHOTS || 'docs/screenshots/v2/';  // serve repo: python3 -m http.server 8765; needs playwright
 const S = (k, label, price, qty) => ({ key: k, size: label, price, qty });
 const ask = () => [S('2"', '2-inch pot', 3, null), S('Tree pot', 'Quarter tree pot', 10, null)];
@@ -29,36 +28,31 @@ const feed = () => ({ version: 3, updated: new Date().toISOString(), taxIncluded
     await page.waitForSelector('.card:not(.skel)');
     const names = await page.locator('.card h3').allTextContents();
     assert.match(names[0], /White Sage/, 'popular first: ' + names.join(','));
-    // sold-out fixes
-    const woolly = page.locator('.card', { hasText: 'Woolly Blue Curls' }); const toyon = page.locator('.card', { hasText: 'Toyon' });
-    const wChips = await woolly.locator('.chip').allTextContents();
-    assert.deepStrictEqual(wChips, ['2-inch pot · $3 · Ask us', 'Quarter tree pot · $10 · Ask us', '4-inch pot · $6 · sold out']);
-    assert.strictEqual(await woolly.locator('.chip[aria-pressed="true"]').textContent(), '4-inch pot · $6 · sold out');
-    assert.strictEqual(await woolly.locator('.price').textContent(), 'Sold out in this size');
-    assert.ok(!/\$3 each|NaN/.test(await woolly.innerText()));
-    assert.strictEqual(await woolly.locator('.add').textContent(), 'Sold out'); assert.ok(await woolly.locator('.add').isDisabled());
-    assert.match(await woolly.locator('.badge').textContent(), /Sold out/);
-    assert.deepStrictEqual((await toyon.locator('.chip').allTextContents()).slice(2), ['4-inch pot · $6 · sold out', '1-gallon · $15 · sold out']);
+    // review-oct20 rules: counted feed => all-zero plants hidden, 0-qty chips hidden, nothing preselected, no exact counts
+    assert.strictEqual(await page.locator('.card', { hasText: 'Woolly Blue Curls' }).count(), 0, 'woolly (all 0) hidden');
+    assert.strictEqual(await page.locator('.card', { hasText: 'Toyon' }).count(), 0, 'toyon (all 0) hidden');
+    assert.strictEqual(await page.locator('.chip[aria-pressed="true"]').count(), 0, 'no preselected chip');
+    const mf = page.locator('.card', { hasText: 'Sticky Monkeyflower' });
+    assert.strictEqual(await mf.locator('.chip', { hasText: '4-inch' }).count(), 0, '0-qty chip hidden');
+    assert.ok(await mf.locator('.add').isEnabled(), 'single counted size => Add works'); assert.strictEqual(await mf.locator('.chip[aria-pressed="true"]').count(), 0, 'single size not highlighted');
+    const ya = page.locator('.card', { hasText: 'Yarrow' }); assert.ok(await ya.locator('.add').isDisabled()); assert.strictEqual(await ya.locator('.add').textContent(), 'Pick a size');
+    await mf.locator('.chip', { hasText: '1-gal' }).click(); assert.ok(await mf.locator('.ask-note').isVisible(), 'qty 4 < 5 => Ask us');
     for (const c of await page.locator('.chip-request').all()) assert.notStrictEqual(await c.evaluate(e => getComputedStyle(e).textDecorationLine), 'line-through');
-    await woolly.locator('.chip-request').first().click(); assert.match(await woolly.locator('.price').textContent(), /Ask us: add “2-inch pot” in Notes/);
-    assert.ok(await woolly.locator('.add').isDisabled());
-    assert.strictEqual(await page.locator('p.hint', { hasText: 'Ask us' }).count(), 1, 'on-request note once');
-    assert.strictEqual(await page.locator('.card', { hasText: 'available on request' }).count(), 0, 'no per-card on-request note');
-    // monkeyflower defaults to 1 gal (first in-stock), not 2"
-    const mf = page.locator('.card', { hasText: 'Sticky Monkeyflower' }); assert.match(await mf.locator('.chip[aria-pressed="true"]').textContent(), /1-gallon/);
+    assert.ok(!/\d+ left|Only \d|NaN/.test(await page.locator('#plant-list').innerText()), 'no exact counts');
+    assert.strictEqual(await page.locator('p.hint', { hasText: 'on request' }).count(), 1, 'on-request note once');
     // tap targets
     const small = await page.evaluate(() => [...document.querySelectorAll('main button, .cartbar a, main a')].filter(e => e.offsetParent && e.getBoundingClientRect().height < 40 && !e.closest('p,li')).map(e => e.textContent.trim()));
     assert.deepStrictEqual(small, [], 'small targets: ' + small);
     // pickup shown once in pickup box
     assert.strictEqual(((await page.locator('.notice').first().innerText()).match(/Saturdays 10 AM – 2 PM/g) || []).length, 1);
-    assert.match(await page.locator('#steps').innerText(), /Pick plants & sizes[\s\S]*Nothing charged online[\s\S]*Saturday in Fontana/);
+    assert.match(await page.locator('#steps').innerText(), /Select[\s\S]*Reserve[\s\S]*Pick up/);
     assert.match(await page.locator('body').innerText(), /Connecting people to native plants/);
     assert.ok(!/\[TODO|Photo coming soon/.test(await page.locator('body').innerText()));
     if (w === 375) { await page.screenshot({ path: SHOTS + 'phone-top.png' }); await page.locator('#plant-list').scrollIntoViewIfNeeded(); await page.evaluate(() => document.getElementById('plant-list').scrollIntoView()); await page.screenshot({ path: SHOTS + 'phone-cards.png' }); }
     else await page.screenshot({ path: SHOTS + 'desktop-full-1280.png', fullPage: true });
     // add flow
     const ws = page.locator('.card', { hasText: 'White Sage' });
-    await ws.locator('.stepper button').last().click(); await ws.locator('.add').click();
+    await ws.locator('.chip', { hasText: '4-inch' }).click(); await ws.locator('.stepper button').last().click(); await ws.locator('.add').click();
     await mf.locator('.add').click();
     await page.locator('.card', { hasText: 'Yarrow' }).locator('.chip', { hasText: '4-inch' }).click(); await page.locator('.card', { hasText: 'Yarrow' }).locator('.add').click();
     const tot = await page.locator('#summary-body').innerText(); assert.match(tot, /Total: \$33\.00/); // 2x$6 (WS 4") + $15 (MF 1 gal) + $6 (Yarrow 4")
@@ -81,7 +75,7 @@ const feed = () => ({ version: 3, updated: new Date().toISOString(), taxIncluded
   }
   // failure fallback + click-through
   { const { ctx, page, errs } = await open(375, 'fail'); await page.waitForSelector('.card:not(.skel)');
-    await page.locator('.card').first().locator('.add').click(); await page.fill('#name', 'A'); await page.fill('#email', 'a@b.co'); await page.click('.submit-btn'); await page.waitForTimeout(600);
+    await page.locator('.card').first().locator('.chip:not(.chip-request)').first().click(); await page.locator('.card').first().locator('.add').click(); await page.fill('#name', 'A'); await page.fill('#email', 'a@b.co'); await page.click('.submit-btn'); await page.waitForTimeout(600);
     const se = page.locator('#server-error'); assert.ok(await se.isVisible());
     assert.deepStrictEqual(await se.locator('a').evaluateAll(a => a.map(x => x.getAttribute('href').split(':')[0])), ['tel', 'sms', 'mailto']);
     const links = await page.evaluate(() => [...document.querySelectorAll('a[href]')].map(a => ({ t: a.textContent.trim().slice(0, 30), h: a.getAttribute('href') })));
@@ -90,10 +84,16 @@ const feed = () => ({ version: 3, updated: new Date().toISOString(), taxIncluded
     const links = await page.evaluate(() => [...document.querySelectorAll('a[href]')].map(a => ({ t: a.textContent.trim().slice(0, 30), h: a.getAttribute('href') })));
     for (const l of links) if (/^(order|index)\.html/.test(l.h)) { const r = await page.request.get(BASE + l.h.split('?')[0]); assert.strictEqual(r.status(), 200, l.h); }
     const btns = await page.evaluate(() => [...document.querySelectorAll('button')].filter(b => b.offsetParent).map(b => b.textContent.trim()));
+    assert.strictEqual(await page.locator('#shop-grid .pill[aria-pressed="true"]').count(), 0, 'home: no preselected size');
+    assert.strictEqual(await page.locator('#shop-grid .plant-card', { hasText: 'Toyon' }).count(), 0, 'home: all-zero plant hidden');
+    assert.ok(!/\d+ left|Only \d|Low stock/.test(await page.locator('#shop-grid').innerText()), 'home: no exact counts');
+    await page.locator('#shop-grid .plant-card').first().locator('.pill:not(.req)').first().click();
+    assert.strictEqual(await page.locator('#shop-grid .plant-card').first().locator('.pill[aria-pressed="true"]').evaluate(e => getComputedStyle(e).backgroundColor), 'rgb(46, 125, 50)');
     const addb = page.locator('#shop-grid button:not([disabled])', { hasText: /Add/ }).first();
     let cartOk = 'no add button';
     if (await addb.count()) { await addb.click(); await page.waitForTimeout(300); cartOk = (await page.locator('#cart-bar').isVisible()) ? await page.locator('#cart-go').getAttribute('href') : 'cart bar hidden';
       if (await page.locator('#cart-clear').isVisible()) { await page.click('#cart-clear'); cartOk += ' | clear->' + (await page.locator('#cart-bar').isHidden() ? 'hidden' : 'still visible'); } }
+    assert.ok(/order\.html\?/.test(cartOk) && /clear->hidden/.test(cartOk), 'home cart: ' + cartOk); assert.deepStrictEqual(errs, []);
     out.push({ index_links: links, index_buttons: btns, cart: cartOk, overflow: await ovf(page), errs }); await ctx.close(); }
   await b.close(); console.log(JSON.stringify(out, null, 1));
 })().catch(e => { console.error(e); process.exit(1); });
