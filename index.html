@@ -31,18 +31,22 @@
       border-bottom: 1px solid #eee;
       z-index: 100;
       display: flex;
-      flex-direction: column;
-      padding: 0.6rem 1rem 0.4rem;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 1rem;
     }
-    .header-top { display:flex; align-items:center; justify-content:space-between; width:100%; }
     .logo { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: inherit; }
     .logo img { height: 64px; width: auto; display: block; }
-    .brand-name { font-weight:800; font-size:1.15rem; line-height:1.1; letter-spacing:-0.02em; color:#3d4b3d; text-shadow:0 1px 0 #fff, 0 2px 3px rgba(61,75,61,0.18); white-space:nowrap; }
-    .hdr-slogan { font-family:"Dancing Script","Satisfy",cursive; font-style:italic; font-weight:700; font-size:1.55rem; line-height:1.1; color:#2f6b2f; margin:0.25rem 0 0.15rem; text-align:center; text-shadow:0 0 6px rgba(143,188,143,0.55), 0 0 14px rgba(200,180,230,0.45), 0 1px 0 #fff; }
     .steps-strip { display:flex; justify-content:center; gap:0.9rem; list-style:none; margin:0.5rem auto 0; padding:0.3rem 0.8rem; font-size:0.78rem; color:#4a5a4a; background:#f8f6f3; border:1px solid #e6e2da; border-radius:999px; width:max-content; max-width:100%; }
     .steps-strip li + li::before { content:"·"; margin-right:0.9rem; color:#9aa69a; }
     .steps-strip b { font-weight:700; color:#6b7c6a; }
-    @media (max-width:480px) { .brand-name { font-size:0.95rem; } .hdr-slogan { font-size:1.25rem; } }
+    header { flex-wrap:wrap; row-gap:0.2rem; }
+    .logo { min-width:0; flex:1 1 0; }
+    .logo > div { min-width:0; }
+    .brand-name { font-weight:800; font-size:clamp(0.7rem, 3.6vw, 1.3rem); line-height:1.1; letter-spacing:-0.02em; white-space:nowrap; color:#3d4b3d; text-shadow:0 1px 0 #fff, 0 2px 3px rgba(61,75,61,0.18); }
+    .hdr-slogan { flex:0 0 100%; order:9; text-align:center; font-family:"Dancing Script","Satisfy",cursive; font-style:italic; font-weight:700; font-size:clamp(1.25rem, 5.4vw, 1.8rem); line-height:1.15; color:#2f6b2f; margin:0.1rem 0 0; text-shadow:0 0 6px rgba(143,188,143,0.55), 0 0 14px rgba(200,180,230,0.45), 0 1px 0 #fff; }
+    .header-right { flex:0 0 auto; }
+    @media (max-width:480px) { header { padding-left:0.6rem; padding-right:0.6rem; } .logo { gap:0.4rem; } .logo img { height:42px; } .header-right .co-btn { padding:0.45rem 0.55rem; font-size:0.8rem; min-height:40px; } .header-right .ig-top { display:none; } }
     .strip-wrap { display:flex; justify-content:flex-end; padding:0 1rem; margin-top:0.35rem; }
     .strip-wrap .steps-strip { margin:0; }
     @media (max-width:600px) { .strip-wrap { justify-content:center; } }
@@ -144,15 +148,15 @@
 </head>
 <body>
   <header>
-    <div class="header-top">
-      <a href="index.html" class="logo">
-        <img src="images/ienn-logo-IMG_2773-600.jpg" width="52" height="64" alt="Inland Empire Native Nursery logo">
+    <a href="index.html" class="logo">
+      <img src="images/ienn-logo-IMG_2773-600.jpg" width="52" height="64" alt="Inland Empire Native Nursery logo">
+      <div>
         <div class="brand-name">Inland Empire Native Nursery</div>
-      </a>
-      <div class="header-right">
-        <a class="ig-link ig-top" target="_blank" rel="noopener" aria-label="Instagram (opens in a new tab)"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg><span class="ig-top-text">Instagram</span></a>
-        <a href="#" class="order-btn co-btn is-empty" id="hdr-checkout" aria-disabled="true" title="Add a plant first">Check out</a>
       </div>
+    </a>
+    <div class="header-right">
+      <a class="ig-link ig-top" target="_blank" rel="noopener" aria-label="Instagram (opens in a new tab)"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg><span class="ig-top-text">Instagram</span></a>
+      <a href="#" class="order-btn co-btn is-empty" id="hdr-checkout" aria-disabled="true" title="Add a plant first">Check out</a>
     </div>
     <div class="hdr-slogan">Connecting people to native plants.</div>
   </header>

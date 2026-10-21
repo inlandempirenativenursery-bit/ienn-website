@@ -10,7 +10,7 @@
   function clamp(v) { v = parseInt(v, 10); return isNaN(v) || v < 1 ? 1 : Math.min(v, 99); }
   var ASK_KEYS = ['2"', 'Tree pot'];   // on-request sizes (no weekly counts): "Ask us", never addable
   function askSize(z) { return !!z && ASK_KEYS.indexOf(z.key) >= 0; }
-  function canAdd(z) { return IENNStock.available(z); }   // qty null = offline/unknown (orderable); qty 0 only with canRequest
+  function canAdd(z) { return IENNStock.available(z) || (!!z && (z.qty > 0 || IENNStock.canReq(z))); }   // qty null = offline/unknown (orderable); qty 0 only with canRequest
   function zstate(z) { return z.qty == null ? "ask" : z.qty > 0 ? "ok" : "out"; }
   function pstate(p) { var c = p.sizes.filter(function (z) { return !askSize(z); });
     if (c.some(function (z) { return z.qty > 0; })) return "ok"; if (!c.length || c.some(function (z) { return z.qty == null || IENNStock.canReq(z); })) return "ask"; return "out"; }
@@ -64,17 +64,12 @@
       var b = el("div", { class: "body" });
       var h3 = el("h3", { id: p.id + "-name" }); h3.appendChild(el("span", { class: "slot", "aria-hidden": "true" }, String.fromCharCode(65 + Math.floor(idx / 6)) + (idx % 6 + 1))); h3.appendChild(document.createTextNode(p.name)); b.appendChild(h3);
       if (p.botanical) b.appendChild(el("span", { class: "note" }, p.botanical));
-      var availableSizes = p.sizes.filter(function (z) { return canAdd(z) && !askSize(z); });
-      var comingSoon = availableSizes.length === 0;
-      var badgeText = comingSoon ? "Coming soon" : (ps === "ok" ? "Available · Get yours now" : ps === "ask" ? "We'll confirm availability" : ON_REQUEST);
-      var badge = el("span", { class: "badge " + (comingSoon ? "out" : ps) }, badgeText);
+      /* With a stock baseline, a size is available only if qty > 0 or canRequest; show only those. No available size => "Coming soon". */
+      var sizes = BASELINE ? p.sizes.filter(function (z) { return z.qty > 0 || IENNStock.canReq(z); }) : p.sizes;
+      if (BASELINE && !sizes.length) { card.classList.add("coming-soon"); b.appendChild(el("span", { class: "soon-pill" }, "Coming soon")); card.appendChild(b); return card; }
+      var badge = el("span", { class: "badge " + ps }, ps === "ok" ? "Available · Get yours now" : ps === "ask" ? "We'll confirm availability" : ON_REQUEST);
       b.appendChild(badge);
-      if (comingSoon) {
-        b.appendChild(el("p", { class: "coming-soon" }, "Coming soon"));
-        card.appendChild(b);
-        return card;
-      }
-      var pick = null, only = availableSizes; if (only.length === 1) pick = only[0];   // single available size: selected for Add
+      var pick = null, only = sizes.filter(function (z) { return canAdd(z); }); if (BASELINE ? only.length : only.length === 1) pick = only[0];   // default: first available size
       var fs = el("fieldset", { class: "chips" }); fs.appendChild(el("legend", {}, "Size"));
       var info = el("span", { class: "price" }), ask = askNote(); ask.hidden = true;
       var add, minus, inp, plus;
@@ -88,8 +83,8 @@
         if (inp && pick) inp.max = String(IENNStock.maxQty(pick));
         [minus, inp, plus].forEach(function (x) { if (x) x.disabled = !ok; });
       }
-      availableSizes.forEach(function (z) {
-        var rq = askSize(z), c = el("button", { type: "button", class: "chip" + (rq ? " chip-request" : ""), "aria-pressed": "false" },
+      sizes.forEach(function (z) {
+        var rq = askSize(z) && !canAdd(z), c = el("button", { type: "button", class: "chip" + (rq ? " chip-request" : ""), "aria-pressed": BASELINE && z === pick ? "true" : "false" },
           (SHORT[z.key] || z.label) + " $" + z.price + (rq ? " · ask" : ""));
         c.setAttribute("aria-label", z.label + ", $" + z.price + (rq ? ", available on request" : ""));
         c.addEventListener("click", function () {
@@ -130,7 +125,7 @@
       card.appendChild(b); return card;
   }
 
-  var lastAdded = null;
+  var lastAdded = null, BASELINE = false;
   function bumpTray() { var cb = document.getElementById("cartbar-count"); cb.classList.remove("bump"); void cb.offsetWidth; cb.classList.add("bump"); }
   function update() {
     var ls = lines(), count = ls.reduce(function (a, l) { return a + l.q; }, 0), sub = ls.reduce(function (a, l) { return a + l.total; }, 0);
@@ -210,5 +205,168 @@
     head.addEventListener("touchmove", function (e) { if (y0 == null) return; var d = Math.max(0, e.touches[0].clientY - y0); drawer.style.transform = "translateY(" + d + "px)"; }, { passive: true });
     head.addEventListener("touchend", function (e) { var d = y0 == null ? 0 : e.changedTouches[0].clientY - y0; y0 = null; drawer.style.transform = ""; if (d > 80) closeCheckout(); });
   })();
-  // ... rest of checkout code remains the same (truncated in this push for brevity, but full file is in local)
+  function fieldErr(id, msg) { var f = document.getElementById(id); f.setAttribute("aria-invalid", msg ? "true" : "false"); document.getElementById(id + "-err").textContent = msg || ""; return !msg; }
+  function v(id) { return document.getElementById(id).value.trim(); }
+  var form = document.getElementById("order-form"), btn = form.querySelector(".submit-btn"), serr = document.getElementById("server-error");
+  function showConfirm(ls, orderId, total, notes) {
+    document.getElementById("confirm-id").textContent = orderId ? "Order number: " + orderId : "";
+    var cl = document.getElementById("confirm-list"); cl.innerHTML = "";
+    ls.forEach(function (l) { cl.appendChild(el("li", {}, l.q + " × " + l.p.name + " (" + l.z.label + ") — " + money(l.total))); });
+    var cn = document.getElementById("confirm-notices"); cn.innerHTML = ""; (notes || []).forEach(function (m) { cn.appendChild(el("p", { class: "stock-note" }, m)); }); cn.hidden = !(notes && notes.length);
+    var ct = document.getElementById("confirm-total"); ct.textContent = "Total: " + money(total) + " ";
+    ct.appendChild(el("small", { class: "tax-note" }, "Taxes included"));
+    saveLastOrder(ls, orderId, total);
+    document.getElementById("last-order-link").hidden = true; form.reset(); closeCheckout();
+    cart = {}; save(); update();
+    openConfirm();
+  }
+  function mailtoHref(ls, f) {
+    var body = "Name: " + f.name + "\nPickup: " + PICKUP + "\nPayment: " + v("payment") + "\nRef: " + f.name + "\nEmail: " + f.email + "\nPhone: " + f.phone + "\n\n" + ls.map(function (l) { return l.q + " x " + l.p.name + " (" + l.z.label + ") $" + l.z.price; }).join("\n") +
+      "\n\nNotes: " + f.notes;
+    return "mailto:" + ORDER_EMAIL + "?subject=" + encodeURIComponent("Plant order from " + f.name) + "&body=" + encodeURIComponent(body);
+  }
+  form.addEventListener("submit", function (e) {
+    e.preventDefault(); serr.style.display = "none";
+    var ls = update(), ok = true, f = { name: v("name"), email: v("email"), phone: v("phone"), notes: v("notes") };
+    ok = fieldErr("name", f.name ? "" : "Please enter your name.") && ok;
+    ok = fieldErr("email", /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email) ? "" : "Please enter a valid email so we can confirm pickup.") && ok;
+    ok = fieldErr("phone", !f.phone || f.phone.replace(/\D/g, "").length >= 10 ? "" : "Please enter a 10-digit phone number or leave it blank.") && ok;
+    if (!ls.length) { document.getElementById("qty-error").style.display = "block"; ok = false; }
+    if (!ok) { (form.querySelector("[aria-invalid=true]") || document.getElementById("review")).focus(); return; }
+    btn.disabled = true; btn.textContent = "Sending…";
+    var payload = { name: f.name, email: f.email, phone: f.phone, notes: f.notes, pickup: PICKUP, payment: v("payment"), items: ls.map(function (l) { return { plant: l.p.fullName, sizeKey: l.z.key, qty: l.q }; }) };
+    var sub = ls.reduce(function (a, l) { return a + l.total; }, 0);
+    fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })   // text/plain = no CORS preflight
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(function (r) {
+        btn.disabled = false; btn.textContent = "Place order";
+        if (r.ok) return showConfirm(ls, r.orderId, r.total != null ? r.total : sub, IENNStock.notices(r));
+        serr.innerHTML = ""; serr.appendChild(document.createTextNode(r.message || "Sorry, something went wrong. Please try again."));
+        if (r.error === "stock") {   // order NOT placed: keep the tray as is so they can adjust; messages are text only
+          var pm = IENNStock.problems(r); if (pm.length) { var ul = el("ul", { class: "stock-problems" }); pm.forEach(function (m) { ul.appendChild(el("li", {}, m)); }); serr.appendChild(ul); }
+        }
+        serr.style.display = "block"; serr.scrollIntoView({ block: "nearest" }); document.getElementById("review").focus({ preventScroll: true });
+      })
+      .catch(function () {   // order NOT placed: keep the cart, offer call/text and email
+        btn.disabled = false; btn.textContent = "Place order";
+        serr.innerHTML = ""; serr.appendChild(document.createTextNode("We couldn't send your order just now. Your cart is saved. Please try again, or call or text Andrew: "));
+        serr.appendChild(el("a", { class: "contact-tel", href: "tel:" + CONTACT_TEL }, CONTACT_PHONE)); serr.appendChild(document.createTextNode(" · "));
+        serr.appendChild(el("a", { class: "contact-sms", href: "sms:" + CONTACT_TEL + "?&body=" + encodeURIComponent("Plant order: " + ls.map(function (l) { return l.q + " x " + l.p.name + " (" + l.z.label + ")"; }).join(", ")) }, "Text your order"));
+        serr.appendChild(document.createTextNode(" · ")); serr.appendChild(el("a", { class: "contact-mail", href: mailtoHref(ls, f) }, "Email your order"));
+        serr.style.display = "block";
+      });
+  });
+  /* Last order (this tab only): plants, sizes, quantities, order id. No address, no stock counts. */
+  var LAST = "ienn-last-order";
+  function saveLastOrder(ls, orderId, total) { try { sessionStorage.setItem(LAST, JSON.stringify({ orderId: orderId || "", total: total, items: ls.map(function (l) { return { name: l.p.name, size: l.z.label, qty: l.q, total: l.total }; }) })); } catch (e) {} }
+  function lastOrder() { try { return JSON.parse(sessionStorage.getItem(LAST)); } catch (e) { return null; } }
+  function showLastOrder() {
+    var o = lastOrder(); if (!o) return;
+    document.getElementById("confirm-id").textContent = o.orderId ? "Order number: " + o.orderId : "";
+    var cl = document.getElementById("confirm-list"); cl.innerHTML = "";
+    o.items.forEach(function (x) { cl.appendChild(el("li", {}, x.qty + " \u00d7 " + x.name + " (" + x.size + ") \u2014 " + money(x.total))); });
+    document.getElementById("confirm-notices").hidden = true;
+    var ct = document.getElementById("confirm-total"); ct.textContent = "Total: " + money(o.total) + " "; ct.appendChild(el("small", { class: "tax-note" }, "Taxes included"));
+    document.getElementById("last-order-link").hidden = true;
+    openConfirm();
+  }
+  /* Thank-you modal: overlay + dialog card. Closes on ×, Esc, click outside, or Back to plants. Focus stays inside while open. */
+  var tyPrev = null;
+  function openConfirm() {
+    var ov = document.getElementById("confirm-overlay"), c = document.getElementById("confirm");
+    tyPrev = document.activeElement; ov.hidden = false; c.hidden = false; c.scrollTop = 0;
+    document.documentElement.classList.add("ty-open");
+    setTimeout(function () { c.focus({ preventScroll: true }); }, 30);
+  }
+  function closeConfirm() {
+    var ov = document.getElementById("confirm-overlay"); if (ov.hidden) return;
+    form.reset(); ov.hidden = true; document.getElementById("confirm").hidden = true;
+    document.documentElement.classList.remove("ty-open");
+    document.getElementById("last-order-link").hidden = !lastOrder(); update();
+    var pl = document.getElementById("plant-list"); if (pl) pl.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (tyPrev && tyPrev.focus && document.contains(tyPrev) && tyPrev !== document.body) tyPrev.focus({ preventScroll: true });
+  }
+  document.getElementById("confirm-close").addEventListener("click", closeConfirm);
+  document.getElementById("confirm-overlay").addEventListener("click", function (e) { if (e.target === this) closeConfirm(); });
+  document.addEventListener("keydown", function (e) {
+    var ov = document.getElementById("confirm-overlay"); if (ov.hidden) return;
+    if (e.key === "Escape") { e.preventDefault(); closeConfirm(); return; }
+    if (e.key === "Tab") {
+      var f = [].filter.call(document.getElementById("confirm").querySelectorAll("button,a[href]"), function (x) { return x.offsetParent !== null; });
+      if (!f.length) return; var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && (document.activeElement === first || document.activeElement.id === "confirm")) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
+  document.getElementById("back-to-plants").addEventListener("click", closeConfirm);
+  document.getElementById("view-order").addEventListener("click", showLastOrder);
+  document.getElementById("view-order-2").addEventListener("click", showLastOrder);
+  document.getElementById("last-order-link").hidden = !lastOrder();
+  /* Preview for review/screenshots: order.html?confirm=preview shows the thank-you modal with EXAMPLE data (nothing saved or sent). */
+  if (/[?&]confirm=preview\b/.test(location.search)) setTimeout(function () {
+    document.getElementById("confirm-id").textContent = "Order number: INV-EXAMPLE";
+    var cl = document.getElementById("confirm-list"); cl.innerHTML = "";
+    var ex = [], tot = 0; /* real catalog names/prices from the loaded list; no made-up prices */
+    PLANTS.some(function (p) { var z = (p.sizes || []).filter(function (z) { return isFinite(z.price) && ASK_KEYS.indexOf(z.key) < 0; })[0]; if (z) ex.push([ex.length ? 1 : 2, p.name, z.label, z.price]); return ex.length >= 2; });
+    ex.forEach(function (x) { tot += x[0] * x[3]; cl.appendChild(el("li", {}, x[0] + " \u00d7 " + x[1] + " (" + x[2] + ") \u2014 " + money(x[0] * x[3]))); });
+    document.getElementById("confirm-notices").hidden = true;
+    var ct = document.getElementById("confirm-total"); ct.textContent = "Total: " + money(tot) + " "; ct.appendChild(el("small", { class: "tax-note" }, "Taxes included"));
+    openConfirm();
+  }, 1200);
+
+
+  })();
+
+  /* Badges: a manual `badge` string from the feed (sheet "Badge" column) always wins. Otherwise, only when the feed carries real
+     sales data: top plant = "#1 Selling", next 3 = "Popular". Only numeric `popularity` > 0 counts; `rank` is never used. Never invented. One per card. */
+  function autoBadges(raw) {
+    var num = function (v) { return v != null && v !== "" && isFinite(Number(v)) ? Number(v) : null; }, out = {}, order;
+    var pop = raw.filter(function (p) { return num(p.popularity) > 0; });
+    order = pop.slice().sort(function (a, b) { return num(b.popularity) - num(a.popularity); });
+    order.slice(0, 4).forEach(function (p, i) { out[p.name] = i === 0 ? "top" : "pop"; });
+    return out;
+  }
+  function fromInventory(d) {
+    var ab = autoBadges(d.plants || []);
+    return (d.plants || []).map(function (p) {
+      return { id: slug(p.name), name: p.name, fullName: p.fullName || p.name, botanical: p.botanical || "", badge: p.badge && String(p.badge).trim() ? String(p.badge).trim().slice(0, 24) : ab[p.name] === "top" ? "#1 Selling" : ab[p.name] === "pop" ? "Popular" : "", badgeAuto: p.badge && String(p.badge).trim() ? "" : ab[p.name] || "", rank: p.rank, pinned: p.pinned, image: p.image || (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).src || "", srcset: p.image ? "" : (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).srcset || "",
+        sizes: (p.sizes || []).map(function (z) { return { key: z.key, label: z.size || SIZE_LABELS[z.key] || z.key, price: isFinite(Number(z.price)) && z.price !== "" && z.price != null ? Number(z.price) : PRICES[z.key], qty: z.qty == null ? null : Number(z.qty), extra: z.extra == null ? null : Number(z.extra), canRequest: z.canRequest == null ? null : z.canRequest === true }; }) };
+    });
+  }
+  function fallback() {
+    return FALLBACK_PLANTS.map(function (p) { var nb = split(p.name);
+      return { id: slug(nb[0]), name: nb[0], fullName: p.name, botanical: nb[1], image: (typeof ienPhoto === "function" && ienPhoto(nb[0]) || {}).src || "", srcset: (typeof ienPhoto === "function" && ienPhoto(nb[0]) || {}).srcset || "", sizes: p.sizes.map(function (k) { return { key: k, label: SIZE_LABELS[k], price: PRICES[k], qty: null }; }) }; });
+  }
+  var params = new URLSearchParams(location.search), prefilled = false;
+  function prefill() { // home-page cart link: order.html?white-sage=2 or ?white-sage|1%20gal=1 (slug or slug|size)
+    if (prefilled) return; prefilled = true;
+    params.forEach(function (v, k) {
+      var parts = k.split("|"), p = PLANTS.find(function (x) { return x.id === parts[0] || x.id.indexOf(parts[0] + "-") === 0 || parts[0].indexOf(x.id) === 0; }), q = parseInt(v, 10);
+      if (!p || !(q > 0)) return;
+      var z = (parts[1] && p.sizes.find(function (s) { return s.key === parts[1] || s.label === parts[1]; })) || p.sizes.find(canAdd);
+      if (canAdd(z)) cart[p.id + "|" + z.key] = Math.min(q, IENNStock.maxQty(z));
+    });
+    save();
+  }
+  function use(l, msg, d, quick) { BASELINE = IENNStock.hasBaseline(d, l); PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l))); if (!quick) prefill(); render(); if (quick) return; status.textContent = msg || ""; status.hidden = !msg;
+    if (params.get("checkout") === "1" && !autoOpened && lines().length) { autoOpened = true; if (window.iennOpenCheckout) window.iennOpenCheckout(); } }
+  var autoOpened = false;
+  function load() {
+    fetch(APPS_SCRIPT_URL + "?view=inventory", { cache: "no-store" }).then(function (r) { if (!r.ok) throw 0; return r.text(); }).then(function (t) {
+      var d = JSON.parse(t), l = fromInventory(d); if (!l.length) throw 0; if (window.iennPromo) window.iennPromo(d.promo);
+      try { localStorage.setItem(CACHE, JSON.stringify({ t: Date.now(), d: d })); } catch (e) {}
+      use(l, "", d);
+    }).catch(function () {
+      var c = null; try { c = JSON.parse(localStorage.getItem(CACHE)); } catch (e) {}
+      if (c && c.d) use(fromInventory(c.d), "Couldn't refresh live stock — showing the list from " + new Date(c.t).toLocaleString() + ". Stock may be out of date.", c.d);
+      else use(fallback(), "Live stock is unavailable right now — showing our offline plant list. Stock may be out of date; we'll confirm availability.");
+    });
+  }
+  for (var i = 0; i < 4; i++) list.appendChild(el("div", { class: "card skel", "aria-hidden": "true" }));
+  // Instant first paint: last cached feed, else the built-in list; the live feed then refreshes quietly.
+  (function () { var c = null; try { c = JSON.parse(localStorage.getItem(CACHE)); } catch (e) {}
+    try { if (c && c.d && fromInventory(c.d).length) use(fromInventory(c.d), "", c.d, true); else use(fallback(), "", null, true); } catch (e) {} })();
+  load();
+  setInterval(load, REFRESH_MINUTES * 60000);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) load(); });
 })();
