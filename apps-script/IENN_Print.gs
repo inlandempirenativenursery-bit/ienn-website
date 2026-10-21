@@ -6,7 +6,7 @@
  *   ?view=hub              internal home: Counts, Orders/Invoices, Print list, Website
  * Logo: uses the locked logo file from the website as-is (IENN_LOGO_URL); not redrawn or recoloured.
  */
-var IENN_LOGO_URL = 'https://inlandempirenativenursery-bit.github.io/ienn-website/images/ienn-logo-sage.png'; // set to where the site is hosted
+var IENN_LOGO_URL = 'https://www.inlandempirenativenursery.com/images/ienn-logo-IMG_2773.jpg'; // set to where the site is hosted
 var IENN_WEBSITE_URL = 'https://inlandempirenativenursery-bit.github.io/ienn-website/order.html';             // set to the live order page
 var IENN_APPEAL_KEYWORDS = ['white sage', 'salvia apiana', 'monkeyflower', 'mimulus', 'diplacus', 'poppy', 'eschscholzia', 'penstemon',
   'sage', 'salvia', 'buckwheat', 'eriogonum', 'milkweed', 'asclepias', 'lupine', 'woolly blue curls', 'ceanothus', 'yarrow', 'achillea',
