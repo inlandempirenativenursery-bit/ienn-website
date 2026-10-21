@@ -22,7 +22,7 @@
   }
   function appeal(p) { var t = (p.name + " " + p.botanical).toLowerCase(); for (var i = 0; i < APPEAL_KEYWORDS.length; i++) if (t.indexOf(APPEAL_KEYWORDS[i]) >= 0) return i; return 999; }
   function rk(p) { return p.rank == null || p.rank === "" || isNaN(Number(p.rank)) ? 1e9 : Number(p.rank); }
-  function sortPlants(a) { return IENNOrder.order(a); }   // feed order; server decides (see feed-order.js)
+  function sortPlants(a) { var o = IENNOrder.order(a); return o.filter(function (p) { return !!p.image; }).concat(o.filter(function (p) { return !p.image; })); }   // feed order (feed-order.js), then plants with a photo before plants without; order kept within each group
   function split(full) { var m = /^(.*?)\s*\((.*)\)\s*$/.exec(full || ""); return m ? [m[1], m[2]] : [String(full || "").trim(), ""]; }
 
   var BATCH = 12, shown = 0, io = null;

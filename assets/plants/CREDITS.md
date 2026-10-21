@@ -30,3 +30,14 @@ Eric's photos (catalogue and ericbg2) are © Eric Bo Garcia / IENN. The keithwg1
 ## Still on the "Photo coming soon" placeholder
 - **Woollypod milkweed:** the catalogue's `showy-milkweed.jpg` and `woollypod.jpg` may be swapped, so neither file (nor anything made from them) is used until Eric confirms.
 - **Blue Pyramid Cypress:** no approved photo yet.
+| sacred-datura.jpg | Sacred datura | iNat ericbg2 (Eric's own photo); cropped to 3:4 and resized | https://www.inaturalist.org/observations/277592169 |
+| woollypod-milkweed.jpg | Woollypod milkweed | iNat ericbg2 (Eric's own photo); cropped to 3:4 and resized | https://www.inaturalist.org/observations/170191708 |
+| coyote-brush.jpg | Coyote brush | iNat ericbg2 (Eric's own photo); cropped to 3:4 and resized | https://www.inaturalist.org/observations/145617719 |
+| bush-poppy.jpg | Bush poppy | iNat ericbg2 (Eric's own photo); cropped to 3:4 and resized | https://www.inaturalist.org/observations/287482394 |
+| purple-sage.jpg | Purple sage | iNaturalist, Jesse Rorabaugh, CC0 (https://creativecommons.org/publicdomain/zero/1.0/); cropped to 3:4 and resized | https://www.inaturalist.org/observations/2979698 |
+| brittlebush.jpg | Brittlebush | iNaturalist, Carl Guyer, CC0 (https://creativecommons.org/publicdomain/zero/1.0/); cropped to 3:4 and resized | https://www.inaturalist.org/observations/109888042 |
+| cleveland-sage.jpg | Cleveland sage | iNaturalist, Jacob Malcom, CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/); cropped to 3:4 and resized | https://www.inaturalist.org/observations/113802994 |
+| hummingbird-sage.jpg | Hummingbird sage | iNaturalist, Nick Doty, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/); cropped to 3:4 and resized | https://www.inaturalist.org/observations/5816234 |
+| california-sagebrush.jpg | California sagebrush | iNaturalist, Jacob Malcom, CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/); cropped to 3:4 and resized | https://www.inaturalist.org/observations/22479282 |
+| california-fuchsia.jpg | California fuchsia | iNaturalist, W. Terry Hunefeld, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/); cropped to 3:4 and resized | https://www.inaturalist.org/observations/8319491 |
+| arizona-cypress.jpg | Arizona cypress | iNaturalist, zebedeugalinha, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/); cropped to 3:4 and resized | https://www.inaturalist.org/observations/265504391 |
