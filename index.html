@@ -212,6 +212,17 @@
       .header-right { display:flex; align-items:center; gap:0.25rem; }
     .ig-top { min-width:44px; flex-shrink:0; justify-content:center; color:var(--sage-dark); font-weight:600; font-size:0.85rem; text-decoration:none; }
     @media (max-width: 480px) { .ig-top-text { display:none; } .ig-top svg { width:22px; height:22px; } }
+    /* juicy preview: honey Add with push feel */
+    .add-btn { background:#e8b04b; color:#2c2c2c; box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 3px 0 #b98a2e; transition:transform 80ms ease-out, box-shadow 80ms ease-out; }
+    .add-btn:active:not(:disabled) { transform:translateY(2px); box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 1px 0 #b98a2e; }
+    .add-btn:disabled { box-shadow:none; }
+    .size-hint { margin:0.2rem 0 0; font-size:0.8rem; font-weight:600; color:#8a5a00; }
+    .size-hint:empty { display:none; }
+    .pills.nudge .pill { border-color:#b98a2e; box-shadow:0 0 0 2px rgba(232,176,75,.45); }
+    .pills.nudge { animation:nudge 320ms ease-out; }
+    @keyframes nudge { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-3px); } 75% { transform:translateX(3px); } }
+    @media (prefers-reduced-motion:reduce) { .pills.nudge { animation:none; } }
+    @media (prefers-reduced-motion:reduce) { .add-btn { transition:none; } .add-btn:active:not(:disabled) { transform:none; } }
   </style>
 </head>
 <body>
@@ -305,6 +316,7 @@
   <script>window.IENN_PROMO_OPTS = { cta: "Shop now", onShop: function () { location.href = "order.html"; } };</script>
   <script src="promo.js"></script>
   <script src="plant-photos.js"></script>
+  <script src="feed-order.js"></script>
   <script src="inventory.js"></script>
   <script src="stock-view.js"></script>
   <script>
@@ -347,7 +359,7 @@
         b.onclick = function () { sz = s; qty = Math.min(qty, IENNStock.maxQty({ key: s.size, qty: s.qty })); out.textContent = qty; pills.querySelectorAll('.pill').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); sync(); };
         pills.appendChild(b);
       });
-      body.appendChild(pills);
+      var hint = el('p', 'size-hint'); hint.setAttribute('aria-live', 'polite'); body.appendChild(pills); body.appendChild(hint);
       body.appendChild(meta);
       if (p.note) body.appendChild(el('div', 'note', p.note));
       var row = el('div', 'shop-row'), mi = el('button', 'step', '\u2212'), out = el('output', '', '1'), pl = el('button', 'step', '+');
@@ -356,14 +368,16 @@
       row.appendChild(mi); row.appendChild(out); row.appendChild(pl); body.appendChild(row); body.appendChild(add); body.appendChild(ask);
       function sync() {
         var ps = p.status === 'low' ? 'in' : p.status; badge.textContent = LABEL[ps]; badge.className = 'badge ' + CLS[ps];
-        if (!sz) { meta.textContent = 'Tap a size'; add.disabled = true; add.textContent = 'Pick a size'; ask.hidden = true; mi.disabled = pl.disabled = true; return; }
+        add.textContent = 'Add to tray'; add.disabled = false;
+        if (!sz) { meta.textContent = 'Tap a size'; ask.hidden = true; mi.disabled = pl.disabled = true; return; }
+        hint.textContent = '';
         var st = sz.status; mi.disabled = pl.disabled = false;
         meta.textContent = (sz.size ? sz.size + ' \u2022 ' : '') + money(sz.price);
-        add.disabled = st === 'out'; add.textContent = st === 'out' ? 'Sold out' : (st === 'request' ? 'Ask us' : 'Add to order');
+        
         ask.hidden = !(st === 'request' || IENNStock.sizeState({ key: sz.size, qty: sz.qty }, qty + (cart[p.id + '|' + sz.size] || 0)) === 'ask');
-        add.setAttribute('aria-label', 'Add ' + p.name + ' to cart');
+        add.setAttribute('aria-label', 'Add ' + p.name + ' to tray');
       }
-      add.onclick = function () { if (!sz) return; var k = p.id + (sz.size ? '|' + sz.size : ''); NAMES[k] = { price: sz.price }; cart[k] = Math.min(IENNStock.maxQty({ key: sz.size, qty: sz.qty }), (cart[k] || 0) + qty); sync(); save(); renderBar(); bar.classList.remove('bump'); void bar.offsetWidth; bar.classList.add('bump'); toast((sz.status === 'request' ? 'Requested ' : 'Added ') + qty + ' \u00d7 ' + p.name + (sz.status === 'request' ? ' (' + sz.size + ', we\u2019ll confirm)' : '')); };
+      add.onclick = function () { if (!sz) { hint.textContent = 'Choose a size first'; pills.classList.remove('nudge'); void pills.offsetWidth; pills.classList.add('nudge'); return; } if (sz.status === 'out') { hint.textContent = 'Sold out right now. Ask us about it.'; return; } var k = p.id + (sz.size ? '|' + sz.size : ''); NAMES[k] = { price: sz.price }; cart[k] = Math.min(IENNStock.maxQty({ key: sz.size, qty: sz.qty }), (cart[k] || 0) + qty); sync(); save(); renderBar(); bar.classList.remove('bump'); void bar.offsetWidth; bar.classList.add('bump'); toast((sz.status === 'request' ? 'Requested ' : 'Added ') + qty + ' \u00d7 ' + p.name + (sz.status === 'request' ? ' (' + sz.size + ', we\u2019ll confirm)' : '')); };
       sync(); return c;
     }
     document.getElementById('printlist-link').href = IENN_PRINTLIST_URL;

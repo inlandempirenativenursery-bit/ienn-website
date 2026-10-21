@@ -190,6 +190,29 @@
       .header-right { display:flex; align-items:center; gap:0.25rem; }
     .ig-top { min-width:44px; flex-shrink:0; justify-content:center; color:var(--sage-dark); font-weight:600; font-size:0.85rem; text-decoration:none; }
     @media (max-width: 380px) { .ig-top-text { display:none; } }
+    /* juicy preview: honey Add, tray bump, card lift, price tag, badge, friendly confirm */
+    :root { --honey:#e8b04b; --honey-edge:#b98a2e; }
+    .card { position:relative; transition:transform 140ms ease-out, box-shadow 140ms ease-out; }
+    @media (hover:hover) { .card:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(60,80,60,.14); } }
+    .card.lift { transform:translateY(-2px); box-shadow:0 6px 16px rgba(60,80,60,.14); }
+    .card .add { background:var(--honey); color:#2c2c2c; box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 3px 0 var(--honey-edge); transition:transform 80ms ease-out, box-shadow 80ms ease-out; }
+    .card .add:active:not(:disabled) { transform:translateY(2px); box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 1px 0 var(--honey-edge); }
+    .card .add:disabled { box-shadow:none; }
+    .ph { position:relative; }
+    .price-tag { position:absolute; left:6px; bottom:6px; background:var(--cream); color:var(--sage-dark); border:1px solid #e3e1db; border-radius:6px; padding:0 0.4rem; font-size:0.75rem; font-weight:700; line-height:1.5; box-shadow:0 1px 2px rgba(0,0,0,.08); }
+    .pick-badge { position:absolute; right:6px; top:6px; background:var(--lilac); color:#3a2f45; border-radius:99px; padding:0 0.5rem; font-size:0.7rem; font-weight:700; line-height:1.6; max-width:calc(100% - 12px); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    @keyframes bump { 0% { transform:scale(1); } 40% { transform:scale(1.08); } 100% { transform:scale(1); } }
+    .cartbar .cb-sum { display:inline-block; }
+    .cartbar .cb-sum.bump { animation:bump 200ms ease-out; }
+    .confirm .tk-head h2 .tk-check { opacity:1; font-family:inherit; font-weight:700; display:inline-flex; align-items:center; justify-content:center; width:1.5rem; height:1.5rem; margin-right:0.45rem; border-radius:50%; background:#fff; color:var(--sage-dark); font-size:0.95rem; vertical-align:-2px; color:var(--sage-dark) !important; animation:pop 260ms ease-out; }
+    @keyframes pop { 0% { transform:scale(.6); opacity:0; } 100% { transform:scale(1); opacity:1; } }
+    .size-hint { margin:0; font-size:0.8rem; font-weight:600; color:#8a5a00; min-height:0; }
+    .size-hint:empty { display:none; }
+    .chips.nudge .chip:not(.chip-request) { border-color:var(--honey-edge); box-shadow:0 0 0 2px rgba(232,176,75,.45); }
+    .chips.nudge { animation:nudge 320ms ease-out; }
+    @keyframes nudge { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-3px); } 75% { transform:translateX(3px); } }
+    @media (prefers-reduced-motion:reduce) { .chips.nudge { animation:none; } }
+    @media (prefers-reduced-motion:reduce) { .card, .card .add { transition:none; } .card:hover, .card.lift, .card .add:active:not(:disabled) { transform:none; } .cartbar .cb-sum.bump, .confirm .tk-head h2 .tk-check { animation:none; } }
   </style>
 </head>
 <body>
@@ -211,7 +234,7 @@
   </div>
 
   <section class="confirm" id="confirm" hidden tabindex="-1" aria-labelledby="confirm-title" aria-live="polite">
-    <div class="tk-head"><h2 id="confirm-title">Thank you — your order is in!</h2><span>PICKUP TICKET</span></div>
+    <div class="tk-head"><h2 id="confirm-title"><span class="tk-check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a5a4a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>Your order's in. See you Saturday!</h2><span>PICKUP TICKET</span></div>
     <div class="tk-body">
       <p id="confirm-id" class="confirm-id"></p>
       <ul id="confirm-list"></ul>
@@ -284,6 +307,7 @@
 
   <script src="plant-photos.js"></script>
   <script src="stock-view.js"></script>
+  <script src="feed-order.js"></script>
   <script>
     /* ===== IENN SETTINGS =====
        APPS_SCRIPT_URL: the existing IENN inventory/invoice web app (/exec). The page reads ?view=inventory from it
@@ -337,7 +361,7 @@
       }
       function appeal(p) { var t = (p.name + " " + p.botanical).toLowerCase(); for (var i = 0; i < APPEAL_KEYWORDS.length; i++) if (t.indexOf(APPEAL_KEYWORDS[i]) >= 0) return i; return 999; }
       function rk(p) { return p.rank == null || p.rank === "" || isNaN(Number(p.rank)) ? 1e9 : Number(p.rank); }
-      function sortPlants(a) { var r = { ok: 0, ask: 1, out: 2 }; return a.sort(function (x, y) { return r[pstate(x)] - r[pstate(y)] || rk(x) - rk(y) || appeal(x) - appeal(y) || x.name.localeCompare(y.name); }); }
+      function sortPlants(a) { return IENNOrder.order(a); }   // feed order; server decides (see feed-order.js)
       function split(full) { var m = /^(.*?)\s*\((.*)\)\s*$/.exec(full || ""); return m ? [m[1], m[2]] : [String(full || "").trim(), ""]; }
 
       var BATCH = 12, shown = 0, io = null;
@@ -364,7 +388,13 @@
           card.dataset.id = p.id;
           var ph = el("div", { class: "ph" });
           if (p.image) ph.appendChild(el("img", p.srcset ? { src: p.image, srcset: p.srcset, sizes: "(max-width: 600px) 48vw, 260px", alt: p.name, loading: "lazy", decoding: "async" } : { src: p.image, alt: p.name, loading: "lazy", decoding: "async" })); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }
+          var lo = p.sizes.filter(function (z) { return !askSize(z) && isFinite(z.price); }).map(function (z) { return z.price; });
+          if (lo.length) ph.appendChild(el("span", { class: "price-tag", "aria-hidden": "true" }, (lo.length > 1 ? "from $" : "$") + Math.min.apply(null, lo)));
+          if (p.badge) ph.appendChild(el("span", { class: "pick-badge" }, String(p.badge)));
+          if (p.badge) ph.removeAttribute("aria-hidden");
           card.appendChild(ph);
+          card.addEventListener("touchstart", function () { card.classList.add("lift"); }, { passive: true });
+          ["touchend", "touchcancel"].forEach(function (t) { card.addEventListener(t, function () { setTimeout(function () { card.classList.remove("lift"); }, 160); }); });
           var cr = p.image && typeof ienPhoto === "function" && ienPhoto(p.name); cr = cr && cr.src === p.image && cr.credit;
           if (cr) { var cp = el("p", { class: "photo-credit" }); cp.appendChild(el("a", { href: cr.url, target: "_blank", rel: "noopener" }, cr.text)); card.appendChild(cp); }
           var b = el("div", { class: "body" });
@@ -381,7 +411,8 @@
             var ok = canAdd(pick), st = pick ? IENNStock.sizeState(pick, (cart[p.id + "|" + pick.key] || 0) + want()) : null;
             info.textContent = "";
             ask.hidden = !(st === "ask");
-            if (add) { add.disabled = !ok; add.textContent = !pick ? "Pick a size" : ok ? "Add" : "Ask us"; }
+            if (add) { add.disabled = false; add.textContent = "Add to tray"; add.dataset.ready = ok ? "1" : "0"; }
+            if (pick) hint.textContent = "";
             if (inp && pick) inp.max = String(IENNStock.maxQty(pick));
             [minus, inp, plus].forEach(function (x) { if (x) x.disabled = !ok; });
           }
@@ -391,12 +422,12 @@
             c.setAttribute("aria-label", z.label + ", $" + z.price + (rq ? ", available on request" : ""));
             c.addEventListener("click", function () {
               fs.querySelectorAll(".chip").forEach(function (x) { x.setAttribute("aria-pressed", x === c ? "true" : "false"); });
-              if (rq) { pick = null; showInfo(); info.textContent = ON_REQUEST + ": add \u201c" + z.label + "\u201d in Notes and we'll confirm."; if (add) { add.disabled = true; add.textContent = "Add in Notes"; } return; }
+              if (rq) { pick = null; showInfo(); info.textContent = ON_REQUEST + ": add \u201c" + z.label + "\u201d in Notes and we'll confirm."; return; }
               pick = z; inp.value = Math.min(want(), IENNStock.maxQty(z)); showInfo();
             });
             fs.appendChild(c);
           });
-          b.appendChild(fs); b.appendChild(info); b.appendChild(ask);
+          var hint = el("p", { class: "size-hint", "aria-live": "polite" }); b.appendChild(fs); b.appendChild(hint); b.appendChild(info); b.appendChild(ask);
           var row = el("div", { class: "row" });
           var stp = el("div", { class: "stepper", role: "group", "aria-label": "Quantity of " + p.name });
           minus = el("button", { type: "button", "aria-label": "Fewer " + p.name }, "−");
@@ -408,14 +439,18 @@
           plus.addEventListener("click", function () { var nv = clamp(+inp.value + 1); inp.value = cap(nv); showInfo(); if (pick && pick.qty != null && nv > pick.qty) ask.hidden = false; });
           inp.addEventListener("input", function () { showInfo(); });
           inp.addEventListener("change", function () { var raw = clamp(inp.value); inp.value = cap(raw); showInfo(); if (pick && pick.qty != null && raw > pick.qty) ask.hidden = false; });
-          add = el("button", { type: "button", class: "add" }, "Pick a size");
+          add = el("button", { type: "button", class: "add" }, "Add to tray");
           var msg = el("div", { class: "incart", "aria-live": "polite" });
           add.addEventListener("click", function () {
-            if (!canAdd(pick)) return;
+            if (!canAdd(pick)) {
+              if (fs.querySelector('.chip-request[aria-pressed="true"]')) { hint.textContent = "This size is by request: add it in Notes and we'll confirm."; return; }
+              hint.textContent = "Choose a size first"; fs.classList.remove("nudge"); void fs.offsetWidth; fs.classList.add("nudge"); return;
+            }
+            hint.textContent = "";
             var k = p.id + "|" + pick.key, wantN = (cart[k] || 0) + clamp(inp.value), mx = IENNStock.maxQty(pick);
             if (pick.qty != null && wantN > mx) { wantN = mx; ask.hidden = false; msg.textContent = "✓ Added what we have. Want more? Ask us."; }
             else msg.textContent = "✓ Added " + wantN + " × " + pick.label;
-            cart[k] = Math.min(wantN, 99); lastAdded = k; save(); inp.value = 1; update(); showInfo();
+            cart[k] = Math.min(wantN, 99); lastAdded = k; save(); inp.value = 1; update(); showInfo(); bumpTray();
           });
           row.appendChild(stp); row.appendChild(add);
           b.appendChild(row); b.appendChild(msg); showInfo();
@@ -423,6 +458,7 @@
       }
 
       var lastAdded = null;
+      function bumpTray() { var cb = document.getElementById("cartbar-count"); cb.classList.remove("bump"); void cb.offsetWidth; cb.classList.add("bump"); }
       function update() {
         var ls = lines(), count = ls.reduce(function (a, l) { return a + l.q; }, 0), sub = ls.reduce(function (a, l) { return a + l.total; }, 0);
         document.querySelectorAll(".card").forEach(function (c) { c.classList.toggle("in-cart", ls.some(function (l) { return l.p.id === c.dataset.id; })); });
@@ -536,7 +572,7 @@
 
       function fromInventory(d) {
         return (d.plants || []).map(function (p) {
-          return { id: slug(p.name), name: p.name, fullName: p.fullName || p.name, botanical: p.botanical || "", rank: p.rank != null ? p.rank : p.priority != null ? p.priority : p.sort, image: p.image || (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).src || "", srcset: p.image ? "" : (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).srcset || "",
+          return { id: slug(p.name), name: p.name, fullName: p.fullName || p.name, botanical: p.botanical || "", badge: p.badge ? String(p.badge).trim() : "", rank: p.rank, pinned: p.pinned, image: p.image || (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).src || "", srcset: p.image ? "" : (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).srcset || "",
             sizes: (p.sizes || []).map(function (z) { return { key: z.key, label: z.size || SIZE_LABELS[z.key] || z.key, price: isFinite(Number(z.price)) && z.price !== "" && z.price != null ? Number(z.price) : PRICES[z.key], qty: z.qty == null ? null : Number(z.qty) }; }) };
         });
       }

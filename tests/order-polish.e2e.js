@@ -29,7 +29,7 @@ const feed = () => ({ version: 3, updated: new Date().toISOString(), taxIncluded
     const { ctx, page, errs } = await open(w); await page.evaluate(() => localStorage.clear()); await page.reload();
     await page.waitForSelector('.card:not(.skel)');
     const names = await page.locator('.card h3').allTextContents();
-    assert.match(names[0], /White Sage/, 'popular first: ' + names.join(','));
+    assert.match(names[0], /Yarrow/, 'feed order (no rank fields): ' + names.join(','));
     // review-oct20 rules: counted feed => all-zero plants hidden, 0-qty chips hidden, nothing preselected, no exact counts
     assert.strictEqual(await page.locator('.card', { hasText: 'Woolly Blue Curls' }).count(), 0, 'woolly (all 0) hidden');
     assert.strictEqual(await page.locator('.card', { hasText: 'Toyon' }).count(), 0, 'toyon (all 0) hidden');
@@ -37,7 +37,7 @@ const feed = () => ({ version: 3, updated: new Date().toISOString(), taxIncluded
     const mf = page.locator('.card', { hasText: 'Sticky Monkeyflower' });
     assert.strictEqual(await mf.locator('.chip', { hasText: '4-inch' }).count(), 0, '0-qty chip hidden');
     assert.ok(await mf.locator('.add').isEnabled(), 'single counted size => Add works'); assert.strictEqual(await mf.locator('.chip[aria-pressed="true"]').count(), 0, 'single size not highlighted');
-    const ya = page.locator('.card', { hasText: 'Yarrow' }); assert.ok(await ya.locator('.add').isDisabled()); assert.strictEqual(await ya.locator('.add').textContent(), 'Pick a size');
+    const ya = page.locator('.card', { hasText: 'Yarrow' }); assert.strictEqual(await ya.locator('.add').textContent(), 'Add to tray'); await ya.locator('.add').click(); assert.strictEqual(await ya.locator('.size-hint').textContent(), 'Choose a size first');
     await mf.locator('.chip', { hasText: '1-gal' }).click(); assert.ok(await mf.locator('.ask-note').isVisible(), 'qty 4 < 5 => Ask us');
     for (const c of await page.locator('.chip-request').all()) assert.notStrictEqual(await c.evaluate(e => getComputedStyle(e).textDecorationLine), 'line-through');
     assert.ok(!/\d+ left|Only \d|NaN/.test(await page.locator('#plant-list').innerText()), 'no exact counts');

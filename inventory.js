@@ -63,19 +63,10 @@ var IENN = (function () {
     IENN_REQUEST_SIZES.forEach(function (z) { out.push({ size: z, qty: null, price: IENN_SIZE_PRICES[z], status: "request" }); });
     var img = String(pick(r, ["image", "imageurl", "photo", "img"]) || ""), ph = img || typeof ienPhoto !== "function" ? null : ienPhoto(name);
     return { id: String(pick(r, ["id", "slug", "sku"]) || slug(name)), name: name.trim(), botanical: bot ? String(bot) : "", note: String(pick(r, ["note", "description", "notes", "blurb"]) || ""),
-      image: img || (ph ? ph.src : ""), srcset: ph ? ph.srcset : "", priority: num(pick(r, ["priority", "popularity", "rank", "sort", "order"])),
+      image: img || (ph ? ph.src : ""), srcset: ph ? ph.srcset : "", rank: num(pick(r, ["rank"])), pinned: pick(r, ["pinned"]) === true || String(pick(r, ["pinned"])).toLowerCase() === "true",
       color: String(pick(r, ["color", "flowercolor", "bloom"]) || ""), sizes: out, status: best };
   }
-  function sortList(a) {
-    var rank = { in: 0, low: 0, unknown: 1, request: 1, out: 2 };
-    function pin(p) { var t = p.name + " " + p.botanical; for (var i = 0; i < IENN_PINNED.length; i++) if (IENN_PINNED[i].test(t)) return i; return 99; }
-    function col(p) { return p.color || IENN_COLORFUL.test(p.name + " " + p.botanical) ? 0 : 1; }
-    var anyPri = a.some(function (p) { return p.priority != null; });
-    return a.sort(function (x, y) {
-      if (anyPri) { var px = x.priority == null ? 1e9 : x.priority, py = y.priority == null ? 1e9 : y.priority; if (px !== py) return px - py; }
-      return (rank[x.status] === 2) - (rank[y.status] === 2) || pin(x) - pin(y) || col(x) - col(y) || rank[x.status] - rank[y.status] || x.name.localeCompare(y.name);
-    });
-  }
+  function sortList(a) { return (typeof IENNOrder !== "undefined" ? IENNOrder : require("./feed-order.js")).order(a); }
   /* Raw Apps Script getInitial() shape: {plants:["Name (Bot)"], sizes, defaultPrices:{size:price}, stock:{plant:{size:qty}}, sort?, photos?} */
   function fromInitial(d) {
     var stock = d.stock || {}, prices = d.defaultPrices || {}, sort = d.sort || {}, photos = d.photos || {};
@@ -84,7 +75,7 @@ var IENN = (function () {
       var c = full.split(" (")[0].trim(), st = stock[full] || stock[c];
       if (!st) for (var k in stock) if (k.split(" (")[0].trim().toLowerCase() === c.toLowerCase()) { st = stock[k]; break; }
       var zs = st ? Object.keys(st) : (d.sizes || []);
-      return { name: full, priority: sort[full] != null ? sort[full] : sort[c], image: photos[full] || photos[c] || "",
+      return { name: full, rank: sort[full] != null ? sort[full] : sort[c], image: photos[full] || photos[c] || "",
         sizes: (zs.length ? zs : [""]).map(function (z) { var p = typeof prices[z] === "number" || typeof prices[z] === "string" ? prices[z] : null; return { size: z, qty: st ? (st[z] == null ? null : st[z]) : null, price: p }; }) };
     });
   }
