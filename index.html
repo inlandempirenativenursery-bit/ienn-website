@@ -38,6 +38,14 @@
     .logo { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: inherit; }
     .logo img { height: 64px; width: auto; display: block; }
     .logo-text { font-weight: 700; font-size: 1.05rem; color: var(--sage-dark); }
+    .steps-strip { display:flex; justify-content:center; gap:0.9rem; list-style:none; margin:0.5rem auto 0; padding:0.3rem 0.8rem; font-size:0.78rem; color:#4a5a4a; background:#f8f6f3; border:1px solid #e6e2da; border-radius:999px; width:max-content; max-width:100%; }
+    .steps-strip li + li::before { content:"·"; margin-right:0.9rem; color:#9aa69a; }
+    .steps-strip b { font-weight:700; color:#6b7c6a; }
+    .hdr-slogan { font-size:0.66rem; color:#888; font-style:italic; line-height:1.2; white-space:nowrap; }
+    @media (max-width:480px) { .hdr-slogan { font-size:0.56rem; letter-spacing:-0.1px; } }
+    .strip-wrap { display:flex; justify-content:flex-end; padding:0 1rem; margin-top:0.35rem; }
+    .strip-wrap .steps-strip { margin:0; }
+    @media (max-width:600px) { .strip-wrap { justify-content:center; } }
     .logo-sub { font-size: 0.65rem; color: var(--sage); letter-spacing: 0.4px; }
     .order-btn {
       background: var(--red);
@@ -236,13 +244,15 @@
       <div>
         <div class="logo-text">IENN</div>
         <div class="logo-sub">INLAND EMPIRE NATIVE NURSERY</div>
+        <div class="hdr-slogan">Connecting people to native plants.</div>
       </div>
     </a>
     <div class="header-right">
       <a class="ig-link ig-top" target="_blank" rel="noopener" aria-label="Instagram (opens in a new tab)"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg><span class="ig-top-text">Instagram</span></a>
-      <a href="order.html" class="order-btn">Place Order Now</a>
+      <a href="order.html" class="order-btn">Shop plants</a>
     </div>
   </header>
+  <div class="strip-wrap"><ol class="steps-strip" aria-label="How to order"><li><b>1.</b> Click</li><li><b>2.</b> Order</li><li><b>3.</b> Pick up</li></ol></div>
 
   <section class="hero">
     <p class="slogan">Connecting people to native plants</p>
@@ -309,7 +319,8 @@
   <section class="cta-section" id="order">
     <h2 style="color:var(--sage-dark);">Ready to plant something that works here?</h2>
     <p style="margin:0.75rem 0 1.25rem;">Place your order and pick up locally.</p>
-    <a href="order.html" class="order-btn" rel="noopener">Place Order Now</a>
+    <a href="order.html" class="order-btn" rel="noopener">Shop plants</a>
+    <ol class="steps-strip" aria-label="How to order"><li><b>1.</b> Click</li><li><b>2.</b> Order</li><li><b>3.</b> Pick up</li></ol>
     <p class="disclaimer">Availability varies by season and stock • Local pickup only (Fontana area); Cash or Zelle at time of pickup • Plant care and native-planting info is general guidance • Photos are representative.</p>
   </section>
 

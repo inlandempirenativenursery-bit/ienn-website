@@ -18,6 +18,15 @@
     .logo { display:flex; align-items:center; gap:0.55rem; text-decoration:none; color:inherit; }
     .logo img { height:58px; width:auto; display:block; }
     .logo-text { font-weight:700; color:var(--sage-dark); }
+    .steps-strip { display:flex; justify-content:center; gap:0.9rem; list-style:none; margin:0.5rem auto 0; padding:0.3rem 0.8rem; font-size:0.78rem; color:#4a5a4a; background:#f8f6f3; border:1px solid #e6e2da; border-radius:999px; width:max-content; max-width:100%; }
+    .steps-strip li + li::before { content:"·"; margin-right:0.9rem; color:#9aa69a; }
+    .steps-strip b { font-weight:700; color:#6b7c6a; }
+    .hdr-slogan { font-size:0.66rem; color:#888; font-style:italic; line-height:1.2; white-space:nowrap; }
+    @media (max-width:480px) { .hdr-slogan { font-size:0.56rem; letter-spacing:-0.1px; } }
+    .poppy { display:inline-block; vertical-align:middle; margin-left:0.4rem; width:36px; height:36px; image-rendering:pixelated; }
+    .confirm:not([hidden]) .poppy { animation:poppy-pop 400ms cubic-bezier(.3,1.6,.5,1) both; }
+    @keyframes poppy-pop { 0% { transform:scale(0.3); opacity:0; } 70% { transform:scale(1.15); opacity:1; } 100% { transform:scale(1); } }
+    @media (prefers-reduced-motion:reduce) { .confirm:not([hidden]) .poppy { animation:none; } }
     .logo-sub { font-size:0.7rem; color:var(--sage); }
     main { max-width:1080px; margin:0 auto; }
     h1 { font-size:1.5rem; color:var(--sage-dark); margin:1.25rem 1rem 0.5rem; }
@@ -226,6 +235,7 @@
       <div>
         <div class="logo-text">IENN</div>
         <div class="logo-sub">INLAND EMPIRE NATIVE NURSERY</div>
+        <div class="hdr-slogan">Connecting people to native plants.</div>
       </div>
     </a>
     <div class="header-right">
@@ -238,7 +248,7 @@
   <h1 class="sr-only">Shop native plants</h1>
 
   <section class="confirm" id="confirm" hidden tabindex="-1" aria-labelledby="confirm-title" aria-live="polite">
-    <div class="tk-head"><h2 id="confirm-title"><span class="tk-check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a5a4a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>Your order's in. See you Saturday!</h2><span>PICKUP TICKET</span></div>
+    <div class="tk-head"><h2 id="confirm-title"><span class="tk-check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a5a4a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>Your order's in. See you Saturday!<svg class="poppy" aria-hidden="true" focusable="false" width="36" height="36" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="3" y="0" width="1" height="1" fill="#e8731a"/><rect x="4" y="0" width="1" height="1" fill="#e8731a"/><rect x="7" y="0" width="1" height="1" fill="#e8731a"/><rect x="8" y="0" width="1" height="1" fill="#e8731a"/><rect x="2" y="1" width="1" height="1" fill="#e8731a"/><rect x="3" y="1" width="1" height="1" fill="#e8731a"/><rect x="4" y="1" width="1" height="1" fill="#e8731a"/><rect x="5" y="1" width="1" height="1" fill="#e8731a"/><rect x="6" y="1" width="1" height="1" fill="#e8731a"/><rect x="7" y="1" width="1" height="1" fill="#e8731a"/><rect x="8" y="1" width="1" height="1" fill="#e8731a"/><rect x="9" y="1" width="1" height="1" fill="#e8731a"/><rect x="1" y="2" width="1" height="1" fill="#e8731a"/><rect x="2" y="2" width="1" height="1" fill="#e8731a"/><rect x="3" y="2" width="1" height="1" fill="#f5a623"/><rect x="4" y="2" width="1" height="1" fill="#f5a623"/><rect x="5" y="2" width="1" height="1" fill="#f5a623"/><rect x="6" y="2" width="1" height="1" fill="#f5a623"/><rect x="7" y="2" width="1" height="1" fill="#f5a623"/><rect x="8" y="2" width="1" height="1" fill="#f5a623"/><rect x="9" y="2" width="1" height="1" fill="#f5a623"/><rect x="10" y="2" width="1" height="1" fill="#e8731a"/><rect x="1" y="3" width="1" height="1" fill="#e8731a"/><rect x="2" y="3" width="1" height="1" fill="#f5a623"/><rect x="3" y="3" width="1" height="1" fill="#f5a623"/><rect x="4" y="3" width="1" height="1" fill="#f5a623"/><rect x="5" y="3" width="1" height="1" fill="#7a3e0b"/><rect x="6" y="3" width="1" height="1" fill="#7a3e0b"/><rect x="7" y="3" width="1" height="1" fill="#f5a623"/><rect x="8" y="3" width="1" height="1" fill="#f5a623"/><rect x="9" y="3" width="1" height="1" fill="#f5a623"/><rect x="10" y="3" width="1" height="1" fill="#e8731a"/><rect x="1" y="4" width="1" height="1" fill="#e8731a"/><rect x="2" y="4" width="1" height="1" fill="#f5a623"/><rect x="3" y="4" width="1" height="1" fill="#f5a623"/><rect x="4" y="4" width="1" height="1" fill="#7a3e0b"/><rect x="5" y="4" width="1" height="1" fill="#7a3e0b"/><rect x="6" y="4" width="1" height="1" fill="#7a3e0b"/><rect x="7" y="4" width="1" height="1" fill="#7a3e0b"/><rect x="8" y="4" width="1" height="1" fill="#f5a623"/><rect x="9" y="4" width="1" height="1" fill="#f5a623"/><rect x="10" y="4" width="1" height="1" fill="#e8731a"/><rect x="1" y="5" width="1" height="1" fill="#e8731a"/><rect x="2" y="5" width="1" height="1" fill="#f5a623"/><rect x="3" y="5" width="1" height="1" fill="#f5a623"/><rect x="4" y="5" width="1" height="1" fill="#f5a623"/><rect x="5" y="5" width="1" height="1" fill="#7a3e0b"/><rect x="6" y="5" width="1" height="1" fill="#7a3e0b"/><rect x="7" y="5" width="1" height="1" fill="#f5a623"/><rect x="8" y="5" width="1" height="1" fill="#f5a623"/><rect x="9" y="5" width="1" height="1" fill="#f5a623"/><rect x="10" y="5" width="1" height="1" fill="#e8731a"/><rect x="1" y="6" width="1" height="1" fill="#e8731a"/><rect x="2" y="6" width="1" height="1" fill="#e8731a"/><rect x="3" y="6" width="1" height="1" fill="#f5a623"/><rect x="4" y="6" width="1" height="1" fill="#f5a623"/><rect x="5" y="6" width="1" height="1" fill="#f5a623"/><rect x="6" y="6" width="1" height="1" fill="#f5a623"/><rect x="7" y="6" width="1" height="1" fill="#f5a623"/><rect x="8" y="6" width="1" height="1" fill="#f5a623"/><rect x="9" y="6" width="1" height="1" fill="#f5a623"/><rect x="10" y="6" width="1" height="1" fill="#e8731a"/><rect x="2" y="7" width="1" height="1" fill="#e8731a"/><rect x="3" y="7" width="1" height="1" fill="#e8731a"/><rect x="4" y="7" width="1" height="1" fill="#e8731a"/><rect x="5" y="7" width="1" height="1" fill="#e8731a"/><rect x="6" y="7" width="1" height="1" fill="#e8731a"/><rect x="7" y="7" width="1" height="1" fill="#e8731a"/><rect x="8" y="7" width="1" height="1" fill="#e8731a"/><rect x="9" y="7" width="1" height="1" fill="#e8731a"/><rect x="5" y="8" width="1" height="1" fill="#4f7a3a"/><rect x="6" y="8" width="1" height="1" fill="#4f7a3a"/><rect x="2" y="9" width="1" height="1" fill="#6b9a4a"/><rect x="3" y="9" width="1" height="1" fill="#6b9a4a"/><rect x="5" y="9" width="1" height="1" fill="#4f7a3a"/><rect x="6" y="9" width="1" height="1" fill="#4f7a3a"/><rect x="3" y="10" width="1" height="1" fill="#6b9a4a"/><rect x="4" y="10" width="1" height="1" fill="#6b9a4a"/><rect x="5" y="10" width="1" height="1" fill="#4f7a3a"/><rect x="6" y="10" width="1" height="1" fill="#4f7a3a"/><rect x="5" y="11" width="1" height="1" fill="#4f7a3a"/><rect x="6" y="11" width="1" height="1" fill="#4f7a3a"/></svg></h2><span>PICKUP TICKET</span></div>
     <div class="tk-body">
       <p id="confirm-id" class="confirm-id"></p>
       <ul id="confirm-list"></ul>
@@ -256,6 +266,7 @@
   <h2 id="shop-title" class="sr-only">Select your plants</h2>
   <p class="inv-status" id="inv-status" role="status" hidden></p>
   <div class="grid" id="plant-list" aria-busy="false"></div>
+  <ol class="steps-strip" aria-label="How to order"><li><b>1.</b> Click</li><li><b>2.</b> Order</li><li><b>3.</b> Pick up</li></ol>
   <section class="info" id="pickup-info" aria-labelledby="info-title">
     <h2 id="info-title">Pickup &amp; payment</h2>
     <p class="lead"><b>Connecting people to native plants.</b> Grown in Fontana · pickup Saturdays 10 a.m. – 2 p.m. · Cash or Zelle at pickup, nothing charged online.</p>

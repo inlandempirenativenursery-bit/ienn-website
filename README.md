@@ -12,7 +12,7 @@ Repo for the Inland Empire Native Nursery site and customer-facing order experie
 - Order submission that notifies the team and sends confirmation/invoice
 
 ## Ordering
-- **Public:** the website shop `order.html` is the only public order path. The homepage "Place Order Now" buttons point there.
+- **Public:** the website shop `order.html` is the only public order path. The homepage "Shop plants" buttons point there.
 - **Team only:** the inventory tool's internal Index view, for phone orders, Facebook Marketplace and so on. It goes through the same checked submit.
 - The old public `…/exec?view=customer` no longer takes orders. Once deployed, it shows "Orders have moved to our website" with a link to the shop and Andrew's call/text number.
 
