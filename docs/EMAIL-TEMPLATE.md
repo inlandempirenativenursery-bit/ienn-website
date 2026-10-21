@@ -52,7 +52,7 @@ Your notes: Pickup preference: Saturday
 Sat 11
 
 PICKUP
-Saturdays 10 AM – 2 PM, other times case by case on request.
+Saturdays 10 a.m. – 2 p.m., other times case by case on request.
 We’ll email to confirm your pickup time.
 
 LOCATION
@@ -85,7 +85,7 @@ Your plants:
 
 Total: $6.00 (taxes included)
 
-Confirming your pickup time: Saturday, October 24, 2026 (Saturdays 10 AM – 2 PM)
+Confirming your pickup time: Saturday, October 24, 2026 (Saturdays 10 a.m. – 2 p.m.)
 
 Here's the location: {{PICKUP_ADDRESS}}
 

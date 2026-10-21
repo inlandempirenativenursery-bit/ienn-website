@@ -2,7 +2,7 @@
 const assert = require('assert'), vm = require('vm'), { load } = require('./gas-harness');
 const J = x => JSON.parse(JSON.stringify(x));
 let pass = 0; const t = (name, fn) => { fn(); pass++; console.log('ok -', name); };
-const order = (h, items, extra) => JSON.parse(h.ctx.doPost({ postData: { contents: JSON.stringify(Object.assign({ name: 'Ana Lopez', email: 'ana@example.com', phone: '9095550100', notes: 'Saturday 11am', pickup: 'Saturday 10 AM – 2 PM', payment: 'Zelle', items }, extra)) } }).getContent());
+const order = (h, items, extra) => JSON.parse(h.ctx.doPost({ postData: { contents: JSON.stringify(Object.assign({ name: 'Ana Lopez', email: 'ana@example.com', phone: '9095550100', notes: 'Saturday 11am', pickup: 'Saturday 10 a.m. – 2 p.m.', payment: 'Zelle', items }, extra)) } }).getContent());
 
 t('size matching is forgiving', () => {
   const { ctx } = load();
@@ -34,7 +34,7 @@ t('website order goes through existing submitInvoice, stock drops, one team emai
   assert.strictEqual(r.ok, true, JSON.stringify(r)); assert.strictEqual(r.orderId, 'INV-101');
   assert.strictEqual(r.total, 18 + 15 + 20, 'customer total = sum of displayed (tax-included) prices'); assert.strictEqual(r.tax, undefined);
   const row = h.ss.sheets['IENN Invoices'].rows.slice(-1)[0];
-  assert.strictEqual(row[0], 'INV-101'); assert.match(row[3], /^Website order — Ana Lopez · 9095550100\nPickup: Saturday 10 AM – 2 PM\nPays by: Zelle\nSaturday 11am$/);
+  assert.strictEqual(row[0], 'INV-101'); assert.match(row[3], /^Website order — Ana Lopez · 9095550100\nPickup: Saturday 10 a.m. – 2 p.m.\nPays by: Zelle\nSaturday 11am$/);
   assert.deepStrictEqual([row[5], row[6], row[7]], ['48.74', '4.26', '53.00'], 'records: tax backed out of the tax-included total');
   assert.strictEqual(row[10], 'New'); assert.strictEqual(row[11], 'Andrew', 'Handled by defaults to Andrew');
   assert.deepStrictEqual(JSON.parse(row[4]).map(l => [l.size, l.qty, l.amt]), [['4"', '2', '12.00'], ['4"', '1', '6.00'], ['1 gal', '1', '15.00'], ['Tree pot', '2', '20.00']]);
@@ -101,7 +101,7 @@ t('reply draft fills template from IENN Invoices, keeps placeholders, never send
   assert.match(d.body, /2 × White Sage \(4-inch pot\) @ \$6 = \$12\.00/);
   assert.match(d.body, /Total: \$12\.00 \(taxes included\)/); assert.doesNotMatch(d.body, /Tax \(/); assert.match(d.body, /Call or text Andrew: \(909\) 609-9373/);
   assert.match(d.body, /Payment status: Not paid yet/); assert.match(d.body, /Payment: Cash or Zelle at time of pickup\. \(you chose Zelle\)/);
-  assert.match(d.body, /Pickup location: \{\{PICKUP_ADDRESS\}\} \(Fontana area, near Sierra & Baseline, about 10 minutes from the 210\)/); assert.match(d.body, /Pickup schedule: Saturdays 10 AM – 2 PM/); assert.match(d.body, /Your pickup date: Saturday, October 24, 2026/); assert.match(d.body, /Grand Terrace pickup available upon request\./); assert.match(d.body, /\{\{PICKUP_ADDRESS\}\}/);
+  assert.match(d.body, /Pickup location: \{\{PICKUP_ADDRESS\}\} \(Fontana area, near Sierra & Baseline, about 10 minutes from the 210\)/); assert.match(d.body, /Pickup schedule: Saturdays 10 a.m. – 2 p.m./); assert.match(d.body, /Your pickup date: Saturday, October 24, 2026/); assert.match(d.body, /Grand Terrace pickup available upon request\./); assert.match(d.body, /\{\{PICKUP_ADDRESS\}\}/);
   assert.match(d.body, /Your notes: Saturday 11am\n/); assert.match(d.body, /Our notes: Ready Saturday!/);
 });
 
@@ -144,7 +144,7 @@ t('promo: date range, active flag, open-ended, first match wins, bad rows skippe
   assert.strictEqual(pick([['Yes', 'NoEnd', '', '2026-10-01', '', '']], '2027-05-01').title, 'NoEnd');
   assert.strictEqual(pick([['Yes', 'NoStart', '', '', '10/25/2026', '']], '2026-10-20').title, 'NoStart', 'm/d/yyyy accepted');
   assert.strictEqual(pick([['Yes', 'Bad', '', 'soon', '', ''], ['Yes', 'Second', 'm', '', '', 'note']], '2026-10-20').title, 'Second', 'unreadable date skipped; first valid wins');
-  assert.deepStrictEqual(pick([['Yes', 'A', 'msg', new Date(Date.UTC(2026, 9, 18, 12)), '', 'note']], '2026-10-20'), { title: 'A', message: 'msg', start: '2026-10-18', end: '', discountNote: 'note', bottomInfo: 'Pickup Saturdays 10 AM – 2 PM in Fontana. | Cash or Zelle at time of pickup.' });
+  assert.deepStrictEqual(pick([['Yes', 'A', 'msg', new Date(Date.UTC(2026, 9, 18, 12)), '', 'note']], '2026-10-20'), { title: 'A', message: 'msg', start: '2026-10-18', end: '', discountNote: 'note', bottomInfo: 'Pickup Saturdays 10 a.m. – 2 p.m. in Fontana. | Cash or Zelle at time of pickup.' });
   assert.strictEqual(ctx.iennPickPromo_([['Title'], ['x']], '2026-10-20'), null, 'no Active column -> null');
 });
 
@@ -167,7 +167,7 @@ t('promo: optional Bottom info column (aliases), line breaks kept, appended to a
   assert.strictEqual(pick(H.concat('Bottom info'), ['Yes', 'Fall Sale', 'm', '', '', '', ' Plants ready now\nEnds Nov 30 ']).bottomInfo, 'Plants ready now\nEnds Nov 30');
   assert.strictEqual(pick(H.concat('Footer'), ['Yes', 'F', '', '', '', '', 'x']).bottomInfo, 'x', 'footer alias');
   assert.strictEqual(pick(H.concat('Info'), ['Yes', 'F', '', '', '', '', 'y']).bottomInfo, 'y', 'info alias');
-  assert.strictEqual(pick(H, ['Yes', 'F', '', '', '', '']).bottomInfo, 'Pickup Saturdays 10 AM – 2 PM in Fontana. | Cash or Zelle at time of pickup.', 'no column -> configurable default');
+  assert.strictEqual(pick(H, ['Yes', 'F', '', '', '', '']).bottomInfo, 'Pickup Saturdays 10 a.m. – 2 p.m. in Fontana. | Cash or Zelle at time of pickup.', 'no column -> configurable default');
   const old = [['Yes', 'Fall Sale', 'Plant now', '2026-10-01', '', '']];
   const sh = h.ss.insertSheet('Promos'); sh.rows.push(H.slice(), old[0].slice());
   h.ctx.iennSetup();
@@ -180,7 +180,7 @@ t('promo: optional Bottom info column (aliases), line breaks kept, appended to a
   const h2 = load(), sh2 = h2.ss.insertSheet('Promos');
   sh2.rows.push(H.slice(), ['No', 'Spring Sale', 'EXAMPLE: Spring is the last window to get plants in before summer heat.', '', '', ''], ['No', 'Spring Sale', 'Our own spring text', '', '', '']);
   h2.ctx.iennSetup();
-  assert.match(String(sh2.rows[1][6]), /^Pickup Saturdays 10 AM – 2 PM in Fontana\. \| Cash or Zelle at time of pickup\.$/, 'untouched example row filled');
+  assert.match(String(sh2.rows[1][6]), /^Pickup Saturdays 10 a.m. – 2 p.m. in Fontana\. \| Cash or Zelle at time of pickup\.$/, 'untouched example row filled');
   assert.ok(!sh2.rows[2][6], 'edited row left blank');
   assert.ok(!/%|off\b/i.test(JSON.stringify(J(h2.ctx.IENN_PROMO_EXAMPLES))), 'no discounts in examples');
 });

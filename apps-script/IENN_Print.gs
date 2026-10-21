@@ -39,7 +39,7 @@ function iennPrintHtml_() {
     '<div class="sub">' + date + ' · Prices by size, taxes included · Numbers = available now · "On request" = ask us</div></div></header>' +
     '<div class="btns"><a href="javascript:window.print()">Print</a><a href="?view=print&format=pdf">Export PDF</a><a href="?view=print&format=csv">Export CSV</a></div>' +
     '<table><thead><tr><th>Plant</th>' + head + '</tr></thead><tbody>' + rows + '</tbody></table>' +
-    '<p class="sub">Pickup only · Fontana area · Saturdays 10 AM – 2 PM · Cash or Zelle at time of pickup · Call or text Andrew: <a href="tel:' + IENN_CONTACT_TEL + '">' + IENN_CONTACT_PHONE + '</a></p><p class="sub" style="font-size:10px">Grand Terrace pickup available upon request.</p><p class="sub fine-print" style="font-size:10px">Other pickup times available case by case upon request.</p></body></html>';
+    '<p class="sub">Pickup only · Fontana area · Saturdays 10 a.m. – 2 p.m. · Cash or Zelle at time of pickup · Call or text Andrew: <a href="tel:' + IENN_CONTACT_TEL + '">' + IENN_CONTACT_PHONE + '</a></p><p class="sub" style="font-size:10px">Grand Terrace pickup available upon request.</p><p class="sub fine-print" style="font-size:10px">Other pickup times available case by case upon request.</p></body></html>';
 }
 
 function iennPrintCsv_() {
