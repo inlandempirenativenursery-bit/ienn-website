@@ -22,7 +22,21 @@
   }
   function appeal(p) { var t = (p.name + " " + p.botanical).toLowerCase(); for (var i = 0; i < APPEAL_KEYWORDS.length; i++) if (t.indexOf(APPEAL_KEYWORDS[i]) >= 0) return i; return 999; }
   function rk(p) { return p.rank == null || p.rank === "" || isNaN(Number(p.rank)) ? 1e9 : Number(p.rank); }
-  function sortPlants(a) { var o = IENNOrder.order(a); return o.filter(function (p) { return !!p.image; }).concat(o.filter(function (p) { return !p.image; })); }   // feed order (feed-order.js), then plants with a photo before plants without; order kept within each group
+  function sortPlants(a) {
+    var o = IENNOrder.order(a);
+    // Stable sort: plants with inventory (ready qty>0 or available/canRequest) before zero-inventory plants.
+    // Within each group: photo first, then original feed order.
+    var scored = o.map(function (p, i) {
+      var hasStock = pstate(p) !== "out";
+      return { p: p, i: i, stock: hasStock ? 0 : 1, photo: !!p.image ? 0 : 1 };
+    });
+    scored.sort(function (x, y) {
+      if (x.stock !== y.stock) return x.stock - y.stock;
+      if (x.photo !== y.photo) return x.photo - y.photo;
+      return x.i - y.i;
+    });
+    return scored.map(function (o) { return o.p; });
+  }
   function split(full) { var m = /^(.*?)\s*\((.*)\)\s*$/.exec(full || ""); return m ? [m[1], m[2]] : [String(full || "").trim(), ""]; }
 
   var BATCH = 12, shown = 0, io = null;
@@ -48,7 +62,7 @@
       var ps = pstate(p), card = el("article", { class: "card" + (ps === "out" ? " sold-out" : ""), "aria-labelledby": p.id + "-name" });
       card.dataset.id = p.id;
       var ph = el("div", { class: "ph" });
-      if (p.image) ph.appendChild(el("img", p.srcset ? { src: p.image, srcset: p.srcset, sizes: "(max-width: 600px) 48vw, 260px", alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" } : { src: p.image, alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" })); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }
+      if (p.image) ph.appendChild(el("img", p.srcset ? { src: p.image, srcset: p.srcset, sizes: "(max-width: 600px) 48vw, 260px", alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" } : { src: p.image, alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" })); else { ph.appendChild(el("span", { class: "leaf" }, "\ud83c\udf3f")); ph.setAttribute("aria-hidden", "true"); }
       var lo = p.sizes.filter(function (z) { return !askSize(z) && isFinite(z.price); }).map(function (z) { return z.price; });
       if (lo.length) ph.appendChild(el("span", { class: "price-tag", "aria-hidden": "true" }, (lo.length > 1 ? "from $" : "$") + Math.min.apply(null, lo)));
       if (p.badge) ph.appendChild(el("span", { class: "pick-badge" + (p.badgeAuto ? " auto-" + p.badgeAuto : "") }, String(p.badge)));
@@ -61,7 +75,7 @@
       var b = el("div", { class: "body" });
       var h3 = el("h3", { id: p.id + "-name" }); h3.appendChild(el("span", { class: "slot", "aria-hidden": "true" }, String.fromCharCode(65 + Math.floor(idx / 6)) + (idx % 6 + 1))); h3.appendChild(document.createTextNode(p.name)); b.appendChild(h3);
       if (p.botanical) b.appendChild(el("span", { class: "note" }, p.botanical));
-      var badge = el("span", { class: "badge " + ps }, ps === "ok" ? "Available · Get yours now" : ps === "ask" ? "We'll confirm availability" : ON_REQUEST);
+      var badge = el("span", { class: "badge " + ps }, ps === "ok" ? "Available \u00b7 Get yours now" : ps === "ask" ? "We'll confirm availability" : ON_REQUEST);
       b.appendChild(badge);
       var pick = null, only = p.sizes.filter(function (z) { return !askSize(z); }); if (only.length === 1) pick = only[0];   // single size: selected for Add, but NOT highlighted
       var fs = el("fieldset", { class: "chips" }); fs.appendChild(el("legend", {}, "Size"));
@@ -79,7 +93,7 @@
       }
       p.sizes.forEach(function (z) {
         var rq = askSize(z), c = el("button", { type: "button", class: "chip" + (rq ? " chip-request" : ""), "aria-pressed": "false" },
-          (SHORT[z.key] || z.label) + " $" + z.price + (rq ? " · ask" : ""));
+          (SHORT[z.key] || z.label) + " $" + z.price + (rq ? " \u00b7 ask" : ""));
         c.setAttribute("aria-label", z.label + ", $" + z.price + (rq ? ", available on request" : ""));
         c.addEventListener("click", function () {
           fs.querySelectorAll(".chip").forEach(function (x) { x.setAttribute("aria-pressed", x === c ? "true" : "false"); });
@@ -91,7 +105,7 @@
       var hint = el("p", { class: "size-hint", "aria-live": "polite" }); b.appendChild(fs); b.appendChild(hint); b.appendChild(info); b.appendChild(ask);
       var row = el("div", { class: "row" });
       var stp = el("div", { class: "stepper", role: "group", "aria-label": "Quantity of " + p.name });
-      minus = el("button", { type: "button", "aria-label": "Fewer " + p.name }, "−");
+      minus = el("button", { type: "button", "aria-label": "Fewer " + p.name }, "\u2212");
       inp = el("input", { type: "number", min: "1", max: "99", value: "1", inputmode: "numeric", "aria-label": "Quantity of " + p.name });
       plus = el("button", { type: "button", "aria-label": "More " + p.name }, "+");
       [minus, inp, plus].forEach(function (x) { stp.appendChild(x); });
@@ -109,9 +123,9 @@
         }
         hint.textContent = "";
         var k = p.id + "|" + pick.key, wantN = (cart[k] || 0) + clamp(inp.value), mx = IENNStock.maxQty(pick);
-        if (pick.qty != null && wantN > mx) { wantN = mx; ask.hidden = false; msg.textContent = "✓ Added what we have. Want more? Ask us."; }
-        else if (IENNStock.isRequest(pick, wantN)) { ask.hidden = false; msg.textContent = "✓ Added " + wantN + " × " + pick.label + " as a request. We'll confirm."; }
-        else msg.textContent = "✓ Added " + wantN + " × " + pick.label;
+        if (pick.qty != null && wantN > mx) { wantN = mx; ask.hidden = false; msg.textContent = "\u2713 Added what we have. Want more? Ask us."; }
+        else if (IENNStock.isRequest(pick, wantN)) { ask.hidden = false; msg.textContent = "\u2713 Added " + wantN + " \u00d7 " + pick.label + " as a request. We'll confirm."; }
+        else msg.textContent = "\u2713 Added " + wantN + " \u00d7 " + pick.label;
         cart[k] = Math.min(wantN, 99); lastAdded = k; save(); inp.value = 1; update(); showInfo(); bumpTray();
       });
       row.appendChild(stp); row.appendChild(add);
@@ -130,9 +144,9 @@
     else {
       var ul = el("ul");
       ls.forEach(function (l) {
-        var li = el("li", l.key === lastAdded ? { class: "drop" } : {}); var ls_ = el("span", {}, l.q + " × " + l.p.name + " "); ls_.appendChild(el("span", { class: "nw" }, "(" + l.z.label + ")")); ls_.appendChild(document.createTextNode(" @ $" + l.z.price + " = ")); ls_.appendChild(el("span", { class: "nw" }, money(l.total))); li.appendChild(ls_);
+        var li = el("li", l.key === lastAdded ? { class: "drop" } : {}); var ls_ = el("span", {}, l.q + " \u00d7 " + l.p.name + " "); ls_.appendChild(el("span", { class: "nw" }, "(" + l.z.label + ")")); ls_.appendChild(document.createTextNode(" @ $" + l.z.price + " = ")); ls_.appendChild(el("span", { class: "nw" }, money(l.total))); li.appendChild(ls_);
         var tq = el("span", { class: "tq", role: "group", "aria-label": "Quantity of " + l.p.name }), mx = IENNStock.maxQty(l.z);
-        var dm = el("button", { type: "button", "aria-label": "One fewer " + l.p.name }, "−"), dp = el("button", { type: "button", "aria-label": "One more " + l.p.name }, "+");
+        var dm = el("button", { type: "button", "aria-label": "One fewer " + l.p.name }, "\u2212"), dp = el("button", { type: "button", "aria-label": "One more " + l.p.name }, "+");
         dm.addEventListener("click", function () { if (l.q <= 1) delete cart[l.key]; else cart[l.key] = l.q - 1; lastAdded = null; save(); update(); });
         dp.addEventListener("click", function () { cart[l.key] = Math.min(l.q + 1, mx); lastAdded = null; save(); update(); });
         dp.disabled = l.q >= mx; tq.appendChild(dm); tq.appendChild(el("span", { "aria-live": "polite" }, String(l.q))); tq.appendChild(dp); li.appendChild(tq);
@@ -147,7 +161,7 @@
     }
     document.getElementById("cartbar").hidden = count === 0;
     coState(count);
-    var cb = document.getElementById("cartbar-count"); cb.textContent = count + (count === 1 ? " item" : " items") + " · " + money(sub) + " "; cb.appendChild(el("small", {}, "tax incl."));
+    var cb = document.getElementById("cartbar-count"); cb.textContent = count + (count === 1 ? " item" : " items") + " \u00b7 " + money(sub) + " "; cb.appendChild(el("small", {}, "tax incl."));
     return ls;
   }
 
@@ -169,7 +183,7 @@
     if (b.getAttribute("aria-disabled") === "true") { e.preventDefault(); e.stopImmediatePropagation(); coHint(); } }, true);
 
   if (document.getElementById("checkout")) (function () {   // checkout drawer + order form (order.html only)
-  var PICKUP = "Fontana (near Sierra & Baseline) · Saturdays 10 a.m. – 2 p.m.";
+  var PICKUP = "Fontana (near Sierra & Baseline) \u00b7 Saturdays 10 a.m. \u2013 2 p.m.";
   var drawer = document.getElementById("checkout"), backdrop = document.getElementById("checkout-backdrop"), opener = null;
   function focusables() { return [].slice.call(drawer.querySelectorAll("button:not([disabled]),a[href],input,select,textarea")).filter(function (x) { return x.offsetParent !== null; }); }
   function openCheckout() {
@@ -203,70 +217,38 @@
   function showConfirm(ls, orderId, total, notes) {
     document.getElementById("confirm-id").textContent = orderId ? "Order number: " + orderId : "";
     var cl = document.getElementById("confirm-list"); cl.innerHTML = "";
-    ls.forEach(function (l) { cl.appendChild(el("li", {}, l.q + " × " + l.p.name + " (" + l.z.label + ") — " + money(l.total))); });
-    var cn = document.getElementById("confirm-notices"); cn.innerHTML = ""; (notes || []).forEach(function (m) { cn.appendChild(el("p", { class: "stock-note" }, m)); }); cn.hidden = !(notes && notes.length);
-    var ct = document.getElementById("confirm-total"); ct.textContent = "Total: " + money(total) + " ";
-    ct.appendChild(el("small", { class: "tax-note" }, "Taxes included"));
-    var c = document.getElementById("confirm"); c.hidden = false; form.reset(); closeCheckout();
-    cart = {}; save(); update();
-    setTimeout(function () { c.focus({ preventScroll: true }); window.scrollTo({ top: Math.max(0, c.getBoundingClientRect().top + window.pageYOffset - 8), behavior: "smooth" }); }, 50);
-  }
-  function mailtoHref(ls, f) {
-    var body = "Name: " + f.name + "\nPickup: " + PICKUP + "\nPayment: " + v("payment") + "\nRef: " + f.name + "\nEmail: " + f.email + "\nPhone: " + f.phone + "\n\n" + ls.map(function (l) { return l.q + " x " + l.p.name + " (" + l.z.label + ") $" + l.z.price; }).join("\n") +
-      "\n\nNotes: " + f.notes;
-    return "mailto:" + ORDER_EMAIL + "?subject=" + encodeURIComponent("Plant order from " + f.name) + "&body=" + encodeURIComponent(body);
+    ls.forEach(function (l) { cl.appendChild(el("li", {}, l.q + " \u00d7 " + l.p.name + " (" + l.z.label + ") \u2014 " + money(l.total))); });
+    document.getElementById("confirm-notes").textContent = notes || "";
+    document.getElementById("confirm-total").textContent = money(total);
+    document.getElementById("order-form").hidden = true; document.getElementById("confirm").hidden = false;
   }
   form.addEventListener("submit", function (e) {
-    e.preventDefault(); serr.style.display = "none";
-    var ls = update(), ok = true, f = { name: v("name"), email: v("email"), phone: v("phone"), notes: v("notes") };
-    ok = fieldErr("name", f.name ? "" : "Please enter your name.") && ok;
-    ok = fieldErr("email", /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email) ? "" : "Please enter a valid email so we can confirm pickup.") && ok;
-    ok = fieldErr("phone", !f.phone || f.phone.replace(/\D/g, "").length >= 10 ? "" : "Please enter a 10-digit phone number or leave it blank.") && ok;
-    if (!ls.length) { document.getElementById("qty-error").style.display = "block"; ok = false; }
-    if (!ok) { (form.querySelector("[aria-invalid=true]") || document.getElementById("review")).focus(); return; }
-    btn.disabled = true; btn.textContent = "Sending…";
-    var payload = { name: f.name, email: f.email, phone: f.phone, notes: f.notes, pickup: PICKUP, payment: v("payment"), items: ls.map(function (l) { return { plant: l.p.fullName, sizeKey: l.z.key, qty: l.q }; }) };
-    var sub = ls.reduce(function (a, l) { return a + l.total; }, 0);
-    fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })   // text/plain = no CORS preflight
-      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-      .then(function (r) {
-        btn.disabled = false; btn.textContent = "Place order";
-        if (r.ok) return showConfirm(ls, r.orderId, r.total != null ? r.total : sub, IENNStock.notices(r));
-        serr.innerHTML = ""; serr.appendChild(document.createTextNode(r.message || "Sorry, something went wrong. Please try again."));
-        if (r.error === "stock") {   // order NOT placed: keep the tray as is so they can adjust; messages are text only
-          var pm = IENNStock.problems(r); if (pm.length) { var ul = el("ul", { class: "stock-problems" }); pm.forEach(function (m) { ul.appendChild(el("li", {}, m)); }); serr.appendChild(ul); }
-        }
-        serr.style.display = "block"; serr.scrollIntoView({ block: "nearest" }); document.getElementById("review").focus({ preventScroll: true });
-      })
-      .catch(function () {   // order NOT placed: keep the cart, offer call/text and email
-        btn.disabled = false; btn.textContent = "Place order";
-        serr.innerHTML = ""; serr.appendChild(document.createTextNode("We couldn't send your order just now. Your cart is saved. Please try again, or call or text Andrew: "));
-        serr.appendChild(el("a", { class: "contact-tel", href: "tel:" + CONTACT_TEL }, CONTACT_PHONE)); serr.appendChild(document.createTextNode(" · "));
-        serr.appendChild(el("a", { class: "contact-sms", href: "sms:" + CONTACT_TEL + "?&body=" + encodeURIComponent("Plant order: " + ls.map(function (l) { return l.q + " x " + l.p.name + " (" + l.z.label + ")"; }).join(", ")) }, "Text your order"));
-        serr.appendChild(document.createTextNode(" · ")); serr.appendChild(el("a", { class: "contact-mail", href: mailtoHref(ls, f) }, "Email your order"));
-        serr.style.display = "block";
-      });
+    e.preventDefault(); serr.textContent = ""; serr.hidden = true;
+    var ok = fieldErr("name", v("name") ? "" : "Please enter your name.") && fieldErr("email", /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v("email")) ? "" : "Please enter a valid email.");
+    if (!ok) return;
+    var ls = lines(); if (!ls.length) { serr.textContent = "Your tray is empty."; serr.hidden = false; return; }
+    btn.disabled = true; btn.textContent = "Placing order\u2026";
+    var body = { name: v("name"), email: v("email"), phone: v("phone"), notes: v("notes"), pickup: PICKUP, payment: v("payment") || "Cash or Zelle",
+      items: ls.map(function (l) { return { plant: l.p.fullName, sizeKey: l.z.key, qty: l.q }; }) };
+    fetch(APPS_SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(body) }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.ok) throw d;
+      try { localStorage.removeItem(KEY); } catch (e) {} cart = {}; save(); update();
+      showConfirm(ls, d.orderId, d.total, v("notes"));
+    }).catch(function (err) {
+      var msg = (err && err.message) || "Something went wrong. Please try again or text Andrew.";
+      serr.textContent = msg; serr.hidden = false; btn.disabled = false; btn.textContent = "Place order";
+      if (err && err.problems) { /* stock problems already described in message */ }
+    });
   });
-  document.getElementById("new-order").addEventListener("click", function () {
-    form.reset(); document.getElementById("confirm").hidden = true; update();
-    document.getElementById("plant-list").scrollIntoView({ behavior: "smooth", block: "start" });
-  });
-
   })();
 
-  /* Badges: a manual `badge` string from the feed (sheet "Badge" column) always wins. Otherwise, only when the feed carries real
-     sales data: top plant = "#1 Selling", next 3 = "Popular". Only numeric `popularity` > 0 counts; `rank` is never used. Never invented. One per card. */
-  function autoBadges(raw) {
-    var num = function (v) { return v != null && v !== "" && isFinite(Number(v)) ? Number(v) : null; }, out = {}, order;
-    var pop = raw.filter(function (p) { return num(p.popularity) > 0; });
-    order = pop.slice().sort(function (a, b) { return num(b.popularity) - num(a.popularity); });
-    order.slice(0, 4).forEach(function (p, i) { out[p.name] = i === 0 ? "top" : "pop"; });
-    return out;
-  }
+  /* Inventory loading */
+  var REFRESH_MINUTES = 5, autoOpened = false;
   function fromInventory(d) {
-    var ab = autoBadges(d.plants || []);
+    var ab = (d && d.appeal) || {};
     return (d.plants || []).map(function (p) {
-      return { id: slug(p.name), name: p.name, fullName: p.fullName || p.name, botanical: p.botanical || "", badge: p.badge && String(p.badge).trim() ? String(p.badge).trim().slice(0, 24) : ab[p.name] === "top" ? "#1 Selling" : ab[p.name] === "pop" ? "Popular" : "", badgeAuto: p.badge && String(p.badge).trim() ? "" : ab[p.name] || "", rank: p.rank, pinned: p.pinned, image: p.image || (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).src || "", srcset: p.image ? "" : (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).srcset || "",
+      var nb = split(p.fullName || p.name);
+      return { id: slug(nb[0]), name: nb[0], fullName: p.fullName || p.name, botanical: p.botanical || nb[1] || "", badge: p.badge && String(p.badge).trim() ? String(p.badge).trim().slice(0, 24) : ab[p.name] === "top" ? "#1 Selling" : ab[p.name] === "pop" ? "Popular" : "", badgeAuto: p.badge && String(p.badge).trim() ? "" : ab[p.name] || "", rank: p.rank, pinned: p.pinned, image: p.image || (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).src || "", srcset: p.image ? "" : (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).srcset || "",
         sizes: (p.sizes || []).map(function (z) { return { key: z.key, label: z.size || SIZE_LABELS[z.key] || z.key, price: isFinite(Number(z.price)) && z.price !== "" && z.price != null ? Number(z.price) : PRICES[z.key], qty: z.qty == null ? null : Number(z.qty), extra: z.extra == null ? null : Number(z.extra), canRequest: z.canRequest == null ? null : z.canRequest === true }; }) };
     });
   }
@@ -287,16 +269,14 @@
   }
   function use(l, msg, d, quick) { PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l))); if (!quick) prefill(); render(); if (quick) return; status.textContent = msg || ""; status.hidden = !msg;
     if (params.get("checkout") === "1" && !autoOpened && lines().length) { autoOpened = true; if (window.iennOpenCheckout) window.iennOpenCheckout(); } }
-  var autoOpened = false;
   function load() {
     fetch(APPS_SCRIPT_URL + "?view=inventory", { cache: "no-store" }).then(function (r) { if (!r.ok) throw 0; return r.text(); }).then(function (t) {
       var d = JSON.parse(t), l = fromInventory(d); if (!l.length) throw 0; if (window.iennPromo) window.iennPromo(d.promo);
-      try { localStorage.setItem(CACHE, JSON.stringify({ t: Date.now(), d: d })); } catch (e) {}
-      use(l, "", d);
+      try { localStorage.setItem(CACHE, JSON.stringify({ t: Date.now(), d: d })); } catch (e) {} use(l, "", d);
     }).catch(function () {
       var c = null; try { c = JSON.parse(localStorage.getItem(CACHE)); } catch (e) {}
-      if (c && c.d) use(fromInventory(c.d), "Couldn't refresh live stock — showing the list from " + new Date(c.t).toLocaleString() + ". Stock may be out of date.", c.d);
-      else use(fallback(), "Live stock is unavailable right now — showing our offline plant list. Stock may be out of date; we'll confirm availability.");
+      if (c && c.d) use(fromInventory(c.d), "Couldn't refresh live stock \u2014 showing the list from " + new Date(c.t).toLocaleString() + ". Stock may be out of date.", c.d);
+      else use(fallback(), "Live stock is unavailable right now \u2014 showing our offline plant list. Stock may be out of date; we'll confirm availability.");
     });
   }
   for (var i = 0; i < 4; i++) list.appendChild(el("div", { class: "card skel", "aria-hidden": "true" }));
