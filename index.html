@@ -241,7 +241,7 @@
   <div class="cart-bar" id="cart-bar" hidden>
     <span id="cart-count">0 plants</span>
     <button type="button" class="cart-clear" id="cart-clear">Clear</button>
-    <a href="order.html" class="cart-go" id="cart-go">Reserve for pickup</a>
+    <a href="order.html" class="cart-go" id="cart-go">Check out</a>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -265,7 +265,7 @@
       </div>
       <div class="step">
         <div class="step-number">2</div>
-        <div><strong>Reserve</strong><br>We hold them for you</div>
+        <div><strong>Check out</strong><br>Pay at pickup, cash or Zelle</div>
       </div>
       <div class="step">
         <div class="step-number">3</div>
@@ -318,7 +318,7 @@
       Object.keys(cart).forEach(function (k) { var c = cart[k]; if (c > 0) { n += c; q.push(encodeURIComponent(k) + '=' + c); var pr = (NAMES[k] || {}).price; if (pr == null) priced = false; else total += pr * c; } });
       bar.hidden = n === 0; document.body.classList.toggle('has-cart', n > 0);
       document.getElementById('cart-count').textContent = n + (n === 1 ? ' plant' : ' plants') + ' \u00b7 ' + (priced && n ? '$' + total.toFixed(2) + ' \u00b7 Taxes included' : 'price confirmed at order');
-      document.getElementById('cart-go').href = 'order.html' + (q.length ? '?' + q.join('&') : '');
+      document.getElementById('cart-go').href = 'order.html' + (q.length ? '?' + q.join('&') + '&checkout=1' : '');
     }
     function card(p, idx) {
       var c = el('article', 'plant-card'), body = el('div', 'plant-info'), qty = 1;

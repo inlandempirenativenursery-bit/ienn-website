@@ -151,6 +151,31 @@
     .details summary { min-height:44px; display:flex; align-items:center; font-weight:700; color:var(--sage-dark); cursor:pointer; }
     .cartbar .cb-sum { font-weight:700; }
     .cartbar .cb-sum small { font-weight:400; color:#666; }
+    .contact-mail { display:inline-flex; align-items:center; min-height:44px; padding:0 0.25rem; color:var(--sage-dark); font-weight:600; word-break:break-all; }
+    /* checkout drawer */
+    .cartbar button { white-space:nowrap; min-height:44px; padding:0 1.2rem; background:var(--red); color:#fff; font-weight:700; font-size:1rem; border:0; border-radius:10px; cursor:pointer; }
+    .drawer-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:60; }
+    .drawer { position:fixed; left:0; right:0; bottom:0; top:0; background:#fff; z-index:61; display:flex; flex-direction:column; transform:translateY(0); transition:transform .25s ease; }
+    .drawer.closing { transform:translateY(100%); }
+    .drawer[hidden], .drawer-backdrop[hidden] { display:none; }
+    @media (min-width:760px) { .drawer { left:auto; width:440px; box-shadow:-4px 0 20px rgba(0,0,0,.15); } .drawer.closing { transform:translateX(100%); } .grab { display:none; } }
+    @media (prefers-reduced-motion:reduce) { .drawer { transition:none; } }
+    .drawer-head { display:flex; align-items:center; justify-content:space-between; padding:0.4rem 0.5rem 0.4rem 1rem; border-bottom:1px solid #eee; position:relative; touch-action:none; }
+    .drawer-head h2 { margin:0; }
+    .grab { position:absolute; top:4px; left:50%; width:40px; height:4px; margin-left:-20px; border-radius:2px; background:#ccc; }
+    .drawer-x { width:44px; height:44px; border:0; background:none; font-size:1.8rem; color:var(--sage-dark); cursor:pointer; }
+    .drawer-body { overflow-y:auto; flex:1; padding-bottom:calc(1rem + env(safe-area-inset-bottom)); }
+    .drawer .summary { margin:0.75rem 1rem; }
+    .drawer form { margin:0 1rem; }
+    .co-pickup { margin:0.5rem 1rem 0; font-size:0.85rem; color:var(--sage-dark); }
+    .drawer .fine-print { margin-left:1rem; margin-right:1rem; }
+    .field-hint { font-size:0.8rem; color:#666; margin-top:0.2rem; }
+    select { width:100%; min-height:44px; padding:0 0.6rem; border:1px solid #ccc; border-radius:8px; font-size:1rem; background:#fff; }
+    .tq { display:inline-flex; align-items:center; border:1px solid #ccc; border-radius:8px; overflow:hidden; flex:none; }
+    .tq button { width:44px; height:44px; border:0; background:var(--cream); color:var(--sage-dark); font-size:1.2rem; font-weight:700; cursor:pointer; }
+    .tq span { min-width:2rem; text-align:center; }
+    .summary li { flex-wrap:wrap; }
+    body.drawer-open { overflow:hidden; }
     footer { text-align:center; font-size:0.8rem; color:#555; margin-top:2rem; padding:1rem; }
   </style>
 </head>
@@ -178,83 +203,67 @@
       <p class="pickup-line">Pickup: Fontana · Saturdays 10 AM – 2 PM</p>
       <p>Exact address after we confirm. Andrew will email you to confirm your pickup.</p>
       <p class="fine-print">Other pickup times available case by case upon request.<br>Grand Terrace pickup available upon request.</p>
-      <p class="confirm-contact">Questions or changes? Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a></p>
+      <p class="confirm-contact">Questions or changes? Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a><br><a class="contact-mail" href="mailto:plants@inlandempirenativenursery.com">Email us: plants@inlandempirenativenursery.com</a></p>
       <button type="button" id="new-order">Start a new order</button>
     </div>
   </section>
 
 
   <h2 class="sr-only" id="steps-title">How it works</h2>
-  <ol class="steps" id="steps"><li class="on"><span class="n">1</span>Select<small>Pick plants &amp; sizes</small></li><li><span class="n">2</span>Reserve<small>Nothing charged online</small></li><li><span class="n">3</span>Pick up<small>Saturday in Fontana</small></li></ol>
+  <ol class="steps" id="steps"><li class="on"><span class="n">1</span>Select<small>Pick plants &amp; sizes</small></li><li><span class="n">2</span>Check out<small>Pay at pickup</small></li><li><span class="n">3</span>Pick up<small>Saturday in Fontana</small></li></ol>
   <h2 id="shop-title" class="sr-only">Select your plants</h2>
   <p class="hint">Tap a size, then Add. 2-inch and tree pot sizes are available on request (add them in Notes).</p>
   <p class="inv-status" id="inv-status" role="status" hidden></p>
   <div class="grid" id="plant-list" aria-busy="false"></div>
 
-  <section class="summary" id="review" aria-labelledby="summary-title" tabindex="-1">
-    <h2 id="summary-title">Your tray</h2>
-    <div id="summary-body" aria-live="polite"></div>
-  </section>
-
-  <section class="notice" id="pickup-details" aria-labelledby="notice-title">
-    <h2 id="notice-title">Pickup &amp; Details</h2>
-    <ul>
-      <li><span aria-hidden="true">📅</span><span><b>Pickup: Fontana · Saturdays 10 AM – 2 PM</b>Pickup only — reserve here, pick up on Saturday.</span></li>
-      <li><span aria-hidden="true">💵</span><span><b>Payment</b>Cash or Zelle at time of pickup.</span></li>
-      <li><span aria-hidden="true">📍</span><span><b>Location</b>Fontana, near Sierra &amp; Baseline, about 10 minutes from the 210. We share the exact address after we confirm your order.</span></li>
-      <li><span aria-hidden="true">✅</span><span><b>Confirmation</b>We will confirm your order and send pickup details ASAP.</span></li>
-      <li><span aria-hidden="true">📞</span><span><b>Questions?</b>Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a></span></li>
-    </ul>
-    <p class="fine-print">Other pickup times available case by case upon request.<br>Grand Terrace pickup available upon request.</p>
-  </section>
-  <h2>Your details</h2>
-  <form id="order-form" action="mailto:hello@inlandempirenativenursery.com" method="post" enctype="text/plain" novalidate>
-    <input type="hidden" name="order" id="order-field">
-    <label for="name">Your Name</label>
-    <input type="text" id="name" name="name" autocomplete="name" required aria-describedby="name-err">
-    <div class="field-err" id="name-err"></div>
-
-    <label for="email">Email</label>
-    <input type="email" id="email" name="email" autocomplete="email" required aria-describedby="email-err">
-    <div class="field-err" id="email-err"></div>
-
-    <label for="phone">Phone (optional)</label>
-    <input type="tel" id="phone" name="phone" autocomplete="tel" aria-describedby="phone-err">
-    <div class="field-err" id="phone-err"></div>
-
-    <label for="pickup">Pickup</label>
-    <select id="pickup" name="pickup">
-      <option>Fontana · Saturdays 10 AM – 2 PM</option>
-      <option>Fontana · other time (request, note below)</option>
-    </select>
-    <p class="fine-print">Other pickup times available case by case upon request. Grand Terrace pickup available upon request.</p>
-
-    <label for="payment">Payment at pickup</label>
-    <select id="payment" name="payment">
-      <option>Cash</option>
-      <option>Zelle</option>
-    </select>
-
-    <label for="notes">Notes (pickup day preference, questions, etc.)</label>
-    <textarea id="notes" name="notes" placeholder="Example: Prefer Saturday 11am."></textarea>
-
-    <p class="fine-print">Privacy: we only use your info to fill your order and never sell it. To delete it, email us or call/text Andrew at <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a>.</p>
-    <p class="error" id="qty-error" role="alert">Please add at least one plant to your order.</p>
-    <p class="error" id="server-error" role="alert"></p>
-    <button type="submit" class="submit-btn">Reserve for pickup</button>
-  </form>
-
 </main>
 
   <div class="cartbar" id="cartbar" hidden>
     <span id="cartbar-count" class="cb-sum" aria-live="polite">0 items</span>
-    <a href="#review" id="cartbar-go">Reserve</a>
+    <button type="button" id="cartbar-go" aria-haspopup="dialog" aria-controls="checkout">Check out</button>
+  </div>
+
+  <div class="drawer-backdrop" id="checkout-backdrop" hidden></div>
+  <div class="drawer" id="checkout" role="dialog" aria-modal="true" aria-labelledby="summary-title" hidden>
+    <div class="drawer-head" id="drawer-head">
+      <span class="grab" aria-hidden="true"></span>
+      <h2 id="summary-title">Your tray</h2>
+      <button type="button" class="drawer-x" id="checkout-close" aria-label="Close and keep shopping">&times;</button>
+    </div>
+    <div class="drawer-body">
+      <section class="summary" id="review" aria-labelledby="summary-title" tabindex="-1">
+        <div id="summary-body" aria-live="polite"></div>
+      </section>
+      <p class="co-pickup"><b>Pickup Saturdays 10–2 near Sierra &amp; Baseline, Fontana</b> · Cash or Zelle at pickup. Nothing charged online.</p>
+      <p class="fine-print">Other pickup times case by case (add it in Notes). Grand Terrace pickup on request. Exact address after we confirm. Questions? Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-mail" href="mailto:plants@inlandempirenativenursery.com">Email us: plants@inlandempirenativenursery.com</a></p>
+      <form id="order-form" novalidate>
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" autocomplete="name" required aria-describedby="name-err">
+        <div class="field-err" id="name-err"></div>
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" autocomplete="email" inputmode="email" required aria-describedby="email-hint email-err">
+        <p class="field-hint" id="email-hint">We'll email your pickup confirmation.</p>
+        <div class="field-err" id="email-err"></div>
+        <label for="phone">Phone (optional, for text updates)</label>
+        <input type="tel" id="phone" name="phone" autocomplete="tel" aria-describedby="phone-err">
+        <div class="field-err" id="phone-err"></div>
+        <label for="payment">Pay at pickup with (optional)</label>
+        <select id="payment" name="payment"><option value="">Either</option><option>Cash</option><option>Zelle</option></select>
+        <label for="notes">Notes (optional)</label>
+        <textarea id="notes" name="notes" placeholder="Example: 2-inch white sage, or a different pickup time."></textarea>
+        <p class="fine-print">Privacy: we only use your info to fill your order and never sell it. To delete it, <a class="contact-mail" href="mailto:plants@inlandempirenativenursery.com">email us: plants@inlandempirenativenursery.com</a>. Questions? Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a></p>
+        <p class="error" id="qty-error" role="alert">Please add at least one plant to your order.</p>
+        <p class="error" id="server-error" role="alert"></p>
+        <button type="submit" class="submit-btn">Place order</button>
+      </form>
+    </div>
   </div>
 
   <footer>
     Inland Empire Native Nursery • Pickup: Fontana · Saturdays 10 AM – 2 PM<br>
     Cash or Zelle at time of pickup • We confirm and send directions after you order.<br>
-    Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a>
+    Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a><br>
+    <a class="contact-mail" href="mailto:plants@inlandempirenativenursery.com">Email us: plants@inlandempirenativenursery.com</a>
   </footer>
 
   <script src="plant-photos.js"></script>
@@ -286,7 +295,7 @@
       { name: "Sticky Monkeyflower",  sizes: ['1 gal'] },
       { name: "Yarrow",               sizes: ['4"'] }
     ];
-    var ORDER_EMAIL = "hello@inlandempirenativenursery.com"; // mailto fallback only if the order endpoint fails
+    var ORDER_EMAIL = "plants@inlandempirenativenursery.com"; // mailto fallback only if the order endpoint fails
   </script>
   <script>
     (function () {
@@ -407,6 +416,11 @@
           var ul = el("ul");
           ls.forEach(function (l) {
             var li = el("li", l.key === lastAdded ? { class: "drop" } : {}); var ls_ = el("span", {}, l.q + " × " + l.p.name + " "); ls_.appendChild(el("span", { class: "nw" }, "(" + l.z.label + ")")); ls_.appendChild(document.createTextNode(" @ $" + l.z.price + " = ")); ls_.appendChild(el("span", { class: "nw" }, money(l.total))); li.appendChild(ls_);
+            var tq = el("span", { class: "tq", role: "group", "aria-label": "Quantity of " + l.p.name }), mx = IENNStock.maxQty(l.z);
+            var dm = el("button", { type: "button", "aria-label": "One fewer " + l.p.name }, "−"), dp = el("button", { type: "button", "aria-label": "One more " + l.p.name }, "+");
+            dm.addEventListener("click", function () { if (l.q <= 1) delete cart[l.key]; else cart[l.key] = l.q - 1; lastAdded = null; save(); update(); });
+            dp.addEventListener("click", function () { cart[l.key] = Math.min(l.q + 1, mx); lastAdded = null; save(); update(); });
+            dp.disabled = l.q >= mx; tq.appendChild(dm); tq.appendChild(el("span", { "aria-live": "polite" }, String(l.q))); tq.appendChild(dp); li.appendChild(tq);
             var rm = el("button", { type: "button", class: "rm", "aria-label": "Remove " + l.p.name + " " + l.z.label }, "Remove");
             rm.addEventListener("click", function () { delete cart[l.key]; save(); update(); });
             li.appendChild(rm); ul.appendChild(li);
@@ -421,6 +435,34 @@
         return ls;
       }
 
+      var PICKUP = "Fontana (near Sierra & Baseline) · Saturdays 10 AM – 2 PM";
+      var drawer = document.getElementById("checkout"), backdrop = document.getElementById("checkout-backdrop"), opener = null;
+      function focusables() { return [].slice.call(drawer.querySelectorAll("button:not([disabled]),a[href],input,select,textarea")).filter(function (x) { return x.offsetParent !== null; }); }
+      function openCheckout() {
+        opener = document.activeElement; drawer.hidden = false; backdrop.hidden = false; drawer.classList.remove("closing");
+        document.body.classList.add("drawer-open"); setStep(2); update();
+        setTimeout(function () { document.getElementById("checkout-close").focus(); }, 30);
+      }
+      function closeCheckout() {
+        if (drawer.hidden) return; drawer.classList.add("closing"); backdrop.hidden = true; document.body.classList.remove("drawer-open");
+        setTimeout(function () { drawer.hidden = true; drawer.classList.remove("closing"); drawer.style.transform = ""; }, 200);
+        setStep(1); if (opener && opener.focus) opener.focus({ preventScroll: true });
+      }
+      window.iennOpenCheckout = openCheckout;
+      document.getElementById("cartbar-go").addEventListener("click", openCheckout);
+      document.getElementById("checkout-close").addEventListener("click", closeCheckout);
+      backdrop.addEventListener("click", closeCheckout);
+      document.addEventListener("keydown", function (e) {
+        if (drawer.hidden) return;
+        if (e.key === "Escape") { e.preventDefault(); closeCheckout(); }
+        else if (e.key === "Tab") { var f = focusables(); if (!f.length) return; var a = f[0], z = f[f.length - 1];
+          if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); } else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); } else if (!drawer.contains(document.activeElement)) { e.preventDefault(); a.focus(); } }
+      });
+      (function () { var head = document.getElementById("drawer-head"), y0 = null;   // swipe down on the header to close (phones)
+        head.addEventListener("touchstart", function (e) { y0 = e.touches[0].clientY; }, { passive: true });
+        head.addEventListener("touchmove", function (e) { if (y0 == null) return; var d = Math.max(0, e.touches[0].clientY - y0); drawer.style.transform = "translateY(" + d + "px)"; }, { passive: true });
+        head.addEventListener("touchend", function (e) { var d = y0 == null ? 0 : e.changedTouches[0].clientY - y0; y0 = null; drawer.style.transform = ""; if (d > 80) closeCheckout(); });
+      })();
       function setStep(n) { document.querySelectorAll("#steps li").forEach(function (li, i) { li.classList.toggle("on", i === n - 1); }); }
       function fieldErr(id, msg) { var f = document.getElementById(id); f.setAttribute("aria-invalid", msg ? "true" : "false"); document.getElementById(id + "-err").textContent = msg || ""; return !msg; }
       function v(id) { return document.getElementById(id).value.trim(); }
@@ -431,12 +473,12 @@
         ls.forEach(function (l) { cl.appendChild(el("li", {}, l.q + " × " + l.p.name + " (" + l.z.label + ") — " + money(l.total))); });
         var ct = document.getElementById("confirm-total"); ct.textContent = "Total: " + money(total) + " ";
         ct.appendChild(el("small", { class: "tax-note" }, "Taxes included"));
-        var c = document.getElementById("confirm"); c.hidden = false; form.hidden = true;
+        var c = document.getElementById("confirm"); c.hidden = false; form.reset(); closeCheckout();
         cart = {}; save(); update();
         setStep(3); setTimeout(function () { c.focus({ preventScroll: true }); window.scrollTo({ top: Math.max(0, c.getBoundingClientRect().top + window.pageYOffset - 8), behavior: "smooth" }); }, 50);
       }
       function mailtoHref(ls, f) {
-        var body = "Name: " + f.name + "\nPickup: " + v("pickup") + "\nPayment: " + v("payment") + "\nRef: " + f.name + "\nEmail: " + f.email + "\nPhone: " + f.phone + "\n\n" + ls.map(function (l) { return l.q + " x " + l.p.name + " (" + l.z.label + ") $" + l.z.price; }).join("\n") +
+        var body = "Name: " + f.name + "\nPickup: " + PICKUP + "\nPayment: " + v("payment") + "\nRef: " + f.name + "\nEmail: " + f.email + "\nPhone: " + f.phone + "\n\n" + ls.map(function (l) { return l.q + " x " + l.p.name + " (" + l.z.label + ") $" + l.z.price; }).join("\n") +
           "\n\nNotes: " + f.notes;
         return "mailto:" + ORDER_EMAIL + "?subject=" + encodeURIComponent("Plant order from " + f.name) + "&body=" + encodeURIComponent(body);
       }
@@ -449,12 +491,12 @@
         if (!ls.length) { document.getElementById("qty-error").style.display = "block"; ok = false; }
         if (!ok) { (form.querySelector("[aria-invalid=true]") || document.getElementById("review")).focus(); return; }
         btn.disabled = true; btn.textContent = "Sending…";
-        var payload = { name: f.name, email: f.email, phone: f.phone, notes: f.notes, pickup: v("pickup"), payment: v("payment"), items: ls.map(function (l) { return { plant: l.p.fullName, sizeKey: l.z.key, qty: l.q }; }) };
+        var payload = { name: f.name, email: f.email, phone: f.phone, notes: f.notes, pickup: PICKUP, payment: v("payment"), items: ls.map(function (l) { return { plant: l.p.fullName, sizeKey: l.z.key, qty: l.q }; }) };
         var sub = ls.reduce(function (a, l) { return a + l.total; }, 0);
         fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })   // text/plain = no CORS preflight
           .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
           .then(function (r) {
-            btn.disabled = false; btn.textContent = "Reserve for pickup";
+            btn.disabled = false; btn.textContent = "Place order";
             if (r.ok) return showConfirm(ls, r.orderId, r.total != null ? r.total : sub);
             if (r.error === "stock" && r.problems) {
               r.problems.forEach(function (pb) { PLANTS.forEach(function (p) { if (p.name === pb.plant) { var z = sizeOf(p, pb.sizeKey); if (z) { z.qty = pb.available; var k = p.id + "|" + z.key; if (pb.available > 0) cart[k] = Math.min(cart[k] || 0, pb.available); else delete cart[k]; } } }); });
@@ -463,7 +505,7 @@
             serr.textContent = r.message || "Sorry, something went wrong. Please try again."; serr.style.display = "block"; document.getElementById("review").focus();
           })
           .catch(function () {   // order NOT placed: keep the cart, offer call/text and email
-            btn.disabled = false; btn.textContent = "Reserve for pickup";
+            btn.disabled = false; btn.textContent = "Place order";
             serr.innerHTML = ""; serr.appendChild(document.createTextNode("We couldn't send your order just now. Your cart is saved. Please try again, or call or text Andrew: "));
             serr.appendChild(el("a", { class: "contact-tel", href: "tel:" + CONTACT_TEL }, CONTACT_PHONE)); serr.appendChild(document.createTextNode(" · "));
             serr.appendChild(el("a", { class: "contact-sms", href: "sms:" + CONTACT_TEL + "?&body=" + encodeURIComponent("Plant order: " + ls.map(function (l) { return l.q + " x " + l.p.name + " (" + l.z.label + ")"; }).join(", ")) }, "Text your order"));
@@ -472,7 +514,7 @@
           });
       });
       document.getElementById("new-order").addEventListener("click", function () {
-        form.reset(); form.hidden = false; document.getElementById("confirm").hidden = true; setStep(1); update();
+        form.reset(); document.getElementById("confirm").hidden = true; setStep(1); update();
         document.getElementById("steps").scrollIntoView({ behavior: "smooth", block: "start" });
       });
 
@@ -497,7 +539,9 @@
         });
         save();
       }
-      function use(l, msg, d) { PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l))); prefill(); render(); status.textContent = msg || ""; status.hidden = !msg; }
+      function use(l, msg, d) { PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l))); prefill(); render(); status.textContent = msg || ""; status.hidden = !msg;
+        if (params.get("checkout") === "1" && !autoOpened && lines().length) { autoOpened = true; openCheckout(); } }
+      var autoOpened = false;
       function load() {
         fetch(APPS_SCRIPT_URL + "?view=inventory", { cache: "no-store" }).then(function (r) { if (!r.ok) throw 0; return r.text(); }).then(function (t) {
           var d = JSON.parse(t), l = fromInventory(d); if (!l.length) throw 0; if (window.iennPromo) window.iennPromo(d.promo);

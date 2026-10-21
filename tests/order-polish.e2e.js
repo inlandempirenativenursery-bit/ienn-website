@@ -16,7 +16,9 @@ const feed = () => ({ version: 3, updated: new Date().toISOString(), taxIncluded
     const errs = []; page.on('pageerror', e => errs.push(String(e))); page.on('console', m => m.type() === 'error' && !/Failed to load resource|net::/.test(m.text()) && errs.push(m.text()));
     await page.route(/script\.google\.com/, async r => {
       const u = r.request().url();
-      if (r.request().method() === 'POST') { if (mode === 'fail') return r.fulfill({ status: 500, body: 'x' }); return r.fulfill({ contentType: 'application/json', body: JSON.stringify({ ok: true, orderId: 'INV-1042', total: JSON.parse(r.request().postData()).items.length ? undefined : 0 }) }); }
+      if (r.request().method() === 'POST') { if (mode === 'fail') return r.fulfill({ status: 500, body: 'x' }); const pl = JSON.parse(r.request().postData()); global.lastPayload = pl;
+        if (!pl.name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pl.email) || !pl.items.length || !pl.items.every(i => i.plant && i.sizeKey && i.qty >= 1)) return r.fulfill({ contentType: 'application/json', body: JSON.stringify({ ok: false, error: 'invalid', message: 'bad payload' }) });
+        return r.fulfill({ contentType: 'application/json', body: JSON.stringify({ ok: true, orderId: 'INV-1042', total: JSON.parse(r.request().postData()).items.length ? undefined : 0 }) }); }
       if (/view=inventory/.test(u)) return r.fulfill({ contentType: 'application/json', body: JSON.stringify(feed()) });
       return r.fulfill({ contentType: 'text/html', body: '<h1>print list</h1>' });
     });
@@ -44,8 +46,8 @@ const feed = () => ({ version: 3, updated: new Date().toISOString(), taxIncluded
     const small = await page.evaluate(() => [...document.querySelectorAll('main button, .cartbar a, main a')].filter(e => e.offsetParent && e.getBoundingClientRect().height < 40 && !e.closest('p,li')).map(e => e.textContent.trim()));
     assert.deepStrictEqual(small, [], 'small targets: ' + small);
     // pickup shown once in pickup box
-    assert.strictEqual(((await page.locator('.notice').first().innerText()).match(/Saturdays 10 AM – 2 PM/g) || []).length, 1);
-    assert.match(await page.locator('#steps').innerText(), /Select[\s\S]*Reserve[\s\S]*Pick up/);
+    assert.strictEqual(await page.locator('.notice').count(), 0, 'old pickup box merged into drawer'); assert.strictEqual(await page.locator('form').count(), 1, 'one form');
+    assert.match(await page.locator('#steps').innerText(), /Select[\s\S]*Check out[\s\S]*Pick up/);
     assert.match(await page.locator('body').innerText(), /Connecting people to native plants/);
     assert.ok(!/\[TODO|Photo coming soon/.test(await page.locator('body').innerText()));
     if (w === 375) { await page.screenshot({ path: SHOTS + 'phone-top.png' }); await page.locator('#plant-list').scrollIntoViewIfNeeded(); await page.evaluate(() => document.getElementById('plant-list').scrollIntoView()); await page.screenshot({ path: SHOTS + 'phone-cards.png' }); }
@@ -56,26 +58,41 @@ const feed = () => ({ version: 3, updated: new Date().toISOString(), taxIncluded
     await mf.locator('.add').click();
     await page.locator('.card', { hasText: 'Yarrow' }).locator('.chip', { hasText: '4-inch' }).click(); await page.locator('.card', { hasText: 'Yarrow' }).locator('.add').click();
     const tot = await page.locator('#summary-body').innerText(); assert.match(tot, /Total: \$33\.00/); // 2x$6 (WS 4") + $15 (MF 1 gal) + $6 (Yarrow 4")
+    assert.ok(!/Reserve/.test(await page.locator('body').innerText()), 'no Reserve wording');
+    assert.strictEqual(await page.locator('#cartbar-go').textContent(), 'Check out');
+    await page.locator('#cartbar-go').click(); await page.waitForTimeout(400);
+    assert.ok(await page.locator('#checkout').isVisible(), 'drawer opens'); assert.strictEqual(await page.locator('#checkout').getAttribute('aria-modal'), 'true');
+    assert.match(await page.locator('#checkout').innerText(), /Sierra & Baseline[\s\S]*Cash or Zelle/); assert.ok(!/\d+ [A-Z][a-z]+ (Ave|St|Rd|Blvd)/.test(await page.locator('#checkout').innerText()), 'no street address');
+    assert.match(await page.locator('label[for=phone]').textContent(), /optional, for text updates/);
+    // Esc closes and keeps the tray; reopen
+    await page.keyboard.press('Escape'); await page.waitForTimeout(400); assert.ok(await page.locator('#checkout').isHidden()); assert.ok(await page.locator('#cartbar').isVisible());
+    await page.locator('#cartbar-go').click(); await page.waitForTimeout(400);
+    // focus trap
+    for (let i = 0; i < 40; i++) await page.keyboard.press('Tab'); assert.ok(await page.evaluate(() => document.getElementById('checkout').contains(document.activeElement)), 'focus trapped');
+    // tray qty edit inside drawer
+    const q0 = await page.locator('#summary-body .tq span').first().textContent(); await page.locator('#summary-body li .tq').first().locator('button').last().click();
+    assert.strictEqual(Number(await page.locator('#summary-body .tq span').first().textContent()), Number(q0) + 1); await page.locator('#summary-body li .tq').first().locator('button').first().click();
+    const small2 = await page.evaluate(() => [...document.querySelectorAll('#checkout button, #checkout input, #checkout select')].filter(e => e.offsetParent && e.getBoundingClientRect().height < 44).map(e => e.id || e.textContent)); assert.deepStrictEqual(small2, [], 'drawer targets');
     // cart: size label not broken
     const nw = await page.evaluate(() => [...document.querySelectorAll('#summary-body .nw')].every(s => s.getClientRects().length === 1));
     assert.ok(nw, 'size labels unbroken');
     const rm = await page.locator('.rm').first().boundingBox(); assert.ok(rm.height >= 44 && rm.width >= 44);
-    await page.locator('.cartbar a').click(); await page.waitForTimeout(700);
-    const rv = await page.locator('#review').boundingBox(); assert.ok(rv.y < (w < 500 ? 812 : 900) && rv.y > -50, 'Review order jumps to cart');
     if (w === 375) await page.screenshot({ path: SHOTS + 'phone-cart.png' }); else { await page.screenshot({ path: SHOTS + 'desktop-cart-1280.png' }); }
     await page.fill('#name', 'Ana Ruiz'); await page.fill('#email', 'ana@example.com'); await page.click(".submit-btn"); await page.waitForTimeout(1500);
-    assert.ok(await page.locator('#confirm').isVisible()); assert.ok(await page.locator('#order-form').isHidden()); assert.ok(await page.locator('.submit-btn').isHidden());
+    assert.ok(await page.locator('#confirm').isVisible()); assert.ok(await page.locator('#checkout').isHidden());
+    assert.deepStrictEqual(Object.keys(global.lastPayload).sort(), ['email', 'items', 'name', 'notes', 'payment', 'phone', 'pickup']); assert.match(global.lastPayload.items[0].plant, /\(/, 'fullName sent');
+    assert.match(await page.locator('#confirm').innerText(), /Email us: plants@inlandempirenativenursery\.com/); assert.ok(await page.locator('.submit-btn').isHidden());
     assert.match(await page.locator('#confirm').innerText(), /INV-1042[\s\S]*Total: \$33\.00/);
     const cb = await page.locator('#confirm').boundingBox(); assert.ok(cb.y >= -5 && cb.y < 200, 'confirm at top: ' + cb.y);
     assert.strictEqual(await page.evaluate(() => document.activeElement.id), 'confirm');
     assert.match(await page.locator('#steps li.on').innerText(), /Pick up/);
     if (w === 375) await page.screenshot({ path: SHOTS + 'phone-confirm.png' }); else await page.screenshot({ path: SHOTS + 'desktop-confirm-1280.png' });
-    await page.click('#new-order'); await page.waitForTimeout(600); assert.ok(await page.locator('#order-form').isVisible()); assert.ok(await page.locator('#confirm').isHidden());
+    await page.click('#new-order'); await page.waitForTimeout(600); assert.ok(await page.locator('#confirm').isHidden());
     out.push({ w, overflow: await ovf(page), errs }); assert.ok(!out.at(-1).overflow); assert.deepStrictEqual(errs, []); await ctx.close();
   }
   // failure fallback + click-through
   { const { ctx, page, errs } = await open(375, 'fail'); await page.waitForSelector('.card:not(.skel)');
-    await page.locator('.card').first().locator('.chip:not(.chip-request)').first().click(); await page.locator('.card').first().locator('.add').click(); await page.fill('#name', 'A'); await page.fill('#email', 'a@b.co'); await page.click('.submit-btn'); await page.waitForTimeout(600);
+    await page.locator('.card').first().locator('.chip:not(.chip-request)').first().click(); await page.locator('.card').first().locator('.add').click(); await page.click('#cartbar-go'); await page.fill('#name', 'A'); await page.fill('#email', 'a@b.co'); await page.click('.submit-btn'); await page.waitForTimeout(600);
     const se = page.locator('#server-error'); assert.ok(await se.isVisible());
     assert.deepStrictEqual(await se.locator('a').evaluateAll(a => a.map(x => x.getAttribute('href').split(':')[0])), ['tel', 'sms', 'mailto']);
     const links = await page.evaluate(() => [...document.querySelectorAll('a[href]')].map(a => ({ t: a.textContent.trim().slice(0, 30), h: a.getAttribute('href') })));
@@ -93,7 +110,7 @@ const feed = () => ({ version: 3, updated: new Date().toISOString(), taxIncluded
     let cartOk = 'no add button';
     if (await addb.count()) { await addb.click(); await page.waitForTimeout(300); cartOk = (await page.locator('#cart-bar').isVisible()) ? await page.locator('#cart-go').getAttribute('href') : 'cart bar hidden';
       if (await page.locator('#cart-clear').isVisible()) { await page.click('#cart-clear'); cartOk += ' | clear->' + (await page.locator('#cart-bar').isHidden() ? 'hidden' : 'still visible'); } }
-    assert.ok(/order\.html\?/.test(cartOk) && /clear->hidden/.test(cartOk), 'home cart: ' + cartOk); assert.deepStrictEqual(errs, []);
+    assert.ok(/order\.html\?.*checkout=1/.test(cartOk) && /clear->hidden/.test(cartOk), 'home cart: ' + cartOk); assert.deepStrictEqual(errs, []);
     out.push({ index_links: links, index_buttons: btns, cart: cartOk, overflow: await ovf(page), errs }); await ctx.close(); }
   await b.close(); console.log(JSON.stringify(out, null, 1));
 })().catch(e => { console.error(e); process.exit(1); });

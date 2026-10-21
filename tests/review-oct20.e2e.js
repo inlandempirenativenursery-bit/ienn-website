@@ -47,8 +47,8 @@ const uncounted = { version: 3, baseline: null, plants: counted.plants.map(p => 
     await c.locator('.add').click(); assert.ok(await page.locator('#cartbar').isVisible());
     assert.match(await page.locator('#cartbar-count').textContent(), /1 item · \$/);
     await page.screenshot({ path: SHOTS + 'after-' + w + '-cartbar.png' });
-    await page.locator('#cartbar-go').click(); await page.fill('#name', 'Test Only'); await page.fill('#email', 'test@example.com');
-    await page.locator('#review').scrollIntoViewIfNeeded(); await page.screenshot({ path: SHOTS + 'after-' + w + '-checkout.png', fullPage: w > 500 });
+    await page.locator('#cartbar-go').click(); await page.waitForTimeout(400); await page.fill('#name', 'Test Only'); await page.fill('#email', 'test@example.com');
+    
     assert.ok(await page.locator('.submit-btn').isEnabled()); assert.deepStrictEqual(errs, [], 'console ' + w);
     console.log('live', w, 'cards', n); await ctx.close(); }
   // 4) home page cards: same rules (stock-view.js)
