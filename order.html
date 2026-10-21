@@ -134,6 +134,24 @@
     .steps-strip b { color:#6b7c6a; }
     .strip-wrap { justify-content:center !important; }
   </style>
+  <style id="hdr-polish">
+    /* Header polish: big one-line name with a subtle 3D look, larger logo, bolder slogan, slim flat 1-2-3 strip */
+    .logo img { height:clamp(55px, 15.4vw, 76px) !important; width:auto; }
+    .logo { gap:0.45rem !important; }
+    .brand-name { font-size:clamp(1rem, 5.05vw, 2.1rem) !important; letter-spacing:-0.025em !important; color:#3d4b3d;
+      text-shadow:0 -1px 0 rgba(255,255,255,.9), 0 1px 1px rgba(40,55,40,.18), 0 2px 4px rgba(40,55,40,.12) !important; }
+    .hdr-slogan { font-weight:700 !important; font-size:clamp(1.45rem, 7.4vw, 2.3rem) !important; line-height:1.1 !important;
+      text-shadow:0 1px 0 #fff, 0 0 8px rgba(143,188,143,.6), 0 0 16px rgba(200,180,230,.45) !important; }
+    .steps-strip { display:flex !important; flex-wrap:nowrap; align-items:center; justify-content:center; gap:0.35rem !important; width:max-content !important; max-width:calc(100% - 1rem);
+      margin:0.35rem auto 0 !important; padding:0.28rem 0.8rem !important; background:#f5f1e8 !important; border:1px solid #e4ddcd !important; border-radius:8px;
+      font-size:clamp(0.74rem, 3.4vw, 0.88rem) !important; white-space:nowrap; cursor:default; user-select:none; }
+    .steps-strip li { all:unset; display:inline; color:#3d4b3d; font-weight:500; cursor:default; }
+    .steps-strip li.lead { font-weight:700; color:#4a5a4a; }
+    .steps-strip li + li:not(:nth-child(2))::before { content:"·" !important; margin-right:0.35rem; color:#9aa69a; }
+    .steps-strip b { font-weight:800; color:#2f6b2f !important; }
+    .steps-strip li:hover { background:none; box-shadow:none; transform:none; }
+    @media (max-width:480px) { header { padding-top:0.45rem !important; padding-bottom:0.2rem !important; } }
+  </style>
 </head>
 <body>
   <header>
@@ -180,7 +198,7 @@
   <p class="inv-status" id="inv-status" role="status" hidden></p>
   <p class="last-order" id="last-order-link" hidden><button type="button" id="view-order-2" class="tk-btn tk-btn-alt">View my order</button></p>
   <div class="grid" id="plant-list" aria-busy="false"></div>
-  <ol class="steps-strip" aria-label="How to order"><li><b>1.</b> Click</li><li><b>2.</b> Order</li><li><b>3.</b> Pick up</li></ol>
+  <ol class="steps-strip" aria-label="3 easy steps: 1. Click, 2. Order, 3. Pick up"><li class="lead">3 easy steps:</li><li><b>1.</b> Click</li><li><b>2.</b> Order</li><li><b>3.</b> Pick up</li></ol>
   <section class="info" id="pickup-info" aria-labelledby="info-title">
     <h2 id="info-title">Pickup &amp; payment</h2>
     <p class="lead"><b>Connecting people to native plants.</b> Grown in Fontana · pickup Saturdays 10 a.m. – 2 p.m. · Cash or Zelle at pickup, nothing charged online.</p>
