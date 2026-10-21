@@ -83,7 +83,7 @@ var DEFAULT_PAYMENT_METHOD = 'Cash or Zelle at time of pickup';  // no Zelle han
 var PICKUP_CITY = 'Fontana';
 var PICKUP_AREA = 'Fontana area, near Sierra & Baseline, about 10 minutes from the 210';   // context only; exact address goes in PICKUP_ADDRESS once confirmed
 var PAYMENT_TERMS = 'Cash or Zelle at time of pickup.';
-var PICKUP_SCHEDULE = 'Saturdays 10 AM – 2 PM';
+var PICKUP_SCHEDULE = 'Saturdays 10 a.m. – 2 p.m.';
 var PICKUP_FINE_PRINT = ['Grand Terrace pickup available upon request.', 'Other pickup times available case by case upon request.'];
 var SIGN_OFF = 'Thank you for supporting native plants!\nInland Empire Native Nursery';
 
@@ -102,7 +102,7 @@ var PROMO_DISCOUNT_HEADERS = ['discount note', 'discount', 'note'];
 var PROMO_BOTTOM_HEADERS = ['bottom info', 'footer', 'info', 'details', 'fine print']; // optional footer strip on the banner; blank = IENN_PROMO_BOTTOM_DEFAULT
 var IENN_PROMO_HEADERS = ['Active', 'Title', 'Message', 'Start date', 'End date', 'Discount note', 'Bottom info'];
 /* Bottom info shown when a promo's "Bottom info" cell is blank. A new line or ' | ' starts a new line. */
-var IENN_PROMO_BOTTOM_DEFAULT = 'Pickup Saturdays 10 AM – 2 PM in Fontana. | Cash or Zelle at time of pickup.';
+var IENN_PROMO_BOTTOM_DEFAULT = 'Pickup Saturdays 10 a.m. – 2 p.m. in Fontana. | Cash or Zelle at time of pickup.';
 /* Example rows (Active = No). Messages start with "EXAMPLE:" so iennSetup can tell untouched examples from real rows. No discounts. */
 var IENN_PROMO_EXAMPLES = [
   ['No', 'Fall Sale', 'EXAMPLE: Plants are available now. Right now is the best time to get plants started.', '2026-11-01', '2026-11-30', '', IENN_PROMO_BOTTOM_DEFAULT],
