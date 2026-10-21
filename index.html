@@ -28,23 +28,24 @@
       position: sticky;
       top: 0;
       background: #fff;
-      border-bottom: 1px solid #eee;
+      /* border-bottom removed for seamless look */
       z-index: 100;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.6rem 1rem;
+      padding: 0.75rem 1rem 0.5rem;
     }
     .logo { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: inherit; }
     .logo img { height: 64px; width: auto; display: block; }
-    .steps-strip { display:flex; justify-content:center; gap:0.9rem; list-style:none; margin:0.5rem auto 0; padding:0.3rem 0.8rem; font-size:0.78rem; color:#4a5a4a; background:#f8f6f3; border:1px solid #e6e2da; border-radius:999px; width:max-content; max-width:100%; }
-    .steps-strip li + li::before { content:"·"; margin-right:0.9rem; color:#9aa69a; }
-    .steps-strip b { font-weight:700; color:#6b7c6a; }
+    .steps-strip { display:flex; justify-content:center; gap:0.65rem; list-style:none; margin:0.6rem auto 0.4rem; padding:0; font-size:0.85rem; width:max-content; max-width:100%; }
+    .steps-strip li { background: linear-gradient(180deg, #faf8f5 0%, #f0ebe4 100%); border:1px solid #d9d4cc; border-radius:12px; padding:0.45rem 0.85rem; color:#3d4b3d; box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 3px 0 #c8c0b6, 0 4px 6px rgba(0,0,0,0.12); font-weight:600; }
+    .steps-strip li + li::before { content:none; }
+    .steps-strip b { font-weight:800; color:#2f4a2f; }
     header { flex-wrap:wrap; row-gap:0.2rem; }
     .logo { min-width:0; flex:1 1 0; }
     .logo > div { min-width:0; }
-    .brand-name { font-weight:800; font-size:clamp(0.7rem, 3.6vw, 1.3rem); line-height:1.1; letter-spacing:-0.02em; white-space:nowrap; color:#3d4b3d; text-shadow:0 1px 0 #fff, 0 2px 3px rgba(61,75,61,0.18); }
-    .hdr-slogan { flex:0 0 100%; order:9; text-align:center; font-family:"Dancing Script","Satisfy",cursive; font-style:italic; font-weight:700; font-size:clamp(1.25rem, 5.4vw, 1.8rem); line-height:1.15; color:#2f6b2f; margin:0.1rem 0 0; text-shadow:0 0 6px rgba(143,188,143,0.55), 0 0 14px rgba(200,180,230,0.45), 0 1px 0 #fff; }
+    .brand-name { font-weight:800; font-size:clamp(1rem, 4.8vw, 1.85rem); line-height:1.05; letter-spacing:-0.03em; white-space:nowrap; color:#3d4b3d; text-shadow: 0 1px 0 #fff, 0 2px 0 #d0d8d0, 0 3px 0 #b8c4b8, 0 4px 6px rgba(61,75,61,0.28), 0 1px 1px rgba(0,0,0,0.08); }
+    .hdr-slogan { flex:0 0 100%; order:9; text-align:center; font-family:"Dancing Script","Satisfy",cursive; font-style:italic; font-weight:700; font-size:clamp(1.4rem, 6vw, 2.1rem); line-height:1.1; color:#2f6b2f; margin:0.25rem 0 0.15rem; text-shadow: 0 1px 0 #fff, 0 2px 0 #c8e0c8, 0 3px 4px rgba(47,107,47,0.35), 0 0 8px rgba(143,188,143,0.4); }
     .header-right { flex:0 0 auto; }
     @media (max-width:480px) { header { padding-left:0.6rem; padding-right:0.6rem; } .logo { gap:0.4rem; } .logo img { height:42px; } .header-right .co-btn { padding:0.45rem 0.55rem; font-size:0.8rem; min-height:40px; } .header-right .ig-top { display:none; } }
     .strip-wrap { display:flex; justify-content:flex-end; padding:0 1rem; margin-top:0.35rem; }
@@ -156,7 +157,6 @@
     </a>
     <div class="header-right">
       <a class="ig-link ig-top" target="_blank" rel="noopener" aria-label="Instagram (opens in a new tab)"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg><span class="ig-top-text">Instagram</span></a>
-      <a href="#" class="order-btn co-btn is-empty" id="hdr-checkout" aria-disabled="true" title="Add a plant first">Check out</a>
     </div>
     <div class="hdr-slogan">Connecting people to native plants.</div>
   </header>
