@@ -57,12 +57,13 @@ const EVIL = 'Note <img src=x onerror=window.__xss=1> & <b>bold</b>';;
   // home cards
   const c2 = await b.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true }); const h = await c2.newPage(); h.on('pageerror', e => errs.push(String(e)));
   await h.route(/script\.google\.com/, r => r.request().method() === 'POST' ? r.abort() : r.fulfill({ contentType: 'application/json', body: JSON.stringify(feed) }));
-  await h.goto(BASE + 'index.html'); await h.waitForSelector('.plant-card');
-  const hn = await h.locator('.plant-card h3').allInnerTexts(); assert.ok(!hn.some(n => /Toyon/.test(n)), 'home hides Toyon'); assert.strictEqual(hn.length, 2);
-  const hy = h.locator('.plant-card', { hasText: 'Yarrow' }); assert.match(await hy.locator('.badge').innerText(), /Ask us/);
-  await hy.locator('.pill:not(.req)').click(); for (let i = 0; i < 6; i++) await hy.locator('.step').last().click();
-  assert.strictEqual(await hy.locator('output').innerText(), '7', 'home: no cap when canRequest'); assert.strictEqual(await hy.locator('.add-btn').innerText(), 'Add to tray');
-  await hy.locator('.add-btn').click(); assert.match(await h.locator('#toast').innerText(), /Requested 7/);
-  assert.doesNotMatch(await h.locator('#shop-grid').innerText(), /sold out/i);
+  await h.goto(BASE + 'index.html'); await h.waitForFunction(() => [...document.querySelectorAll('#plant-list .card h3')].some(x => /Yarrow/.test(x.textContent))); await h.waitForTimeout(300);
+  const hn = await h.locator('#plant-list .card h3').allInnerTexts(); assert.ok(!hn.some(n => /Toyon/.test(n)), 'home hides Toyon'); assert.strictEqual(hn.length, 2);
+  const hy = h.locator('#plant-list .card', { hasText: 'Yarrow' });   // home now uses the same shared cards as order.html
+  await hy.locator('.chip:not(.chip-request)').first().click(); for (let i = 0; i < 6; i++) await hy.locator('.stepper button', { hasText: '+' }).click();
+  assert.strictEqual(await hy.locator('.stepper input').inputValue(), '7', 'home: no cap when canRequest'); assert.strictEqual(await hy.locator('.add').innerText(), 'Add to tray');
+  await hy.locator('.add').click(); assert.match(await hy.locator('.incart').innerText(), /7 .*request/);
+  assert.match(await h.locator('#hdr-checkout').innerText(), /Check out \(7\)/);
+  assert.doesNotMatch(await h.locator('#plant-list').innerText(), /sold out/i);
   await c2.close(); assert.deepStrictEqual(errs, []); await b.close(); console.log('stock-requests e2e: all passed');
 })().catch(e => { console.error(e); process.exit(1); });
