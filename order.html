@@ -9,7 +9,7 @@
   <link rel="apple-touch-icon" href="images/ienn-logo-IMG_2773-180.jpg">
   <meta property="og:image" content="https://www.inlandempirenativenursery.com/images/ienn-logo-IMG_2773.jpg">
   <title>Order Plants | Inland Empire Native Nursery</title>
-  <link rel="stylesheet" href="shop.css">
+  <link rel="stylesheet" href="shop.css?v=20261021b">
   <style>
     :root { --lilac:#d4c4e0; --sage:#6b7c6a; --sage-dark:#4a5a4a; --cream:#f8f6f3; --red:#c0392b; --text:#2c2c2c; --green:#2e7d32; }
     * { box-sizing:border-box; margin:0; padding:0; }
@@ -115,6 +115,25 @@
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+  <style id="hdr-3d">
+    /* Header: no Check out button (tray bar handles checkout), seamless (no border), raised 3D name, deeper slogan glow */
+    header { border-bottom:0 !important; box-shadow:none !important; }
+    .logo { flex:1 1 60% !important; }
+    .brand-name { font-size:clamp(0.95rem, 4.9vw, 1.7rem) !important; font-weight:800; letter-spacing:-0.02em; color:#3d4b3d;
+      text-shadow:0 1px 0 #fff, 0 1px 0 #8fa08e, 0 2px 0 #7f917e, 0 3px 0 #6f816e, 0 4px 6px rgba(40,55,40,.28), 0 6px 14px rgba(40,55,40,.14) !important; }
+    .hdr-slogan { text-shadow:0 1px 0 #fff, 0 2px 0 rgba(47,107,47,.18), 0 0 8px rgba(143,188,143,.75), 0 0 18px rgba(200,180,230,.6), 0 3px 10px rgba(47,107,47,.22) !important; }
+    @media (max-width:480px) { .logo img { height:46px; } }
+    /* 1-2-3: three chunky vending-machine buttons */
+    .steps-strip { background:none !important; border:0 !important; padding:0.2rem 0 0.5rem !important; gap:0.6rem !important; width:auto !important; }
+    .steps-strip li + li::before { content:none !important; }
+    .steps-strip li { display:inline-flex; align-items:center; gap:0.3rem; padding:0.45rem 0.95rem; border-radius:12px; font-size:0.9rem; font-weight:700; color:#3d4b3d;
+      background:linear-gradient(180deg,#fdfcf8 0%,#efeadf 100%); border:1px solid #cfc8b8;
+      box-shadow:inset 0 2px 0 rgba(255,255,255,.95), inset 0 -2px 0 rgba(0,0,0,.06), 0 4px 0 #b9b2a2, 0 6px 8px rgba(0,0,0,.12); }
+    .steps-strip li:nth-child(2) { background:linear-gradient(180deg,#f7f2fb 0%,#e4d8ee 100%); border-color:#c9b8dc; box-shadow:inset 0 2px 0 rgba(255,255,255,.95), inset 0 -2px 0 rgba(0,0,0,.06), 0 4px 0 #b3a1c8, 0 6px 8px rgba(0,0,0,.12); }
+    .steps-strip li:nth-child(3) { background:linear-gradient(180deg,#f1f6ef 0%,#d9e5d5 100%); border-color:#b8c9b3; box-shadow:inset 0 2px 0 rgba(255,255,255,.95), inset 0 -2px 0 rgba(0,0,0,.06), 0 4px 0 #9fb39a, 0 6px 8px rgba(0,0,0,.12); }
+    .steps-strip b { color:#6b7c6a; }
+    .strip-wrap { justify-content:center !important; }
+  </style>
 </head>
 <body>
   <header>
@@ -126,7 +145,6 @@
     </a>
     <div class="header-right">
       <a class="ig-link ig-top" target="_blank" rel="noopener" aria-label="Instagram (opens in a new tab)"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg><span class="ig-top-text">Instagram</span></a>
-      <button type="button" class="order-btn co-btn is-empty" id="hdr-checkout" aria-disabled="true" aria-haspopup="dialog" aria-controls="checkout" title="Add a plant first">Check out</button>
     </div>
     <div class="hdr-slogan">Connecting people to native plants.</div>
   </header>
@@ -221,13 +239,13 @@
     <a href="credits.html" style="font-size:0.75rem;">Photo credits</a>
   </footer>
 
-  <script src="plant-photos.js"></script>
-  <script src="stock-view.js"></script>
-  <script src="feed-order.js"></script>
-  <script src="shop-settings.js"></script>
-  <script src="shop.js"></script>
+  <script src="plant-photos.js?v=20261021b"></script>
+  <script src="stock-view.js?v=20261021b"></script>
+  <script src="feed-order.js?v=20261021b"></script>
+  <script src="shop-settings.js?v=20261021b"></script>
+  <script src="shop.js?v=20261021b"></script>
   <script>window.IENN_PROMO_OPTS = { cta: "Shop now", onShop: function () { var g = document.getElementById("plant-list"); if (g) { g.scrollIntoView({ behavior: "smooth" }); var b = g.querySelector("button:not([disabled])"); if (b) b.focus({ preventScroll: true }); } } };</script>
-  <script src="promo.js"></script>
-  <script src="site-links.js"></script>
+  <script src="promo.js?v=20261021b"></script>
+  <script src="site-links.js?v=20261021b"></script>
 </body>
 </html>
