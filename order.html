@@ -187,6 +187,9 @@
     #cartbar-go { min-height:46px; padding:0 1.3rem; }
     #cartbar-go:active, .submit-btn:active { transform:translateY(2px); box-shadow:inset 0 1px 0 rgba(255,255,255,.15), 0 1px 0 rgba(0,0,0,.22); }
     @media (prefers-reduced-motion:reduce) { .chips .chip, #cartbar-go, .submit-btn { transition:none; } .chips .chip:active, .chips .chip[aria-pressed="true"], #cartbar-go:active, .submit-btn:active { transform:none; } }
+      .header-right { display:flex; align-items:center; gap:0.25rem; }
+    .ig-top { min-width:44px; flex-shrink:0; justify-content:center; color:var(--sage-dark); font-weight:600; font-size:0.85rem; text-decoration:none; }
+    @media (max-width: 380px) { .ig-top-text { display:none; } }
   </style>
 </head>
 <body>
@@ -195,7 +198,10 @@
       <div class="logo-text">IENN</div>
       <div class="logo-sub">INLAND EMPIRE NATIVE NURSERY</div>
     </a>
-    <a href="index.html" style="color: var(--sage-dark); text-decoration: none; font-size: 0.95rem; padding: 0.75rem 0.5rem; min-height: 44px; display: inline-flex; align-items: center;">← Back</a>
+    <div class="header-right">
+      <a class="ig-link ig-top" target="_blank" rel="noopener" aria-label="Instagram (opens in a new tab)"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg><span class="ig-top-text">Instagram</span></a>
+      <a href="index.html" style="color: var(--sage-dark); text-decoration: none; font-size: 0.95rem; padding: 0.75rem 0.5rem; min-height: 44px; display: inline-flex; align-items: center;">← Back</a>
+    </div>
   </header>
 
 <main>
@@ -210,7 +216,7 @@
       <p id="confirm-id" class="confirm-id"></p>
       <ul id="confirm-list"></ul>
       <p id="confirm-total"></p>
-      <p class="pickup-line">Pickup: Fontana · Saturdays 10 AM – 2 PM</p>
+      <p class="pickup-line">Pickup: Fontana · Saturdays 10 a.m. – 2 p.m.</p>
       <p>Exact address after we confirm. Andrew will email you to confirm your pickup.</p>
       <p class="fine-print">Other pickup times available case by case upon request.<br>Grand Terrace pickup available upon request.</p>
       <p class="confirm-contact">Questions or changes? Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a><br><a class="contact-mail" href="mailto:plants@inlandempirenativenursery.com">Email us: plants@inlandempirenativenursery.com</a> · <a class="ig-link" target="_blank" rel="noopener"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>Follow us on Instagram</a></p>
@@ -244,7 +250,7 @@
       <section class="summary" id="review" aria-labelledby="summary-title" tabindex="-1">
         <div id="summary-body" aria-live="polite"></div>
       </section>
-      <p class="co-pickup"><b>Pickup Saturdays 10–2 near Sierra &amp; Baseline, Fontana</b> · Cash or Zelle at pickup. Nothing charged online.</p>
+      <p class="co-pickup"><b>Pickup Saturdays 10 a.m. – 2 p.m. near Sierra &amp; Baseline, Fontana</b> · Cash or Zelle at pickup. Nothing charged online.</p>
       <p class="fine-print">Other pickup times case by case (add it in Notes). Grand Terrace pickup on request. Exact address after we confirm. Questions? Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-mail" href="mailto:plants@inlandempirenativenursery.com">Email us: plants@inlandempirenativenursery.com</a> · <a class="ig-link" target="_blank" rel="noopener"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>Follow us on Instagram</a></p>
       <form id="order-form" novalidate>
         <label for="name">Name</label>
@@ -270,7 +276,7 @@
   </div>
 
   <footer>
-    Inland Empire Native Nursery • Pickup: Fontana · Saturdays 10 AM – 2 PM<br>
+    Inland Empire Native Nursery • Pickup: Fontana · Saturdays 10 a.m. – 2 p.m.<br>
     Cash or Zelle at time of pickup • We confirm and send directions after you order.<br>
     Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a><br>
     <a class="contact-mail" href="mailto:plants@inlandempirenativenursery.com">Email us: plants@inlandempirenativenursery.com</a> · <a class="ig-link" target="_blank" rel="noopener"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>Follow us on Instagram</a>
@@ -445,7 +451,7 @@
         return ls;
       }
 
-      var PICKUP = "Fontana (near Sierra & Baseline) · Saturdays 10 AM – 2 PM";
+      var PICKUP = "Fontana (near Sierra & Baseline) · Saturdays 10 a.m. – 2 p.m.";
       var drawer = document.getElementById("checkout"), backdrop = document.getElementById("checkout-backdrop"), opener = null;
       function focusables() { return [].slice.call(drawer.querySelectorAll("button:not([disabled]),a[href],input,select,textarea")).filter(function (x) { return x.offsetParent !== null; }); }
       function openCheckout() {

@@ -2,7 +2,7 @@
    window.iennPromo(promo) shows it once per browser session (dismissal remembered per title+start).
    Test: add ?promo=preview to the page URL to show a sample. No dependencies. */
 (function () {
-  var FINE = "Pickup Saturdays 10 AM – 2 PM in Fontana. | Cash or Zelle at time of pickup.";  // fallback if the feed sends no Bottom info (mirror IENN_PROMO_BOTTOM_DEFAULT)
+  var FINE = "Pickup Saturdays 10 a.m. – 2 p.m. in Fontana. | Cash or Zelle at time of pickup.";  // fallback if the feed sends no Bottom info (mirror IENN_PROMO_BOTTOM_DEFAULT)
   var SHOWN = false, KEY = "ienn-promo-dismissed:";
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function css() {
