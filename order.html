@@ -123,7 +123,7 @@
     </a>
     <div class="header-right">
       <a class="ig-link ig-top" target="_blank" rel="noopener" aria-label="Instagram (opens in a new tab)"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg><span class="ig-top-text">Instagram</span></a>
-      <a href="index.html" style="color: var(--sage-dark); text-decoration: none; font-size: 0.95rem; padding: 0.75rem 0.5rem; min-height: 44px; display: inline-flex; align-items: center;">← Back</a>
+      <button type="button" class="order-btn co-btn is-empty" id="hdr-checkout" aria-disabled="true" aria-haspopup="dialog" aria-controls="checkout" title="Add a plant first">Check out</button>
     </div>
   </header>
 
@@ -141,13 +141,14 @@
       <p>Exact address after we confirm. Andrew will email you to confirm your pickup.</p>
       <p class="fine-print">Other pickup times available case by case upon request.<br>Grand Terrace pickup available upon request.</p>
       <p class="confirm-contact">Questions or changes? Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a><br><a class="contact-mail" href="mailto:plants@inlandempirenativenursery.com">Email us: plants@inlandempirenativenursery.com</a> · <a class="ig-link" target="_blank" rel="noopener"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>Follow us on Instagram</a></p>
-      <button type="button" id="new-order">Start a new order</button>
+      <div class="tk-actions"><button type="button" id="back-to-plants" class="tk-btn">Back to plants</button> <button type="button" id="view-order" class="tk-btn tk-btn-alt">View my order</button></div>
     </div>
   </section>
 
 
   <h2 id="shop-title" class="sr-only">Select your plants</h2>
   <p class="inv-status" id="inv-status" role="status" hidden></p>
+  <p class="last-order" id="last-order-link" hidden><button type="button" id="view-order-2" class="tk-btn tk-btn-alt">View my order</button></p>
   <div class="grid" id="plant-list" aria-busy="false"></div>
   <ol class="steps-strip" aria-label="How to order"><li><b>1.</b> Click</li><li><b>2.</b> Order</li><li><b>3.</b> Pick up</li></ol>
   <section class="info" id="pickup-info" aria-labelledby="info-title">
@@ -171,6 +172,7 @@
       <button type="button" class="drawer-x" id="checkout-close" aria-label="Close and keep shopping">&times;</button>
     </div>
     <div class="drawer-body">
+      <button type="button" class="keep-shopping" id="keep-shopping">← Keep shopping</button>
       <section class="summary" id="review" aria-labelledby="summary-title" tabindex="-1">
         <div id="summary-body" aria-live="polite"></div>
       </section>
