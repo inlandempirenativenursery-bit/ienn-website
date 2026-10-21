@@ -2,6 +2,8 @@
 
 Repo for the Inland Empire Native Nursery site and customer-facing order experience.
 
+**Live site:** https://www.inlandempirenativenursery.com (order page: https://www.inlandempirenativenursery.com/order.html). Served by GitHub Pages via the `CNAME` file; all asset paths are relative, so the site works at the domain root.
+
 ## Goals
 - Amazon-style shopping for native plants
 - Live inventory from Google Sheet / Apps Script
