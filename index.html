@@ -41,8 +41,8 @@
     .steps-strip li + li::before { content:"·"; margin-right:0.9rem; color:#9aa69a; }
     .steps-strip b { font-weight:700; color:#6b7c6a; }
     .brand-name { font-weight:800; font-size:1.12rem; line-height:1.1; letter-spacing:-0.02em; color:#3d4b3d; text-shadow:0 1px 0 #fff, 0 2px 3px rgba(61,75,61,0.18); }
-    .hdr-slogan { font-weight:700; font-size:0.8rem; line-height:1.2; color:#2f6b2f; margin-top:0.15rem; text-shadow:0 1px 0 rgba(255,255,255,0.9); }
-    @media (max-width:480px) { .brand-name { font-size:0.98rem; } .hdr-slogan { font-size:0.72rem; } }
+    .hdr-slogan { font-family:"Dancing Script","Satisfy",cursive; font-style:italic; font-weight:700; font-size:1.6rem; line-height:1.1; color:#2f6b2f; margin-top:0.1rem; text-shadow:0 0 6px rgba(143,188,143,0.55), 0 0 14px rgba(200,180,230,0.45), 0 1px 0 #fff; }
+    @media (max-width:480px) { .brand-name { font-size:0.98rem; } .hdr-slogan { font-size:1.22rem; } }
     .strip-wrap { display:flex; justify-content:flex-end; padding:0 1rem; margin-top:0.35rem; }
     .strip-wrap .steps-strip { margin:0; }
     @media (max-width:600px) { .strip-wrap { justify-content:center; } }
@@ -139,6 +139,8 @@
     body { padding-bottom:96px; }
     .order-btn.co-btn { border:2px solid var(--red); }
   </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
   <header>
@@ -157,7 +159,7 @@
   <div class="strip-wrap"><ol class="steps-strip" aria-label="How to order"><li><b>1.</b> Click</li><li><b>2.</b> Order</li><li><b>3.</b> Pick up</li></ol></div>
 
   <section class="hero">
-    <h1>Growing the best native plants for the Inland Empire.</h1>
+    <h1>Growing the best plants for the Inland Empire.</h1>
   </section>
 
   <section class="shop plants" id="plants" aria-labelledby="shop-title">

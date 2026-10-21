@@ -28,7 +28,7 @@ const feed = { version: 3, countDate: '2026-10-17', sortedBy: 'pin,popularity90d
     await ws.locator('.stepper button', { hasText: '+' }).click(); await ws.locator('.add').click();
     const ya = page.locator('.card', { hasText: 'Yarrow' }); await ya.locator('.chip', { hasText: '4-inch' }).click(); await ya.locator('.add').click();
     assert.strictEqual(await co.textContent(), 'Check out (3)'); assert.strictEqual(await co.getAttribute('aria-disabled'), 'false'); assert.match(await co.getAttribute('href'), /order\.html\?checkout=1/);
-    await page.waitForTimeout(350); assert.strictEqual(await co.evaluate(e => getComputedStyle(e).backgroundColor), 'rgb(192, 57, 43)', 'solid red'); assert.notStrictEqual(await co.evaluate(e => getComputedStyle(e).animationName), 'none', 'glow');
+    await page.waitForTimeout(350); assert.strictEqual(await co.evaluate(e => getComputedStyle(e).backgroundColor), 'rgba(192, 57, 43, 0.04)', 'transparent glow'); assert.notStrictEqual(await co.evaluate(e => getComputedStyle(e).animationName), 'none', 'glow');
     assert.ok(await page.locator('#cartbar').isVisible()); assert.strictEqual(await page.locator('#cartbar-go').textContent(), 'Check out (3)');
     const tray = JSON.parse(await page.evaluate(() => localStorage.getItem('ienn-cart-v2'))); assert.deepStrictEqual(tray, { 'white-sage|4"': 2, 'yarrow|4"': 1 });
     await page.evaluate(() => scrollTo(0, 0)); await page.waitForTimeout(300);

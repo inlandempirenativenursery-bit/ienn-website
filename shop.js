@@ -51,7 +51,7 @@
       if (p.image) ph.appendChild(el("img", p.srcset ? { src: p.image, srcset: p.srcset, sizes: "(max-width: 600px) 48vw, 260px", alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" } : { src: p.image, alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" })); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }
       var lo = p.sizes.filter(function (z) { return !askSize(z) && isFinite(z.price); }).map(function (z) { return z.price; });
       if (lo.length) ph.appendChild(el("span", { class: "price-tag", "aria-hidden": "true" }, (lo.length > 1 ? "from $" : "$") + Math.min.apply(null, lo)));
-      if (p.badge) ph.appendChild(el("span", { class: "pick-badge" }, String(p.badge)));
+      if (p.badge) ph.appendChild(el("span", { class: "pick-badge" + (p.badgeAuto ? " auto-" + p.badgeAuto : "") }, String(p.badge)));
       if (p.badge) ph.removeAttribute("aria-hidden");
       card.appendChild(ph);
       card.addEventListener("touchstart", function () { card.classList.add("lift"); }, { passive: true });
@@ -254,9 +254,20 @@
 
   })();
 
+  /* Badges: a manual `badge` string from the feed (sheet "Badge" column) always wins. Otherwise, only when the feed carries real
+     sales data: top plant = "#1 Selling", next 3 = "Popular". Prefer numeric `popularity` (>0), else `rank`. Never invented. One per card. */
+  function autoBadges(raw) {
+    var num = function (v) { return v != null && v !== "" && isFinite(Number(v)) ? Number(v) : null; }, out = {}, order;
+    var pop = raw.filter(function (p) { return num(p.popularity) > 0; });
+    if (pop.length) order = pop.slice().sort(function (a, b) { return num(b.popularity) - num(a.popularity); });
+    else order = raw.filter(function (p) { return num(p.rank) != null; }).sort(function (a, b) { return num(a.rank) - num(b.rank); });
+    order.slice(0, 4).forEach(function (p, i) { out[p.name] = i === 0 ? "top" : "pop"; });
+    return out;
+  }
   function fromInventory(d) {
+    var ab = autoBadges(d.plants || []);
     return (d.plants || []).map(function (p) {
-      return { id: slug(p.name), name: p.name, fullName: p.fullName || p.name, botanical: p.botanical || "", badge: p.badge ? String(p.badge).trim() : "", rank: p.rank, pinned: p.pinned, image: p.image || (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).src || "", srcset: p.image ? "" : (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).srcset || "",
+      return { id: slug(p.name), name: p.name, fullName: p.fullName || p.name, botanical: p.botanical || "", badge: p.badge && String(p.badge).trim() ? String(p.badge).trim().slice(0, 24) : ab[p.name] === "top" ? "#1 Selling" : ab[p.name] === "pop" ? "Popular" : "", badgeAuto: p.badge && String(p.badge).trim() ? "" : ab[p.name] || "", rank: p.rank, pinned: p.pinned, image: p.image || (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).src || "", srcset: p.image ? "" : (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).srcset || "",
         sizes: (p.sizes || []).map(function (z) { return { key: z.key, label: z.size || SIZE_LABELS[z.key] || z.key, price: isFinite(Number(z.price)) && z.price !== "" && z.price != null ? Number(z.price) : PRICES[z.key], qty: z.qty == null ? null : Number(z.qty), extra: z.extra == null ? null : Number(z.extra), canRequest: z.canRequest == null ? null : z.canRequest === true }; }) };
     });
   }
