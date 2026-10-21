@@ -152,6 +152,7 @@
     .cartbar .cb-sum { font-weight:700; }
     .cartbar .cb-sum small { font-weight:400; color:#666; }
     .contact-mail { display:inline-flex; align-items:center; min-height:44px; padding:0 0.25rem; color:var(--sage-dark); font-weight:600; word-break:break-all; }
+    .ig-link { display:inline-flex; align-items:center; gap:0.35rem; min-height:44px; padding:0 0.25rem; color:inherit; font-weight:600; }
     /* checkout drawer */
     .cartbar button { white-space:nowrap; min-height:44px; padding:0 1.2rem; background:var(--red); color:#fff; font-weight:700; font-size:1rem; border:0; border-radius:10px; cursor:pointer; }
     .drawer-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:60; }
@@ -203,7 +204,7 @@
       <p class="pickup-line">Pickup: Fontana · Saturdays 10 AM – 2 PM</p>
       <p>Exact address after we confirm. Andrew will email you to confirm your pickup.</p>
       <p class="fine-print">Other pickup times available case by case upon request.<br>Grand Terrace pickup available upon request.</p>
-      <p class="confirm-contact">Questions or changes? Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a><br><a class="contact-mail" href="mailto:plants@inlandempirenativenursery.com">Email us: plants@inlandempirenativenursery.com</a></p>
+      <p class="confirm-contact">Questions or changes? Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a><br><a class="contact-mail" href="mailto:plants@inlandempirenativenursery.com">Email us: plants@inlandempirenativenursery.com</a> · <a class="ig-link" target="_blank" rel="noopener"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>Follow us on Instagram</a></p>
       <button type="button" id="new-order">Start a new order</button>
     </div>
   </section>
@@ -235,7 +236,7 @@
         <div id="summary-body" aria-live="polite"></div>
       </section>
       <p class="co-pickup"><b>Pickup Saturdays 10–2 near Sierra &amp; Baseline, Fontana</b> · Cash or Zelle at pickup. Nothing charged online.</p>
-      <p class="fine-print">Other pickup times case by case (add it in Notes). Grand Terrace pickup on request. Exact address after we confirm. Questions? Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-mail" href="mailto:plants@inlandempirenativenursery.com">Email us: plants@inlandempirenativenursery.com</a></p>
+      <p class="fine-print">Other pickup times case by case (add it in Notes). Grand Terrace pickup on request. Exact address after we confirm. Questions? Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-mail" href="mailto:plants@inlandempirenativenursery.com">Email us: plants@inlandempirenativenursery.com</a> · <a class="ig-link" target="_blank" rel="noopener"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>Follow us on Instagram</a></p>
       <form id="order-form" novalidate>
         <label for="name">Name</label>
         <input type="text" id="name" name="name" autocomplete="name" required aria-describedby="name-err">
@@ -263,7 +264,7 @@
     Inland Empire Native Nursery • Pickup: Fontana · Saturdays 10 AM – 2 PM<br>
     Cash or Zelle at time of pickup • We confirm and send directions after you order.<br>
     Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a><br>
-    <a class="contact-mail" href="mailto:plants@inlandempirenativenursery.com">Email us: plants@inlandempirenativenursery.com</a>
+    <a class="contact-mail" href="mailto:plants@inlandempirenativenursery.com">Email us: plants@inlandempirenativenursery.com</a> · <a class="ig-link" target="_blank" rel="noopener"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>Follow us on Instagram</a>
   </footer>
 
   <script src="plant-photos.js"></script>
@@ -561,5 +562,6 @@
   </script>
   <script>window.IENN_PROMO_OPTS = { cta: "Shop now", onShop: function () { var g = document.getElementById("plant-list"); if (g) { g.scrollIntoView({ behavior: "smooth" }); var b = g.querySelector("button:not([disabled])"); if (b) b.focus({ preventScroll: true }); } } };</script>
   <script src="promo.js"></script>
+  <script src="site-links.js"></script>
 </body>
 </html>

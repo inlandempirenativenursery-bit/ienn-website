@@ -98,3 +98,5 @@ The full column guide is in `PROMOS.md`.
 ## Customer confirmation email
 
 Every reply uses the same "look, verify, confirm" template (`templates/order-response-email.md`, built by `IENN_Drafts.gs`). It's auto-filled from the order: items with size, qty and price, the total (taxes included), the Fontana pickup area and Saturday 10 AM – 2 PM schedule, the next Saturday as the pickup date, "Cash or Zelle at time of pickup.", the customer's notes, our notes, Andrew's number and the fine print. It's saved as a Gmail draft only; the team checks it, types the exact address over `{{PICKUP_ADDRESS}}`, and sends.
+
+- Instagram link: set once in `site-links.js` (`IENN_INSTAGRAM_URL`). It's a PLACEHOLDER until Eric confirms the handle.
