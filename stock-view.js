@@ -1,36 +1,54 @@
-/* IENN stock display rules for the order page (pure functions; tested in tests/stock-view.test.js).
-   - No real count yet (feed baseline null/missing AND no tracked qty > 0): stock is UNKNOWN, show every plant
+/* IENN stock display rules for the order page and home cards (pure functions; tested in tests/stock-view.test.js).
+   Feed sizes: {key, size, price, qty, extra, canRequest}. qty = retail-ready units (null = no count / untracked);
+   extra = smaller, not-yet-ready plants on hand; canRequest = extra > 0. Works with the older feed too (no extra/canRequest).
+   - No baseline (countDate/baseline null, or no field and no tracked qty > 0): stock UNKNOWN, show every plant
      ("We'll confirm availability"), never hide.
-   - Real count: hide size chips with qty 0; hide a plant when all its tracked sizes are 0.
-   - Never show exact counts. qty < LOW (or chosen qty > available) => "Ask us". */
+   - Baseline (countDate set, or real stock detected): hide a size when qty == 0 and !canRequest; hide a plant with no
+     available tracked sizes.
+   - Never show exact counts. qty < LOW, chosen qty > qty, or qty 0 with canRequest => "Ask us" (still addable as a request).
+   - canRequest: never cap the quantity at qty; the server accepts the extra as a request. */
 var IENNStock = (function () {
   var LOW = 5, ASK = ['2"', 'Tree pot'];
+  var KEYS = ["countDate", "baseline", "countedAt", "lastCount", "baselineDate"];
   function isAsk(z) { return !!z && ASK.indexOf(z.key) >= 0; }
+  function canReq(z) { return !!z && (z.canRequest === true || (z.canRequest == null && Number(z.extra) > 0)); }
   function hasBaseline(d, plants) {
     d = d || {};
-    var keys = ["baseline", "countDate", "countedAt", "lastCount", "baselineDate"];
-    for (var i = 0; i < keys.length; i++) if (keys[i] in d && (d[keys[i]] == null || d[keys[i]] === "")) return false;
+    for (var i = 0; i < KEYS.length; i++) if (KEYS[i] in d) {
+      var v = d[KEYS[i]]; if (v == null || v === "" || v === false) return false;
+      if (KEYS[i] === "countDate") return true;   // a dated count is a real baseline
+    }
     return (plants || []).some(anyStock);
   }
-  function anyStock(p) { return (p.sizes || []).some(function (z) { return !isAsk(z) && z.qty > 0; }); }
-  /* plants: [{sizes:[{key,qty,...}]}] -> filtered copy */
+  function anyStock(p) { return (p.sizes || []).some(function (z) { return !isAsk(z) && (z.qty > 0 || canReq(z)); }); }
+  /* tracked size can be added to the tray (qty null = unknown/offline: orderable, we confirm) */
+  function available(z) { return !!z && !isAsk(z) && (z.qty == null || z.qty > 0 || canReq(z)); }
+  /* plants: [{sizes:[{key,qty,extra,canRequest,...}]}] -> filtered copy */
   function view(plants, baseline) {
     return plants.map(function (p) {
       var tracked = p.sizes.filter(function (z) { return !isAsk(z); });
       if (!baseline) return Object.assign({}, p, { sizes: p.sizes.map(function (z) { return isAsk(z) ? z : Object.assign({}, z, { qty: null }); }) });
-      var keep = p.sizes.filter(function (z) { return isAsk(z) || z.qty == null || z.qty > 0; });
+      var keep = p.sizes.filter(function (z) { return isAsk(z) || available(z); });
       if (tracked.length && !keep.some(function (z) { return !isAsk(z); })) return null;
       return Object.assign({}, p, { sizes: keep });
     }).filter(Boolean);
   }
-  /* state of a size for a wanted quantity: "request" | "unknown" | "ask" | "ok" */
+  /* state of a size for a wanted quantity: "request" | "unknown" | "ask" | "ok" | "out" */
   function sizeState(z, want) {
     if (isAsk(z)) return "request";
     if (z.qty == null) return "unknown";
+    if (z.qty <= 0 && !canReq(z)) return "out";
     if (z.qty < LOW || (want || 1) > z.qty) return "ask";
     return "ok";
   }
-  function maxQty(z) { return z && z.qty != null && !isAsk(z) ? Math.max(1, Math.min(99, z.qty)) : 99; }
-  return { LOW: LOW, isAsk: isAsk, hasBaseline: hasBaseline, view: view, sizeState: sizeState, maxQty: maxQty };
+  /* true when this quantity goes beyond ready stock and will be sent as a request */
+  function isRequest(z, want) { return !!z && !isAsk(z) && z.qty != null && canReq(z) && (want || 1) > z.qty; }
+  function maxQty(z) { return z && z.qty != null && !isAsk(z) && !canReq(z) ? Math.max(1, Math.min(99, z.qty)) : 99; }
+  function txt(v) { return v == null ? "" : String(v).trim(); }
+  /* POST success notices / stock-rejection problems -> plain-text messages (render with textContent only) */
+  function notices(r) { return ((r && r.notices) || []).map(function (n) { return txt(n && n.message); }).filter(Boolean); }
+  function problems(r) { return ((r && r.problems) || []).map(function (n) { return txt(n && n.message); }).filter(Boolean); }
+  return { LOW: LOW, isAsk: isAsk, canReq: canReq, available: available, hasBaseline: hasBaseline, view: view, sizeState: sizeState,
+    isRequest: isRequest, maxQty: maxQty, notices: notices, problems: problems };
 })();
 if (typeof module !== "undefined") module.exports = IENNStock;

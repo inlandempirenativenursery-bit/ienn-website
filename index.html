@@ -324,8 +324,8 @@
   <script>
   /* Shop grid renders entirely from the inventory feed (INVENTORY_URL in inventory.js). */
   (function () {
-    var LABEL = { in: 'Available \u00b7 Get yours now', low: 'Low stock \u00b7 Get yours now', out: 'Sold out', unknown: 'We\u2019ll confirm availability', request: 'Available on request' };
-    var CLS = { in: 'in', low: 'low', out: 'out', unknown: 'ask', request: 'ask' };
+    var LABEL = { in: 'Available \u00b7 Get yours now', low: 'Low stock \u00b7 Get yours now', out: 'Not available', askus: 'Ask us \u00b7 Available by request', unknown: 'We\u2019ll confirm availability', request: 'Available on request' };
+    var CLS = { in: 'in', low: 'low', out: 'out', askus: 'ask', unknown: 'ask', request: 'ask' };
     var KEY = 'ienn-cart', cart = {}, NAMES = {};
     try { cart = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { cart = {}; }
     var grid = document.getElementById('shop-grid'), info = document.getElementById('shop-status');
@@ -341,6 +341,7 @@
       document.getElementById('cart-count').textContent = n + (n === 1 ? ' plant' : ' plants') + ' \u00b7 ' + (priced && n ? '$' + total.toFixed(2) + ' \u00b7 Taxes included' : 'price confirmed at order');
       document.getElementById('cart-go').href = 'order.html' + (q.length ? '?' + q.join('&') + '&checkout=1' : '');
     }
+    function zs(s) { return { key: s.size, qty: s.qty, extra: s.extra, canRequest: s.canRequest }; }
     function card(p, idx) {
       var c = el('article', 'plant-card'), body = el('div', 'plant-info'), qty = 1;
       var counted = p.sizes.filter(function (s) { return s.status !== 'request'; }), sz = counted.length === 1 ? counted[0] : null;   // single size: usable, NOT highlighted
@@ -357,8 +358,8 @@
       var pills = el('div', 'pills'); pills.setAttribute('role', 'group'); pills.setAttribute('aria-label', 'Size of ' + p.name);
       p.sizes.forEach(function (s) {
         var b = el('button', 'pill' + (s.status === 'request' ? ' req' : ''), s.size); b.type = 'button';
-        b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', s.size + (s.price != null ? ', $' + s.price : '') + (s.status === 'request' ? ', on request' : s.status === 'out' ? ', out of stock' : ''));
-        b.onclick = function () { sz = s; qty = Math.min(qty, IENNStock.maxQty({ key: s.size, qty: s.qty })); out.textContent = qty; pills.querySelectorAll('.pill').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); sync(); };
+        b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', s.size + (s.price != null ? ', $' + s.price : '') + (s.status === 'request' ? ', on request' : s.status === 'out' ? ', not available' : ''));
+        b.onclick = function () { sz = s; qty = Math.min(qty, IENNStock.maxQty(zs(s))); out.textContent = qty; pills.querySelectorAll('.pill').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); sync(); };
         pills.appendChild(b);
       });
       var hint = el('p', 'size-hint'); hint.setAttribute('aria-live', 'polite'); body.appendChild(pills); body.appendChild(hint);
@@ -366,7 +367,7 @@
       if (p.note) body.appendChild(el('div', 'note', p.note));
       var row = el('div', 'shop-row'), mi = el('button', 'step', '\u2212'), out = el('output', '', '1'), pl = el('button', 'step', '+');
       mi.type = pl.type = add.type = 'button'; mi.setAttribute('aria-label', 'One fewer ' + p.name); pl.setAttribute('aria-label', 'One more ' + p.name);
-      mi.onclick = function () { qty = Math.max(1, qty - 1); out.textContent = qty; sync(); }; pl.onclick = function () { var mx = sz ? IENNStock.maxQty({ key: sz.size, qty: sz.qty }) : 99, hit = qty + 1 > mx; qty = Math.min(mx, qty + 1); out.textContent = qty; sync(); if (hit) ask.hidden = false; };
+      mi.onclick = function () { qty = Math.max(1, qty - 1); out.textContent = qty; sync(); }; pl.onclick = function () { var mx = sz ? IENNStock.maxQty(zs(sz)) : 99, hit = qty + 1 > mx; qty = Math.min(mx, qty + 1); out.textContent = qty; sync(); if (hit) ask.hidden = false; };
       row.appendChild(mi); row.appendChild(out); row.appendChild(pl); body.appendChild(row); body.appendChild(add); body.appendChild(ask);
       function sync() {
         var ps = p.status === 'low' ? 'in' : p.status; badge.textContent = LABEL[ps]; badge.className = 'badge ' + CLS[ps];
@@ -376,10 +377,10 @@
         var st = sz.status; mi.disabled = pl.disabled = false;
         meta.textContent = (sz.size ? sz.size + ' \u2022 ' : '') + money(sz.price);
         
-        ask.hidden = !(st === 'request' || IENNStock.sizeState({ key: sz.size, qty: sz.qty }, qty + (cart[p.id + '|' + sz.size] || 0)) === 'ask');
+        ask.hidden = !(st === 'request' || IENNStock.sizeState(zs(sz), qty + (cart[p.id + '|' + sz.size] || 0)) === 'ask');
         add.setAttribute('aria-label', 'Add ' + p.name + ' to tray');
       }
-      add.onclick = function () { if (!sz) { hint.textContent = 'Choose a size first'; pills.classList.remove('nudge'); void pills.offsetWidth; pills.classList.add('nudge'); return; } if (sz.status === 'out') { hint.textContent = 'Sold out right now. Ask us about it.'; return; } var k = p.id + (sz.size ? '|' + sz.size : ''); NAMES[k] = { price: sz.price }; cart[k] = Math.min(IENNStock.maxQty({ key: sz.size, qty: sz.qty }), (cart[k] || 0) + qty); sync(); save(); renderBar(); bar.classList.remove('bump'); void bar.offsetWidth; bar.classList.add('bump'); toast((sz.status === 'request' ? 'Requested ' : 'Added ') + qty + ' \u00d7 ' + p.name + (sz.status === 'request' ? ' (' + sz.size + ', we\u2019ll confirm)' : '')); };
+      add.onclick = function () { if (!sz) { hint.textContent = 'Choose a size first'; pills.classList.remove('nudge'); void pills.offsetWidth; pills.classList.add('nudge'); return; } if (sz.status === 'out') { hint.textContent = 'Not available right now. Ask us about it.'; return; } var k = p.id + (sz.size ? '|' + sz.size : ''), zz = zs(sz); NAMES[k] = { price: sz.price }; cart[k] = Math.min(IENNStock.maxQty(zz), (cart[k] || 0) + qty); var rq = sz.status === 'request' || IENNStock.isRequest(zz, cart[k]); sync(); save(); renderBar(); bar.classList.remove('bump'); void bar.offsetWidth; bar.classList.add('bump'); toast((rq ? 'Requested ' : 'Added ') + qty + ' \u00d7 ' + p.name + (rq ? ' (' + sz.size + ', we\u2019ll confirm)' : '')); };
       sync(); return c;
     }
     document.getElementById('printlist-link').href = IENN_PRINTLIST_URL;
@@ -389,9 +390,9 @@
       list.forEach(function (p) { p.sizes.forEach(function (s) { s.key = s.size; }); });
       var base = !!d && IENNStock.hasBaseline(d, list);
       return IENNStock.view(list, base).map(function (p) {
-        p.sizes.forEach(function (s) { if (s.status !== 'request') s.status = s.qty == null ? 'unknown' : 'in'; });
+        p.sizes.forEach(function (s) { if (s.status !== 'request') s.status = s.qty == null ? 'unknown' : s.qty > 0 ? 'in' : 'askus'; });
         var c = p.sizes.filter(function (s) { return s.status !== 'request'; });
-        p.status = !c.length ? 'request' : c.some(function (s) { return s.status === 'in'; }) ? 'in' : 'unknown'; return p; });
+        p.status = !c.length ? 'request' : c.some(function (s) { return s.status === 'in'; }) ? 'in' : c.some(function (s) { return s.status === 'askus'; }) ? 'askus' : 'unknown'; return p; });
     }
     IENN.load(function (list, live, d) { list = applyStock(list, d);
       grid.innerHTML = ''; grid.removeAttribute('aria-busy');

@@ -50,7 +50,7 @@ var IENN = (function () {
     name = String(name); var bot = pick(r, ["botanical", "botanicalname", "scientific", "scientificname", "latin"]);
     var m = name.match(/^(.*?)\s*\((.*)\)\s*$/); if (m) { name = m[1]; bot = bot || m[2]; }
     var sizes = pick(r, ["sizes", "variants"]), out = [];
-    if (Array.isArray(sizes)) sizes.forEach(function (s) { if (typeof s === "string") s = { size: s }; out.push({ size: String(pick(s, ["size", "container"]) || ""), qty: num(pick(s, ["qty", "quantity", "stock", "onhand", "available"])), price: num(pick(s, ["price", "cost"])), status: pick(s, ["status", "instock"]) }); });
+    if (Array.isArray(sizes)) sizes.forEach(function (s) { if (typeof s === "string") s = { size: s }; out.push({ size: String(pick(s, ["size", "container"]) || ""), qty: num(pick(s, ["qty", "quantity", "stock", "onhand", "available"])), price: num(pick(s, ["price", "cost"])), status: pick(s, ["status", "instock"]), extra: num(pick(s, ["extra"])), canRequest: s.canRequest == null ? null : s.canRequest === true }); });
     else if (sizes && typeof sizes === "object") for (var k in sizes) { var v = sizes[k]; out.push(typeof v === "object" ? { size: k, qty: num(pick(v, ["qty", "quantity", "stock"])), price: num(pick(v, ["price"])) } : { size: k, qty: num(v) }); }
     else out.push({ size: String(pick(r, ["size", "container", "pot"]) || ""), qty: num(pick(r, ["qty", "quantity", "stock", "onhand", "available", "count"])), price: num(pick(r, ["price", "cost"])), status: pick(r, ["status", "instock", "availability"]) });
     var merged = {}; out.forEach(function (s) { var z = ienNormSize(s.size) || s.size || ""; if (merged[z]) { if (s.qty != null) merged[z].qty = (merged[z].qty || 0) + s.qty; } else { s.size = z; merged[z] = s; } });

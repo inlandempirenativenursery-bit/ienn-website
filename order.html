@@ -126,6 +126,10 @@
     .chips .chip-request { border-style:dashed; }
     .ask-note { font-size:0.82rem; color:var(--sage-dark); background:var(--cream); border:1px solid #e3e1db; border-radius:8px; padding:0.3rem 0.5rem; }
     .ask-note[hidden] { display:none; }
+    .stock-notes[hidden] { display:none; }
+    .stock-note { font-size:0.88rem; color:var(--sage-dark); background:var(--cream); border-left:3px solid var(--sage); border-radius:6px; padding:0.5rem 0.7rem; margin:0.5rem 0; }
+    .stock-problems { margin:0.4rem 0 0 1.1rem; padding:0; }
+    .stock-problems li { margin:0.2rem 0; }
     .ask-note a { color:var(--sage-dark); font-weight:600; display:inline-flex; align-items:center; min-height:44px; padding:0 0.3rem; }
     .top { margin:0.5rem 1rem 0; }
     .top h1 { margin:0; font-size:1.2rem; }
@@ -240,6 +244,7 @@
     <div class="tk-body">
       <p id="confirm-id" class="confirm-id"></p>
       <ul id="confirm-list"></ul>
+      <div id="confirm-notices" class="stock-notes" hidden></div>
       <p id="confirm-total"></p>
       <p class="pickup-line">Pickup: Fontana · Saturdays 10 a.m. – 2 p.m.</p>
       <p>Exact address after we confirm. Andrew will email you to confirm your pickup.</p>
@@ -323,7 +328,7 @@
     /* All prices INCLUDE tax ($3/$6/$10/$15 are final). The server backs tax out for its records only. */
     var ON_REQUEST = "Available on request";   // 2" and Tree pot (not counted yet)
     var CONTACT_PHONE = "(909) 609-9373", CONTACT_TEL = "+19096099373";   // Andrew, call/text fallback
-    /* Appeal sort (earlier keyword = shown first); plants with stock come first, sold out last. */
+    /* Appeal sort (earlier keyword = shown first); plants with stock come first, not available last. */
     /* Default order (an explicit feed/sheet rank still wins): popular + colorful first. */
     var APPEAL_KEYWORDS = ["white sage", "salvia apiana", "sticky monkeyflower", "diplacus aurantiacus", "rock monkeyflower", "diplacus calycinus",
       "monkeyflower", "mimulus", "diplacus", "california poppy", "eschscholzia", "showy penstemon", "penstemon spectabilis", "scarlet bugler",
@@ -351,10 +356,10 @@
       function clamp(v) { v = parseInt(v, 10); return isNaN(v) || v < 1 ? 1 : Math.min(v, 99); }
       var ASK_KEYS = ['2"', 'Tree pot'];   // on-request sizes (no weekly counts): "Ask us", never addable
       function askSize(z) { return !!z && ASK_KEYS.indexOf(z.key) >= 0; }
-      function canAdd(z) { return !!z && !askSize(z) && (z.qty == null || z.qty > 0); }   // qty null on a counted size = offline/unknown, still orderable
+      function canAdd(z) { return IENNStock.available(z); }   // qty null = offline/unknown (orderable); qty 0 only with canRequest
       function zstate(z) { return z.qty == null ? "ask" : z.qty > 0 ? "ok" : "out"; }
       function pstate(p) { var c = p.sizes.filter(function (z) { return !askSize(z); });
-        if (c.some(function (z) { return z.qty > 0; })) return "ok"; if (!c.length || c.some(function (z) { return z.qty == null; })) return "ask"; return "out"; }
+        if (c.some(function (z) { return z.qty > 0; })) return "ok"; if (!c.length || c.some(function (z) { return z.qty == null || IENNStock.canReq(z); })) return "ask"; return "out"; }
       function byId(id) { return PLANTS.find(function (p) { return p.id === id; }); }
       function sizeOf(p, k) { return p && p.sizes.find(function (z) { return z.key === k; }); }
       function lines() {
@@ -451,6 +456,7 @@
             hint.textContent = "";
             var k = p.id + "|" + pick.key, wantN = (cart[k] || 0) + clamp(inp.value), mx = IENNStock.maxQty(pick);
             if (pick.qty != null && wantN > mx) { wantN = mx; ask.hidden = false; msg.textContent = "✓ Added what we have. Want more? Ask us."; }
+            else if (IENNStock.isRequest(pick, wantN)) { ask.hidden = false; msg.textContent = "✓ Added " + wantN + " × " + pick.label + " as a request. We'll confirm."; }
             else msg.textContent = "✓ Added " + wantN + " × " + pick.label;
             cart[k] = Math.min(wantN, 99); lastAdded = k; save(); inp.value = 1; update(); showInfo(); bumpTray();
           });
@@ -521,10 +527,11 @@
       function fieldErr(id, msg) { var f = document.getElementById(id); f.setAttribute("aria-invalid", msg ? "true" : "false"); document.getElementById(id + "-err").textContent = msg || ""; return !msg; }
       function v(id) { return document.getElementById(id).value.trim(); }
       var form = document.getElementById("order-form"), btn = form.querySelector(".submit-btn"), serr = document.getElementById("server-error");
-      function showConfirm(ls, orderId, total) {
+      function showConfirm(ls, orderId, total, notes) {
         document.getElementById("confirm-id").textContent = orderId ? "Order number: " + orderId : "";
         var cl = document.getElementById("confirm-list"); cl.innerHTML = "";
         ls.forEach(function (l) { cl.appendChild(el("li", {}, l.q + " × " + l.p.name + " (" + l.z.label + ") — " + money(l.total))); });
+        var cn = document.getElementById("confirm-notices"); cn.innerHTML = ""; (notes || []).forEach(function (m) { cn.appendChild(el("p", { class: "stock-note" }, m)); }); cn.hidden = !(notes && notes.length);
         var ct = document.getElementById("confirm-total"); ct.textContent = "Total: " + money(total) + " ";
         ct.appendChild(el("small", { class: "tax-note" }, "Taxes included"));
         var c = document.getElementById("confirm"); c.hidden = false; form.reset(); closeCheckout();
@@ -551,12 +558,12 @@
           .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
           .then(function (r) {
             btn.disabled = false; btn.textContent = "Place order";
-            if (r.ok) return showConfirm(ls, r.orderId, r.total != null ? r.total : sub);
-            if (r.error === "stock" && r.problems) {
-              r.problems.forEach(function (pb) { PLANTS.forEach(function (p) { if (p.name === pb.plant) { var z = sizeOf(p, pb.sizeKey); if (z) { z.qty = pb.available; var k = p.id + "|" + z.key; if (pb.available > 0) cart[k] = Math.min(cart[k] || 0, pb.available); else delete cart[k]; } } }); });
-              save(); render(); load();
+            if (r.ok) return showConfirm(ls, r.orderId, r.total != null ? r.total : sub, IENNStock.notices(r));
+            serr.innerHTML = ""; serr.appendChild(document.createTextNode(r.message || "Sorry, something went wrong. Please try again."));
+            if (r.error === "stock") {   // order NOT placed: keep the tray as is so they can adjust; messages are text only
+              var pm = IENNStock.problems(r); if (pm.length) { var ul = el("ul", { class: "stock-problems" }); pm.forEach(function (m) { ul.appendChild(el("li", {}, m)); }); serr.appendChild(ul); }
             }
-            serr.textContent = r.message || "Sorry, something went wrong. Please try again."; serr.style.display = "block"; document.getElementById("review").focus();
+            serr.style.display = "block"; serr.scrollIntoView({ block: "nearest" }); document.getElementById("review").focus({ preventScroll: true });
           })
           .catch(function () {   // order NOT placed: keep the cart, offer call/text and email
             btn.disabled = false; btn.textContent = "Place order";
@@ -575,7 +582,7 @@
       function fromInventory(d) {
         return (d.plants || []).map(function (p) {
           return { id: slug(p.name), name: p.name, fullName: p.fullName || p.name, botanical: p.botanical || "", badge: p.badge ? String(p.badge).trim() : "", rank: p.rank, pinned: p.pinned, image: p.image || (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).src || "", srcset: p.image ? "" : (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).srcset || "",
-            sizes: (p.sizes || []).map(function (z) { return { key: z.key, label: z.size || SIZE_LABELS[z.key] || z.key, price: isFinite(Number(z.price)) && z.price !== "" && z.price != null ? Number(z.price) : PRICES[z.key], qty: z.qty == null ? null : Number(z.qty) }; }) };
+            sizes: (p.sizes || []).map(function (z) { return { key: z.key, label: z.size || SIZE_LABELS[z.key] || z.key, price: isFinite(Number(z.price)) && z.price !== "" && z.price != null ? Number(z.price) : PRICES[z.key], qty: z.qty == null ? null : Number(z.qty), extra: z.extra == null ? null : Number(z.extra), canRequest: z.canRequest == null ? null : z.canRequest === true }; }) };
         });
       }
       function fallback() {
@@ -589,7 +596,7 @@
           var parts = k.split("|"), p = PLANTS.find(function (x) { return x.id === parts[0] || x.id.indexOf(parts[0] + "-") === 0 || parts[0].indexOf(x.id) === 0; }), q = parseInt(v, 10);
           if (!p || !(q > 0)) return;
           var z = (parts[1] && p.sizes.find(function (s) { return s.key === parts[1] || s.label === parts[1]; })) || p.sizes.find(canAdd);
-          if (canAdd(z)) cart[p.id + "|" + z.key] = Math.min(q, z.qty == null ? 99 : z.qty, 99);
+          if (canAdd(z)) cart[p.id + "|" + z.key] = Math.min(q, IENNStock.maxQty(z));
         });
         save();
       }
