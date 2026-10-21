@@ -1,0 +1,35 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
+<title>Confirm order · Inland Empire Native Nursery</title>
+<style>body{font-family:system-ui,sans-serif;max-width:520px;margin:2rem auto;padding:0 1rem;color:#3d4b3d;background:#fbf9f5;line-height:1.5;text-align:center}
+img.logo{width:120px;height:120px;border-radius:50%}h1{font-size:1.4rem;color:#4a5a4a}.btn{display:inline-block;padding:14px 22px;background:#6b8f6b;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;margin-top:.5rem}
+.muted{color:#888;font-size:.9rem}</style></head><body>
+<img class="logo" src="images/ienn-logo-IMG_2773.jpg" alt="Inland Empire Native Nursery">
+<h1 id="title">Confirming order…</h1><p id="msg">One moment.</p><p id="act"></p>
+<script>
+(function () {
+  var EXEC = 'https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec';
+  var DRAFTS = 'https://mail.google.com/mail/#drafts';
+  var q = new URLSearchParams(location.search), id = q.get('id') || '', t = q.get('t') || '';
+  var $ = function (x) { return document.getElementById(x); };
+  function show(title, msg, drafts, retry) {
+    $('title').textContent = title; $('msg').textContent = msg; $('act').innerHTML = '';
+    if (drafts) { var a = document.createElement('a'); a.className = 'btn'; a.href = DRAFTS; a.textContent = 'Open Gmail Drafts'; $('act').appendChild(a); }
+    if (retry) { var b = document.createElement('a'); b.className = 'btn'; b.href = location.href; b.textContent = 'Try again'; $('act').appendChild(b); }
+  }
+  if (!/^[A-Za-z0-9-]{1,40}$/.test(id) || !t) { show('Link not valid', 'This confirm link is not valid or has expired. Please use the button in the newest order email, or call Eric.'); return; }
+  var url = EXEC + '?action=confirm&id=' + encodeURIComponent(id) + '&t=' + encodeURIComponent(t) + '&format=json';
+  fetch(url, { credentials: 'omit', redirect: 'follow', cache: 'no-store' })
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function (d) {
+      if (d && d.ok && d.status === 'already') return show('Already confirmed', 'Order ' + d.orderId + ' was already confirmed. The thank-you draft is in Gmail Drafts.', true);
+      if (d && d.ok) return show('Order confirmed', 'Order ' + d.orderId + ' confirmed. The thank-you draft is in Gmail Drafts.', true);
+      var e = d && d.error;
+      if (e === 'invalid') return show('Link not valid', 'This confirm link is not valid or has expired. Please use the button in the newest order email, or call Eric.');
+      if (e === 'cancelled') return show('Order cancelled', 'This order is marked Cancelled, so nothing was changed.');
+      if (e === 'busy') return show('Busy', 'Please try again in a moment.', false, true);
+      show('Something went wrong', 'Nothing was sent and the order was not marked Confirmed. Please try again or tell Eric. Error code: ' + String(e || 'unknown'), false, true);
+    })
+    .catch(function () { show('Could not reach the order system', 'Check your connection and try again. If it keeps failing, use the backup link under the button in the order email.', false, true); });
+})();
+</script></body></html>
