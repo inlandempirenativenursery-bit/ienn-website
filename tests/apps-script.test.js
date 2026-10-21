@@ -123,7 +123,7 @@ const linkOf = m => { const x = /CONFIRM ORDER[^\n]*?: (\S+)/.exec(m.body); retu
 const qs = u => Object.fromEntries(new URL(u).searchParams);
 t('confirm: alert is HTML + text, both carry the signed button link; no exact address', () => {
   const h = load(), r = post(h, [{ plant: 'White sage (Salvia apiana)', sizeKey: '4"', qty: 1 }]), m = h.sent.find(x => x.to === 'andrew@example.test');
-  const u = linkOf(m); assert.ok(u && u.startsWith('https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec?action=confirm&id=IEN-2026-003&t='), u);
+  const u = linkOf(m); assert.ok(u && u.startsWith('https://www.inlandempirenativenursery.com/confirm.html?id=IEN-2026-003&t='), u);
   assert.ok(m.htmlBody.includes('>Confirm order</a>') && m.htmlBody.includes(u.replace(/&/g, '&amp;')));
   assert.ok(h.props.IENN_CONFIRM_SECRET && h.props.IENN_CONFIRM_SECRET.length >= 64, 'secret auto-created');
   assert.strictEqual(qs(u).t, h.ctx.iennConfirmToken_(r.orderId));
@@ -142,12 +142,12 @@ t('confirm: bad token / wrong id / missing token -> generic page, nothing change
 t('confirm: good link -> Confirmed + one DRAFT with exact address, nothing sent; second tap idempotent', () => {
   const h = load(); post(h, [{ plant: 'White sage (Salvia apiana)', sizeKey: '4"', qty: 1 }]);
   const u = linkOf(h.sent.find(x => x.to === 'andrew@example.test')), n = h.sent.length;
-  const c1 = h.ctx.doGet({ parameter: qs(u) }).getContent();
+  const c1 = h.ctx.doGet({ parameter: Object.assign({ action: 'confirm' }, qs(u)) }).getContent();
   assert.ok(c1.includes('Order IEN-2026-003 confirmed. The thank-you email is in Gmail Drafts (NURSERY_ACCOUNT_PLACEHOLDER@example.com): open it, add a personal touch, press Send.'));
   assert.ok(c1.includes('https://mail.google.com/mail/#drafts') && c1.includes('width=device-width')); assert.doesNotMatch(c1, ADDR);
   assert.strictEqual(h.invo.sheets.Invoices.rows.slice(-1)[0][8], 'Confirmed'); assert.strictEqual(h.drafts.length, 1); assert.strictEqual(h.sent.length, n, 'nothing sent');
   assert.match(h.drafts[0].body, /Here's the location: TEST ADDRESS 1/); assert.strictEqual(h.drafts[0].to, 'ana@example.com'); assert.strictEqual(h.props['IENN_DRAFT_IEN-2026-003'], 'r-1');
-  const c2 = h.ctx.doGet({ parameter: qs(u) }).getContent();
+  const c2 = h.ctx.doGet({ parameter: Object.assign({ action: 'confirm' }, qs(u)) }).getContent();
   assert.match(c2, /Already confirmed/); assert.match(c2, /Check Drafts/); assert.strictEqual(h.drafts.length, 1); assert.strictEqual(h.sent.length, n); assert.strictEqual(h.lock.held, false);
 });
 t('confirm: status Confirmed by hand but no draft yet -> draft created once', () => {
@@ -219,6 +219,29 @@ t('placeholder recipe: one Submissions row -> White sage 4" = 5, everything else
   assert.deepStrictEqual(J(h.ctx.getAvailableStock()), { 'White sage': { '4"': 5, '1 gal': 0 } });
   const f = h.ctx.iennInventory(); assert.strictEqual(qty(f, 'White sage', '4"'), 5);
   f.plants.forEach(p => p.sizes.forEach(s => { if (s.qty !== null && !(p.name === 'White sage' && s.key === '4"')) assert.strictEqual(s.qty, 0, p.name + s.key); }));
+});
+const alertOf = h => h.sent.find(x => /CONFIRM ORDER/.test(x.body));
+t('json confirm: alert button -> confirm.html, direct exec fallback in text + HTML', () => {
+  const h = load(), r = post(h, [{ plant: 'White sage (Salvia apiana)', sizeKey: '4"', qty: 1 }]), m = alertOf(h), tok = h.ctx.iennConfirmToken_(r.orderId);
+  const page = 'https://www.inlandempirenativenursery.com/confirm.html?id=' + r.orderId + '&t=' + encodeURIComponent(tok), direct = 'https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec' + '?action=confirm&id=' + r.orderId + '&t=' + encodeURIComponent(tok);
+  assert.strictEqual(linkOf(m), page); assert.ok(m.htmlBody.includes('href="' + page.replace(/&/g, '&amp;') + '"'));
+  assert.ok(m.body.includes('If that link does not work, try: ' + direct)); assert.ok(m.htmlBody.includes('If the button does not work, try: ' + direct.replace(/&/g, '&amp;')));
+});
+t('json confirm: good token -> {ok,confirmed,draft}, draft + Confirmed, no data; repeat -> already', () => {
+  const h = load(), r = post(h, [{ plant: 'White sage (Salvia apiana)', sizeKey: '4"', qty: 1 }]), n = h.sent.length, id = r.orderId;
+  const out = h.ctx.doGet({ parameter: { action: 'confirm', id, t: h.ctx.iennConfirmToken_(id), format: 'json' } }), raw = out.getContent();
+  assert.deepStrictEqual(JSON.parse(raw), { ok: true, orderId: id, status: 'confirmed', draft: true });
+  assert.doesNotMatch(raw, /@|Fontana|ADDRESS|El[a]ine|P[i]co/); assert.strictEqual(h.drafts.length, 1); assert.strictEqual(h.sent.length, n);
+  assert.strictEqual(h.invo.sheets.Invoices.rows.slice(-1)[0][8], 'Confirmed'); assert.strictEqual(h.lock.held, false);
+  const again = JSON.parse(h.ctx.doGet({ parameter: { view: 'confirm', orderId: id, t: h.ctx.iennConfirmToken_(id), format: 'json' } }).getContent());
+  assert.deepStrictEqual(again, { ok: true, orderId: id, status: 'already', draft: true }); assert.strictEqual(h.drafts.length, 1);
+});
+t('json confirm: bad / missing / wrong-id token -> {ok:false,error:invalid}, nothing changed', () => {
+  const h = load(), r = post(h, [{ plant: 'White sage (Salvia apiana)', sizeKey: '4"', qty: 1 }]), id = r.orderId, good = h.ctx.iennConfirmToken_(id), st = h.invo.sheets.Invoices.rows.slice(-1)[0][8];
+  [{ id, t: 'bad' }, { id }, { id, t: h.ctx.iennConfirmToken_('IEN-2026-001') }, { id: '<x>', t: good }].forEach(q => {
+    assert.deepStrictEqual(JSON.parse(h.ctx.doGet({ parameter: Object.assign({ action: 'confirm', format: 'json' }, q) }).getContent()), { ok: false, error: 'invalid' }); });
+  assert.strictEqual(h.drafts.length, 0); assert.strictEqual(h.invo.sheets.Invoices.rows.slice(-1)[0][8], st);
+  assert.match(h.ctx.doGet({ parameter: { action: 'confirm', id, t: 'bad' } }).getContent(), /Link not valid/);   // HTML route unchanged
 });
 console.log('\n' + pass + ' two-project tests passed');
 
@@ -341,7 +364,7 @@ for (const other of ['https://script.google.com/macros/s/X/dev', 'https://script
   t('confirm link in alert uses the live AKfycby_ exec URL even when getUrl() = ' + other, () => {
     const h = load(); h.ctx.ScriptApp.getService = () => ({ getUrl: () => other });
     post(h, [{ plant: 'White sage (Salvia apiana)', sizeKey: '4"', qty: 1 }]); const m = h.sent.find(x => x.to === 'andrew@example.test'), u = linkOf(m);
-    assert.ok(u && u.startsWith(LIVE_EXEC + '?action=confirm&id='), u); assert.ok(!(m.body + m.htmlBody).includes(other));
+    assert.ok(u && u.startsWith('https://www.inlandempirenativenursery.com/confirm.html?id='), u); assert.ok(m.body.includes('try: ' + LIVE_EXEC + '?action=confirm&id='), 'fallback'); assert.ok(!(m.body + m.htmlBody).includes(other));
   });
   t('hub links use the live AKfycby_ exec URL even when getUrl() = ' + other, () => {
     const h = load(); h.ctx.ScriptApp.getService = () => ({ getUrl: () => other });
