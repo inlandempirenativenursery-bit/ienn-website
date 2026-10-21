@@ -2,14 +2,10 @@
  * Website endpoints.
  *  GET  ?view=print / ?view=hub -> see IENN_Print.gs
  *  GET  ?view=inventory  -> JSON (or JSONP with &callback=) built from getInitial()/getAvailableStock() + Catalog + prices
+ *  GET  ?view=confirm&orderId=XXX -> mark Confirmed + create Gmail draft
  *  POST (text/plain JSON) -> website order, through iennSubmitInvoiceChecked -> existing submitInvoice
  *
- * WHY doPost + text/plain: a static site can send a "simple" POST (no custom headers) without a CORS preflight,
- * which Apps Script cannot answer. Apps Script redirects to googleusercontent.com and that reply carries
- * Access-Control-Allow-Origin: *, so the page can read the invoice number. Customer details stay out of URLs.
- *
  * ONE EDIT to the existing doGet(e), as its first line:   var ienn = iennRoute_(e); if (ienn) return ienn;
- * If the project already has a doPost, call iennWebsitePost_(e) from it and delete doPost below.
  */
 function iennJson_(obj, cb) {
   var s = JSON.stringify(obj);
@@ -19,15 +15,14 @@ function iennJson_(obj, cb) {
 
 function iennRoute_(e) {
   var p = (e && e.parameter) || {};
-  if (p.view === 'customer') return iennCustomerClosed_();     // public orders now go through the website only
+  if (p.view === 'customer') return iennCustomerClosed_();
   if (p.view === 'print' || p.view === 'printlist') return iennPrintRoute_(p);
   if (p.view === 'hub') return HtmlService.createHtmlOutput(iennHubHtml_()).setTitle('IENN team home');
+  if (p.view === 'confirm') return iennConfirmOrder_(p.orderId);
   if (p.view !== 'inventory') return null;
   try { return iennJson_(iennInventory(), p.callback); } catch (err) { return iennJson_({ ok: false, error: String(err.message || err) }, p.callback); }
 }
 
-/** {version:3, taxPct, sizes:[{key,label,price,tracked}], plants:[{name, fullName, botanical, image, sizes:[{key,size,price,qty}]}]}
-    qty: number for tracked sizes (0 = sold out), null for untracked sizes (= "Available on request"). Prices include tax. */
 function iennInventory() {
   var init = getInitial() || {}, avail = iennAvailable_(), photos = iennCatalogPhotos_(), seen = {}, names = [];
   (init.plants || []).concat(iennCatalogNames_()).forEach(function (n) { var k = iennKey_(n); if (k && !seen[k]) { seen[k] = 1; names.push(n); } });
@@ -49,7 +44,6 @@ function iennWebsitePost_(e) {
 
 function iennMoney_(n) { return (Math.round(n * 100) / 100).toFixed(2); }
 
-/** Website body {name,email,phone,notes,items:[{plant (fullName), sizeKey, qty}]} -> existing submitInvoice data shape. */
 function iennWebsiteOrder_(b) {
   if (!b || typeof b !== 'object') return { ok: false, error: 'invalid', message: 'Could not read the order.' };
   var name = String(b.name || '').trim().slice(0, 100), email = String(b.email || '').trim().slice(0, 200);
@@ -60,9 +54,9 @@ function iennWebsiteOrder_(b) {
   for (var i = 0; i < b.items.length; i++) {
     var it = b.items[i], s = iennSize_(it.sizeKey), q = Math.floor(Number(it.qty));
     if (!it.plant || !s || !(q >= 1 && q <= IENN_MAX_QTY_PER_LINE)) return { ok: false, error: 'invalid', message: 'One of the items is not valid. Please refresh and try again.' };
-    lines.push({ plant: String(it.plant), size: s.key, qty: String(q), amt: iennMoney_(q * s.price) });   // server prices, never client prices
+    lines.push({ plant: String(it.plant), size: s.key, qty: String(q), amt: iennMoney_(q * s.price) });
   }
-  var total = lines.reduce(function (a, l) { return a + Number(l.amt); }, 0), sub = total / (1 + IENN_TAX_PCT / 100);   // prices include tax
+  var total = lines.reduce(function (a, l) { return a + Number(l.amt); }, 0), sub = total / (1 + IENN_TAX_PCT / 100);
   var phone = String(b.phone || '').trim().slice(0, 40), notes = String(b.notes || '').trim().slice(0, 1000);
   var pickup = String(b.pickup || '').trim().slice(0, 100), pay = String(b.payment || '').trim().slice(0, 40);
   var data = { date: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd'), paid: 'unpaid', payment: '',
@@ -75,12 +69,6 @@ function iennWebsiteOrder_(b) {
     items: lines.map(function (l) { var s = iennSize_(l.size); return { plant: iennSplit_(l.plant)[0], size: s.label, qty: Number(l.qty), price: s.price, lineTotal: Number(l.amt) }; }) };
 }
 
-/**
- * Stock-checked wrapper around the EXISTING submitInvoice(data). Use it for every order path:
- * the website calls it via doPost, and the customer view can too (change `.submitInvoice(data)` to
- * `.iennSubmitInvoiceChecked(data)` in its HTML). Takes a script lock, re-checks available stock,
- * calls submitInvoice (which writes IENN Invoices, so the sale is then subtracted automatically). Throws for google.script.run callers on failure.
- */
 function iennSubmitInvoiceChecked(data, meta) {
   meta = meta || {};
   var fromCustomerView = !meta.source;
@@ -89,7 +77,7 @@ function iennSubmitInvoiceChecked(data, meta) {
   try {
     var avail = iennAvailable_(), need = {}, problems = [];
     (data.lines || []).forEach(function (l) {
-      var s = iennSize_(l.size); if (!s || !s.tracked) return;               // untracked sizes: orderable, not limited
+      var s = iennSize_(l.size); if (!s || !s.tracked) return;
       var k = iennKey_(l.plant) + '|' + s.key; need[k] = need[k] || { plant: iennSplit_(l.plant)[0], s: s, qty: 0 }; need[k].qty += Number(l.qty || 0);
     });
     Object.keys(need).forEach(function (k) {
@@ -99,27 +87,25 @@ function iennSubmitInvoiceChecked(data, meta) {
     if (problems.length) return iennFail_(fromCustomerView, { ok: false, error: 'stock', problems: problems,
       message: problems.map(function (p) { return p.available > 0 ? 'Only ' + p.available + ' ' + p.plant + ' (' + p.size + ') left — you asked for ' + p.requested + '.' : p.plant + ' (' + p.size + ') just sold out.'; }).join(' ') +
                ' Your cart has been updated; please review and submit again.' });
-
-    var res = submitInvoice(data);                                         // existing: writes IENN Invoices + emails team
+    var res = submitInvoice(data);
     var id = (res != null && (typeof res === 'string' || typeof res === 'number')) ? String(res)
            : (res && (res.invoiceNumber || res.invoiceNo || res.number || res.id));
-    if (!id) { var all = iennInvoices_(); id = all.length ? all[all.length - 1].id : ''; }   // newest invoice row
+    if (!id) { var all = iennInvoices_(); id = all.length ? all[all.length - 1].id : ''; }
     if (SpreadsheetApp.flush) SpreadsheetApp.flush();
     iennMarkNew_(id);
     if (IENN_EXTRA_TEAM_EMAIL) iennTeamEmail_(id, data, meta);
     return fromCustomerView ? res : { ok: true, orderId: String(id) };
   } finally { lock.releaseLock(); }
 }
-/** New invoice: Status = New, Handled by = Andrew (if blank). */
+
 function iennMarkNew_(id) {
   try {
     var all = iennInvoices_(), inv = all.filter(function (x) { return x.id === String(id); })[0]; if (!inv) return;
     if (!inv.status || inv.status === 'New') all.sheet.getRange(inv.row, all.cols.status + 1).setValue('New');
     if (!inv.handledBy) all.sheet.getRange(inv.row, all.cols.handled + 1).setValue(IENN_ORDER_OWNER);
-  } catch (e) { /* never fail an order over status columns */ }
+  } catch (e) {}
 }
 
-/** The old public ?view=customer no longer takes orders: short message + link to the website shop. */
 function iennCustomerClosed_() {
   var u = iennEsc_(IENN_WEBSITE_URL);
   return HtmlService.createHtmlOutput('<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head>' +
@@ -136,16 +122,46 @@ function iennTeamEmail_(id, data, meta) {
   var ok = function (a) { return a && !/PLACEHOLDER/i.test(a); };
   var to = ok(TEAM_EMAIL_TO) ? TEAM_EMAIL_TO : '', cc = TEAM_EMAIL_CC.filter(ok); if (!to && !cc.length) return false;
   if (!to) { to = cc.shift(); }
-  var body = 'A new order came in (' + (meta.source || 'customer view') + ').\n\nOrder: ' + id + '\nCustomer: ' + (meta.name || '') + ' <' + data.customerEmail + '>\n\n' +
-    data.lines.map(function (l) { return '  ' + l.qty + ' × ' + l.plant + ' (' + l.size + ') = $' + l.amt; }).join('\n') +
-    '\n\nTotal: $' + data.grand + ' (taxes included)\nNotes: ' + (data.note || '') + '\n\n' + IENN_ORDER_OWNER + ' is handling this order (order-to-pickup).' +
-    '\n\nView details: ' + iennInvoicesSheet_().getParent().getUrl() + '#gid=' + iennInvoicesSheet_().getSheetId() +
-    '\nIf someone else takes it, change Handled by in IENN Invoices.';
-  MailApp.sendEmail({ to: to, cc: cc.join(','), subject: 'New IENN order ' + id + ' — ' + (meta.name || data.customerEmail), body: body });
+  var confirmUrl = ScriptApp.getService().getUrl() + '?view=confirm&orderId=' + encodeURIComponent(id);
+  var sheetUrl = iennInvoicesSheet_().getParent().getUrl() + '#gid=' + iennInvoicesSheet_().getSheetId();
+  var linesHtml = data.lines.map(function (l) { return '<li>' + l.qty + ' × ' + iennEsc_(l.plant) + ' (' + iennEsc_(l.size) + ') = $' + l.amt + '</li>'; }).join('');
+  var html = '<div style="font-family:system-ui,Arial,sans-serif;color:#2c2c2c;max-width:520px">' +
+    '<p>A new order came in (' + iennEsc_(meta.source || 'website') + ').</p>' +
+    '<p><b>Order:</b> ' + iennEsc_(id) + '<br><b>Customer:</b> ' + iennEsc_(meta.name || '') + ' <' + iennEsc_(data.customerEmail) + '></p>' +
+    '<ul>' + linesHtml + '</ul>' +
+    '<p><b>Total:</b> $' + data.grand + ' (taxes included)</p>' +
+    '<p><b>Notes:</b><br>' + iennEsc_(data.note || '').replace(/\n/g, '<br>') + '</p>' +
+    '<p style="margin:1.5rem 0"><a href="' + confirmUrl + '" style="display:inline-block;background:#c0392b;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px">Confirm order</a></p>' +
+    '<p style="font-size:14px;color:#555">One tap: marks it Confirmed and saves the thank-you email (with the pickup address) in Gmail Drafts. Nothing is sent until you press Send there.</p>' +
+    '<p>' + IENN_ORDER_OWNER + ' is handling this order (order-to-pickup).<br><a href="' + sheetUrl + '">View details</a>. If someone else takes it, change Handled by in IENN Invoices.</p>' +
+    '</div>';
+  MailApp.sendEmail({ to: to, cc: cc.join(','), subject: 'New IENN order ' + id + ' — ' + (meta.name || data.customerEmail), htmlBody: html });
   return true;
 }
 
-/** Run once from the editor: authorises scopes, adds Status/Handled by/Our response columns to IENN Invoices, logs what it found. */
+/** Confirm-order endpoint. GET ?view=confirm&orderId=IEN-2026-001
+ * Marks Status = Confirmed and creates the customer thank-you draft in Gmail (never sends). */
+function iennConfirmOrder_(orderId) {
+  if (!orderId) return HtmlService.createHtmlOutput('<p>Missing order ID.</p>');
+  var all = iennInvoices_();
+  var inv = all.filter(function (x) { return String(x.id) === String(orderId); })[0];
+  if (!inv) return HtmlService.createHtmlOutput('<p>Order ' + iennEsc_(orderId) + ' not found.</p>');
+  all.sheet.getRange(inv.row, all.cols.status + 1).setValue('Confirmed');
+  var draft = null;
+  try { draft = iennDraftReply(orderId); } catch (e) {}
+  var sheetUrl = iennInvoicesSheet_().getParent().getUrl() + '#gid=' + iennInvoicesSheet_().getSheetId();
+  var html = '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head>' +
+    '<body style="font-family:system-ui,Arial,sans-serif;max-width:520px;margin:40px auto;padding:0 16px;color:#2c2c2c">' +
+    '<h1 style="color:#4a5a4a">Order ' + iennEsc_(orderId) + ' confirmed</h1>' +
+    '<p>Status set to <b>Confirmed</b>.</p>' +
+    (draft ? '<p>Thank-you email saved as a <b>draft</b> in your Gmail (not sent). Open Gmail Drafts to review and send.</p>' : '<p>Could not create the draft automatically. Use the IENN menu in the spreadsheet to draft the reply.</p>') +
+    '<p><a href="' + iennEsc_(sheetUrl) + '" style="display:inline-block;padding:12px 18px;background:#6b7c6a;color:#fff;border-radius:8px;text-decoration:none;font-weight:700">View in IENN Invoices</a></p>' +
+    '</body></html>';
+  return HtmlService.createHtmlOutput(html).setTitle('Order confirmed — IENN');
+}
+
+function iennEsc_(s) { return String(s == null ? '' : s).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/"/g,'"'); }
+
 function iennSetup() {
   var inv = iennInventory(); iennInvoices_(); iennEnsurePromos_();
   Logger.log('Plants: ' + inv.plants.length + '; baseline count date: ' + iennBaselineDate_());
