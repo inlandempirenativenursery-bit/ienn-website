@@ -108,7 +108,7 @@ t('reply draft fills template from IENN Invoices, keeps placeholders, never send
 t('print list + CSV: sorted by availability then appeal, prices on sizes', () => {
   const { ctx } = load();
   const html = ctx.iennPrintHtml_(), csv = ctx.iennPrintCsv_().split('\n');
-  assert.match(html, /images\/ienn-logo-sage\.png/); assert.match(html, /October 20, 2026/); assert.match(html, /4-inch pot<br><small>\$6/);
+  assert.match(html, /images\/ienn-logo-IMG_2773\.jpg/); assert.match(html, /October 20, 2026/); assert.match(html, /4-inch pot<br><small>\$6/);
   assert.strictEqual(csv[0], 'Plant,Botanical,2-inch pot ($3),4-inch pot ($6),Quarter tree pot ($10),1-gallon ($15)');
   assert.deepStrictEqual(csv.slice(1).map(l => l.split(',')[0]), ['White Sage', 'Sticky Monkeyflower', 'Toyon', 'Yarrow', 'Blue Pyramid Cypress']);
   assert.strictEqual(csv[1], 'White Sage,Salvia apiana,On request,3,On request,8');
