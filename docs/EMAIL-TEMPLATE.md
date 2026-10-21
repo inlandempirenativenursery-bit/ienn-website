@@ -1,47 +1,104 @@
-# Customer confirmation email (uniform template)
+# IENN order emails (sample, fake data)
 
-Built by `iennBuildReply_` in `apps-script/IENN_Drafts.gs`, using the `RESPONSE_TEMPLATE` there plus the constants in `apps-script/IENN_Config.gs`.
-How to use it: in IENN Invoices, select the order row, type any notes in **Our response**, then choose **IENN → Draft reply for selected order**. A Gmail **draft** is created. Look it over, check it, then send. Nothing is sent automatically.
+Generated from the Apps Script code by the test suite. Exact addresses and team emails live only in Apps Script config and are shown here as {{PLACEHOLDERS}}.
 
-**Still to fill in:** the exact pickup address. `PICKUP_ADDRESS` in `IENN_Config.gs` is still `{{PICKUP_ADDRESS}}`.
-
-## Filled sample (EXAMPLE ORDER, made-up customer and items)
-
-> **To:** ana@example.com  ·  **Subject:** Your Inland Empire Native Nursery order INV-1234
+## 1. Team alert (automatic) — To Andrew, CC Eric + Keith
 
 ```
+To: {{TEAM_TO}}
+Subject: New IENN order IEN-2026-003 — Ana Lopez
+CC: {{TEAM_CC}}
+
+A new order came in (website).
+
+Order: IEN-2026-003
+Customer: Ana Lopez <ana@example.com>
+
+  1 × White sage (Salvia apiana) (4") = $6.00
+
+Total: $6.00 (taxes included)
+Notes: Website order — Ana Lopez · 9095550100
+Pickup: Saturday
+Pays by: Zelle
+Sat 11
+
+Andrew is handling this order (order-to-pickup).
+
+View details: {{INVOICES_SHEET_URL}}
+If someone else takes it, change Handled by in IENN Invoices.
+```
+
+## 2. Customer order copy (automatic, sent on submit)
+
+Never contains an exact address or ZIP.
+
+```
+Subject: Your Inland Empire Native Nursery order — IEN-2026-003
+
+Inland Empire Native Nursery
+Fontana, CA · 1 (909) 609-9373 · plants@inlandempirenativenursery.com
+
+Thanks for your order! Here is your copy.
+
+Order number: IEN-2026-003
+Date: 2026-10-20
+
+Your plants:
+  1 x White sage (Salvia apiana) - 4" - $6.00
+
+TOTAL (taxes included): $6.00
+
+Your notes: Pickup preference: Saturday
+Sat 11
+
+PICKUP
+Saturdays 10 AM – 2 PM, other times case by case on request.
+We’ll email to confirm your pickup time.
+
+LOCATION
+Near Sierra & Baseline in Fontana, about 10 minutes from the 210. The exact address is sent after we confirm your order.
+
+PAYMENT
+Cash or Zelle at time of pickup. You chose: Zelle.
+
+Questions? Call or text Andrew: (909) 609-9373, or email plants@inlandempirenativenursery.com
+
+All sales are final. Plants are sold as-is. No returns, exchanges, or refunds after pickup.
+Identity is as marked on this receipt. No warranty beyond defects obvious at the time of pickup.
+```
+
+## 3. Thank-you / pickup confirmation (Gmail DRAFT, never auto-sent)
+
+Created when Andrew runs `iennConfirmAndDraftLatest()` or `iennConfirmAndDraft('IEN-…')`. Andrew edits and presses Send.
+
+```
+Subject: Your Inland Empire Native Nursery order IEN-2026-003
+
 Hi Ana Lopez,
 
-Thanks for your order! Please look it over below and let us know if anything needs to change.
+Thanks for ordering, and thanks for choosing us.
 
-Order number: INV-1234
+Order number: IEN-2026-003
 
-Items:
-  - 2 × White Sage (4") @ $6 = $12.00
-  - 1 × Sticky Monkeyflower (1 gal) @ $15 = $15.00
+Your plants:
+  - 1 × White sage (4-inch pot) @ $6 = $6.00
 
-Total: $27.00 (taxes included)
+Total: $6.00 (taxes included)
 
-Payment: Cash or Zelle at time of pickup
-Payment status: Not paid yet (pay at pickup)
+Confirming your pickup time: Saturday, October 24, 2026 (Saturdays 10 AM – 2 PM)
 
-Pickup location: {{PICKUP_ADDRESS}}, Fontana
-Pickup hours: Saturdays 10 AM – 2 PM
-Grand Terrace pickup available upon request.
-Other pickup times available case by case upon request.
+Here's the location: {{PICKUP_ADDRESS}}
 
-Your notes: Can I pick up after 1 PM?
+Payment: Cash or Zelle at time of pickup (you chose Zelle).
 
-Our notes: Yes, 1 PM works. See you Saturday!
+Your notes: Sat 11
 
-Questions? Call or text Andrew: (909) 609-9373
+If you have any questions, don't hesitate to reach out. Call or text Andrew: (909) 609-9373
 
 Thank you for supporting native plants!
 Inland Empire Native Nursery
-```
 
-## Team new-order email recipients
-- **To:** Andrew (`TEAM_EMAIL_TO`)
-- **CC:** Eric and Keith (`TEAM_EMAIL_CC`)
-- Raylene is not on order emails.
-Addresses are still placeholders, and placeholder addresses are skipped. Note that the existing `submitInvoice` sends the team notice. This extra To/CC email only goes out if `IENN_EXTRA_TEAM_EMAIL = true`.
+Grand Terrace pickup available upon request.
+Other pickup times available case by case upon request.
+Alternate pickup (available upon request): {{PICKUP_ALT_ADDRESS}}
+```
