@@ -1,6 +1,7 @@
+// NOTE (review-oct20): chip preselection, sold-out chips and "Only N left" assertions below are superseded by Eric's Oct 20 review; see tests/review-oct20.e2e.js + tests/stock-view.test.js.
 // Browser tests for the polish pass. Serves the repo via python http.server on :8765 and mocks the Apps Script /exec.
 const { chromium } = require('playwright'); const assert = require('assert');
-const BASE = 'http://localhost:8765/', SHOTS = process.env.SHOTS || 'docs/screenshots/v2/';  // serve repo: python3 -m http.server 8765; needs playwright
+const BASE = process.env.BASE || 'http://localhost:8765/', SHOTS = process.env.SHOTS || 'docs/screenshots/v2/';  // serve repo: python3 -m http.server 8765; needs playwright
 const S = (k, label, price, qty) => ({ key: k, size: label, price, qty });
 const ask = () => [S('2"', '2-inch pot', 3, null), S('Tree pot', 'Quarter tree pot', 10, null)];
 const feed = () => ({ version: 3, updated: new Date().toISOString(), taxIncluded: true, plants: [

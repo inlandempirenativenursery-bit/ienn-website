@@ -1,6 +1,6 @@
 // Photo wiring check: node tests/photos.e2e.js (serve repo on :8765). Uses mock feed with several plants.
 const { chromium } = require(process.env.PW || 'playwright'); const fs = require('fs');
-const BASE = 'http://localhost:8793/', OUT = process.env.SHOTS || '/workspace/ienn-website-shots/photos/';
+const BASE = process.env.BASE || 'http://localhost:8793/', OUT = process.env.SHOTS || '/workspace/ienn-website-shots/photos/';
 const S = (k, l, p, q) => ({ key: k, size: l, price: p, qty: q });
 const names = [['Rock Monkeyflower','Diplacus calycinus'],['Matilija Poppy','Romneya coulteri'],['Sticky Monkeyflower','Diplacus aurantiacus'],['White Sage','Salvia apiana'],['California Poppy','Eschscholzia californica'],['Showy Penstemon','Penstemon spectabilis'],['Narrow-leaf Milkweed','Asclepias fascicularis'],['Showy Milkweed','Asclepias speciosa'],['Woollypod Milkweed','Asclepias eriocarpa'],['Deergrass','Muhlenbergia rigens'],['Scarlet Bugler','Penstemon centranthifolius'],['California Encelia','Encelia californica'],['Morning Glory','Calystegia macrostegia'],['Yucca','Hesperoyucca whipplei'],['Sugarbush','Rhus ovata'],['Black Sage','Salvia mellifera']];
 const feed = { version: 3, taxIncluded: true, plants: names.map(([n, b]) => ({ name: n, fullName: `${n} (${b})`, botanical: b, sizes: [S('4"', '4-inch pot', 6, 10), S('1 gal', '1-gallon', 15, 5)] })) };

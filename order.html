@@ -118,6 +118,39 @@
     .photo-credit a { color:inherit; }
     .ph .leaf { font-size:1.6rem; opacity:.55; }
     input:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible { outline:3px solid var(--sage-dark); outline-offset:2px; }
+    /* review-oct20: neutral chips, green only when tapped; compact scroll-and-add layout */
+    .chips .chip { background:var(--cream); border:1px solid var(--sage); color:var(--text); }
+    .chips .chip[aria-pressed="true"] { background:var(--green); border-color:var(--green); color:#fff; }
+    .chips .chip-request { border-style:dashed; }
+    .ask-note { font-size:0.82rem; color:var(--sage-dark); background:var(--cream); border:1px solid #e3e1db; border-radius:8px; padding:0.3rem 0.5rem; }
+    .ask-note[hidden] { display:none; }
+    .ask-note a { color:var(--sage-dark); font-weight:600; }
+    .top { margin:0.5rem 1rem 0; }
+    .top h1 { margin:0; font-size:1.2rem; }
+    .top .lead { margin:0.1rem 0 0; font-size:0.85rem; }
+    .steps { margin-top:0.5rem; }
+    .steps small { display:none; }
+    .hint { font-size:0.8rem; margin-top:0.4rem; }
+    .grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:0.6rem; margin:0.75rem 0.6rem; }
+    @media (min-width:640px) { .grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+    @media (min-width:960px) { .grid { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+    .ph, .grid .ph { aspect-ratio:1/1; }
+    .card .body { padding:0.6rem; gap:0.45rem; }
+    .card h3 { font-size:0.98rem; }
+    .card .slot { display:none; }
+    .card .note { font-size:0.75rem; font-style:italic; }
+    .card .badge { font-size:0.72rem; }
+    .card .chips .chip { flex:1 1 calc(50% - 0.35rem); min-width:0; padding:0 0.5rem; font-size:0.82rem; text-align:left; }
+    @media (min-width:640px) { .card .chips .chip { flex:1 1 auto; } }
+    .card .row { flex-direction:column; align-items:stretch; }
+    .card .stepper { justify-content:space-between; }
+    .card .stepper input { flex:1; width:auto; min-width:0; }
+    .card .add { min-height:48px; font-size:1.02rem; }
+    .grid-more { height:1px; }
+    .details { margin:1rem; }
+    .details summary { min-height:44px; display:flex; align-items:center; font-weight:700; color:var(--sage-dark); cursor:pointer; }
+    .cartbar .cb-sum { font-weight:700; }
+    .cartbar .cb-sum small { font-weight:400; color:#666; }
     footer { text-align:center; font-size:0.8rem; color:#555; margin-top:2rem; padding:1rem; }
   </style>
 </head>
@@ -131,8 +164,10 @@
   </header>
 
 <main>
-  <h1>Place Your Order</h1>
-  <p class="lead"><b>Connecting people to native plants.</b> Want a yard full of bees, butterflies and hummingbirds? Local natives are hard to find, so we grow them here in Fontana and make pickup simple.</p>
+  <div class="top">
+    <h1>Shop native plants</h1>
+    <p class="lead"><b>Connecting people to native plants.</b> Grown in Fontana · pickup Saturdays · Cash or Zelle.</p>
+  </div>
 
   <section class="confirm" id="confirm" hidden tabindex="-1" aria-labelledby="confirm-title" aria-live="polite">
     <div class="tk-head"><h2 id="confirm-title">Thank you — your order is in!</h2><span>PICKUP TICKET</span></div>
@@ -148,23 +183,11 @@
     </div>
   </section>
 
-  <section class="notice" aria-labelledby="notice-title">
-    <h2 id="notice-title">Pickup &amp; Details</h2>
-    <ul>
-      <li><span aria-hidden="true">📅</span><span><b>Pickup: Fontana · Saturdays 10 AM – 2 PM</b>Pickup only — reserve here, pick up on Saturday.</span></li>
-      <li><span aria-hidden="true">💵</span><span><b>Payment</b>Cash or Zelle at time of pickup.</span></li>
-      <li><span aria-hidden="true">📍</span><span><b>Location</b>Fontana. We share the exact address after we confirm your order.</span></li>
-      <li><span aria-hidden="true">✅</span><span><b>Confirmation</b>We will confirm your order and send pickup details ASAP.</span></li>
-      <li><span aria-hidden="true">📞</span><span><b>Questions?</b>Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a></span></li>
-    </ul>
-    <p class="fine-print">Other pickup times available case by case upon request.<br>Grand Terrace pickup available upon request.</p>
-  </section>
 
   <h2 class="sr-only" id="steps-title">How it works</h2>
   <ol class="steps" id="steps"><li class="on"><span class="n">1</span>Select<small>Pick plants &amp; sizes</small></li><li><span class="n">2</span>Reserve<small>Nothing charged online</small></li><li><span class="n">3</span>Pick up<small>Saturday in Fontana</small></li></ol>
-  <h2 id="shop-title">1. Select your plants</h2>
-  <p class="hint">Tap a size, set how many, and add it to your tray. We hold it for pickup.</p>
-  <p class="hint">2-inch ($3) and quarter tree pot ($10) sizes: <b>Ask us</b>, available on request. Add them in Notes and we'll confirm.</p>
+  <h2 id="shop-title" class="sr-only">Select your plants</h2>
+  <p class="hint">Tap a size, then Add. 2-inch and tree pot sizes are available on request (add them in Notes).</p>
   <p class="inv-status" id="inv-status" role="status" hidden></p>
   <div class="grid" id="plant-list" aria-busy="false"></div>
 
@@ -173,7 +196,18 @@
     <div id="summary-body" aria-live="polite"></div>
   </section>
 
-  <h2>2. Your details</h2>
+  <section class="notice" id="pickup-details" aria-labelledby="notice-title">
+    <h2 id="notice-title">Pickup &amp; Details</h2>
+    <ul>
+      <li><span aria-hidden="true">📅</span><span><b>Pickup: Fontana · Saturdays 10 AM – 2 PM</b>Pickup only — reserve here, pick up on Saturday.</span></li>
+      <li><span aria-hidden="true">💵</span><span><b>Payment</b>Cash or Zelle at time of pickup.</span></li>
+      <li><span aria-hidden="true">📍</span><span><b>Location</b>Fontana, near Sierra &amp; Baseline, about 10 minutes from the 210. We share the exact address after we confirm your order.</span></li>
+      <li><span aria-hidden="true">✅</span><span><b>Confirmation</b>We will confirm your order and send pickup details ASAP.</span></li>
+      <li><span aria-hidden="true">📞</span><span><b>Questions?</b>Call or text Andrew: <a class="contact-tel" href="tel:+19096099373">(909)&nbsp;609&#8209;9373</a> · <a class="contact-sms" href="sms:+19096099373">Text</a></span></li>
+    </ul>
+    <p class="fine-print">Other pickup times available case by case upon request.<br>Grand Terrace pickup available upon request.</p>
+  </section>
+  <h2>Your details</h2>
   <form id="order-form" action="mailto:hello@inlandempirenativenursery.com" method="post" enctype="text/plain" novalidate>
     <input type="hidden" name="order" id="order-field">
     <label for="name">Your Name</label>
@@ -213,8 +247,8 @@
 </main>
 
   <div class="cartbar" id="cartbar" hidden>
-    <span id="cartbar-count" aria-live="polite">0 items</span>
-    <a href="#review">Review order</a>
+    <span id="cartbar-count" class="cb-sum" aria-live="polite">0 items</span>
+    <a href="#review" id="cartbar-go">Reserve</a>
   </div>
 
   <footer>
@@ -224,6 +258,7 @@
   </footer>
 
   <script src="plant-photos.js"></script>
+  <script src="stock-view.js"></script>
   <script>
     /* ===== IENN SETTINGS =====
        APPS_SCRIPT_URL: the existing IENN inventory/invoice web app (/exec). The page reads ?view=inventory from it
@@ -280,60 +315,86 @@
       function sortPlants(a) { var r = { ok: 0, ask: 1, out: 2 }; return a.sort(function (x, y) { return r[pstate(x)] - r[pstate(y)] || rk(x) - rk(y) || appeal(x) - appeal(y) || x.name.localeCompare(y.name); }); }
       function split(full) { var m = /^(.*?)\s*\((.*)\)\s*$/.exec(full || ""); return m ? [m[1], m[2]] : [String(full || "").trim(), ""]; }
 
+      var BATCH = 12, shown = 0, io = null;
       function render() {
-        list.innerHTML = ""; list.setAttribute("aria-busy", "false");
-        PLANTS.forEach(function (p, idx) {
+        list.innerHTML = ""; list.setAttribute("aria-busy", "false"); shown = 0; if (io) io.disconnect();
+        more(); update();
+      }
+      function more() {   // progressive render: next BATCH cards when the sentinel scrolls near view
+        var old = list.querySelector(".grid-more"); if (old) old.remove();
+        PLANTS.slice(shown, shown + BATCH).forEach(function (p, j) { list.appendChild(card(p, shown + j)); });
+        shown = Math.min(PLANTS.length, shown + BATCH);
+        if (shown < PLANTS.length) {
+          var s = el("div", { class: "grid-more", "aria-hidden": "true" }); list.appendChild(s);
+          if ("IntersectionObserver" in window) { io = new IntersectionObserver(function (es) { if (es.some(function (x) { return x.isIntersecting; })) { io.disconnect(); more(); update(); } }, { rootMargin: "800px" }); io.observe(s); }
+          else more();
+        }
+      }
+      var SHORT = { '2"': "2-inch", '4"': "4-inch", 'Tree pot': "Tree pot", '1 gal': "1-gal" };
+      function askNote() { var n = el("span", { class: "ask-note" }); n.appendChild(document.createTextNode("Ask us: "));
+        n.appendChild(el("a", { class: "contact-tel", href: "tel:" + CONTACT_TEL }, "call")); n.appendChild(document.createTextNode(" or "));
+        n.appendChild(el("a", { class: "contact-sms", href: "sms:" + CONTACT_TEL }, "text")); n.appendChild(document.createTextNode(" Andrew")); return n; }
+      function card(p, idx) {
           var ps = pstate(p), card = el("article", { class: "card" + (ps === "out" ? " sold-out" : ""), "aria-labelledby": p.id + "-name" });
           card.dataset.id = p.id;
           var ph = el("div", { class: "ph" });
-          if (p.image) ph.appendChild(el("img", p.srcset ? { src: p.image, srcset: p.srcset, sizes: "(max-width: 600px) 45vw, 260px", alt: p.name, loading: "lazy", decoding: "async" } : { src: p.image, alt: p.name, loading: "lazy", decoding: "async" })); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }  // image slot kept: set p.image
+          if (p.image) ph.appendChild(el("img", p.srcset ? { src: p.image, srcset: p.srcset, sizes: "(max-width: 600px) 48vw, 260px", alt: p.name, loading: "lazy", decoding: "async" } : { src: p.image, alt: p.name, loading: "lazy", decoding: "async" })); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }
           card.appendChild(ph);
           var cr = p.image && typeof ienPhoto === "function" && ienPhoto(p.name); cr = cr && cr.src === p.image && cr.credit;
           if (cr) { var cp = el("p", { class: "photo-credit" }); cp.appendChild(el("a", { href: cr.url, target: "_blank", rel: "noopener" }, cr.text)); card.appendChild(cp); }
           var b = el("div", { class: "body" });
           var h3 = el("h3", { id: p.id + "-name" }); h3.appendChild(el("span", { class: "slot", "aria-hidden": "true" }, String.fromCharCode(65 + Math.floor(idx / 6)) + (idx % 6 + 1))); h3.appendChild(document.createTextNode(p.name)); b.appendChild(h3);
           if (p.botanical) b.appendChild(el("span", { class: "note" }, p.botanical));
-          b.appendChild(el("span", { class: "badge " + ps }, ps === "ok" ? "Available · Get yours now" : ps === "ask" ? ON_REQUEST : "Sold out"));
-          var pick = p.sizes.find(function (z) { return !askSize(z) && zstate(z) === "ok"; }) || p.sizes.find(canAdd) || p.sizes.find(function (z) { return !askSize(z); }) || null;
+          var badge = el("span", { class: "badge " + ps }, ps === "ok" ? "Available · Get yours now" : ps === "ask" ? "We'll confirm availability" : ON_REQUEST);
+          b.appendChild(badge);
+          var pick = null, only = p.sizes.filter(function (z) { return !askSize(z); }); if (only.length === 1) pick = only[0];   // single size: selected for Add, but NOT highlighted
           var fs = el("fieldset", { class: "chips" }); fs.appendChild(el("legend", {}, "Size"));
-          var info = el("span", { class: "price" });
-          var add;
-          function showInfo() { var ok = canAdd(pick);
-            info.textContent = !pick ? "Ask us — add it in Notes and we'll confirm" : !ok ? "Sold out in this size" : pick.qty == null ? "We'll confirm availability" : pick.qty <= 5 ? "Only " + pick.qty + " left in " + pick.label : pick.qty + " left in " + pick.label;
-            if (add) { add.disabled = !ok; add.textContent = ok ? "Add to order" : !pick ? "Ask us" : "Sold out"; }
-            [minus, inp, plus].forEach(function (x) { if (x) x.disabled = !ok; }); }
-          var minus, inp, plus;
+          var info = el("span", { class: "price" }), ask = askNote(); ask.hidden = true;
+          var add, minus, inp, plus;
+          function want() { return clamp(inp ? inp.value : 1); }
+          function showInfo() {
+            var ok = canAdd(pick), st = pick ? IENNStock.sizeState(pick, (cart[p.id + "|" + pick.key] || 0) + want()) : null;
+            info.textContent = "";
+            ask.hidden = !(st === "ask");
+            if (add) { add.disabled = !ok; add.textContent = !pick ? "Pick a size" : ok ? "Add" : "Ask us"; }
+            if (inp && pick) inp.max = String(IENNStock.maxQty(pick));
+            [minus, inp, plus].forEach(function (x) { if (x) x.disabled = !ok; });
+          }
           p.sizes.forEach(function (z) {
-            var st = askSize(z) ? "ask" : zstate(z) === "out" ? "out" : "ok", c = el("button", { type: "button", class: "chip" + (st === "out" ? " chip-out" : st === "ask" ? " chip-request" : ""), "aria-pressed": z === pick ? "true" : "false" },
-              z.label + " · $" + z.price + (st === "out" ? " · sold out" : st === "ask" ? " · Ask us" : ""));
-            c.disabled = st === "out";
-            if (st === "ask") { c.removeAttribute("aria-pressed"); c.addEventListener("click", function () { info.textContent = "Ask us: add \u201c" + z.label + "\u201d in Notes below and we'll confirm."; }); }
-            else c.addEventListener("click", function () { pick = z; fs.querySelectorAll(".chip:not(.chip-request)").forEach(function (x) { x.setAttribute("aria-pressed", x === c ? "true" : "false"); }); showInfo(); });
+            var rq = askSize(z), c = el("button", { type: "button", class: "chip" + (rq ? " chip-request" : ""), "aria-pressed": "false" },
+              (SHORT[z.key] || z.label) + " $" + z.price + (rq ? " · ask" : ""));
+            c.setAttribute("aria-label", z.label + ", $" + z.price + (rq ? ", available on request" : ""));
+            c.addEventListener("click", function () {
+              fs.querySelectorAll(".chip").forEach(function (x) { x.setAttribute("aria-pressed", x === c ? "true" : "false"); });
+              if (rq) { pick = null; showInfo(); info.textContent = ON_REQUEST + ": add \u201c" + z.label + "\u201d in Notes and we'll confirm."; if (add) { add.disabled = true; add.textContent = "Add in Notes"; } return; }
+              pick = z; inp.value = Math.min(want(), IENNStock.maxQty(z)); showInfo();
+            });
             fs.appendChild(c);
           });
-          b.appendChild(fs); b.appendChild(info); showInfo();
+          b.appendChild(fs); b.appendChild(info); b.appendChild(ask);
           var row = el("div", { class: "row" });
           var stp = el("div", { class: "stepper", role: "group", "aria-label": "Quantity of " + p.name });
           minus = el("button", { type: "button", "aria-label": "Fewer " + p.name }, "−");
           inp = el("input", { type: "number", min: "1", max: "99", value: "1", inputmode: "numeric", "aria-label": "Quantity of " + p.name });
           plus = el("button", { type: "button", "aria-label": "More " + p.name }, "+");
           [minus, inp, plus].forEach(function (x) { stp.appendChild(x); });
-          minus.addEventListener("click", function () { inp.value = clamp(inp.value - 1); });
-          plus.addEventListener("click", function () { inp.value = clamp(+inp.value + 1); });
-          add = el("button", { type: "button", class: "add" }, "Add to order"); showInfo();
+          function cap(v) { return Math.min(clamp(v), pick ? IENNStock.maxQty(pick) : 99); }
+          minus.addEventListener("click", function () { inp.value = cap(inp.value - 1); showInfo(); });
+          plus.addEventListener("click", function () { var nv = clamp(+inp.value + 1); inp.value = cap(nv); showInfo(); if (pick && pick.qty != null && nv > pick.qty) ask.hidden = false; });
+          inp.addEventListener("input", function () { showInfo(); });
+          inp.addEventListener("change", function () { var raw = clamp(inp.value); inp.value = cap(raw); showInfo(); if (pick && pick.qty != null && raw > pick.qty) ask.hidden = false; });
+          add = el("button", { type: "button", class: "add" }, "Pick a size");
           var msg = el("div", { class: "incart", "aria-live": "polite" });
           add.addEventListener("click", function () {
             if (!canAdd(pick)) return;
-            var k = p.id + "|" + pick.key, want = (cart[k] || 0) + clamp(inp.value);
-            if (pick.qty != null && want > pick.qty) { want = pick.qty; msg.textContent = "Only " + pick.qty + " available — added the max."; }
-            else msg.textContent = "✓ Added — " + want + " × " + pick.label + " in your order";
-            cart[k] = Math.min(want, 99); lastAdded = k; save(); inp.value = 1; update();
+            var k = p.id + "|" + pick.key, wantN = (cart[k] || 0) + clamp(inp.value), mx = IENNStock.maxQty(pick);
+            if (pick.qty != null && wantN > mx) { wantN = mx; ask.hidden = false; msg.textContent = "✓ Added what we have. Want more? Ask us."; }
+            else msg.textContent = "✓ Added " + wantN + " × " + pick.label;
+            cart[k] = Math.min(wantN, 99); lastAdded = k; save(); inp.value = 1; update(); showInfo();
           });
           row.appendChild(stp); row.appendChild(add);
-          b.appendChild(row); b.appendChild(msg);
-          card.appendChild(b); list.appendChild(card);
-        });
-        update();
+          b.appendChild(row); b.appendChild(msg); showInfo();
+          card.appendChild(b); return card;
       }
 
       var lastAdded = null;
@@ -356,7 +417,7 @@
           document.getElementById("qty-error").style.display = "none";
         }
         document.getElementById("cartbar").hidden = count === 0;
-        document.getElementById("cartbar-count").textContent = count + (count === 1 ? " item" : " items") + " · " + money(sub) + " · Taxes included";
+        var cb = document.getElementById("cartbar-count"); cb.textContent = count + (count === 1 ? " item" : " items") + " · " + money(sub) + " "; cb.appendChild(el("small", {}, "tax incl."));
         return ls;
       }
 
@@ -436,15 +497,15 @@
         });
         save();
       }
-      function use(l, msg) { PLANTS = sortPlants(l); prefill(); render(); status.textContent = msg || ""; status.hidden = !msg; }
+      function use(l, msg, d) { PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l))); prefill(); render(); status.textContent = msg || ""; status.hidden = !msg; }
       function load() {
         fetch(APPS_SCRIPT_URL + "?view=inventory", { cache: "no-store" }).then(function (r) { if (!r.ok) throw 0; return r.text(); }).then(function (t) {
           var d = JSON.parse(t), l = fromInventory(d); if (!l.length) throw 0; if (window.iennPromo) window.iennPromo(d.promo);
           try { localStorage.setItem(CACHE, JSON.stringify({ t: Date.now(), d: d })); } catch (e) {}
-          use(l, "");
+          use(l, "", d);
         }).catch(function () {
           var c = null; try { c = JSON.parse(localStorage.getItem(CACHE)); } catch (e) {}
-          if (c && c.d) use(fromInventory(c.d), "Couldn't refresh live stock — showing the list from " + new Date(c.t).toLocaleString() + ". Stock may be out of date.");
+          if (c && c.d) use(fromInventory(c.d), "Couldn't refresh live stock — showing the list from " + new Date(c.t).toLocaleString() + ". Stock may be out of date.", c.d);
           else use(fallback(), "Live stock is unavailable right now — showing our offline plant list. Stock may be out of date; we'll confirm availability.");
         });
       }
