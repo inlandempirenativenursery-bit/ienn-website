@@ -30,7 +30,7 @@ Eric's photos (catalogue and ericbg2) are © Eric Bo Garcia / IENN. The keithwg1
 ## Still on the "Photo coming soon" placeholder
 - **Woollypod milkweed:** the catalogue's `showy-milkweed.jpg` and `woollypod.jpg` may be swapped, so neither file (nor anything made from them) is used until Eric confirms.
 - **Blue Pyramid Cypress:** no approved photo yet.
-| sacred-datura.jpg | Sacred datura | iNat ericbg2 (Eric's own photo); cropped to 3:4 and resized | https://www.inaturalist.org/observations/277592169 |
+| sacred-datura.jpg | Datura | iNat ericbg2 (Eric's own photo); cropped to 3:4 and resized | https://www.inaturalist.org/observations/277592169 |
 | woollypod-milkweed.jpg | Woollypod milkweed | iNat ericbg2 (Eric's own photo); cropped to 3:4 and resized | https://www.inaturalist.org/observations/170191708 |
 | coyote-brush.jpg | Coyote brush | iNat ericbg2 (Eric's own photo); cropped to 3:4 and resized | https://www.inaturalist.org/observations/145617719 |
 | bush-poppy.jpg | Bush poppy | iNat ericbg2 (Eric's own photo); cropped to 3:4 and resized | https://www.inaturalist.org/observations/287482394 |

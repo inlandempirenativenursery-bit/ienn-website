@@ -74,9 +74,11 @@
       var b = el("div", { class: "body" });
       var h3 = el("h3", { id: p.id + "-name" }); h3.appendChild(el("span", { class: "slot", "aria-hidden": "true" }, String.fromCharCode(65 + Math.floor(idx / 6)) + (idx % 6 + 1))); h3.appendChild(document.createTextNode(p.name)); b.appendChild(h3);
       if (p.botanical) b.appendChild(el("span", { class: "note" }, p.botanical));
+      var bx = typeof iennBasics === "function" && iennBasics(p.botanical);
+
       /* With a stock baseline, a size is available only if qty > 0 or canRequest; show only those. No available size => "Coming soon". */
       var sizes = BASELINE ? p.sizes.filter(function (z) { return z.qty > 0 || IENNStock.canReq(z); }) : p.sizes;
-      if (BASELINE && !sizes.length) { card.classList.add("coming-soon"); b.appendChild(el("span", { class: "soon-pill" }, "Coming soon")); card.appendChild(b); return card; }
+      if (BASELINE && !sizes.length) { card.classList.add("coming-soon"); b.appendChild(el("span", { class: "soon-pill" }, "Coming soon")); card.appendChild(b); return withBasics(card, p, bx); }
       var badge = el("span", { class: "badge " + ps }, ps === "ok" ? "Available · Get yours now" : ps === "ask" ? "We'll confirm availability" : ON_REQUEST);
       b.appendChild(badge);
       var pick = null, only = sizes.filter(function (z) { return canAdd(z); }); if (BASELINE ? only.length : only.length === 1) pick = only[0];   // default: first available size
@@ -136,7 +138,125 @@
       });
       row.appendChild(stp); row.appendChild(add);
       b.appendChild(row); b.appendChild(msg); showInfo();
-      card.appendChild(b); return card;
+      card.appendChild(b); return withBasics(card, p, bx);
+  }
+  /* Plant basics: swipe right-to-left (or tap "Plant basics ›") to a second panel. Data: data/plant-basics.js. */
+  var SVGNS = "http://www.w3.org/2000/svg";
+  function svg(w, h, inner, cls) { var s = document.createElementNS(SVGNS, "svg"); s.setAttribute("viewBox", "0 0 " + w + " " + h); s.setAttribute("aria-hidden", "true"); if (cls) s.setAttribute("class", cls); s.innerHTML = inner; return s; }
+  /* Universal, conventional-color icon set (24 grid) */
+  var ICON = {
+    drop: '<path fill="#2f86d6" d="M12 2.5C8.8 7.6 5.5 10.7 5.5 15a6.5 6.5 0 0 0 13 0c0-4.3-3.3-7.4-6.5-12.5z"/><path fill="#fff" opacity=".6" d="M9.2 14.2c0-1.4.8-2.7 1.6-3.6.3 1.4-.2 3.2-1.6 3.6z"/>',
+    full: '<g fill="#f59e0b"><path d="M12 .8l1.8 3.6h-3.6zM12 23.2l-1.8-3.6h3.6zM.8 12l3.6-1.8v3.6zM23.2 12l-3.6 1.8v-3.6zM4.1 4.1l3.8 1.3-2.5 2.5zM19.9 19.9L16 18.6l2.5-2.5zM4.1 19.9l1.3-3.8 2.5 2.5zM19.9 4.1l-1.3 3.8-2.5-2.5z"/></g><circle cx="12" cy="12" r="5.6" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.2"/>',
+    part: '<g fill="#f59e0b"><path d="M10 1l1.6 3.2H8.4zM1 10l3.2-1.6v3.2zM3.6 3.6l3.4 1.1-2.3 2.3zM16.4 3.6l-1.1 3.4-2.3-2.3z"/></g><circle cx="10" cy="10" r="4.8" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.1"/><path fill="#fff" stroke="#94a3b8" stroke-width="1.4" d="M8 21a3.8 3.8 0 0 1 .3-7.6 5.2 5.2 0 0 1 9.8 1.3 3.2 3.2 0 0 1-.4 6.3z"/>',
+    shade: '<path fill="#94a3b8" d="M6.5 19.5a4.5 4.5 0 0 1 .4-9 6.2 6.2 0 0 1 11.7 1.6 3.8 3.8 0 0 1-.5 7.4z"/><path fill="#cbd5e1" d="M9 12.5a4 4 0 0 1 7.4-1.4 5 5 0 0 0-7.4 1.4z"/>',
+    soil: '<path fill="#16a34a" d="M12 12V7c-1.3-3-5-3.3-6.5-2 1.5 2.8 4.2 3.5 6.5 2zm0-2.5c1.3-3 5-3.3 6.5-2-1.5 2.8-4.2 3.5-6.5 2z"/><path stroke="#15803d" stroke-width="1.6" d="M12 13V6.5"/><path fill="#92400e" d="M2 13.5h20v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"/><g fill="#b45309"><circle cx="6" cy="17" r="1.2"/><circle cx="11" cy="18.5" r="1"/><circle cx="16.5" cy="16.5" r="1.3"/><circle cx="19" cy="19.3" r=".9"/></g>',
+    pollinators: '<path fill="#f97316" stroke="#111" stroke-width="1.3" stroke-linejoin="round" d="M11.3 10.8C9.6 5.4 4 3.6 2.4 5.6c-1.3 1.8.4 5.6 3.4 6.4 2 .5 4 .1 5.5-1.2zM12.7 10.8C14.4 5.4 20 3.6 21.6 5.6c1.3 1.8-.4 5.6-3.4 6.4-2 .5-4 .1-5.5-1.2z"/><path fill="#fb923c" stroke="#111" stroke-width="1.3" stroke-linejoin="round" d="M11.3 12.2c-3.6.6-6.4 3.4-5.6 5.8.7 1.9 4 1.5 5.6-1.6zM12.7 12.2c3.6.6 6.4 3.4 5.6 5.8-.7 1.9-4 1.5-5.6-1.6z"/><path fill="none" stroke="#111" stroke-width=".8" d="M11 9.6L5 6.5M10.8 10.4L4 10M11 12.8l-4 3.2M13 9.6l6-3.1M13.2 10.4L20 10M13 12.8l4 3.2"/><g fill="#fff"><circle cx="3.4" cy="6.6" r=".55"/><circle cx="3.9" cy="9.4" r=".55"/><circle cx="20.6" cy="6.6" r=".55"/><circle cx="20.1" cy="9.4" r=".55"/><circle cx="6.6" cy="17.8" r=".5"/><circle cx="17.4" cy="17.8" r=".5"/></g><rect x="11.1" y="7" width="1.8" height="11" rx=".9" fill="#111"/><path fill="none" stroke="#111" stroke-width="1.1" stroke-linecap="round" d="M11.6 7.4L10 3.8M12.4 7.4L14 3.8"/>',
+    hummingbirds: '<path fill="#15803d" d="M8.5 14.8C8 10 10.6 7 13.6 6.7l1.6 6.2c-1.4 2.8-3.8 4.8-6.7 5.4z"/><path fill="#22c55e" d="M9.6 13.2L2 6.6c3.6-.5 6.7.8 8.8 3.4z"/><path fill="#16a34a" d="M8.6 18.2l-2.2 3.8 3.3-2.5z"/><path fill="#db2777" d="M13.4 6.6c2.4-.5 4.3 1 4.4 3.1.1 2.1-1.2 3.8-3 4.6l-1.9.4z"/><path fill="#f472b6" d="M15.6 8.1c1 .2 1.6 1 1.6 1.8-.6-.3-1.3-.5-2.1-.4z"/><path stroke="#1f2937" stroke-width="1.5" stroke-linecap="round" d="M17.6 9.2l5-1.4"/><circle cx="15.6" cy="8.9" r=".75" fill="#111"/><path fill="#f5f5f4" d="M9.2 14.6c1.4.4 2.6.1 3.6-.6l.2 1.7c-1.4.8-2.8 1-4.1.6z"/>',
+    birds: '<path fill="#1d4ed8" d="M3 19.5l5.6-5.2 1.6 1.8z"/><path fill="#9ca3af" d="M7.5 15.5c.5-4 3.8-6.6 7.6-6.2l1 7c-2.3 2-5.6 2.4-8.6-.8z"/><path fill="#f1f5f9" d="M9.5 16.2c2.6 1.4 5.2 1.2 7-.4l.2 1.4c-2 2.2-5.4 2.2-7.2-1z"/><path fill="#2563eb" d="M14.2 9.4c.2-2.8 2.4-4.6 4.8-4.2 1.4.3 2.2 1.4 2.2 2.6l-2 1.3c-.2 1.8-1.2 3.4-2.8 4.3z"/><path fill="#3b82f6" d="M8.2 13.6c2-2.6 5.6-3 8-1.2-1.5 2.6-5 3.6-8 1.2z"/><path fill="none" stroke="#2563eb" stroke-width="1" d="M14.8 12.6c.9.3 1.8.1 2.4-.6"/><path fill="#111" d="M21 7.6l2.4.5-2.3.9z"/><circle cx="18.8" cy="7.2" r=".7" fill="#111"/><path fill="#f8fafc" d="M17.8 8.3c.8.3 1.8.2 2.4-.3l-.4 1c-.6.3-1.4.2-2-.2z"/><path fill="none" stroke="#57534e" stroke-width="1.1" stroke-linecap="round" d="M12 17.8l-.5 2.8M13.8 17.8l.3 2.8"/>',
+    fragrant: '<g fill="#ec4899"><circle cx="12" cy="14" r="2.8"/><circle cx="12" cy="20" r="2.8"/><circle cx="9" cy="17" r="2.8"/><circle cx="15" cy="17" r="2.8"/></g><circle cx="12" cy="17" r="1.8" fill="#fbbf24"/><path fill="none" stroke="#a855f7" stroke-width="1.6" stroke-linecap="round" d="M7 10c-1.3-1.6 1.3-2.4 0-4.5M12 9.5c-1.3-1.6 1.3-2.6 0-6M17 10c-1.3-1.6 1.3-2.4 0-4.5"/>',
+    containers: '<path fill="#c2410c" d="M5 11.5h14l-1.8 9.2a1.5 1.5 0 0 1-1.5 1.3H8.3a1.5 1.5 0 0 1-1.5-1.3z"/><rect x="4" y="9.8" width="16" height="3.2" rx="1.2" fill="#9a3412"/><path fill="#16a34a" d="M12 9.8V5.5c-1.2-2.6-4.5-3-6-1.8 1.4 2.4 3.8 3.2 6 1.8M12 7c1.2-2.6 4.5-3 6-1.8-1.4 2.4-3.8 3.2-6 1.8"/>',
+    bloom: '<g fill="#a78bfa"><circle cx="12" cy="6.5" r="3.8"/><circle cx="17.4" cy="10.4" r="3.8"/><circle cx="15.3" cy="16.8" r="3.8"/><circle cx="8.7" cy="16.8" r="3.8"/><circle cx="6.6" cy="10.4" r="3.8"/></g><circle cx="12" cy="12" r="2.9" fill="#fbbf24"/>',
+    heat: '<path fill="#fff" stroke="#374151" stroke-width="1.4" d="M9.8 4.5a2.2 2.2 0 0 1 4.4 0v9a4.3 4.3 0 1 1-4.4 0z"/><circle cx="12" cy="17.2" r="2.6" fill="#dc2626"/><rect x="11" y="7" width="2" height="9" rx="1" fill="#dc2626"/>'
+  };
+  var SUNL = { full: "Full sun", part: "Part sun", shade: "Shade" }, WATL = ["", "Low water", "Moderate water", "Regular water"];
+  var SOILL = { "Fast-draining": "Fast-draining", "Clay-tolerant": "Clay OK", "Adaptable": "Any soil" };
+  var SEAS = [["W", "Win", "Winter"], ["Sp", "Spr", "Spring"], ["Su", "Sum", "Summer"], ["F", "Fall", "Fall"]];
+  var WILDL = { pollinators: "Bees & butterflies", hummingbirds: "Hummingbirds", birds: "Birds", fragrant: "Fragrant", containers: "Pot-friendly", heat: "Heat tough" };
+  function ft(a) { return (a[0] === a[1] ? a[0] : a[0] + "\u2013" + a[1]) + " ft"; }
+  function icon(name, label, off) { var s = svg(24, 24, ICON[name], "bi" + (off ? " off" : "")); if (label) { s.setAttribute("role", "img"); s.removeAttribute("aria-hidden"); s.setAttribute("aria-label", label); var t = document.createElementNS(SVGNS, "title"); t.textContent = label; s.insertBefore(t, s.firstChild); } return s; }
+  /* Generic solid silhouettes by life form, one green; drawn in a box gw wide x gh tall sitting on the ground line. */
+  function plantShape(x, cx, base, gw, gh) {
+    var G = "#4d7c55", r = gw / 2, f = x.shape || x.form || "Shrub", P = function (d) { return '<path fill="' + G + '" d="' + d + '"/>'; }, L = function (d, w) { return '<path fill="none" stroke="' + G + '" stroke-width="' + (w || 1.4) + '" stroke-linecap="round" d="' + d + '"/>'; }, top = base - gh, o = "";
+    if (false) return '<rect x="' + (cx - 1.2) + '" y="' + (base - gh * .1) + '" width="2.4" height="' + (gh * .1) + '" fill="' + G + '"/>' + P("M" + cx + " " + top + "C" + (cx + r * .35) + " " + (top + gh * .3) + " " + (cx + r * .55) + " " + (base - gh * .35) + " " + (cx + r * .4) + " " + (base - gh * .1) + "H" + (cx - r * .4) + "C" + (cx - r * .55) + " " + (base - gh * .35) + " " + (cx - r * .35) + " " + (top + gh * .3) + " " + cx + " " + top + "z");
+    if (f === "Small tree" || f === "SmallTree") { var sw = Math.max(gw, gh * 1.2) / 2, sch = gh * .72, sb = top + sch;   // small tree / large shrub: 2-3 short stems, low rounded lumpy canopy
+      [-.28, 0, .28].forEach(function (k) { o += P("M" + (cx + k * sw * .25 - 1.1) + " " + base + "L" + (cx + k * sw * .7 - .9) + " " + (sb - sch * .2) + "h1.8L" + (cx + k * sw * .25 + 1.1) + " " + base + "z"); });
+      [[-.5, .55, .5, .42], [.5, .55, .5, .42], [0, .38, .6, .45], [-.2, .62, .55, .38], [.25, .62, .55, .38]].forEach(function (l) { o += '<ellipse cx="' + (cx + l[0] * sw) + '" cy="' + (top + l[1] * sch) + '" rx="' + (l[2] * sw) + '" ry="' + (l[3] * sch) + '" fill="' + G + '"/>'; });
+      return o; }
+    if (f === "Tree") { var cw = Math.max(gw, gh * 1.5) / 2, ch = gh * .62, ctop = top, cb = ctop + ch, tk = Math.max(2.4, cw * .12);   // coast-live-oak: short trunk, branching, broad lumpy canopy
+      o += P("M" + (cx - tk) + " " + base + "L" + (cx - tk * .7) + " " + (cb - ch * .05) + "L" + (cx - cw * .55) + " " + (cb - ch * .25) + "L" + (cx - cw * .5) + " " + (cb - ch * .15) + "L" + (cx - tk * .2) + " " + (cb + ch * .1) + "L" + (cx + tk * .2) + " " + (cb + ch * .1) + "L" + (cx + cw * .5) + " " + (cb - ch * .15) + "L" + (cx + cw * .55) + " " + (cb - ch * .25) + "L" + (cx + tk * .7) + " " + (cb - ch * .05) + "L" + (cx + tk) + " " + base + "z");
+      [[-.62, .62, .4, .38], [.62, .62, .4, .38], [-.3, .4, .45, .45], [.3, .38, .45, .45], [0, .3, .4, .42], [-.85, .72, .2, .25], [.85, .72, .2, .25], [0, .65, .7, .3]].forEach(function (l) { o += '<ellipse cx="' + (cx + l[0] * cw) + '" cy="' + (ctop + l[1] * ch) + '" rx="' + (l[2] * cw) + '" ry="' + (l[3] * ch) + '" fill="' + G + '"/>'; });
+      return o; }
+    if (f === "Grass") { for (var i = -4; i <= 4; i++) { var tx = cx + i * r * .26, ty = top + Math.abs(i) * gh * .1 + gh * .05; o += L("M" + (cx + i * .6) + " " + base + "Q" + (cx + i * r * .1) + " " + (base - gh * .6) + " " + tx + " " + ty, 2.2); }
+      [-.45, .05, .5].forEach(function (k) { var sx = cx + k * r * .8; o += L("M" + cx + " " + base + "Q" + sx + " " + (base - gh * .5) + " " + (sx + k * 2) + " " + (top - 1), .8) + '<ellipse cx="' + (sx + k * 2) + '" cy="' + top + '" rx="1.1" ry="2.4" fill="' + G + '"/>'; });
+      return P("M" + (cx - r * .3) + " " + base + "Q" + cx + " " + (base - gh * .3) + " " + (cx + r * .3) + " " + base + "z") + o; }
+    if (f === "Vine") { var vh = gh * .85, vt = base - vh, pp = cx, amp = Math.max(4, Math.min(gw * .25, 8));   // simple: post + one twining stem + a few leaves
+      o += '<rect x="' + (pp - 1.4) + '" y="' + vt + '" width="2.8" height="' + vh + '" rx="1" fill="#a8a29e"/>';
+      o += L("M" + pp + " " + base + "C" + (pp + amp) + " " + (base - vh * .2) + " " + (pp - amp) + " " + (base - vh * .4) + " " + pp + " " + (base - vh * .55) + "S" + (pp + amp) + " " + (base - vh * .85) + " " + (pp - 1) + " " + (vt + 1), 1.8);
+      [[.18, 1], [.42, -1], [.66, 1], [.88, -1]].forEach(function (q) { var ly = base - vh * q[0], lx = pp + q[1] * amp * .9, sz = Math.max(3, amp * .7);
+        o += P("M" + (lx - q[1] * sz * .3) + " " + ly + "Q" + (lx + q[1] * sz * .6) + " " + (ly - sz * .9) + " " + (lx + q[1] * sz * 1.4) + " " + (ly - sz * .2) + "Q" + (lx + q[1] * sz * .6) + " " + (ly + sz * .5) + " " + (lx - q[1] * sz * .3) + " " + ly + "z"); });
+      return o; }
+    if (f === "Succulent") { for (var j = -5; j <= 5; j++) { var ang = j / 5 * 1.3, len = gh * .62 * (1 - Math.abs(j) * .05); o += P("M" + (cx - 2.2) + " " + base + "L" + (cx + Math.sin(ang) * Math.max(len, r * .9)) + " " + (base - Math.cos(ang) * len) + "L" + (cx + 2.2) + " " + base + "z"); }
+      return o + L("M" + cx + " " + (base - gh * .3) + "V" + (top + gh * .2), 2) + P("M" + (cx - 2.4) + " " + (top + gh * .3) + "Q" + cx + " " + (top - 1) + " " + (cx + 2.4) + " " + (top + gh * .3) + "z"); }
+    if (f === "Wildflower" || f === "Annual") { var fh = gh * .38;   // poppy: low feathery foliage, slender stems, open cups
+      for (var m = -6; m <= 6; m++) { var ex = cx + m * r * .15, ey = base - fh * (1 - Math.abs(m) * .1); o += L("M" + (cx + m * .4) + " " + base + "Q" + (cx + m * r * .06) + " " + (base - fh * .5) + " " + ex + " " + ey, 1.4); }
+      [[-.55, .78], [-.05, 1], [.5, .86]].forEach(function (q) { var fx = cx + q[0] * r, fy = base - gh * q[1] + gh * .14, cr = Math.max(2.6, gh * .13);
+        o += L("M" + (cx + q[0] * r * .3) + " " + (base - fh * .6) + "Q" + (fx - q[0] * 2) + " " + (fy + gh * .3) + " " + fx + " " + (fy + cr * .3), 1);
+        o += P("M" + (fx - cr) + " " + (fy - cr * .7) + "Q" + (fx - cr * .9) + " " + (fy + cr * .6) + " " + fx + " " + (fy + cr * .6) + "Q" + (fx + cr * .9) + " " + (fy + cr * .6) + " " + (fx + cr) + " " + (fy - cr * .7) + "Q" + (fx + cr * .5) + " " + (fy - cr * .1) + " " + fx + " " + (fy - cr * .55) + "Q" + (fx - cr * .5) + " " + (fy - cr * .1) + " " + (fx - cr) + " " + (fy - cr * .7) + "z"); });
+      return o; }
+    if (f === "Perennial") { var ch = gh * .5;
+      o += P("M" + (cx - r) + " " + base + "Q" + (cx - r) + " " + (base - ch) + " " + (cx - r * .4) + " " + (base - ch) + "Q" + cx + " " + (base - ch * 1.3) + " " + (cx + r * .4) + " " + (base - ch) + "Q" + (cx + r) + " " + (base - ch) + " " + (cx + r) + " " + base + "z");
+      [-.5, 0, .45].forEach(function (k, i) { var fx = cx + k * r, fy = top + (i === 1 ? 0 : gh * .12); o += L("M" + fx + " " + (base - ch * .8) + "V" + (fy + 2), 1) + '<circle cx="' + fx + '" cy="' + (fy + 2) + '" r="' + Math.max(1.6, gh * .07) + '" fill="' + G + '"/>'; });
+      return o; }
+    var sh = gh;   // Shrub / Sub-shrub: solid rounded mound
+    return P("M" + (cx - r) + " " + base + "C" + (cx - r * 1.05) + " " + (base - sh * .75) + " " + (cx - r * .5) + " " + (base - sh) + " " + cx + " " + (base - sh) + "C" + (cx + r * .5) + " " + (base - sh) + " " + (cx + r * 1.05) + " " + (base - sh * .75) + " " + (cx + r) + " " + base + "z");
+  }
+  function sizeArt(x) {   // plant silhouette vs a 6' person, true scale per frame, auto-zoomed so the plant reads well
+    var W = 96, H = 50, base = H - 1, room = H - 7, hmax = x.h[1];
+    var sc = hmax <= 3 ? room * .9 / hmax : room / Math.max(6, hmax);   // small: zoom in (person cropped); mid: fit person; big: fit plant
+    var ph = 6 * sc, gh = hmax * sc, gw = Math.min(60, Math.max(22, x.w[1] * sc * 1.1)), px = 4, cx = 24 + gw / 2, o = "";
+    var hr = ph * .085, bw = ph * .1;
+    o += '<g fill="#9ca3af"><circle cx="' + (px + 6) + '" cy="' + (base - ph + hr) + '" r="' + hr + '"/><path d="M' + (px + 6 - bw) + ' ' + base + 'V' + (base - ph * .5) + 'Q' + (px + 6 - bw * 1.2) + ' ' + (base - ph * .79) + ' ' + (px + 6) + ' ' + (base - ph * .8) + 'Q' + (px + 6 + bw * 1.2) + ' ' + (base - ph * .79) + ' ' + (px + 6 + bw) + ' ' + (base - ph * .5) + 'V' + base + 'z"/></g>';
+    o += '<path d="M' + (px + 6) + ' ' + base + 'V' + (base - ph * .44) + '" stroke="#fff" stroke-width="' + Math.max(.6, bw * .25) + '"/>';
+    o += plantShape(x, cx + 4, base, gw, gh);
+    o += '<path d="M0 ' + base + 'H' + W + '" stroke="#d6d3d1" stroke-width="1.5"/>';
+    return svg(W, H, o, "size-art");
+  }
+  function chip(iconEls, label, cls) { var c = el("span", { class: "fchip" + (cls ? " " + cls : "") }); var ic = el("span", { class: "fchip-i", "aria-hidden": "true" }); iconEls.forEach(function (n) { ic.appendChild(n); }); c.appendChild(ic); c.appendChild(el("span", { class: "fchip-t" }, label)); return c; }
+  function basicsPane(p, x) {
+    var pane = el("section", { class: "pane-basics", "aria-label": "Plant basics: " + p.name }), inn = el("div", { class: "basics-in" });
+    var hd = el("div", { class: "basics-hd" }); var back = null;
+    if (x.form) hd.appendChild(el("span", { class: "form-ribbon" }, x.form)); inn.appendChild(hd);
+    var care = el("div", { class: "care" });
+    var drops = []; for (var i = 1; i <= 3; i++) drops.push(icon("drop", null, i > x.water)); care.appendChild(chip(drops, WATL[x.water], "water"));
+    care.appendChild(chip(x.sun.slice(0, 2).map(function (k) { return icon(k); }), x.sun.map(function (k) { return SUNL[k]; }).join(" / ").replace("Full sun / Part sun", "Sun / part sun"), "sun"));
+    care.appendChild(chip([icon("soil")], SOILL[x.soil] || x.soil, "soil"));
+    inn.appendChild(care);
+    var bl = el("div", { class: "seasons", role: "img", "aria-label": "Blooms: " + (x.bloom.length ? SEAS.filter(function (q) { return x.bloom.indexOf(q[0]) >= 0; }).map(function (q) { return q[2]; }).join(", ") : "no showy flowers") });
+    var bh = el("span", { class: "bloom-h", "aria-hidden": "true" }); bh.appendChild(icon("bloom")); bh.appendChild(el("span", { class: "fchip-t" }, "Blooms")); bl.appendChild(bh);
+    var bs = el("span", { class: "bloom-s", "aria-hidden": "true" }); SEAS.forEach(function (q) { bs.appendChild(el("span", { class: "sp" + (x.bloom.indexOf(q[0]) >= 0 ? " on" : "") }, q[1])); }); bl.appendChild(bs); inn.appendChild(bl);
+    var wl = el("div", { class: "feats" }); (x.wild || []).concat(x.ie ? ["heat"] : []).forEach(function (k) { wl.appendChild(chip([icon(k)], WILDL[k], "f-" + k)); }); inn.appendChild(wl);
+    var sz = el("div", { class: "size", role: "img", "aria-label": "Mature size " + ft(x.h) + (x.form === "Vine" ? " long" : " tall") + ", " + ft(x.w) + " wide" }); sz.appendChild(sizeArt(x));
+    var sv = el("span", { class: "size-v" }); sv.appendChild(el("b", {}, ft(x.h) + (x.form === "Vine" ? " long" : " tall"))); sv.appendChild(el("b", {}, ft(x.w) + " wide")); sz.appendChild(sv); inn.appendChild(sz);
+    inn.appendChild(el("p", { class: "basics-fine" }, "Results vary by site"));
+    var d2 = el("div", { class: "flip-dots", "aria-hidden": "true" }); d2.appendChild(el("i")); d2.appendChild(el("i", { class: "on" })); inn.appendChild(d2);
+    pane.appendChild(inn);
+    return { pane: pane };
+  }
+  var peeked = false; try { peeked = sessionStorage.getItem("ienn-peek") === "1"; } catch (e) {}
+  function withBasics(card, p, x) {
+    if (!x) return card;
+    var track = el("div", { class: "card-track" }), front = el("div", { class: "pane-front" });
+    while (card.firstChild) front.appendChild(card.firstChild);
+    var bp = basicsPane(p, x), ph0 = front.querySelector(".ph");
+    if (ph0 && x.form) ph0.appendChild(el("span", { class: "form-ribbon on-photo", "aria-hidden": "true" }, x.form));
+    var d1 = el("div", { class: "flip-dots", "aria-hidden": "true" }); d1.appendChild(el("i", { class: "on" })); d1.appendChild(el("i"));
+    if (ph0) ph0.after(d1);
+    track.appendChild(front); track.appendChild(bp.pane); card.appendChild(track); card.classList.add("has-basics");
+    function to(i) { track.scrollTo({ left: i ? track.scrollWidth : 0, behavior: "smooth" }); }
+    function onBack() { return track.scrollLeft > track.clientWidth / 2; }
+    if (ph0) { ph0.setAttribute("role", "button"); ph0.setAttribute("tabindex", "0"); ph0.setAttribute("aria-label", "Show plant basics for " + p.name); ph0.removeAttribute("aria-hidden"); ph0.classList.add("flippable");
+      ph0.addEventListener("click", function (e) { if (e.target.closest("a")) return; to(1); });
+      ph0.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); to(1); setTimeout(function () { bp.pane.focus({ preventScroll: true }); }, 350); } }); }
+    bp.pane.setAttribute("tabindex", "0"); bp.pane.setAttribute("role", "button"); bp.pane.setAttribute("aria-label", "Plant basics for " + p.name + ". Press to flip back.");
+    bp.pane.addEventListener("click", function () { to(0); });
+    bp.pane.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " " || e.key === "Escape") { e.preventDefault(); to(0); if (ph0) setTimeout(function () { ph0.focus({ preventScroll: true }); }, 350); } });
+    var t = null; track.addEventListener("scroll", function () { clearTimeout(t); t = setTimeout(function () { var on = onBack(); card.classList.toggle("showing-basics", on); front.setAttribute("aria-hidden", on ? "true" : "false"); bp.pane.setAttribute("aria-hidden", on ? "false" : "true"); }, 80); }, { passive: true });
+    bp.pane.setAttribute("aria-hidden", "true");
+    function fit() { var h = bp.pane.clientHeight; if (!h) return; bp.pane.classList.toggle("tall", h >= 440); bp.pane.classList.toggle("compact", h < 440); }
+    if ("ResizeObserver" in window) new ResizeObserver(fit).observe(bp.pane); else { setTimeout(fit, 0); addEventListener("resize", fit); }
+    if (!peeked && card.querySelector(".add, .soon-pill")) { peeked = true; try { sessionStorage.setItem("ienn-peek", "1"); } catch (e) {}   // one gentle peek per session, first card only
+      if (!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches)) setTimeout(function () { if (!card.isConnected) return; track.scrollTo({ left: 46, behavior: "smooth" }); setTimeout(function () { track.scrollTo({ left: 0, behavior: "smooth" }); }, 650); }, 1400); }
+    return card;
   }
 
   var lastAdded = null, BASELINE = false;
@@ -363,7 +483,7 @@
     save();
   }
   var lastSig = null;
-  function use(l, msg, d, quick) { BASELINE = IENNStock.hasBaseline(d, l); PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l))); if (!quick) prefill();
+  function use(l, msg, d, quick) { BASELINE = IENNStock.hasBaseline(d, l); PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l))).map(function (p) { var dn = typeof iennDisplayName === "function" && iennDisplayName(p.name); if (dn && dn !== p.name) { p.feedName = p.feedName || p.name; p.name = dn; } return p; });   // display-name overrides; id/fullName keep the feed name for cart + orders if (!quick) prefill();
     var sig = JSON.stringify([BASELINE, PLANTS]); if (sig !== lastSig) { lastSig = sig; render(); } else update();   // same data: keep the grid as is if (quick) return; status.textContent = msg || ""; status.hidden = !msg;
     if (params.get("checkout") === "1" && !autoOpened && lines().length) { autoOpened = true; if (window.iennOpenCheckout) window.iennOpenCheckout(); } }
   var autoOpened = false;
