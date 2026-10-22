@@ -23,7 +23,9 @@
   function appeal(p) { var t = (p.name + " " + p.botanical).toLowerCase(); for (var i = 0; i < APPEAL_KEYWORDS.length; i++) if (t.indexOf(APPEAL_KEYWORDS[i]) >= 0) return i; return 999; }
   function rk(p) { return p.rank == null || p.rank === "" || isNaN(Number(p.rank)) ? 1e9 : Number(p.rank); }
   /* Primary sort key: same test the card uses. With a stock baseline a plant is "in stock" if any size has qty > 0 or canRequest (otherwise it shows "Coming soon"); without a baseline, anything not fully out. */
-  function hasStock(p) { return BASELINE ? p.sizes.some(function (z) { return z.qty > 0 || IENNStock.canReq(z); }) : pstate(p) !== "out"; }
+  /* Front shows only in-stock sizes: never on-request (2", Tree pot); with a baseline qty must be > 0. */
+  function inStock(z) { return !!z && !askSize(z) && (BASELINE ? z.qty > 0 : (z.qty == null || z.qty > 0)); }
+  function hasStock(p) { return p.sizes.some(inStock); }
   function sortPlants(a) {   // stable: plants with inventory before zero-inventory ones; within each group photo first, then feed order (feed-order.js)
     return IENNOrder.order(a).map(function (p, i) { return { p: p, i: i, s: hasStock(p) ? 0 : 1, f: p.image ? 0 : 1 }; })
       .sort(function (x, y) { return x.s - y.s || x.f - y.f || x.i - y.i; }).map(function (x) { return x.p; });
@@ -64,7 +66,7 @@
       card.dataset.id = p.id;
       var ph = el("div", { class: "ph" });
       if (p.image) ph.appendChild(el("img", p.srcset ? { src: p.image, srcset: p.srcset, sizes: "(max-width: 600px) 48vw, 260px", alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" } : { src: p.image, alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" })); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }
-      var lo = p.sizes.filter(function (z) { return !askSize(z) && isFinite(z.price); }).map(function (z) { return z.price; });
+      var lo = p.sizes.filter(function (z) { return inStock(z) && isFinite(z.price); }).map(function (z) { return z.price; });
       if (lo.length) ph.appendChild(el("span", { class: "price-tag", "aria-hidden": "true" }, (lo.length > 1 ? "from $" : "$") + Math.min.apply(null, lo)));
       if (p.badge) ph.appendChild(el("span", { class: "pick-badge" + (p.badgeAuto ? " auto-" + p.badgeAuto : "") }, String(p.badge)));
       if (p.badge) ph.removeAttribute("aria-hidden");
@@ -79,8 +81,8 @@
       var bx = typeof iennBasics === "function" && iennBasics(p.botanical);
 
       /* With a stock baseline, a size is available only if qty > 0 or canRequest; show only those. No available size => "Coming soon". */
-      var sizes = BASELINE ? p.sizes.filter(function (z) { return z.qty > 0 || IENNStock.canReq(z); }) : p.sizes;
-      if (BASELINE && !sizes.length) { card.classList.add("coming-soon"); b.appendChild(el("span", { class: "soon-pill" }, "Coming soon")); card.appendChild(b); return withBasics(card, p, bx); }
+      var sizes = p.sizes.filter(inStock);
+      if (!sizes.length) { card.classList.add("coming-soon"); b.appendChild(el("span", { class: "soon-pill" }, "Coming soon")); card.appendChild(b); return withBasics(card, p, bx); }
       var badge = el("span", { class: "badge " + ps }, ps === "ok" ? "Available · Get yours now" : ps === "ask" ? "We'll confirm availability" : ON_REQUEST);
       b.appendChild(badge);
       var pick = null, only = sizes.filter(function (z) { return canAdd(z); }); if (BASELINE ? only.length : only.length === 1) pick = only[0];   // default: first available size
@@ -110,7 +112,7 @@
         });
         fs.appendChild(c);
       });
-      var hint = el("p", { class: "size-hint", "aria-live": "polite" }); b.appendChild(fs); b.appendChild(hint); b.appendChild(info); b.appendChild(ask);
+      var hint = el("p", { class: "size-hint", "aria-live": "polite" }); b.appendChild(fs); b.appendChild(hint); b.appendChild(info);
       var row = el("div", { class: "row" });
       var stp = el("div", { class: "stepper", role: "group", "aria-label": "Quantity of " + p.name });
       minus = el("button", { type: "button", "aria-label": "Fewer " + p.name }, "−");
@@ -133,7 +135,7 @@
         }
         hint.textContent = "";
         var k = p.id + "|" + pick.key, wantN = (cart[k] || 0) + clamp(inp.value), mx = IENNStock.maxQty(pick);
-        if (pick.qty != null && wantN > mx) { wantN = mx; ask.hidden = false; msg.textContent = "✓ Added what we have. Want more? Ask us."; }
+        if (pick.qty != null && wantN > mx) { wantN = mx; ask.hidden = false; msg.textContent = "✓ Added what we have."; }
         else if (IENNStock.isRequest(pick, wantN)) { ask.hidden = false; msg.textContent = "✓ Added " + wantN + " × " + pick.label + " as a request. We'll confirm."; }
         else msg.textContent = "✓ Added " + wantN + " × " + pick.label;
         cart[k] = Math.min(wantN, 99); lastAdded = k; save(); inp.value = 1; remember(); update(); showInfo(); bumpTray();
