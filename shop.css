@@ -166,3 +166,7 @@ html.ty-open, html.ty-open body { overflow:hidden; }
 /* Coming soon: no available sizes this week (photo and badge stay) */
 .card.coming-soon { opacity:1; }
 .soon-pill { display:inline-block; margin-top:0.45rem; padding:0.2rem 0.7rem; border-radius:999px; background:#f3eef8; color:#4b3d5c; border:1px solid #d9cce8; font-size:0.82rem; font-weight:700; letter-spacing:0.01em; }
+/* Tray privacy/contact: plain inline links, reliable taps on iOS Safari */
+.drawer .tray-privacy { margin-bottom:0; }
+.tray-contact { margin-top:0.2rem; line-height:1.6; color:#555; }
+.tray-contact a { color:var(--sage-dark); font-weight:600; text-decoration:underline; text-underline-offset:2px; overflow-wrap:anywhere; padding:0.35rem 0; -webkit-tap-highlight-color:rgba(0,0,0,0.1); }
