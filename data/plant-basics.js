@@ -87,3 +87,7 @@ function iennBasics(botanical) {
 /* Display-name overrides: feed name (matching/orders unchanged) -> name shown on the site. */
 var IENN_DISPLAY_NAMES = { "Sacred datura": "Datura" };
 function iennDisplayName(n) { return IENN_DISPLAY_NAMES[n] || n; }
+/* Plants hidden from the shop (index + order pages). Case-insensitive match on the feed name or botanical name; add more as needed. */
+var IENN_HIDDEN_PLANTS = ["California encelia"];
+function iennHidden(p) { var n = String(p.name || "").toLowerCase().trim(), f = String(p.feedName || p.fullName || "").toLowerCase().trim(), b = String(p.botanical || "").toLowerCase().trim();
+  return IENN_HIDDEN_PLANTS.some(function (h) { h = String(h).toLowerCase().trim(); return h && (h === n || h === f || h === b); }); }

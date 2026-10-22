@@ -22,8 +22,10 @@
   }
   function appeal(p) { var t = (p.name + " " + p.botanical).toLowerCase(); for (var i = 0; i < APPEAL_KEYWORDS.length; i++) if (t.indexOf(APPEAL_KEYWORDS[i]) >= 0) return i; return 999; }
   function rk(p) { return p.rank == null || p.rank === "" || isNaN(Number(p.rank)) ? 1e9 : Number(p.rank); }
+  /* Primary sort key: same test the card uses. With a stock baseline a plant is "in stock" if any size has qty > 0 or canRequest (otherwise it shows "Coming soon"); without a baseline, anything not fully out. */
+  function hasStock(p) { return BASELINE ? p.sizes.some(function (z) { return z.qty > 0 || IENNStock.canReq(z); }) : pstate(p) !== "out"; }
   function sortPlants(a) {   // stable: plants with inventory before zero-inventory ones; within each group photo first, then feed order (feed-order.js)
-    return IENNOrder.order(a).map(function (p, i) { return { p: p, i: i, s: pstate(p) === "out" ? 1 : 0, f: p.image ? 0 : 1 }; })
+    return IENNOrder.order(a).map(function (p, i) { return { p: p, i: i, s: hasStock(p) ? 0 : 1, f: p.image ? 0 : 1 }; })
       .sort(function (x, y) { return x.s - y.s || x.f - y.f || x.i - y.i; }).map(function (x) { return x.p; });
   }
   function split(full) { var m = /^(.*?)\s*\((.*)\)\s*$/.exec(full || ""); return m ? [m[1], m[2]] : [String(full || "").trim(), ""]; }
@@ -242,20 +244,29 @@
     var d1 = el("div", { class: "flip-dots", "aria-hidden": "true" }); d1.appendChild(el("i", { class: "on" })); d1.appendChild(el("i"));
     if (ph0) ph0.after(d1);
     track.appendChild(front); track.appendChild(bp.pane); card.appendChild(track); card.classList.add("has-basics");
-    function to(i) { track.scrollTo({ left: i ? track.scrollWidth : 0, behavior: "smooth" }); }
-    function onBack() { return track.scrollLeft > track.clientWidth / 2; }
+    var side = 0, drag = null, swallow = false;
+    function show(on) { card.classList.toggle("showing-basics", !!on); front.setAttribute("aria-hidden", on ? "true" : "false"); bp.pane.setAttribute("aria-hidden", on ? "false" : "true"); }
+    function to(i) { side = i ? 1 : 0; track.style.transition = ""; track.style.transform = side ? "translateX(-100%)" : ""; show(side); }
+    /* Horizontal drag-to-flip (iOS Safari friendly): card is touch-action:pan-y, so vertical page scroll stays native; we only take over once the drag is clearly horizontal. */
+    track.addEventListener("touchstart", function (e) { if (e.touches.length !== 1) { drag = null; return; } var t0 = e.touches[0]; drag = { x: t0.clientX, y: t0.clientY, dx: 0, mode: null, w: track.clientWidth || 1 }; }, { passive: true });
+    track.addEventListener("touchmove", function (e) { if (!drag) return; var t1 = e.touches[0], dx = t1.clientX - drag.x, dy = t1.clientY - drag.y;
+      if (!drag.mode) { if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return; drag.mode = Math.abs(dx) > Math.abs(dy) * 1.2 ? "h" : "v"; if (drag.mode === "h") track.style.transition = "none"; }
+      if (drag.mode !== "h") return; e.preventDefault(); drag.dx = dx;
+      var off = -side * drag.w + dx; off = Math.max(-drag.w, Math.min(0, off)); track.style.transform = "translateX(" + off + "px)"; }, { passive: false });
+    function endDrag() { if (!drag) return; var d = drag; drag = null; if (d.mode !== "h") return; swallow = true; setTimeout(function () { swallow = false; }, 350);
+      track.style.transition = ""; if (Math.abs(d.dx) > 30) to(d.dx < 0 ? 1 : 0); else to(side); }
+    track.addEventListener("touchend", endDrag); track.addEventListener("touchcancel", endDrag);
+    track.addEventListener("click", function (e) { if (swallow) { e.preventDefault(); e.stopPropagation(); } }, true);
     if (ph0) { ph0.setAttribute("role", "button"); ph0.setAttribute("tabindex", "0"); ph0.setAttribute("aria-label", "Show plant basics for " + p.name); ph0.removeAttribute("aria-hidden"); ph0.classList.add("flippable");
       ph0.addEventListener("click", function (e) { if (e.target.closest("a")) return; to(1); });
       ph0.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); to(1); setTimeout(function () { bp.pane.focus({ preventScroll: true }); }, 350); } }); }
     bp.pane.setAttribute("tabindex", "0"); bp.pane.setAttribute("role", "button"); bp.pane.setAttribute("aria-label", "Plant basics for " + p.name + ". Press to flip back.");
     bp.pane.addEventListener("click", function () { to(0); });
     bp.pane.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " " || e.key === "Escape") { e.preventDefault(); to(0); if (ph0) setTimeout(function () { ph0.focus({ preventScroll: true }); }, 350); } });
-    var t = null; track.addEventListener("scroll", function () { clearTimeout(t); t = setTimeout(function () { var on = onBack(); card.classList.toggle("showing-basics", on); front.setAttribute("aria-hidden", on ? "true" : "false"); bp.pane.setAttribute("aria-hidden", on ? "false" : "true"); }, 80); }, { passive: true });
     bp.pane.setAttribute("aria-hidden", "true");
-    function fit() { var h = bp.pane.clientHeight; if (!h) return; bp.pane.classList.toggle("tall", h >= 440); bp.pane.classList.toggle("compact", h < 440); }
-    if ("ResizeObserver" in window) new ResizeObserver(fit).observe(bp.pane); else { setTimeout(fit, 0); addEventListener("resize", fit); }
+    bp.pane.classList.add("compact");   // uniform compact cards: back always uses the compact layout
     if (!peeked && card.querySelector(".add, .soon-pill")) { peeked = true; try { sessionStorage.setItem("ienn-peek", "1"); } catch (e) {}   // one gentle peek per session, first card only
-      if (!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches)) setTimeout(function () { if (!card.isConnected) return; track.scrollTo({ left: 46, behavior: "smooth" }); setTimeout(function () { track.scrollTo({ left: 0, behavior: "smooth" }); }, 650); }, 1400); }
+      if (!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches)) setTimeout(function () { if (!card.isConnected || side) return; track.style.transform = "translateX(-46px)"; setTimeout(function () { if (!side) track.style.transform = ""; }, 650); }, 1400); }
     return card;
   }
 
@@ -483,7 +494,7 @@
     save();
   }
   var lastSig = null;
-  function use(l, msg, d, quick) { BASELINE = IENNStock.hasBaseline(d, l); PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l))).map(function (p) { var dn = typeof iennDisplayName === "function" && iennDisplayName(p.name); if (dn && dn !== p.name) { p.feedName = p.feedName || p.name; p.name = dn; } return p; });   // display-name overrides; id/fullName keep the feed name for cart + orders if (!quick) prefill();
+  function use(l, msg, d, quick) { BASELINE = IENNStock.hasBaseline(d, l); PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l)).filter(function (p) { return !(typeof iennHidden === "function" && iennHidden(p)); })).map(function (p) { var dn = typeof iennDisplayName === "function" && iennDisplayName(p.name); if (dn && dn !== p.name) { p.feedName = p.feedName || p.name; p.name = dn; } return p; });   // display-name overrides; id/fullName keep the feed name for cart + orders if (!quick) prefill();
     var sig = JSON.stringify([BASELINE, PLANTS]); if (sig !== lastSig) { lastSig = sig; render(); } else update();   // same data: keep the grid as is if (quick) return; status.textContent = msg || ""; status.hidden = !msg;
     if (params.get("checkout") === "1" && !autoOpened && lines().length) { autoOpened = true; if (window.iennOpenCheckout) window.iennOpenCheckout(); } }
   var autoOpened = false;
