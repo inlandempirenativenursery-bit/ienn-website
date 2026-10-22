@@ -5,6 +5,8 @@
    adding a plant = add it to the tool's Catalog; stock = the weekly counts minus orders since the last count. */
 var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec";
 var REFRESH_MINUTES = 5;
+/* "Only a few left" shows when a size has this many or fewer ready (never shows the number). */
+var LOW_STOCK = 5;
 /* Prices by size. Shown only until live data loads; the server (IENN_Config.gs IENN_SIZES) is authoritative. */
 var PRICES = { '2"': 3, '4"': 6, 'Tree pot': 10, '1 gal': 15 };
 var SIZE_LABELS = { '2"': "2-inch pot", '4"': "4-inch pot", 'Tree pot': "Quarter tree pot", '1 gal': "1-gallon" };
