@@ -234,3 +234,9 @@ html.ty-open, html.ty-open body { overflow:hidden; }
 .bloom-s { display:grid; grid-template-columns:repeat(4,1fr); gap:3px; }
 .seasons .sp { background:#fff; color:#9ca3af; border:1px solid #d1d5db; border-radius:999px; font-weight:700; }
 .seasons .sp.on { background:#8b5cf6; border-color:#8b5cf6; color:#fff; }
+/* v11: size row never crowds the edge */
+.size { gap:0.3rem; padding-right:0.35rem; min-width:0; }
+.size-art { width:64px !important; height:34px !important; flex:0 0 auto; }
+.size-v { font-size:0.72rem !important; min-width:0; }
+@container (min-height:440px) { .size-art { width:76px !important; height:40px !important; } .size-v { font-size:0.76rem !important; } }
+@container (max-height:439px) { .basics-in { gap:0.15rem; padding:0.35rem 0.45rem; } .fchip { min-height:0; padding:0; } .fchip-t { font-size:0.66rem; } .bi { width:16px; height:16px; } .water .bi { width:11px; height:15px; } .care, .feats { gap:0.1rem; } .care, .seasons, .feats, .size { padding-top:0.15rem; } .seasons .sp { font-size:0.6rem; padding:0.05rem 0; } .size-art { width:56px !important; height:30px !important; } .form-ribbon { font-size:0.6rem; padding:0.1rem 0.45rem; } }

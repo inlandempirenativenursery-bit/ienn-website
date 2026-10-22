@@ -168,8 +168,10 @@
   function plantShape(x, cx, base, gw, gh) {
     var G = "#4d7c55", r = gw / 2, f = x.shape || x.form || "Shrub", P = function (d) { return '<path fill="' + G + '" d="' + d + '"/>'; }, L = function (d, w) { return '<path fill="none" stroke="' + G + '" stroke-width="' + (w || 1.4) + '" stroke-linecap="round" d="' + d + '"/>'; }, top = base - gh, o = "";
     if (false) return '<rect x="' + (cx - 1.2) + '" y="' + (base - gh * .1) + '" width="2.4" height="' + (gh * .1) + '" fill="' + G + '"/>' + P("M" + cx + " " + top + "C" + (cx + r * .35) + " " + (top + gh * .3) + " " + (cx + r * .55) + " " + (base - gh * .35) + " " + (cx + r * .4) + " " + (base - gh * .1) + "H" + (cx - r * .4) + "C" + (cx - r * .55) + " " + (base - gh * .35) + " " + (cx - r * .35) + " " + (top + gh * .3) + " " + cx + " " + top + "z");
-    if (f === "Tree" || f === "Small tree") { var th = gh * .18, ry = gh * .42, cy = top + ry;
-      return '<rect x="' + (cx - 1.5) + '" y="' + (cy + ry * .5) + '" width="3" height="' + (base - cy - ry * .5) + '" fill="' + G + '"/>' + '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + r + '" ry="' + ry + '" fill="' + G + '"/>' + '<ellipse cx="' + (cx - r * .5) + '" cy="' + (cy + ry * .25) + '" rx="' + (r * .55) + '" ry="' + (ry * .7) + '" fill="' + G + '"/><ellipse cx="' + (cx + r * .5) + '" cy="' + (cy + ry * .25) + '" rx="' + (r * .55) + '" ry="' + (ry * .7) + '" fill="' + G + '"/>'; }
+    if (f === "Tree" || f === "Small tree") { var cw = Math.max(gw, gh * 1.5) / 2, ch = gh * .62, ctop = top, cb = ctop + ch, tk = Math.max(2.4, cw * .12);   // coast-live-oak: short trunk, branching, broad lumpy canopy
+      o += P("M" + (cx - tk) + " " + base + "L" + (cx - tk * .7) + " " + (cb - ch * .05) + "L" + (cx - cw * .55) + " " + (cb - ch * .25) + "L" + (cx - cw * .5) + " " + (cb - ch * .15) + "L" + (cx - tk * .2) + " " + (cb + ch * .1) + "L" + (cx + tk * .2) + " " + (cb + ch * .1) + "L" + (cx + cw * .5) + " " + (cb - ch * .15) + "L" + (cx + cw * .55) + " " + (cb - ch * .25) + "L" + (cx + tk * .7) + " " + (cb - ch * .05) + "L" + (cx + tk) + " " + base + "z");
+      [[-.62, .62, .4, .38], [.62, .62, .4, .38], [-.3, .4, .45, .45], [.3, .38, .45, .45], [0, .3, .4, .42], [-.85, .72, .2, .25], [.85, .72, .2, .25], [0, .65, .7, .3]].forEach(function (l) { o += '<ellipse cx="' + (cx + l[0] * cw) + '" cy="' + (ctop + l[1] * ch) + '" rx="' + (l[2] * cw) + '" ry="' + (l[3] * ch) + '" fill="' + G + '"/>'; });
+      return o; }
     if (f === "Grass") { for (var i = -4; i <= 4; i++) { var tx = cx + i * r * .26, ty = top + Math.abs(i) * gh * .1 + gh * .05; o += L("M" + (cx + i * .6) + " " + base + "Q" + (cx + i * r * .1) + " " + (base - gh * .6) + " " + tx + " " + ty, 2.2); }
       [-.45, .05, .5].forEach(function (k) { var sx = cx + k * r * .8; o += L("M" + cx + " " + base + "Q" + sx + " " + (base - gh * .5) + " " + (sx + k * 2) + " " + (top - 1), .8) + '<ellipse cx="' + (sx + k * 2) + '" cy="' + top + '" rx="1.1" ry="2.4" fill="' + G + '"/>'; });
       return P("M" + (cx - r * .3) + " " + base + "Q" + cx + " " + (base - gh * .3) + " " + (cx + r * .3) + " " + base + "z") + o; }
@@ -180,7 +182,13 @@
       return o; }
     if (f === "Succulent") { for (var j = -5; j <= 5; j++) { var ang = j / 5 * 1.3, len = gh * .62 * (1 - Math.abs(j) * .05); o += P("M" + (cx - 2.2) + " " + base + "L" + (cx + Math.sin(ang) * Math.max(len, r * .9)) + " " + (base - Math.cos(ang) * len) + "L" + (cx + 2.2) + " " + base + "z"); }
       return o + L("M" + cx + " " + (base - gh * .3) + "V" + (top + gh * .2), 2) + P("M" + (cx - 2.4) + " " + (top + gh * .3) + "Q" + cx + " " + (top - 1) + " " + (cx + 2.4) + " " + (top + gh * .3) + "z"); }
-    if (f === "Perennial" || f === "Wildflower" || f === "Annual") { var ch = gh * .5;
+    if (f === "Wildflower" || f === "Annual") { var fh = gh * .38;   // poppy: low feathery foliage, slender stems, open cups
+      for (var m = -6; m <= 6; m++) { var ex = cx + m * r * .15, ey = base - fh * (1 - Math.abs(m) * .1); o += L("M" + (cx + m * .4) + " " + base + "Q" + (cx + m * r * .06) + " " + (base - fh * .5) + " " + ex + " " + ey, 1.4); }
+      [[-.55, .78], [-.05, 1], [.5, .86]].forEach(function (q) { var fx = cx + q[0] * r, fy = base - gh * q[1] + gh * .14, cr = Math.max(2.6, gh * .13);
+        o += L("M" + (cx + q[0] * r * .3) + " " + (base - fh * .6) + "Q" + (fx - q[0] * 2) + " " + (fy + gh * .3) + " " + fx + " " + (fy + cr * .3), 1);
+        o += P("M" + (fx - cr) + " " + (fy - cr * .7) + "Q" + (fx - cr * .9) + " " + (fy + cr * .6) + " " + fx + " " + (fy + cr * .6) + "Q" + (fx + cr * .9) + " " + (fy + cr * .6) + " " + (fx + cr) + " " + (fy - cr * .7) + "Q" + (fx + cr * .5) + " " + (fy - cr * .1) + " " + fx + " " + (fy - cr * .55) + "Q" + (fx - cr * .5) + " " + (fy - cr * .1) + " " + (fx - cr) + " " + (fy - cr * .7) + "z"); });
+      return o; }
+    if (f === "Perennial") { var ch = gh * .5;
       o += P("M" + (cx - r) + " " + base + "Q" + (cx - r) + " " + (base - ch) + " " + (cx - r * .4) + " " + (base - ch) + "Q" + cx + " " + (base - ch * 1.3) + " " + (cx + r * .4) + " " + (base - ch) + "Q" + (cx + r) + " " + (base - ch) + " " + (cx + r) + " " + base + "z");
       [-.5, 0, .45].forEach(function (k, i) { var fx = cx + k * r, fy = top + (i === 1 ? 0 : gh * .12); o += L("M" + fx + " " + (base - ch * .8) + "V" + (fy + 2), 1) + '<circle cx="' + fx + '" cy="' + (fy + 2) + '" r="' + Math.max(1.6, gh * .07) + '" fill="' + G + '"/>'; });
       return o; }
