@@ -243,6 +243,8 @@
     if (ph0 && x.form) ph0.appendChild(el("span", { class: "form-ribbon on-photo", "aria-hidden": "true" }, x.form));
     var d1 = el("div", { class: "flip-dots", "aria-hidden": "true" }); d1.appendChild(el("i", { class: "on" })); d1.appendChild(el("i"));
     if (ph0) ph0.after(d1);
+    var fimg = ph0 && ph0.querySelector("img");   // faded copy of the front photo behind the back (same URL, cached)
+    if (fimg) { var bg = el("img", { class: "back-bg", src: fimg.getAttribute("src"), alt: "", "aria-hidden": "true", loading: "lazy", decoding: "async" }); if (fimg.getAttribute("srcset")) { bg.setAttribute("srcset", fimg.getAttribute("srcset")); bg.setAttribute("sizes", fimg.getAttribute("sizes")); } bp.pane.insertBefore(bg, bp.pane.firstChild); bp.pane.classList.add("has-bg"); }
     track.appendChild(front); track.appendChild(bp.pane); card.appendChild(track); card.classList.add("has-basics");
     var side = 0, drag = null, swallow = false;
     function show(on) { card.classList.toggle("showing-basics", !!on); front.setAttribute("aria-hidden", on ? "true" : "false"); bp.pane.setAttribute("aria-hidden", on ? "false" : "true"); }
