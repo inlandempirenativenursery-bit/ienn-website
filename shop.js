@@ -166,8 +166,8 @@
   function icon(name, label, off) { var s = svg(24, 24, ICON[name], "bi" + (off ? " off" : "")); if (label) { s.setAttribute("role", "img"); s.removeAttribute("aria-hidden"); s.setAttribute("aria-label", label); var t = document.createElementNS(SVGNS, "title"); t.textContent = label; s.insertBefore(t, s.firstChild); } return s; }
   /* Generic solid silhouettes by life form, one green; drawn in a box gw wide x gh tall sitting on the ground line. */
   function plantShape(x, cx, base, gw, gh) {
-    var G = "#4d7c55", r = gw / 2, f = x.form || "Shrub", P = function (d) { return '<path fill="' + G + '" d="' + d + '"/>'; }, L = function (d, w) { return '<path fill="none" stroke="' + G + '" stroke-width="' + (w || 1.4) + '" stroke-linecap="round" d="' + d + '"/>'; }, top = base - gh, o = "";
-    if (x.conifer) return '<rect x="' + (cx - 1.2) + '" y="' + (base - gh * .1) + '" width="2.4" height="' + (gh * .1) + '" fill="' + G + '"/>' + P("M" + cx + " " + top + "C" + (cx + r * .35) + " " + (top + gh * .3) + " " + (cx + r * .55) + " " + (base - gh * .35) + " " + (cx + r * .4) + " " + (base - gh * .1) + "H" + (cx - r * .4) + "C" + (cx - r * .55) + " " + (base - gh * .35) + " " + (cx - r * .35) + " " + (top + gh * .3) + " " + cx + " " + top + "z");
+    var G = "#4d7c55", r = gw / 2, f = x.shape || x.form || "Shrub", P = function (d) { return '<path fill="' + G + '" d="' + d + '"/>'; }, L = function (d, w) { return '<path fill="none" stroke="' + G + '" stroke-width="' + (w || 1.4) + '" stroke-linecap="round" d="' + d + '"/>'; }, top = base - gh, o = "";
+    if (false) return '<rect x="' + (cx - 1.2) + '" y="' + (base - gh * .1) + '" width="2.4" height="' + (gh * .1) + '" fill="' + G + '"/>' + P("M" + cx + " " + top + "C" + (cx + r * .35) + " " + (top + gh * .3) + " " + (cx + r * .55) + " " + (base - gh * .35) + " " + (cx + r * .4) + " " + (base - gh * .1) + "H" + (cx - r * .4) + "C" + (cx - r * .55) + " " + (base - gh * .35) + " " + (cx - r * .35) + " " + (top + gh * .3) + " " + cx + " " + top + "z");
     if (f === "Tree" || f === "Small tree") { var th = gh * .18, ry = gh * .42, cy = top + ry;
       return '<rect x="' + (cx - 1.5) + '" y="' + (cy + ry * .5) + '" width="3" height="' + (base - cy - ry * .5) + '" fill="' + G + '"/>' + '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + r + '" ry="' + ry + '" fill="' + G + '"/>' + '<ellipse cx="' + (cx - r * .5) + '" cy="' + (cy + ry * .25) + '" rx="' + (r * .55) + '" ry="' + (ry * .7) + '" fill="' + G + '"/><ellipse cx="' + (cx + r * .5) + '" cy="' + (cy + ry * .25) + '" rx="' + (r * .55) + '" ry="' + (ry * .7) + '" fill="' + G + '"/>'; }
     if (f === "Grass") { for (var i = -4; i <= 4; i++) { var tx = cx + i * r * .26, ty = top + Math.abs(i) * gh * .1 + gh * .05; o += L("M" + (cx + i * .6) + " " + base + "Q" + (cx + i * r * .1) + " " + (base - gh * .6) + " " + tx + " " + ty, 2.2); }
@@ -186,12 +186,17 @@
     var sh = gh;   // Shrub / Sub-shrub: solid rounded mound
     return P("M" + (cx - r) + " " + base + "C" + (cx - r * 1.05) + " " + (base - sh * .75) + " " + (cx - r * .5) + " " + (base - sh) + " " + cx + " " + (base - sh) + "C" + (cx + r * .5) + " " + (base - sh) + " " + (cx + r * 1.05) + " " + (base - sh * .75) + " " + (cx + r) + " " + base + "z");
   }
-  function sizeArt(x) {   // native shrub silhouette vs a 6' person on the same scale, with height ticks
-    var W = 96, H = 50, base = H - 1, top = Math.max(6, x.h[1]), sc = (H - 6) / top, ph = 6 * sc, gh = x.h[1] * sc, gw = Math.min(60, Math.max(22, x.w[1] * sc * 1.1)), px = 16, cx = 32 + gw / 2, tree = x.form === "Tree" || x.form === "Small tree", o = "";
-    for (var t = 0; t <= 2; t++) { var ty = base - (top * sc) * t / 2; o += '<path d="M3 ' + ty + 'H7" stroke="#9ca3af" stroke-width="1"/>'; }
-    o += '<path d="M5 ' + base + 'V' + (base - top * sc) + '" stroke="#d1d5db" stroke-width="1"/>';
-    var hr = ph * .085; o += '<g fill="#9ca3af"><circle cx="' + px + '" cy="' + (base - ph + hr) + '" r="' + hr + '"/><path d="M' + (px - ph * .1) + ' ' + base + 'V' + (base - ph * .5) + 'Q' + (px - ph * .12) + ' ' + (base - ph * .79) + ' ' + px + ' ' + (base - ph * .8) + 'Q' + (px + ph * .12) + ' ' + (base - ph * .79) + ' ' + (px + ph * .1) + ' ' + (base - ph * .5) + 'V' + base + 'z"/></g>';
-    o += plantShape(x, cx, base, gw, gh);
+  function sizeArt(x) {   // plant silhouette vs a 6' person, true scale per frame, auto-zoomed so the plant reads well
+    var W = 96, H = 50, base = H - 1, room = H - 7, hmax = x.h[1];
+    var sc = hmax <= 3 ? room * .9 / hmax : room / Math.max(6, hmax);   // small: zoom in (person cropped); mid: fit person; big: fit plant
+    var ph = 6 * sc, gh = hmax * sc, gw = Math.min(60, Math.max(22, x.w[1] * sc * 1.1)), px = 15, cx = 32 + gw / 2, o = "";
+    var vis = (base - 1) / sc, step = vis <= 5 ? 1 : vis <= 12 ? 2 : vis <= 30 ? 5 : 10;
+    o += '<path d="M6 ' + base + 'V1" stroke="#e5e7eb" stroke-width="1"/>';
+    for (var t = step; t * sc <= base - 3; t += step) { var ty = base - t * sc; o += '<path d="M4 ' + ty + 'H8" stroke="#9ca3af" stroke-width="1"/><text x="9.5" y="' + (ty + 2) + '" font-size="5.5" font-weight="700" fill="#6b7280" font-family="system-ui,sans-serif">' + t + '\'</text>'; }
+    var hr = ph * .085, bw = ph * .1;
+    o += '<g fill="#9ca3af"><circle cx="' + (px + 6) + '" cy="' + (base - ph + hr) + '" r="' + hr + '"/><path d="M' + (px + 6 - bw) + ' ' + base + 'V' + (base - ph * .5) + 'Q' + (px + 6 - bw * 1.2) + ' ' + (base - ph * .79) + ' ' + (px + 6) + ' ' + (base - ph * .8) + 'Q' + (px + 6 + bw * 1.2) + ' ' + (base - ph * .79) + ' ' + (px + 6 + bw) + ' ' + (base - ph * .5) + 'V' + base + 'z"/></g>';
+    o += '<path d="M' + (px + 6) + ' ' + base + 'V' + (base - ph * .44) + '" stroke="#fff" stroke-width="' + Math.max(.6, bw * .25) + '"/>';
+    o += plantShape(x, cx + 4, base, gw, gh);
     o += '<path d="M0 ' + base + 'H' + W + '" stroke="#d6d3d1" stroke-width="1.5"/>';
     return svg(W, H, o, "size-art");
   }
