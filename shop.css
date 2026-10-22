@@ -291,3 +291,9 @@ html.ty-open, html.ty-open body { overflow:hidden; }
 .pane-basics .basics-in { z-index:1; }
 .pane-basics.has-bg .fchip-t, .pane-basics.has-bg .size-v { text-shadow:0 0 3px rgba(250,247,240,.95), 0 0 1px rgba(250,247,240,.95); }
 html.bg-light .pane-basics { --bg-op:.12; } html.bg-strong .pane-basics { --bg-op:.3; }
+
+/* Clean photo panel (third panel) */
+.pane-clean { flex:0 0 100%; position:relative; min-width:0; height:100%; overflow:hidden; cursor:pointer; background:var(--cream,#faf7f0); }
+.pane-clean img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.pane-clean .flip-dots.on-clean { position:absolute; left:0; right:0; bottom:8px; padding:0; }
+.pane-clean .flip-dots i { background:rgba(255,255,255,.7); } .pane-clean .flip-dots i.on { background:var(--sage); }
