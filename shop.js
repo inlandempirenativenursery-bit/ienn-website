@@ -75,7 +75,8 @@
       card.addEventListener("touchstart", function () { card.classList.add("lift"); }, { passive: true });
       ["touchend", "touchcancel"].forEach(function (t) { card.addEventListener(t, function () { setTimeout(function () { card.classList.remove("lift"); }, 160); }); });
       var cr = p.image && typeof ienPhoto === "function" && ienPhoto(p.name); cr = cr && cr.src === p.image && cr.credit;
-      if (cr) { var cp = el("p", { class: "photo-credit" }); cp.appendChild(el("a", { href: cr.url, target: "_blank", rel: "noopener" }, cr.text)); card.appendChild(cp); }
+      if (cr) { var ca = el("a", { class: "photo-credit", href: cr.url, target: "_blank", rel: "noopener", title: cr.text }, String(cr.text).replace(/^Photo:\s*/, "© "));   // credit sits inside the photo (bottom-right); an <a>, so capOverlays never counts it
+        ca.addEventListener("click", function (e) { e.stopPropagation(); }); ph.appendChild(ca); }
       var b = el("div", { class: "body" });
       var h3 = el("h3", { id: p.id + "-name" }); h3.appendChild(el("span", { class: "slot", "aria-hidden": "true" }, String.fromCharCode(65 + Math.floor(idx / 6)) + (idx % 6 + 1))); h3.appendChild(document.createTextNode(p.name)); b.appendChild(h3);
       if (p.botanical) b.appendChild(el("span", { class: "note" }, p.botanical));
@@ -252,6 +253,13 @@
   function capOverlays(ph) { if (!ph) return; var all = Array.prototype.filter.call(ph.children, function (c) { return c.tagName === "SPAN" && !c.classList.contains("leaf"); });
     function pr(c) { for (var i = 0; i < OVERLAY_PRIORITY.length; i++) if (c.matches(OVERLAY_PRIORITY[i])) return i; return 99; }
     all.sort(function (a, b) { return pr(a) - pr(b); }).slice(MAX_OVERLAYS).forEach(function (c) { c.remove(); }); }
+  /* Credit gets whatever width the bottom-left ribbon leaves (never overlaps it); ellipsis only if still too long. */
+  var fitQ = [];
+  function fitCredit(ph) { fitQ.push(ph); if (fitQ.length === 1) requestAnimationFrame(fitAll); }
+  function fitAll() { var q = fitQ; fitQ = []; q.forEach(fitOne); }
+  function fitOne(ph) { var c = ph.querySelector(".photo-credit"), r = ph.querySelector(".form-ribbon"); if (!c || !ph.clientWidth) return;
+    var used = r ? r.offsetLeft + r.offsetWidth + 6 : 6; c.style.maxWidth = Math.max(40, ph.clientWidth - used - 5) + "px"; }
+  window.addEventListener("resize", function () { Array.prototype.forEach.call(document.querySelectorAll(".ph .photo-credit"), function (c) { fitOne(c.parentNode); }); });
   var peeked = false; try { peeked = sessionStorage.getItem("ienn-peek") === "1"; } catch (e) {}
   /* Third panel: the front photo alone, full-bleed, no overlays (so shoppers can see the plant). Panels loop front -> basics -> photo -> front. */
   var CLEAN = true;
@@ -261,9 +269,11 @@
     while (card.firstChild) front.appendChild(card.firstChild);
     var bp = basicsPane(p, x), ph0 = front.querySelector(".ph");
     if (ph0 && x.form) ph0.appendChild(el("span", { class: "form-ribbon on-photo", "aria-hidden": "true" }, x.form));
+    if (ph0 && ph0.querySelector(".photo-credit")) fitCredit(ph0);
     capOverlays(ph0);
     var fimg0 = ph0 && ph0.querySelector("img"), cp = null;
-    if (CLEAN && fimg0) { cp = el("div", { class: "pane-clean", "aria-hidden": "true" }); var ci = fimg0.cloneNode(); ci.removeAttribute("loading"); cp.appendChild(ci); }
+    if (CLEAN && fimg0) { cp = el("div", { class: "pane-clean", "aria-hidden": "true" }); var ci = fimg0.cloneNode(); ci.removeAttribute("loading"); cp.appendChild(ci);
+      var oc = ph0.querySelector(".photo-credit"); if (oc) { var cc = oc.cloneNode(true); cc.style.maxWidth = ""; cc.addEventListener("click", function (e) { e.stopPropagation(); }); cp.appendChild(cc); } }
     var NP = cp ? 3 : 2;
     function dots(on) { var d = el("div", { class: "flip-dots", "aria-hidden": "true" }); for (var k = 0; k < NP; k++) d.appendChild(el("i", k === on ? { class: "on" } : {})); return d; }
     if (cp) { var od = bp.pane.querySelector(".flip-dots"); if (od) od.replaceWith(dots(1)); var cd = dots(2); cd.classList.add("on-clean"); cp.appendChild(cd); }
@@ -291,7 +301,7 @@
     bp.pane.setAttribute("tabindex", "0"); bp.pane.setAttribute("role", "button"); bp.pane.setAttribute("aria-label", "Plant basics for " + p.name + ". Press to flip back.");
     bp.pane.addEventListener("click", function () { to(cp ? 2 : 0); });
     if (cp) { cp.setAttribute("tabindex", "0"); cp.setAttribute("role", "button"); cp.setAttribute("aria-label", "Photo of " + p.name + ". Press to go back to the front.");
-      cp.addEventListener("click", function () { to(0); });
+      cp.addEventListener("click", function (e) { if (e.target.closest("a")) return; to(0); });
       cp.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " " || e.key === "Escape") { e.preventDefault(); to(0); if (ph0) setTimeout(function () { ph0.focus({ preventScroll: true }); }, 350); } }); }
     bp.pane.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " " || e.key === "Escape") { e.preventDefault(); if (cp && e.key !== "Escape") { to(2); setTimeout(function () { cp.focus({ preventScroll: true }); }, 350); return; } to(0); if (ph0) setTimeout(function () { ph0.focus({ preventScroll: true }); }, 350); } });
     bp.pane.setAttribute("aria-hidden", "true");
