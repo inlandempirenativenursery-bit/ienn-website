@@ -66,11 +66,21 @@ var IENN_BASICS_SPECIES = {
   "Asclepias speciosa": { h:[2,4], w:[2,4], genusLevel:false },
   "Asclepias eriocarpa": { h:[1,3], w:[1,2], water:1, genusLevel:false }
 };
+/* Life form + short tagline (max ~8 words) shown on the card; desc is kept as data but not shown. */
+var IENN_FORM = { Salvia:["Shrub","Fragrant bee magnet"], Eriogonum:["Shrub","Tough, long-blooming bee favorite"], Hesperoyucca:["Succulent","One spectacular bloom spike"], Baileya:["Wildflower","Silver leaves, sunny daisies"],
+  Calystegia:["Vine","Big white trumpets, fast climber"], Encelia:["Shrub","Fast, cheerful yellow daisies"], Eschscholzia:["Wildflower","Golden state flower"], Muhlenbergia:["Grass","Fountain of fine flower spikes"],
+  Romneya:["Perennial","Giant fried-egg flowers"], Asclepias:["Perennial","Monarch caterpillar host"], Diplacus:["Sub-shrub","Hummingbird spring show"], Penstemon:["Perennial","Hummingbird flower spikes"],
+  Rhus:["Shrub","Glossy evergreen hedge"], Achillea:["Perennial","Lacy, tough lawn alternative"], Datura:["Perennial","Moonlit trumpets (toxic)"], Artemisia:["Shrub","Silver scent of the hills"],
+  Trichostema:["Sub-shrub","Woolly purple, wildly fragrant"], Baccharis:["Shrub","Tough evergreen cover"], Epilobium:["Perennial","Fall feast for hummingbirds"], Hesperocyparis:["Tree","Blue evergreen spire"],
+  Dendromecon:["Shrub","Golden chaparral poppies"], Heteromeles:["Small tree","Red winter berries for birds"] };
+var IENN_FORM_SPECIES = { "Salvia apiana":[null,"Silver leaves, sacred scent"], "Salvia spathacea":["Perennial","Shade-loving hummingbird sage"], "Salvia mellifera":[null,"Honeybee favorite"],
+  "Encelia farinosa":[null,"Silver desert sunshine"], "Eriogonum fasciculatum":[null,"Tough, long-blooming bee favorite"], "Baccharis pilularis":["Shrub","Tough evergreen groundcover"] };
 /* Look up basics for a botanical name, e.g. "Salvia apiana". Returns null if the genus is unknown. */
 function iennBasics(botanical) {
   var b = String(botanical || "").trim(), g = b.split(/\s+/)[0], base = IENN_BASICS[g]; if (!base) return null;
   var key = b.split(/\s+/).slice(0, 2).join(" "), sp = IENN_BASICS_SPECIES[key] || {}, out = {}, k;
   for (k in base) out[k] = base[k]; for (k in sp) out[k] = sp[k];
   if (IENN_BASICS_SPECIES[key] && sp.genusLevel == null && sp.desc) out.genusLevel = false;
+  var f = IENN_FORM[g] || [], fs = IENN_FORM_SPECIES[key] || []; out.form = fs[0] || f[0] || ""; out.tag = fs[1] || f[1] || "";
   return out;
 }
