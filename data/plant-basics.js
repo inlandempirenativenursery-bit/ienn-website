@@ -43,7 +43,7 @@ var IENN_BASICS = {
     desc:"A tough evergreen shrub or groundcover that handles almost any soil. Its fall flowers feed many insects late in the year." },
   Epilobium: { water:1, sun:["full","part"], soil:"Fast-draining", bloom:["Su","F"], wild:["hummingbirds","pollinators","containers"], h:[1,2], w:[2,3], ie:true,
     desc:"Bright red-orange tubular flowers in late summer and fall, just when hummingbirds need them most. Cut back in winter to keep it tidy." },
-  Hesperocyparis: { water:1, sun:["full"], soil:"Adaptable", bloom:[], wild:["birds","fragrant"], h:[20,40], w:[10,20], ie:true,
+  Hesperocyparis: { conifer:true, water:1, sun:["full"], soil:"Adaptable", bloom:[], wild:["birds","fragrant"], h:[20,40], w:[10,20], ie:true,
     desc:"A drought-tolerant evergreen conifer with blue-gray, aromatic foliage. Makes a strong vertical accent or windbreak." },
   Dendromecon: { water:1, sun:["full"], soil:"Fast-draining", bloom:["W","Sp"], wild:["pollinators"], h:[4,8], w:[4,8], ie:true,
     desc:"A chaparral shrub with bright yellow poppy flowers. Needs excellent drainage and dislikes summer water." },
