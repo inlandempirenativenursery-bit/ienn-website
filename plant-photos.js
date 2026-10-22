@@ -4,6 +4,10 @@ var IENN_PHOTOS = ["white-sage","sticky-monkeyflower","narrow-leaf-milkweed","bl
 var IENN_PHOTO_ALIAS = { "datura": "sacred-datura", "narrowleaf-milkweed": "narrow-leaf-milkweed", "buckwheat": "california-buckwheat", "encelia": "california-encelia", "bush-sunflower": "california-encelia", "poppy": "california-poppy", "matilija": "matilija-poppy", "bunch-grass-deer": "deergrass", "deer-grass": "deergrass", "chaparral-yucca": "yucca", "our-lord-s-candle": "yucca", "monkeyflower": "sticky-monkeyflower", "penstemon": "showy-penstemon", "wild-morning-glory": "morning-glory", "island-morning-glory": "morning-glory", "california-brittlebush": "california-encelia", "arizona-cypress-blue-pyramid": "arizona-cypress" };
 /* Photos that need a visible attribution on the card (e.g. CC BY). */
 var IENN_PHOTO_CREDITS = {
+ "deergrass": {
+  "text": "Photo: Cricket Raspet, CC BY",
+  "url": "https://www.inaturalist.org/observations/145620781"
+ },
  "purple-sage": {
   "text": "Photo: Jesse Rorabaugh, CC0",
   "url": "https://www.inaturalist.org/observations/2979698"
