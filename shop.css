@@ -280,8 +280,8 @@ html.ty-open, html.ty-open body { overflow:hidden; }
 .card.has-basics .stepper button, .card.has-basics .stepper input { min-height:38px; }
 .card.has-basics .add { min-height:42px; }
 .card.has-basics .flip-dots { padding-top:3px; }
-.card.has-basics { --card-h:450px; }
-.grid > .card { --card-h:450px; height:var(--card-h); overflow:hidden; }
+.card.has-basics { --card-h:436px; }
+.grid > .card { --card-h:436px; height:var(--card-h); overflow:hidden; }
 .card.has-basics .pane-basics.compact .basics-in { justify-content:space-evenly; } .card.has-basics .pane-basics.compact .basics-fine { margin-top:0; }
 
 /* Card back: faded front photo behind everything; cards without a photo keep a plain cream back */
