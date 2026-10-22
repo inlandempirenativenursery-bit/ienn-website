@@ -291,3 +291,14 @@ html.ty-open, html.ty-open body { overflow:hidden; }
 .pane-basics .basics-in { z-index:1; }
 .pane-basics.has-bg .fchip-t, .pane-basics.has-bg .size-v { text-shadow:0 0 3px rgba(250,247,240,.95), 0 0 1px rgba(250,247,240,.95); }
 html.bg-light .pane-basics { --bg-op:.12; } html.bg-strong .pane-basics { --bg-op:.3; }
+
+/* Photo overlays consolidated into one slim bottom row (badge · life form · price) so the plant stays unobstructed. */
+.ph-tags { position:absolute; left:0; right:0; bottom:0; z-index:2; display:flex; flex-wrap:wrap; align-items:center; gap:3px; padding:10px 4px 4px; background:linear-gradient(to top,rgba(30,36,30,.38),rgba(30,36,30,0)); pointer-events:none; min-width:0; }
+.ph-tags > span, .card.has-basics .ph-tags > span { position:static; inset:auto; margin:0; box-shadow:none; font-size:0.62rem; line-height:1.55; padding:0 0.35rem; border-radius:99px; white-space:nowrap; flex:none; }
+.ph-tags .pick-badge { min-width:0; flex:0 1 auto; overflow:hidden; text-overflow:ellipsis; max-width:none; }
+.ph-tags .form-ribbon { letter-spacing:.04em; font-size:0.56rem; }
+.ph-tags .price-tag { margin-left:auto; border:0; }
+.pane-clean { flex:0 0 100%; position:relative; min-width:0; height:100%; overflow:hidden; cursor:pointer; background:var(--cream,#faf7f0); }
+.pane-clean img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.pane-clean .flip-dots.on-clean { position:absolute; left:0; right:0; bottom:8px; padding:0; }
+.pane-clean .flip-dots i { background:rgba(255,255,255,.7); } .pane-clean .flip-dots i.on { background:var(--sage); }
