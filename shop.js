@@ -162,7 +162,7 @@
   var SOILL = { "Fast-draining": "Fast-draining", "Clay-tolerant": "Clay OK", "Adaptable": "Any soil" };
   var SEAS = [["W", "Win", "Winter"], ["Sp", "Spr", "Spring"], ["Su", "Sum", "Summer"], ["F", "Fall", "Fall"]];
   var WILDL = { pollinators: "Bees & butterflies", hummingbirds: "Hummingbirds", birds: "Birds", fragrant: "Fragrant", containers: "Pot-friendly", heat: "Heat tough" };
-  function ft(a) { return a[0] === a[1] ? a[0] + "'" : a[0] + "\u2013" + a[1] + "'"; }
+  function ft(a) { return (a[0] === a[1] ? a[0] : a[0] + "\u2013" + a[1]) + " ft"; }
   function icon(name, label, off) { var s = svg(24, 24, ICON[name], "bi" + (off ? " off" : "")); if (label) { s.setAttribute("role", "img"); s.removeAttribute("aria-hidden"); s.setAttribute("aria-label", label); var t = document.createElementNS(SVGNS, "title"); t.textContent = label; s.insertBefore(t, s.firstChild); } return s; }
   /* Generic solid silhouettes by life form, one green; drawn in a box gw wide x gh tall sitting on the ground line. */
   function plantShape(x, cx, base, gw, gh) {
@@ -173,9 +173,10 @@
     if (f === "Grass") { for (var i = -4; i <= 4; i++) { var tx = cx + i * r * .26, ty = top + Math.abs(i) * gh * .1 + gh * .05; o += L("M" + (cx + i * .6) + " " + base + "Q" + (cx + i * r * .1) + " " + (base - gh * .6) + " " + tx + " " + ty, 2.2); }
       [-.45, .05, .5].forEach(function (k) { var sx = cx + k * r * .8; o += L("M" + cx + " " + base + "Q" + sx + " " + (base - gh * .5) + " " + (sx + k * 2) + " " + (top - 1), .8) + '<ellipse cx="' + (sx + k * 2) + '" cy="' + top + '" rx="1.1" ry="2.4" fill="' + G + '"/>'; });
       return P("M" + (cx - r * .3) + " " + base + "Q" + cx + " " + (base - gh * .3) + " " + (cx + r * .3) + " " + base + "z") + o; }
-    if (f === "Vine") { var px = cx + r * .15; o += '<rect x="' + (px - 1) + '" y="' + top + '" width="2" height="' + gh + '" fill="#a8a29e"/><path stroke="#a8a29e" stroke-width="1" d="M' + (px - r * .5) + ' ' + (top + gh * .25) + 'H' + (px + r * .5) + 'M' + (px - r * .5) + ' ' + (top + gh * .55) + 'H' + (px + r * .5) + '"/>';
-      o += L("M" + (px - 3) + " " + base + "C" + (px + 5) + " " + (base - gh * .25) + " " + (px - 6) + " " + (base - gh * .5) + " " + px + " " + (base - gh * .7) + "S" + (px + 4) + " " + (top + 2) + " " + (px - 2) + " " + (top + 1));
-      [[.15, -1], [.33, 1], [.5, -1], [.68, 1], [.85, -1]].forEach(function (q) { var ly = base - gh * q[0]; o += '<ellipse cx="' + (px + q[1] * 3.5) + '" cy="' + ly + '" rx="' + Math.max(2.2, r * .22) + '" ry="' + Math.max(1.6, gh * .06) + '" fill="' + G + '" transform="rotate(' + (q[1] * 25) + ' ' + (px + q[1] * 3.5) + ' ' + ly + ')"/>'; });
+    if (f === "Vine") { var vh = gh * .85, vt = base - vh, vw = Math.max(30, Math.min(gw, vh * .9)), pp = cx;   // simplified leafy vine on a post (not strictly to scale)
+      o += '<rect x="' + (pp - 1.3) + '" y="' + (vt - 2) + '" width="2.6" height="' + (vh + 2) + '" fill="#a8a29e"/><rect x="' + (pp - vw * .45) + '" y="' + (vt + vh * .12) + '" width="' + (vw * .9) + '" height="1.6" fill="#a8a29e"/>';
+      for (var q = 0; q < 7; q++) { var ly = base - vh * (q + .6) / 7.2, sx = (q % 2 ? 1 : -1), lw = vw * (.42 - q * .02); o += '<ellipse cx="' + (pp + sx * lw * .5) + '" cy="' + ly + '" rx="' + lw * .62 + '" ry="' + Math.max(2.8, vh * .11) + '" fill="' + G + '"/>'; }
+      o += P("M" + (pp - vw * .3) + " " + base + "Q" + pp + " " + (base - vh * .35) + " " + (pp + vw * .3) + " " + base + "z");
       return o; }
     if (f === "Succulent") { for (var j = -5; j <= 5; j++) { var ang = j / 5 * 1.3, len = gh * .62 * (1 - Math.abs(j) * .05); o += P("M" + (cx - 2.2) + " " + base + "L" + (cx + Math.sin(ang) * Math.max(len, r * .9)) + " " + (base - Math.cos(ang) * len) + "L" + (cx + 2.2) + " " + base + "z"); }
       return o + L("M" + cx + " " + (base - gh * .3) + "V" + (top + gh * .2), 2) + P("M" + (cx - 2.4) + " " + (top + gh * .3) + "Q" + cx + " " + (top - 1) + " " + (cx + 2.4) + " " + (top + gh * .3) + "z"); }
@@ -189,10 +190,7 @@
   function sizeArt(x) {   // plant silhouette vs a 6' person, true scale per frame, auto-zoomed so the plant reads well
     var W = 96, H = 50, base = H - 1, room = H - 7, hmax = x.h[1];
     var sc = hmax <= 3 ? room * .9 / hmax : room / Math.max(6, hmax);   // small: zoom in (person cropped); mid: fit person; big: fit plant
-    var ph = 6 * sc, gh = hmax * sc, gw = Math.min(60, Math.max(22, x.w[1] * sc * 1.1)), px = 15, cx = 32 + gw / 2, o = "";
-    var vis = (base - 1) / sc, step = vis <= 5 ? 1 : vis <= 12 ? 2 : vis <= 30 ? 5 : 10;
-    o += '<path d="M6 ' + base + 'V1" stroke="#e5e7eb" stroke-width="1"/>';
-    for (var t = step; t * sc <= base - 3; t += step) { var ty = base - t * sc; o += '<path d="M4 ' + ty + 'H8" stroke="#9ca3af" stroke-width="1"/><text x="9.5" y="' + (ty + 2) + '" font-size="5.5" font-weight="700" fill="#6b7280" font-family="system-ui,sans-serif">' + t + '\'</text>'; }
+    var ph = 6 * sc, gh = hmax * sc, gw = Math.min(60, Math.max(22, x.w[1] * sc * 1.1)), px = 4, cx = 24 + gw / 2, o = "";
     var hr = ph * .085, bw = ph * .1;
     o += '<g fill="#9ca3af"><circle cx="' + (px + 6) + '" cy="' + (base - ph + hr) + '" r="' + hr + '"/><path d="M' + (px + 6 - bw) + ' ' + base + 'V' + (base - ph * .5) + 'Q' + (px + 6 - bw * 1.2) + ' ' + (base - ph * .79) + ' ' + (px + 6) + ' ' + (base - ph * .8) + 'Q' + (px + 6 + bw * 1.2) + ' ' + (base - ph * .79) + ' ' + (px + 6 + bw) + ' ' + (base - ph * .5) + 'V' + base + 'z"/></g>';
     o += '<path d="M' + (px + 6) + ' ' + base + 'V' + (base - ph * .44) + '" stroke="#fff" stroke-width="' + Math.max(.6, bw * .25) + '"/>';
@@ -214,8 +212,8 @@
     var bh = el("span", { class: "bloom-h", "aria-hidden": "true" }); bh.appendChild(icon("bloom")); bh.appendChild(el("span", { class: "fchip-t" }, "Blooms")); bl.appendChild(bh);
     var bs = el("span", { class: "bloom-s", "aria-hidden": "true" }); SEAS.forEach(function (q) { bs.appendChild(el("span", { class: "sp" + (x.bloom.indexOf(q[0]) >= 0 ? " on" : "") }, q[1])); }); bl.appendChild(bs); inn.appendChild(bl);
     var wl = el("div", { class: "feats" }); (x.wild || []).concat(x.ie ? ["heat"] : []).forEach(function (k) { wl.appendChild(chip([icon(k)], WILDL[k], "f-" + k)); }); inn.appendChild(wl);
-    var sz = el("div", { class: "size", role: "img", "aria-label": "Mature size " + ft(x.h) + " high by " + ft(x.w) + " wide" }); sz.appendChild(sizeArt(x));
-    var sv = el("span", { class: "size-v" }); sv.appendChild(el("b", {}, ft(x.h) + " tall")); sv.appendChild(el("b", {}, ft(x.w) + " wide")); sz.appendChild(sv); inn.appendChild(sz);
+    var sz = el("div", { class: "size", role: "img", "aria-label": "Mature size " + ft(x.h) + (x.form === "Vine" ? " long" : " tall") + ", " + ft(x.w) + " wide" }); sz.appendChild(sizeArt(x));
+    var sv = el("span", { class: "size-v" }); sv.appendChild(el("b", {}, ft(x.h) + (x.form === "Vine" ? " long" : " tall"))); sv.appendChild(el("b", {}, ft(x.w) + " wide")); sz.appendChild(sv); inn.appendChild(sz);
     inn.appendChild(el("p", { class: "basics-fine" }, "Results vary by site"));
     var d2 = el("div", { class: "flip-dots", "aria-hidden": "true" }); d2.appendChild(el("i")); d2.appendChild(el("i", { class: "on" })); inn.appendChild(d2);
     pane.appendChild(inn);
