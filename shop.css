@@ -5,7 +5,7 @@
 @media (min-width:960px) { .grid { grid-template-columns:repeat(3,1fr); } .ph { aspect-ratio:16/9; } }
 .card { border:1px solid #e6e6e6; border-radius:12px; overflow:hidden; display:flex; flex-direction:column; background:#fff; transition:border-color .15s, box-shadow .15s; }
 .card.in-cart { border-color:var(--sage); box-shadow:0 0 0 2px rgba(107,124,106,.25); }
-.card.sold-out { opacity:.75; }
+.card.sold-out { opacity:1; }   /* no fading: it made photos (e.g. Deergrass) look foggy */
 .ph { aspect-ratio:5/2; background:linear-gradient(135deg,var(--cream),#ecebe6); display:flex; align-items:center; justify-content:center; color:#8a8f88; font-size:0.85rem; }
 .ph { position:relative; overflow:hidden; }
 .ph img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
@@ -283,3 +283,11 @@ html.ty-open, html.ty-open body { overflow:hidden; }
 .card.has-basics { --card-h:450px; }
 .grid > .card { --card-h:450px; height:var(--card-h); overflow:hidden; }
 .card.has-basics .pane-basics.compact .basics-in { justify-content:space-evenly; } .card.has-basics .pane-basics.compact .basics-fine { margin-top:0; }
+
+/* Card back: faded front photo behind everything; cards without a photo keep a plain cream back */
+.pane-basics { background:var(--cream,#faf7f0); --bg-op:.2; }
+.pane-basics .back-bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:var(--bg-op); filter:saturate(.7) blur(1.5px); transform:scale(1.04); pointer-events:none; z-index:0; }
+.pane-basics.has-bg::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(250,247,240,.35),rgba(250,247,240,.15)); pointer-events:none; z-index:0; }
+.pane-basics .basics-in { z-index:1; }
+.pane-basics.has-bg .fchip-t, .pane-basics.has-bg .size-v { text-shadow:0 0 3px rgba(250,247,240,.95), 0 0 1px rgba(250,247,240,.95); }
+html.bg-light .pane-basics { --bg-op:.12; } html.bg-strong .pane-basics { --bg-op:.3; }
