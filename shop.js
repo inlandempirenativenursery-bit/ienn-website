@@ -75,7 +75,7 @@
       var h3 = el("h3", { id: p.id + "-name" }); h3.appendChild(el("span", { class: "slot", "aria-hidden": "true" }, String.fromCharCode(65 + Math.floor(idx / 6)) + (idx % 6 + 1))); h3.appendChild(document.createTextNode(p.name)); b.appendChild(h3);
       if (p.botanical) b.appendChild(el("span", { class: "note" }, p.botanical));
       var bx = typeof iennBasics === "function" && iennBasics(p.botanical);
-      if (bx) { var go = el("button", { type: "button", class: "basics-go", "aria-label": "Plant basics for " + p.name }, "Plant basics \u21bb"); b.appendChild(go); }
+      if (bx) { var go = el("button", { type: "button", class: "basics-go", "aria-label": "Plant basics for " + p.name }, "Plant basics \u203a"); b.appendChild(go); }
       /* With a stock baseline, a size is available only if qty > 0 or canRequest; show only those. No available size => "Coming soon". */
       var sizes = BASELINE ? p.sizes.filter(function (z) { return z.qty > 0 || IENNStock.canReq(z); }) : p.sizes;
       if (BASELINE && !sizes.length) { card.classList.add("coming-soon"); b.appendChild(el("span", { class: "soon-pill" }, "Coming soon")); card.appendChild(b); return withBasics(card, p, bx); }
@@ -143,53 +143,50 @@
   /* Plant basics: swipe right-to-left (or tap "Plant basics ›") to a second panel. Data: data/plant-basics.js. */
   var SVGNS = "http://www.w3.org/2000/svg";
   function svg(w, h, inner, cls) { var s = document.createElementNS(SVGNS, "svg"); s.setAttribute("viewBox", "0 0 " + w + " " + h); s.setAttribute("aria-hidden", "true"); if (cls) s.setAttribute("class", cls); s.innerHTML = inner; return s; }
-  /* IENN filled icon set (24 grid): sage #83907C / deep #615B5B, lilac #DCCDE2, cream #f8f6f3, sky #B8A6BE, gold #a3ad98, coral #9a879f, clay #6B7468 */
+  /* Universal, conventional-color icon set (24 grid) */
   var ICON = {
-    drop: '<path fill="#B8A6BE" d="M12 2.5C8.8 7.6 5.5 10.7 5.5 15a6.5 6.5 0 0 0 13 0c0-4.3-3.3-7.4-6.5-12.5z"/><path fill="#fff" opacity=".7" d="M9.2 14.2c0-1.4.8-2.7 1.6-3.6.3 1.4-.2 3.2-1.6 3.6z"/>',
-    full: '<g fill="#a3ad98"><circle cx="12" cy="12" r="5.2"/><path d="M12 1.5l1.6 3.3h-3.2zM12 22.5l-1.6-3.3h3.2zM1.5 12l3.3-1.6v3.2zM22.5 12l-3.3 1.6v-3.2zM4.6 4.6l3.5 1.2-2.3 2.3zM19.4 19.4l-3.5-1.2 2.3-2.3zM4.6 19.4l1.2-3.5 2.3 2.3zM19.4 4.6l-1.2 3.5-2.3-2.3z"/></g><circle cx="10.3" cy="10.5" r="1.4" fill="#fff" opacity=".55"/>',
-    part: '<g fill="#a3ad98"><circle cx="10" cy="10" r="4.6"/><path d="M10 1.5l1.4 2.8H8.6zM1.5 10l2.8-1.4v2.8zM3.9 3.9l3 1-2 2zM16.1 3.9l-1 3-2-2z"/></g><path fill="#FDFDF9" stroke="#fff" stroke-width="1" d="M8 20.5a3.6 3.6 0 0 1 .4-7.2 5 5 0 0 1 9.4 1.3 3 3 0 0 1-.3 5.9z"/>',
-    shade: '<path fill="#83907C" d="M12 2c-5 0-9 3.6-9 8.5 0 1.2 1 1.5 2 1.1 2.3-.9 4.5-.9 7 0 2.5-.9 4.7-.9 7 0 1 .4 2-.1 2-1.1C21 5.6 17 2 12 2z"/><path fill="#a3ad98" d="M11 11.8h2v8.4a2.6 2.6 0 0 1-5.2 0h2a.6.6 0 0 0 1.2 0z"/>',
-    fast: '<g fill="#6B7468"><circle cx="6" cy="17" r="2.4"/><circle cx="12" cy="18" r="2.2"/><circle cx="18" cy="16.6" r="2.6"/><circle cx="9" cy="12.5" r="2"/><circle cx="15" cy="12.3" r="2.1"/></g><path fill="#B8A6BE" d="M12 2.5c-1.6 2.5-3 4-3 5.8a3 3 0 0 0 6 0c0-1.8-1.4-3.3-3-5.8z"/>',
-    clay: '<rect x="3" y="11" width="18" height="10" rx="3" fill="#6B7468"/><path fill="#615B5B" d="M3 15h18v2H3z"/><path fill="#83907C" d="M12 11V5.5c-2.5-2.5-5.5-1.5-6 0 2 1.5 4 1.5 6 0M12 7.5c2-3 5-2.5 6-1-1.5 1.8-4 2-6 1"/>',
-    adapt: '<path fill="#6B7468" d="M2 16c3-2 6-2 10 0s7 2 10 0v6H2z"/><path fill="#83907C" d="M12 16V8M12 10c-1-4-5-5-7-3 1.5 3 4.5 4 7 3zm0 0c1-4 5-5 7-3-1.5 3-4.5 4-7 3z"/><path fill="none" stroke="#615B5B" stroke-width="1.6" stroke-linecap="round" d="M12 16V8"/>',
-    W: '<g stroke="#B8A6BE" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9"/></g><circle cx="12" cy="12" r="2.6" fill="#fff" stroke="#B8A6BE" stroke-width="1.6"/>',
-    Sp: '<g fill="#B8A6BE"><circle cx="12" cy="6.5" r="3.6"/><circle cx="17.2" cy="10.3" r="3.6"/><circle cx="15.2" cy="16.5" r="3.6"/><circle cx="8.8" cy="16.5" r="3.6"/><circle cx="6.8" cy="10.3" r="3.6"/></g><circle cx="12" cy="12" r="2.6" fill="#a3ad98"/>',
-    Su: '<g fill="#a3ad98"><circle cx="12" cy="12" r="5.5"/><path d="M12 1l1.8 3.6h-3.6zM12 23l-1.8-3.6h3.6zM1 12l3.6-1.8v3.6zM23 12l-3.6 1.8v-3.6zM4.2 4.2l3.8 1.3-2.5 2.5zM19.8 19.8L16 18.5l2.5-2.5zM4.2 19.8l1.3-3.8 2.5 2.5zM19.8 4.2L18.5 8 16 5.5z"/></g>',
-    F: '<path fill="#9a879f" d="M12 2c-1 3-3 3.5-5 3 .5 2-.5 3-2 4 2 1 2.5 2.5 1.5 4.5 2 0 3.5.6 4.5 2.5V22h2v-6c1-1.9 2.5-2.5 4.5-2.5-1-2-.5-3.5 1.5-4.5-1.5-1-2.5-2-2-4-2 .5-4 0-5-3z"/><path fill="none" stroke="#615B5B" stroke-width="1.3" stroke-linecap="round" d="M12 21V8"/>',
-    pollinators: '<path fill="#DCCDE2" d="M11.5 11C9 5 3.5 4 2.8 7.2 2.2 10 6 12.6 11.5 11z"/><path fill="#a3ad98" d="M12.5 11C15 5 20.5 4 21.2 7.2c.6 2.8-3.2 5.4-8.7 3.8z"/><path fill="#B8A6BE" d="M11.5 12.5c-3.8 2-5.6 6-3.8 7 1.7.9 3.6-2.6 3.8-7zM12.5 12.5c3.8 2 5.6 6 3.8 7-1.7.9-3.6-2.6-3.8-7z"/><rect x="11" y="6.5" width="2" height="12" rx="1" fill="#615B5B"/><path fill="none" stroke="#615B5B" stroke-width="1.2" stroke-linecap="round" d="M11.6 7L10 3.5M12.4 7L14 3.5"/>',
-    hummingbirds: '<path fill="#83907C" d="M8.5 14.5C8 9.5 11 6.5 14.5 6.5c2 0 3.2 1.3 3.2 3 0 4.5-4 8-8.8 8.6z"/><path fill="#9a879f" d="M10.5 13.5c1.5-.3 3.5.2 4.7 1.4-1.8 1.8-4.2 2.8-6.3 3.2z"/><path fill="#a3ad98" d="M9.5 13L2 6.5c3.5-.4 6.5.7 8.6 3.3z"/><path stroke="#615B5B" stroke-width="1.6" stroke-linecap="round" d="M17.5 9l5-1.6"/><circle cx="15.2" cy="9" r="1" fill="#fff"/><circle cx="15.4" cy="9" r=".5" fill="#615B5B"/><path fill="#615B5B" d="M8.6 18l-2 4 3-2.6z"/>',
-    birds: '<path fill="#B8A6BE" d="M3 14.5c2-4.5 6.5-6 10-3.8 1.4-2.8 4-4 7-3.2-1.6 1.2-2.4 3-2.7 5-.7 4-4.7 6-8.6 5z"/><path fill="#9a879f" d="M7.5 12c2.5-.5 5 .5 6 3-2.5 1-5 .5-6-3z"/><path fill="#a3ad98" d="M19.8 7.6l2.7.7-2.4 1.3z"/><circle cx="17" cy="9.6" r=".9" fill="#615B5B"/><path fill="none" stroke="#615B5B" stroke-width="1.4" stroke-linecap="round" d="M10 18l-1.5 3.5M12.5 18.5l-.5 3"/>',
-    fragrant: '<path fill="#DCCDE2" d="M5 15h14a7 7 0 0 1-14 0z"/><path fill="#B8A6BE" d="M8 12c-2-2.5 1.5-3.5 0-6.5 2.5 1 3.5 4 0 6.5zM12.5 12c-2-2.5 1.5-3.5 0-7.5 2.5 1 3.5 5 0 7.5zM17 12c-2-2.5 1.5-3.5 0-6.5 2.5 1 3.5 4 0 6.5z"/>',
-    containers: '<path fill="#9a879f" d="M5 11.5h14l-1.8 9.2a1.5 1.5 0 0 1-1.5 1.3H8.3a1.5 1.5 0 0 1-1.5-1.3z"/><rect x="4" y="10" width="16" height="3" rx="1.2" fill="#7f6d85"/><path fill="#83907C" d="M12 10V5.5c-1.2-2.6-4.5-3-6-1.8 1.4 2.4 3.8 3.2 6 1.8M12 7c1.2-2.6 4.5-3 6-1.8-1.4 2.4-3.8 3.2-6 1.8"/>',
-    heat: '<circle cx="12" cy="12" r="10.5" fill="#a3ad98"/><path fill="#fff" d="M10.3 5.5a1.7 1.7 0 0 1 3.4 0v7.4a3.6 3.6 0 1 1-3.4 0z"/><circle cx="12" cy="15.8" r="2.1" fill="#9a879f"/><rect x="11.2" y="8" width="1.6" height="7" rx=".8" fill="#9a879f"/>'
+    drop: '<path fill="#2f86d6" d="M12 2.5C8.8 7.6 5.5 10.7 5.5 15a6.5 6.5 0 0 0 13 0c0-4.3-3.3-7.4-6.5-12.5z"/><path fill="#fff" opacity=".6" d="M9.2 14.2c0-1.4.8-2.7 1.6-3.6.3 1.4-.2 3.2-1.6 3.6z"/>',
+    full: '<g fill="#f59e0b"><path d="M12 .8l1.8 3.6h-3.6zM12 23.2l-1.8-3.6h3.6zM.8 12l3.6-1.8v3.6zM23.2 12l-3.6 1.8v-3.6zM4.1 4.1l3.8 1.3-2.5 2.5zM19.9 19.9L16 18.6l2.5-2.5zM4.1 19.9l1.3-3.8 2.5 2.5zM19.9 4.1l-1.3 3.8-2.5-2.5z"/></g><circle cx="12" cy="12" r="5.6" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.2"/>',
+    part: '<g fill="#f59e0b"><path d="M10 1l1.6 3.2H8.4zM1 10l3.2-1.6v3.2zM3.6 3.6l3.4 1.1-2.3 2.3zM16.4 3.6l-1.1 3.4-2.3-2.3z"/></g><circle cx="10" cy="10" r="4.8" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.1"/><path fill="#fff" stroke="#94a3b8" stroke-width="1.4" d="M8 21a3.8 3.8 0 0 1 .3-7.6 5.2 5.2 0 0 1 9.8 1.3 3.2 3.2 0 0 1-.4 6.3z"/>',
+    shade: '<path fill="#94a3b8" d="M6.5 19.5a4.5 4.5 0 0 1 .4-9 6.2 6.2 0 0 1 11.7 1.6 3.8 3.8 0 0 1-.5 7.4z"/><path fill="#cbd5e1" d="M9 12.5a4 4 0 0 1 7.4-1.4 5 5 0 0 0-7.4 1.4z"/>',
+    soil: '<path fill="#16a34a" d="M12 12V7c-1.3-3-5-3.3-6.5-2 1.5 2.8 4.2 3.5 6.5 2zm0-2.5c1.3-3 5-3.3 6.5-2-1.5 2.8-4.2 3.5-6.5 2z"/><path stroke="#15803d" stroke-width="1.6" d="M12 13V6.5"/><path fill="#92400e" d="M2 13.5h20v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"/><g fill="#b45309"><circle cx="6" cy="17" r="1.2"/><circle cx="11" cy="18.5" r="1"/><circle cx="16.5" cy="16.5" r="1.3"/><circle cx="19" cy="19.3" r=".9"/></g>',
+    pollinators: '<path fill="#f97316" stroke="#1f2937" stroke-width="1" d="M11.4 11.5C9 5.5 3.2 4 2.5 7.3c-.6 3 3.4 5.6 8.9 4.2zM12.6 11.5C15 5.5 20.8 4 21.5 7.3c.6 3-3.4 5.6-8.9 4.2z"/><path fill="#fb923c" stroke="#1f2937" stroke-width="1" d="M11.4 12.6c-3.8 2-5.6 6-3.8 7 1.7.9 3.6-2.6 3.8-7zM12.6 12.6c3.8 2 5.6 6 3.8 7-1.7.9-3.6-2.6-3.8-7z"/><g fill="#fff"><circle cx="4.5" cy="7.3" r=".7"/><circle cx="19.5" cy="7.3" r=".7"/></g><rect x="11.1" y="6.5" width="1.8" height="12" rx=".9" fill="#1f2937"/><path fill="none" stroke="#1f2937" stroke-width="1.1" stroke-linecap="round" d="M11.6 7L10 3.5M12.4 7L14 3.5"/>',
+    hummingbirds: '<path fill="#16a34a" d="M8.5 14.5C8 9.5 11 6.5 14.5 6.5c2 0 3.2 1.3 3.2 3 0 4.5-4 8-8.8 8.6z"/><path fill="#dc2626" d="M11 12.5c1.6-.2 3.4.4 4.4 1.6-1.6 1.6-3.6 2.5-5.6 2.9z"/><path fill="#22c55e" d="M9.5 13L2 6.5c3.5-.4 6.5.7 8.6 3.3z"/><path stroke="#1f2937" stroke-width="1.6" stroke-linecap="round" d="M17.5 9l5-1.6"/><circle cx="15.2" cy="9" r="1" fill="#fff"/><circle cx="15.4" cy="9" r=".55" fill="#111"/><path fill="#15803d" d="M8.6 18l-2 4 3-2.6z"/>',
+    birds: '<path fill="#3b82f6" d="M3 14.5c2-4.5 6.5-6 10-3.8 1.4-2.8 4-4 7-3.2-1.6 1.2-2.4 3-2.7 5-.7 4-4.7 6-8.6 5z"/><path fill="#1d4ed8" d="M7.5 12c2.5-.5 5 .5 6 3-2.5 1-5 .5-6-3z"/><path fill="#f59e0b" d="M19.8 7.6l2.7.7-2.4 1.3z"/><circle cx="17" cy="9.6" r=".9" fill="#111"/><path fill="none" stroke="#92400e" stroke-width="1.4" stroke-linecap="round" d="M10 18l-1.5 3.5M12.5 18.5l-.5 3"/>',
+    fragrant: '<g fill="#ec4899"><circle cx="12" cy="14" r="2.8"/><circle cx="12" cy="20" r="2.8"/><circle cx="9" cy="17" r="2.8"/><circle cx="15" cy="17" r="2.8"/></g><circle cx="12" cy="17" r="1.8" fill="#fbbf24"/><path fill="none" stroke="#a855f7" stroke-width="1.6" stroke-linecap="round" d="M7 10c-1.3-1.6 1.3-2.4 0-4.5M12 9.5c-1.3-1.6 1.3-2.6 0-6M17 10c-1.3-1.6 1.3-2.4 0-4.5"/>',
+    containers: '<path fill="#c2410c" d="M5 11.5h14l-1.8 9.2a1.5 1.5 0 0 1-1.5 1.3H8.3a1.5 1.5 0 0 1-1.5-1.3z"/><rect x="4" y="9.8" width="16" height="3.2" rx="1.2" fill="#9a3412"/><path fill="#16a34a" d="M12 9.8V5.5c-1.2-2.6-4.5-3-6-1.8 1.4 2.4 3.8 3.2 6 1.8M12 7c1.2-2.6 4.5-3 6-1.8-1.4 2.4-3.8 3.2-6 1.8"/>',
+    heat: '<path fill="#fff" stroke="#374151" stroke-width="1.4" d="M9.8 4.5a2.2 2.2 0 0 1 4.4 0v9a4.3 4.3 0 1 1-4.4 0z"/><circle cx="12" cy="17.2" r="2.6" fill="#dc2626"/><rect x="11" y="7" width="2" height="9" rx="1" fill="#dc2626"/>'
   };
-  var SUNL = { full: "Full sun", part: "Part sun", shade: "Shade" }, WATL = ["", "Water about monthly", "Water twice a month", "Water weekly"];
-  var SOILI = { "Fast-draining": "fast", "Clay-tolerant": "clay", "Adaptable": "adapt" };
-  var SEAS = [["W", "Winter"], ["Sp", "Spring"], ["Su", "Summer"], ["F", "Fall"]];
-  var WILDL = { pollinators: "Butterflies & pollinators", hummingbirds: "Hummingbirds", birds: "Birds & habitat", fragrant: "Fragrant", containers: "Good in containers", heat: "Thrives in Inland Empire heat" };
+  var SUNL = { full: "Full sun", part: "Part sun", shade: "Shade" }, WATL = ["", "Low water", "Moderate water", "Regular water"];
+  var SOILL = { "Fast-draining": "Fast-draining", "Clay-tolerant": "Clay OK", "Adaptable": "Any soil" };
+  var SEAS = [["W", "Win", "Winter"], ["Sp", "Spr", "Spring"], ["Su", "Sum", "Summer"], ["F", "Fall", "Fall"]];
+  var WILDL = { pollinators: "Bees & butterflies", hummingbirds: "Hummingbirds", birds: "Birds", fragrant: "Fragrant", containers: "Pot-friendly", heat: "Heat tough" };
   function ft(a) { return a[0] === a[1] ? a[0] + "'" : a[0] + "\u2013" + a[1] + "'"; }
   function icon(name, label, off) { var s = svg(24, 24, ICON[name], "bi" + (off ? " off" : "")); if (label) { s.setAttribute("role", "img"); s.removeAttribute("aria-hidden"); s.setAttribute("aria-label", label); var t = document.createElementNS(SVGNS, "title"); t.textContent = label; s.insertBefore(t, s.firstChild); } return s; }
   function sizeArt(x) {   // plant silhouette vs a 6' person, same scale
     var H = 44, top = Math.max(6, x.h[1]), sc = (H - 3) / top, ph = 6 * sc, gw = Math.min(62, x.w[1] * sc), gh = x.h[1] * sc, cx = 22 + gw / 2, hr = ph * .1;
-    var person = '<g fill="#DCCDE2"><circle cx="8" cy="' + (H - ph + hr) + '" r="' + hr + '"/><path d="M' + (8 - ph * .11) + ' ' + H + 'V' + (H - ph * .62) + 'a' + (ph * .11) + ' ' + (ph * .11) + ' 0 0 1 ' + (ph * .22) + ' 0V' + H + 'z"/></g>';
+    var person = '<g fill="#d1d5db"><circle cx="8" cy="' + (H - ph + hr) + '" r="' + hr + '"/><path d="M' + (8 - ph * .11) + ' ' + H + 'V' + (H - ph * .62) + 'a' + (ph * .11) + ' ' + (ph * .11) + ' 0 0 1 ' + (ph * .22) + ' 0V' + H + 'z"/></g>';
     var tree = x.form === "Tree" || x.form === "Small tree";
-    var plant = tree ? '<rect x="' + (cx - 1.5) + '" y="' + (H - gh * .3) + '" width="3" height="' + (gh * .3) + '" fill="#6B7468"/><path fill="#83907C" d="M' + cx + ' ' + (H - gh) + 'L' + (cx + gw / 2) + ' ' + (H - gh * .25) + 'H' + (cx - gw / 2) + 'z"/>'
-      : '<path fill="#83907C" d="M' + (cx - gw / 2) + ' ' + H + 'Q' + (cx - gw / 2) + ' ' + (H - gh) + ' ' + cx + ' ' + (H - gh) + 'Q' + (cx + gw / 2) + ' ' + (H - gh) + ' ' + (cx + gw / 2) + ' ' + H + 'z"/><circle cx="' + (cx - gw * .18) + '" cy="' + (H - gh * .62) + '" r="' + Math.max(1.2, gh * .07) + '" fill="#B8A6BE"/><circle cx="' + (cx + gw * .2) + '" cy="' + (H - gh * .5) + '" r="' + Math.max(1.2, gh * .07) + '" fill="#a3ad98"/>';
-    return svg(90, H + 2, '<rect x="0" y="' + H + '" width="90" height="2" rx="1" fill="#DCCDE2"/>' + person + plant, "size-art");
+    var plant = tree ? '<rect x="' + (cx - 1.5) + '" y="' + (H - gh * .3) + '" width="3" height="' + (gh * .3) + '" fill="#92400e"/><path fill="#16a34a" d="M' + cx + ' ' + (H - gh) + 'L' + (cx + gw / 2) + ' ' + (H - gh * .25) + 'H' + (cx - gw / 2) + 'z"/>'
+      : '<path fill="#16a34a" d="M' + (cx - gw / 2) + ' ' + H + 'Q' + (cx - gw / 2) + ' ' + (H - gh) + ' ' + cx + ' ' + (H - gh) + 'Q' + (cx + gw / 2) + ' ' + (H - gh) + ' ' + (cx + gw / 2) + ' ' + H + 'z"/><circle cx="' + (cx - gw * .18) + '" cy="' + (H - gh * .62) + '" r="' + Math.max(1.2, gh * .07) + '" fill="#9ca3af"/><circle cx="' + (cx + gw * .2) + '" cy="' + (H - gh * .5) + '" r="' + Math.max(1.2, gh * .07) + '" fill="#16a34a"/>';
+    return svg(90, H + 2, '<rect x="0" y="' + H + '" width="90" height="2" rx="1" fill="#d1d5db"/>' + person + plant, "size-art");
   }
+  function chip(iconEls, label, cls) { var c = el("span", { class: "fchip" + (cls ? " " + cls : "") }); var ic = el("span", { class: "fchip-i", "aria-hidden": "true" }); iconEls.forEach(function (n) { ic.appendChild(n); }); c.appendChild(ic); c.appendChild(el("span", { class: "fchip-t" }, label)); return c; }
   function basicsPane(p, x) {
     var pane = el("section", { class: "pane-basics", "aria-label": "Plant basics: " + p.name }), inn = el("div", { class: "basics-in" });
-    var hd = el("div", { class: "basics-hd" }); var back = el("button", { type: "button", class: "basics-back", "aria-label": "Flip back to " + p.name }, "\u21ba");
+    var hd = el("div", { class: "basics-hd" }); var back = el("button", { type: "button", class: "basics-back", "aria-label": "Flip back to " + p.name }, "\u2039");
     hd.appendChild(back); if (x.form) hd.appendChild(el("span", { class: "form-ribbon" }, x.form)); inn.appendChild(hd);
     if (x.tag) inn.appendChild(el("p", { class: "basics-tag" }, x.tag));
-    var top = el("div", { class: "basics-top" });
-    var w = el("span", { class: "bt water", role: "img", "aria-label": WATL[x.water], title: WATL[x.water] }); for (var i = 1; i <= 3; i++) w.appendChild(icon("drop", null, i > x.water)); top.appendChild(w);
-    var s = el("span", { class: "bt sun" }); x.sun.forEach(function (k) { s.appendChild(icon(k, SUNL[k])); }); top.appendChild(s);
-    var so = el("span", { class: "bt soil" }); so.appendChild(icon(SOILI[x.soil] || "adapt", x.soil + " soil")); top.appendChild(so);
-    inn.appendChild(top);
-    var bl = el("div", { class: "seasons" }); SEAS.forEach(function (q) { bl.appendChild(icon(q[0], (x.bloom.indexOf(q[0]) >= 0 ? "Blooms in " : "No bloom in ") + q[1].toLowerCase(), x.bloom.indexOf(q[0]) < 0)); }); inn.appendChild(bl);
-    var wl = el("div", { class: "wild" }); (x.wild || []).concat(x.ie ? ["heat"] : []).forEach(function (k) { wl.appendChild(icon(k, WILDL[k])); }); inn.appendChild(wl);
-    var sz = el("div", { class: "size", role: "img", "aria-label": "Mature size " + ft(x.h) + " high by " + ft(x.w) + " wide" }); sz.appendChild(sizeArt(x)); sz.appendChild(el("span", { class: "size-v" }, ft(x.h) + " \u00d7 " + ft(x.w))); inn.appendChild(sz);
+    var care = el("div", { class: "care" });
+    var drops = []; for (var i = 1; i <= 3; i++) drops.push(icon("drop", null, i > x.water)); care.appendChild(chip(drops, WATL[x.water], "water"));
+    care.appendChild(chip(x.sun.slice(0, 2).map(function (k) { return icon(k); }), x.sun.map(function (k) { return SUNL[k]; }).join(" / ").replace("Full sun / Part sun", "Sun / part sun"), "sun"));
+    care.appendChild(chip([icon("soil")], SOILL[x.soil] || x.soil, "soil"));
+    inn.appendChild(care);
+    var bl = el("div", { class: "seasons", role: "img", "aria-label": "Blooms: " + (x.bloom.length ? SEAS.filter(function (q) { return x.bloom.indexOf(q[0]) >= 0; }).map(function (q) { return q[2]; }).join(", ") : "no showy flowers") });
+    SEAS.forEach(function (q) { bl.appendChild(el("span", { class: "sp sp-" + q[0] + (x.bloom.indexOf(q[0]) >= 0 ? " on" : "") }, q[1])); }); inn.appendChild(bl);
+    var wl = el("div", { class: "feats" }); (x.wild || []).concat(x.ie ? ["heat"] : []).forEach(function (k) { wl.appendChild(chip([icon(k)], WILDL[k], "f-" + k)); }); inn.appendChild(wl);
+    var sz = el("div", { class: "size", role: "img", "aria-label": "Mature size " + ft(x.h) + " high by " + ft(x.w) + " wide" }); sz.appendChild(sizeArt(x));
+    var sv = el("span", { class: "size-v" }); sv.appendChild(el("b", {}, ft(x.h) + " tall")); sv.appendChild(el("b", {}, ft(x.w) + " wide")); sz.appendChild(sv); inn.appendChild(sz);
     inn.appendChild(el("p", { class: "basics-fine" }, "Results vary by site"));
     pane.appendChild(inn);
     return { pane: pane, back: back };
