@@ -34,7 +34,7 @@ var IENN_BASICS = {
   Achillea: { water:2, sun:["full","part"], soil:"Adaptable", bloom:["Sp","Su"], wild:["pollinators","fragrant","containers"], h:[1,3], w:[1,3], ie:true,
     desc:"Feathery, aromatic leaves with flat clusters of small flowers. Spreads into a soft patch and can even be mowed as a lawn alternative." },
   Datura: { water:1, sun:["full"], soil:"Adaptable", bloom:["Su","F"], wild:["pollinators","fragrant"], h:[2,4], w:[3,6], ie:true,
-    desc:"Large white trumpet flowers open in the evening for night-flying moths. All parts are toxic, so plant it away from kids and pets." },
+    desc:"Large white trumpet flowers open in the evening for night-flying moths. All parts are toxic if eaten, so plant it away from kids and pets." },
   Artemisia: { water:1, sun:["full"], soil:"Fast-draining", bloom:["F"], wild:["birds","fragrant"], h:[3,5], w:[3,5], ie:true,
     desc:"Soft, silvery-gray foliage with the classic scent of the coastal sage scrub. Excellent cover for small birds." },
   Trichostema: { water:1, sun:["full"], soil:"Fast-draining", bloom:["Sp","Su"], wild:["pollinators","hummingbirds","fragrant"], h:[3,5], w:[3,5], ie:true,
@@ -70,10 +70,10 @@ var IENN_BASICS_SPECIES = {
 var IENN_FORM = { Salvia:["Shrub","Fragrant bee magnet"], Eriogonum:["Shrub","Tough, long-blooming bee favorite"], Hesperoyucca:["Succulent","One spectacular bloom spike"], Baileya:["Wildflower","Silver leaves, sunny daisies"],
   Calystegia:["Vine","Big white trumpets, fast climber"], Encelia:["Shrub","Fast, cheerful yellow daisies"], Eschscholzia:["Wildflower","Golden state flower"], Muhlenbergia:["Grass","Fountain of fine flower spikes"],
   Romneya:["Perennial","Giant fried-egg flowers"], Asclepias:["Perennial","Monarch caterpillar host"], Diplacus:["Sub-shrub","Hummingbird spring show"], Penstemon:["Perennial","Hummingbird flower spikes"],
-  Rhus:["Shrub","Glossy evergreen hedge"], Achillea:["Perennial","Lacy, tough lawn alternative"], Datura:["Perennial","Moonlit trumpets (toxic)"], Artemisia:["Shrub","Silver scent of the hills"],
+  Rhus:["Shrub","Glossy evergreen hedge"], Achillea:["Perennial","Lacy, tough lawn alternative"], Datura:["Perennial","Big white evening trumpets; toxic if eaten"], Artemisia:["Shrub","Silver scent of the hills"],
   Trichostema:["Sub-shrub","Woolly purple, wildly fragrant"], Baccharis:["Shrub","Tough evergreen cover"], Epilobium:["Perennial","Fall feast for hummingbirds"], Hesperocyparis:["Tree","Blue evergreen spire"],
   Dendromecon:["Shrub","Golden chaparral poppies"], Heteromeles:["Small tree","Red winter berries for birds"] };
-var IENN_FORM_SPECIES = { "Salvia apiana":[null,"Silver leaves, sacred scent"], "Salvia spathacea":["Perennial","Shade-loving hummingbird sage"], "Salvia mellifera":[null,"Honeybee favorite"],
+var IENN_FORM_SPECIES = { "Salvia apiana":[null,"Silvery leaves, tall bee-covered flower spikes"], "Salvia spathacea":["Perennial","Shade-loving hummingbird sage"], "Salvia mellifera":[null,"Honeybee favorite"],
   "Encelia farinosa":[null,"Silver desert sunshine"], "Eriogonum fasciculatum":[null,"Tough, long-blooming bee favorite"], "Baccharis pilularis":["Shrub","Tough evergreen groundcover"] };
 /* Look up basics for a botanical name, e.g. "Salvia apiana". Returns null if the genus is unknown. */
 function iennBasics(botanical) {
