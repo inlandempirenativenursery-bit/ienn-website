@@ -237,17 +237,14 @@
     return { pane: pane };
   }
   var peeked = false; try { peeked = sessionStorage.getItem("ienn-peek") === "1"; } catch (e) {}
-  /* Photo overlays (badge, life-form ribbon, price) sit together in one slim row on the bottom edge so the plant itself stays visible. */
-  var CLEAN = /[?&]photo=clean\b/.test(location.search);
-  function tidyTags(ph) { if (!ph) return; var tags = ph.querySelectorAll(".pick-badge, .form-ribbon.on-photo, .price-tag"); if (!tags.length) return;
-    var row = el("div", { class: "ph-tags" }); ["pick-badge", "form-ribbon", "price-tag"].forEach(function (c) { var t = ph.querySelector("." + c); if (t) row.appendChild(t); }); ph.appendChild(row); }
+  /* Third panel: the front photo alone, full-bleed, no overlays (so shoppers can see the plant). Panels loop front -> basics -> photo -> front. */
+  var CLEAN = true;
   function withBasics(card, p, x) {
-    if (!x) { tidyTags(card.querySelector(".ph")); return card; }
+    if (!x) return card;
     var track = el("div", { class: "card-track" }), front = el("div", { class: "pane-front" });
     while (card.firstChild) front.appendChild(card.firstChild);
     var bp = basicsPane(p, x), ph0 = front.querySelector(".ph");
     if (ph0 && x.form) ph0.appendChild(el("span", { class: "form-ribbon on-photo", "aria-hidden": "true" }, x.form));
-    tidyTags(ph0);
     var fimg0 = ph0 && ph0.querySelector("img"), cp = null;
     if (CLEAN && fimg0) { cp = el("div", { class: "pane-clean", "aria-hidden": "true" }); var ci = fimg0.cloneNode(); ci.removeAttribute("loading"); cp.appendChild(ci); }
     var NP = cp ? 3 : 2;
@@ -259,7 +256,7 @@
     if (fimg) { var bg = el("img", { class: "back-bg", src: fimg.getAttribute("src"), alt: "", "aria-hidden": "true", loading: "lazy", decoding: "async" }); if (fimg.getAttribute("srcset")) { bg.setAttribute("srcset", fimg.getAttribute("srcset")); bg.setAttribute("sizes", fimg.getAttribute("sizes")); } bp.pane.insertBefore(bg, bp.pane.firstChild); bp.pane.classList.add("has-bg"); }
     track.appendChild(front); track.appendChild(bp.pane); if (cp) track.appendChild(cp); card.appendChild(track); card.classList.add("has-basics");
     var side = 0, drag = null, swallow = false;
-    function show(on) { card.classList.toggle("showing-basics", !!on); front.setAttribute("aria-hidden", on ? "true" : "false"); bp.pane.setAttribute("aria-hidden", on === 1 ? "false" : "true"); }
+    function show(on) { card.classList.toggle("showing-basics", !!on); front.setAttribute("aria-hidden", on ? "true" : "false"); bp.pane.setAttribute("aria-hidden", on === 1 ? "false" : "true"); if (cp) cp.setAttribute("aria-hidden", on === 2 ? "false" : "true"); }
     function to(i) { side = Math.max(0, Math.min(NP - 1, i | 0)); track.style.transition = ""; track.style.transform = side ? "translateX(-" + side * 100 + "%)" : ""; show(side); }
     /* Horizontal drag-to-flip (iOS Safari friendly): card is touch-action:pan-y, so vertical page scroll stays native; we only take over once the drag is clearly horizontal. */
     track.addEventListener("touchstart", function (e) { if (e.touches.length !== 1) { drag = null; return; } var t0 = e.touches[0]; drag = { x: t0.clientX, y: t0.clientY, dx: 0, mode: null, w: track.clientWidth || 1 }; }, { passive: true });
@@ -268,16 +265,18 @@
       if (drag.mode !== "h") return; e.preventDefault(); drag.dx = dx;
       var off = -side * drag.w + dx; off = Math.max(-(NP - 1) * drag.w, Math.min(0, off)); track.style.transform = "translateX(" + off + "px)"; }, { passive: false });
     function endDrag() { if (!drag) return; var d = drag; drag = null; if (d.mode !== "h") return; swallow = true; setTimeout(function () { swallow = false; }, 350);
-      track.style.transition = ""; if (Math.abs(d.dx) > 30) to(side + (d.dx < 0 ? 1 : -1)); else to(side); }
+      track.style.transition = ""; if (Math.abs(d.dx) > 30) to((side + (d.dx < 0 ? 1 : -1) + NP) % NP); else to(side); }
     track.addEventListener("touchend", endDrag); track.addEventListener("touchcancel", endDrag);
     track.addEventListener("click", function (e) { if (swallow) { e.preventDefault(); e.stopPropagation(); } }, true);
     if (ph0) { ph0.setAttribute("role", "button"); ph0.setAttribute("tabindex", "0"); ph0.setAttribute("aria-label", "Show plant basics for " + p.name); ph0.removeAttribute("aria-hidden"); ph0.classList.add("flippable");
       ph0.addEventListener("click", function (e) { if (e.target.closest("a")) return; to(1); });
       ph0.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); to(1); setTimeout(function () { bp.pane.focus({ preventScroll: true }); }, 350); } }); }
     bp.pane.setAttribute("tabindex", "0"); bp.pane.setAttribute("role", "button"); bp.pane.setAttribute("aria-label", "Plant basics for " + p.name + ". Press to flip back.");
-    bp.pane.addEventListener("click", function () { to(0); });
-    if (cp) cp.addEventListener("click", function () { to(0); });
-    bp.pane.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " " || e.key === "Escape") { e.preventDefault(); to(0); if (ph0) setTimeout(function () { ph0.focus({ preventScroll: true }); }, 350); } });
+    bp.pane.addEventListener("click", function () { to(cp ? 2 : 0); });
+    if (cp) { cp.setAttribute("tabindex", "0"); cp.setAttribute("role", "button"); cp.setAttribute("aria-label", "Photo of " + p.name + ". Press to go back to the front.");
+      cp.addEventListener("click", function () { to(0); });
+      cp.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " " || e.key === "Escape") { e.preventDefault(); to(0); if (ph0) setTimeout(function () { ph0.focus({ preventScroll: true }); }, 350); } }); }
+    bp.pane.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " " || e.key === "Escape") { e.preventDefault(); if (cp && e.key !== "Escape") { to(2); setTimeout(function () { cp.focus({ preventScroll: true }); }, 350); return; } to(0); if (ph0) setTimeout(function () { ph0.focus({ preventScroll: true }); }, 350); } });
     bp.pane.setAttribute("aria-hidden", "true");
     bp.pane.classList.add("compact");   // uniform compact cards: back always uses the compact layout
     if (!peeked && card.querySelector(".add, .soon-pill")) { peeked = true; try { sessionStorage.setItem("ienn-peek", "1"); } catch (e) {}   // one gentle peek per session, first card only
