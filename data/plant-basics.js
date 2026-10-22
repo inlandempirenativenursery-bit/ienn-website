@@ -9,7 +9,7 @@ var IENN_BASICS = {
     desc:"California sages are aromatic, drought-hardy shrubs that bees love. Give them sun and good drainage, then mostly leave them alone in summer." },
   Eriogonum: { water:1, sun:["full"], soil:"Fast-draining", bloom:["Sp","Su","F"], wild:["pollinators","birds"], h:[2,4], w:[3,5], ie:true, genusLevel:true,
     desc:"Buckwheats are tough, low-water shrubs with long-lasting flower clusters that fade to rust in fall. A top plant for native bees and butterflies." },
-  Hesperoyucca: { water:1, sun:["full"], soil:"Fast-draining", bloom:["Sp"], wild:["pollinators"], h:[2,3], w:[2,4], ie:true,
+  Hesperoyucca: { water:1, sun:["full"], soil:"Fast-draining", bloom:["Sp","Su"], wild:["pollinators"], h:[2,12], w:[2,4], ie:true,
     desc:"A spiky rosette of blue-gray leaves that sends up one tall stalk of creamy flowers, then the plant finishes. Plant it away from paths." },
   Baileya: { water:1, sun:["full"], soil:"Fast-draining", bloom:["Sp","Su","F"], wild:["pollinators","containers"], h:[1,1.5], w:[1,1.5], ie:true,
     desc:"Silvery leaves and bright yellow daisies for months. Short-lived but often reseeds; give it heat, sun and sharp drainage." },
@@ -17,7 +17,7 @@ var IENN_BASICS = {
     desc:"A vigorous native vine with large white to pale-pink trumpet flowers. Let it climb a fence or ramble over a slope." },
   Encelia: { water:1, sun:["full"], soil:"Fast-draining", bloom:["W","Sp"], wild:["pollinators","birds"], h:[3,4], w:[3,5], ie:true, genusLevel:true,
     desc:"A fast, rounded shrub covered in cheerful yellow daisies from late winter into spring. Very forgiving and quick to fill space." },
-  Eschscholzia: { water:1, sun:["full"], soil:"Fast-draining", bloom:["W","Sp"], wild:["pollinators","containers"], h:[1,1.5], w:[1,1.5], ie:true,
+  Eschscholzia: { water:1, sun:["full"], soil:"Fast-draining", bloom:["Sp","Su"], wild:["pollinators","containers"], h:[1,1.5], w:[1,1.5], ie:true,
     desc:"The state flower: silky orange cups that open in sun and close at night. Often reseeds for next year's show." },
   Muhlenbergia: { water:2, sun:["full","part"], soil:"Adaptable", bloom:["Su","F"], wild:["birds"], h:[3,4], w:[3,4], ie:true,
     desc:"A big, fountain-shaped bunchgrass with tall slender flower spikes. Great for structure, slopes and erosion control." },
@@ -29,11 +29,11 @@ var IENN_BASICS = {
     desc:"Monkeyflowers bloom heavily in spring with tubular flowers hummingbirds visit. Afternoon shade and little summer water keep them happy." },
   Penstemon: { water:1, sun:["full"], soil:"Fast-draining", bloom:["Sp","Su"], wild:["pollinators","hummingbirds","containers"], h:[2,4], w:[1,3], ie:true, genusLevel:true,
     desc:"Upright spikes of tubular flowers that hummingbirds find fast. Needs good drainage; avoid overwatering." },
-  Rhus: { shape:"SmallTree", water:1, sun:["full","part"], soil:"Adaptable", bloom:["W","Sp"], wild:["pollinators","birds"], h:[6,10], w:[6,10], ie:true,
+  Rhus: { shape:"SmallTree", water:1, sun:["full","part"], soil:"Adaptable", bloom:["W","Sp"], wild:["pollinators","birds"], h:[7,15], w:[7,15], ie:true,
     desc:"A sturdy evergreen shrub with glossy leaves and small pink-white flowers. Useful as a hedge or screen once established." },
   Achillea: { water:2, sun:["full","part"], soil:"Adaptable", bloom:["Sp","Su"], wild:["pollinators","fragrant","containers"], h:[1,3], w:[1,3], ie:true,
     desc:"Feathery, aromatic leaves with flat clusters of small flowers. Spreads into a soft patch and can even be mowed as a lawn alternative." },
-  Datura: { water:1, sun:["full"], soil:"Adaptable", bloom:["Su","F"], wild:["pollinators","fragrant"], h:[2,4], w:[3,6], ie:true,
+  Datura: { water:1, sun:["full"], soil:"Adaptable", bloom:["W","Sp","Su","F"], wild:["pollinators","fragrant"], h:[1,5], w:[3,6], ie:true,
     desc:"Large white trumpet flowers open in the evening for night-flying moths. All parts are toxic if eaten, so plant it away from kids and pets." },
   Artemisia: { water:1, sun:["full"], soil:"Fast-draining", bloom:["F"], wild:["birds","fragrant"], h:[3,5], w:[3,5], ie:true,
     desc:"Soft, silvery-gray foliage with the classic scent of the coastal sage scrub. Excellent cover for small birds." },
@@ -51,18 +51,18 @@ var IENN_BASICS = {
     desc:"An evergreen shrub with white summer flowers and bright red winter berries that birds love. A classic native hedge or small tree." }
 };
 var IENN_BASICS_SPECIES = {
-  "Salvia apiana": { h:[3,5], w:[3,5], bloom:["Sp"], desc:"Striking silver-white leaves with a strong fragrance and tall flower wands bees crowd around. Water very little once established." },
-  "Salvia mellifera": { h:[3,6], w:[4,6], bloom:["Sp"], desc:"Dark green, fragrant leaves and tiered whorls of pale flowers. One of the best plants for honeybees and native bees." },
+  "Salvia apiana": { h:[3,5], w:[3,8], bloom:["Sp","Su"], desc:"Striking silver-white leaves with a strong fragrance and tall flower wands bees crowd around. Water very little once established." },
+  "Salvia mellifera": { h:[3,6], w:[4,6], bloom:["Sp","Su"], desc:"Dark green, fragrant leaves and tiered whorls of pale flowers. One of the best plants for honeybees and native bees." },
   "Salvia clevelandii": { h:[3,5], w:[3,5], desc:"Intensely fragrant gray-green leaves and blue-violet flower whorls. A garden favorite for scent and hummingbirds." },
-  "Salvia leucophylla": { h:[3,5], w:[4,6], bloom:["Sp"], desc:"Soft gray leaves and pinkish-lavender flower whorls. Spreads wide and handles heat well." },
+  "Salvia leucophylla": { h:[2,5], w:[3,10], bloom:["Sp","Su"], desc:"Soft gray leaves and pinkish-lavender flower whorls. Spreads wide and handles heat well." },
   "Salvia spathacea": { water:2, sun:["part","shade"], soil:"Adaptable", h:[1,3], w:[2,4], bloom:["W","Sp"], desc:"A low, spreading sage with magenta flower spikes, made for dry shade under trees. Hummingbirds visit often." },
   "Eriogonum fasciculatum": { h:[2,4], w:[3,5], genusLevel:false },
   "Encelia californica": { sun:["full","part"], soil:"Adaptable", h:[3,4], w:[3,5], genusLevel:false },
-  "Encelia farinosa": { h:[2,4], w:[2,4], soil:"Fast-draining", genusLevel:false, desc:"A desert shrub with silver leaves and bright yellow daisies held above the foliage. Loves heat and needs very little water." },
+  "Encelia farinosa": { h:[1,5], w:[2,4], soil:"Fast-draining", genusLevel:false, desc:"A desert shrub with silver leaves and bright yellow daisies held above the foliage. Loves heat and needs very little water." },
   "Diplacus calycinus": { sun:["full","part"], h:[1,3], w:[1,3], genusLevel:false },
   "Penstemon centranthifolius": { h:[2,4], w:[1,2], wild:["hummingbirds","pollinators"], genusLevel:false, desc:"Slender stems of scarlet tubular flowers rise from blue-green leaves. Built for hummingbirds; keep it on the dry side." },
   "Penstemon spectabilis": { h:[3,4], w:[2,3], genusLevel:false, desc:"Tall stems packed with lavender-blue tubular flowers in spring. Needs good drainage and little summer water." },
-  "Asclepias fascicularis": { h:[2,3], w:[1,3], genusLevel:false },
+  "Asclepias fascicularis": { bloom:["Sp","Su","F"], h:[2,3], w:[1,3], genusLevel:false },
   "Asclepias speciosa": { h:[2,4], w:[2,4], genusLevel:false },
   "Asclepias eriocarpa": { h:[1,3], w:[1,2], water:1, genusLevel:false }
 };
@@ -88,6 +88,6 @@ function iennBasics(botanical) {
 var IENN_DISPLAY_NAMES = { "Sacred datura": "Datura" };
 function iennDisplayName(n) { return IENN_DISPLAY_NAMES[n] || n; }
 /* Plants hidden from the shop (index + order pages). Case-insensitive match on the feed name or botanical name; add more as needed. */
-var IENN_HIDDEN_PLANTS = ["California encelia"];
+var IENN_HIDDEN_PLANTS = ["California encelia", "Coyote brush", "Bush poppy", "Arizona cypress, Blue Pyramid"];
 function iennHidden(p) { var n = String(p.name || "").toLowerCase().trim(), f = String(p.feedName || p.fullName || "").toLowerCase().trim(), b = String(p.botanical || "").toLowerCase().trim();
   return IENN_HIDDEN_PLANTS.some(function (h) { h = String(h).toLowerCase().trim(); return h && (h === n || h === f || h === b); }); }
