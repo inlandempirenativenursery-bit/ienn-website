@@ -227,3 +227,10 @@ html.ty-open, html.ty-open body { overflow:hidden; }
 @container (min-height:440px) { .fchip { min-height:30px; padding:0.1rem 0; } .care, .feats { gap:0.3rem; } .size-art { width:110px; height:58px; } }
 @container (min-height:440px) { .size-art { width:92px; height:48px; } .size-v { font-size:0.8rem; } }
 @container (max-height:439px) { .care, .seasons, .feats, .size { padding-top:0.2rem; } .basics-in { gap:0.22rem; padding:0.4rem 0.5rem; } .size-art { width:66px; height:35px; } .pane-basics .flip-dots { display:none; } .basics-tag { font-size:0.74rem; } }
+
+/* v7: calm bloom row */
+.seasons { display:flex; flex-direction:column; gap:0.2rem; }
+.bloom-h { display:flex; align-items:center; gap:0.35rem; }
+.bloom-s { display:grid; grid-template-columns:repeat(4,1fr); gap:3px; }
+.seasons .sp { background:#fff; color:#9ca3af; border:1px solid #d1d5db; border-radius:999px; font-weight:700; }
+.seasons .sp.on { background:#8b5cf6; border-color:#8b5cf6; color:#fff; }

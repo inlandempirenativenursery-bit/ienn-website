@@ -155,6 +155,7 @@
     birds: '<path fill="#1d4ed8" d="M3 19.5l5.6-5.2 1.6 1.8z"/><path fill="#9ca3af" d="M7.5 15.5c.5-4 3.8-6.6 7.6-6.2l1 7c-2.3 2-5.6 2.4-8.6-.8z"/><path fill="#f1f5f9" d="M9.5 16.2c2.6 1.4 5.2 1.2 7-.4l.2 1.4c-2 2.2-5.4 2.2-7.2-1z"/><path fill="#2563eb" d="M14.2 9.4c.2-2.8 2.4-4.6 4.8-4.2 1.4.3 2.2 1.4 2.2 2.6l-2 1.3c-.2 1.8-1.2 3.4-2.8 4.3z"/><path fill="#3b82f6" d="M8.2 13.6c2-2.6 5.6-3 8-1.2-1.5 2.6-5 3.6-8 1.2z"/><path fill="none" stroke="#2563eb" stroke-width="1" d="M14.8 12.6c.9.3 1.8.1 2.4-.6"/><path fill="#111" d="M21 7.6l2.4.5-2.3.9z"/><circle cx="18.8" cy="7.2" r=".7" fill="#111"/><path fill="#f8fafc" d="M17.8 8.3c.8.3 1.8.2 2.4-.3l-.4 1c-.6.3-1.4.2-2-.2z"/><path fill="none" stroke="#57534e" stroke-width="1.1" stroke-linecap="round" d="M12 17.8l-.5 2.8M13.8 17.8l.3 2.8"/>',
     fragrant: '<g fill="#ec4899"><circle cx="12" cy="14" r="2.8"/><circle cx="12" cy="20" r="2.8"/><circle cx="9" cy="17" r="2.8"/><circle cx="15" cy="17" r="2.8"/></g><circle cx="12" cy="17" r="1.8" fill="#fbbf24"/><path fill="none" stroke="#a855f7" stroke-width="1.6" stroke-linecap="round" d="M7 10c-1.3-1.6 1.3-2.4 0-4.5M12 9.5c-1.3-1.6 1.3-2.6 0-6M17 10c-1.3-1.6 1.3-2.4 0-4.5"/>',
     containers: '<path fill="#c2410c" d="M5 11.5h14l-1.8 9.2a1.5 1.5 0 0 1-1.5 1.3H8.3a1.5 1.5 0 0 1-1.5-1.3z"/><rect x="4" y="9.8" width="16" height="3.2" rx="1.2" fill="#9a3412"/><path fill="#16a34a" d="M12 9.8V5.5c-1.2-2.6-4.5-3-6-1.8 1.4 2.4 3.8 3.2 6 1.8M12 7c1.2-2.6 4.5-3 6-1.8-1.4 2.4-3.8 3.2-6 1.8"/>',
+    bloom: '<g fill="#a78bfa"><circle cx="12" cy="6.5" r="3.8"/><circle cx="17.4" cy="10.4" r="3.8"/><circle cx="15.3" cy="16.8" r="3.8"/><circle cx="8.7" cy="16.8" r="3.8"/><circle cx="6.6" cy="10.4" r="3.8"/></g><circle cx="12" cy="12" r="2.9" fill="#fbbf24"/>',
     heat: '<path fill="#fff" stroke="#374151" stroke-width="1.4" d="M9.8 4.5a2.2 2.2 0 0 1 4.4 0v9a4.3 4.3 0 1 1-4.4 0z"/><circle cx="12" cy="17.2" r="2.6" fill="#dc2626"/><rect x="11" y="7" width="2" height="9" rx="1" fill="#dc2626"/>'
   };
   var SUNL = { full: "Full sun", part: "Part sun", shade: "Shade" }, WATL = ["", "Low water", "Moderate water", "Regular water"];
@@ -181,14 +182,14 @@
     var pane = el("section", { class: "pane-basics", "aria-label": "Plant basics: " + p.name }), inn = el("div", { class: "basics-in" });
     var hd = el("div", { class: "basics-hd" }); var back = null;
     if (x.form) hd.appendChild(el("span", { class: "form-ribbon" }, x.form)); inn.appendChild(hd);
-    if (x.tag) inn.appendChild(el("p", { class: "basics-tag" }, x.tag));
     var care = el("div", { class: "care" });
     var drops = []; for (var i = 1; i <= 3; i++) drops.push(icon("drop", null, i > x.water)); care.appendChild(chip(drops, WATL[x.water], "water"));
     care.appendChild(chip(x.sun.slice(0, 2).map(function (k) { return icon(k); }), x.sun.map(function (k) { return SUNL[k]; }).join(" / ").replace("Full sun / Part sun", "Sun / part sun"), "sun"));
     care.appendChild(chip([icon("soil")], SOILL[x.soil] || x.soil, "soil"));
     inn.appendChild(care);
     var bl = el("div", { class: "seasons", role: "img", "aria-label": "Blooms: " + (x.bloom.length ? SEAS.filter(function (q) { return x.bloom.indexOf(q[0]) >= 0; }).map(function (q) { return q[2]; }).join(", ") : "no showy flowers") });
-    SEAS.forEach(function (q) { bl.appendChild(el("span", { class: "sp sp-" + q[0] + (x.bloom.indexOf(q[0]) >= 0 ? " on" : "") }, q[1])); }); inn.appendChild(bl);
+    var bh = el("span", { class: "bloom-h", "aria-hidden": "true" }); bh.appendChild(icon("bloom")); bh.appendChild(el("span", { class: "fchip-t" }, "Blooms")); bl.appendChild(bh);
+    var bs = el("span", { class: "bloom-s", "aria-hidden": "true" }); SEAS.forEach(function (q) { bs.appendChild(el("span", { class: "sp" + (x.bloom.indexOf(q[0]) >= 0 ? " on" : "") }, q[1])); }); bl.appendChild(bs); inn.appendChild(bl);
     var wl = el("div", { class: "feats" }); (x.wild || []).concat(x.ie ? ["heat"] : []).forEach(function (k) { wl.appendChild(chip([icon(k)], WILDL[k], "f-" + k)); }); inn.appendChild(wl);
     var sz = el("div", { class: "size", role: "img", "aria-label": "Mature size " + ft(x.h) + " high by " + ft(x.w) + " wide" }); sz.appendChild(sizeArt(x));
     var sv = el("span", { class: "size-v" }); sv.appendChild(el("b", {}, ft(x.h) + " tall")); sv.appendChild(el("b", {}, ft(x.w) + " wide")); sz.appendChild(sv); inn.appendChild(sz);
@@ -446,7 +447,7 @@
     save();
   }
   var lastSig = null;
-  function use(l, msg, d, quick) { BASELINE = IENNStock.hasBaseline(d, l); PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l))); if (!quick) prefill();
+  function use(l, msg, d, quick) { BASELINE = IENNStock.hasBaseline(d, l); PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l))).map(function (p) { var dn = typeof iennDisplayName === "function" && iennDisplayName(p.name); if (dn && dn !== p.name) { p.feedName = p.feedName || p.name; p.name = dn; } return p; });   // display-name overrides; id/fullName keep the feed name for cart + orders if (!quick) prefill();
     var sig = JSON.stringify([BASELINE, PLANTS]); if (sig !== lastSig) { lastSig = sig; render(); } else update();   // same data: keep the grid as is if (quick) return; status.textContent = msg || ""; status.hidden = !msg;
     if (params.get("checkout") === "1" && !autoOpened && lines().length) { autoOpened = true; if (window.iennOpenCheckout) window.iennOpenCheckout(); } }
   var autoOpened = false;

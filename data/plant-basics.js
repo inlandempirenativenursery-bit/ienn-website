@@ -84,3 +84,6 @@ function iennBasics(botanical) {
   var f = IENN_FORM[g] || [], fs = IENN_FORM_SPECIES[key] || []; out.form = fs[0] || f[0] || ""; out.tag = fs[1] || f[1] || "";
   return out;
 }
+/* Display-name overrides: feed name (matching/orders unchanged) -> name shown on the site. */
+var IENN_DISPLAY_NAMES = { "Sacred datura": "Datura" };
+function iennDisplayName(n) { return IENN_DISPLAY_NAMES[n] || n; }
