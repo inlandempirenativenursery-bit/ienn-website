@@ -305,3 +305,4 @@ html.bg-light .pane-basics { --bg-op:.12; } html.bg-strong .pane-basics { --bg-o
 .stepper button.at-cap:disabled { background:#efeee9; color:#c7c5bd; }
 .tray-cap { display:block; flex-basis:100%; font-size:0.78rem; color:#9a3412; }
 .clamp-note { font-size:0.85rem; color:#9a3412; background:#fff7ed; border:1px solid #fed7aa; border-radius:8px; padding:0.4rem 0.6rem; margin:0 0 0.5rem; }
+.tq button:disabled { color:#c7c5bd; background:#efeee9; cursor:default; }

@@ -92,7 +92,7 @@
       var add, minus, inp, plus, msg;
       function want() { return clamp(inp ? inp.value : 1); }
       function room() { return pick ? Math.max(0, IENNStock.maxQty(pick) - (cart[p.id + "|" + pick.key] || 0)) : 99; }
-      var CAPMSG = "That's all we have in this size right now";
+      var CAPMSG = "That's all we have for now";
       function showInfo() {
         var ok = canAdd(pick), st = pick ? IENNStock.sizeState(pick, (cart[p.id + "|" + pick.key] || 0) + want()) : null;
         info.textContent = "";
