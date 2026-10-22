@@ -88,6 +88,10 @@ function iennBasics(botanical) {
 var IENN_DISPLAY_NAMES = { "Sacred datura": "Datura" };
 function iennDisplayName(n) { return IENN_DISPLAY_NAMES[n] || n; }
 /* Plants hidden from the shop (index + order pages). Case-insensitive match on the feed name or botanical name; add more as needed. */
-var IENN_HIDDEN_PLANTS = ["California encelia", "Coyote brush", "Bush poppy", "Arizona cypress, Blue Pyramid"];
-function iennHidden(p) { var n = String(p.name || "").toLowerCase().trim(), f = String(p.feedName || p.fullName || "").toLowerCase().trim(), b = String(p.botanical || "").toLowerCase().trim();
-  return IENN_HIDDEN_PLANTS.some(function (h) { h = String(h).toLowerCase().trim(); return h && (h === n || h === f || h === b); }); }
+var IENN_HIDDEN_PLANTS = ["California encelia", "Coyote brush", "Bush poppy", "Arizona cypress, Blue Pyramid", "Arizona cypress", "Blue Pyramid Cypress"];
+// Botanical matches (prefix: cultivars like "Hesperocyparis arizonica 'Blue Pyramid'" also match). Never add Encelia californica: California brittlebush shares it and must stay visible.
+var IENN_HIDDEN_BOTANICAL = ["Baccharis pilularis", "Dendromecon rigida", "Hesperocyparis arizonica", "Cupressus arizonica"];
+function iennHidden(p) { function c(x) { return String(x || "").toLowerCase().replace(/\s+/g, " ").trim(); }
+  var full = c(p.feedName || p.fullName), names = [c(p.name), full, full.replace(/\s*\(.*$/, "")], b = c(p.botanical || (/\(([^)]*)\)/.exec(full) || [])[1]);
+  if (IENN_HIDDEN_PLANTS.some(function (h) { return names.indexOf(c(h)) >= 0; })) return true;
+  return !!b && IENN_HIDDEN_BOTANICAL.some(function (h) { h = c(h); return b === h || b.indexOf(h + " ") === 0; }); }
