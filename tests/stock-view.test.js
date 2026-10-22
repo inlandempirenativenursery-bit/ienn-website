@@ -42,9 +42,10 @@ assert.strictEqual(S.sizeState(r('4"', 0, 6), 1), 'ask', 'qty 0 + canRequest => 
 assert.strictEqual(S.available(r('4"', 0, 6)), true); assert.strictEqual(S.available(r('4"', 0, 0)), false);
 assert.strictEqual(S.sizeState(r('4"', 0, 0), 1), 'out');
 assert.strictEqual(S.sizeState(r('4"', 8, 3), 9), 'ask', 'want > qty => Ask us');
-assert.strictEqual(S.isRequest(r('4"', 8, 3), 9), true); assert.strictEqual(S.isRequest(r('4"', 8, 3), 8), false);
+assert.strictEqual(S.isRequest(r('4"', 8, 3), 9), false, 'requests retired'); assert.strictEqual(S.isRequest(r('4"', 8, 3), 8), false);
 assert.strictEqual(S.isRequest(z('4"', 8), 9), false, 'old feed: no canRequest => not a request');
-assert.strictEqual(S.maxQty(r('4"', 3, 2)), 99, 'canRequest => no cap at qty');
+assert.strictEqual(S.maxQty(r('4"', 3, 2)), 3, 'hard cap at ready qty even with extra');
+assert.strictEqual(S.lowStock(z('1 gal', 5)), true); assert.strictEqual(S.lowStock(z('1 gal', 6)), false); assert.strictEqual(S.lowStock(z('1 gal', 0)), false); assert.strictEqual(S.lowStock(z('1 gal', null)), false);
 assert.strictEqual(S.maxQty(r('4"', 3, 0)), 3, 'no extra => cap at qty');
 assert.strictEqual(S.canReq({ key: '4"', qty: 0, extra: 4 }), true, 'extra > 0 without canRequest field');
 assert.strictEqual(S.canReq({ key: '4"', qty: 0, extra: 4, canRequest: false }), false, 'explicit canRequest wins');

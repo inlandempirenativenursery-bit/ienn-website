@@ -41,13 +41,16 @@ var IENNStock = (function () {
     return "ok";
   }
   /* true when this quantity goes beyond ready stock and will be sent as a request */
-  function isRequest(z, want) { return !!z && !isAsk(z) && z.qty != null && canReq(z) && (want || 1) > z.qty; }
-  function maxQty(z) { return z && z.qty != null && !isAsk(z) && !canReq(z) ? Math.max(1, Math.min(99, z.qty)) : 99; }
+  function isRequest(z, want) { return false; }   // retired: quantities are now capped at ready stock
+  /* Hard cap = retail-ready qty (extra/canRequest no longer lifts the cap: customers can't add more than we have ready). */
+  function maxQty(z) { return z && z.qty != null && !isAsk(z) ? Math.max(0, Math.min(99, z.qty)) : 99; }
+  /* "Only a few left": tracked size with 1..LOW_STOCK ready (never shows the number). */
+  function lowStock(z) { var L = typeof LOW_STOCK === "number" ? LOW_STOCK : LOW; return !!z && !isAsk(z) && z.qty != null && z.qty > 0 && z.qty <= L; }
   function txt(v) { return v == null ? "" : String(v).trim(); }
   /* POST success notices / stock-rejection problems -> plain-text messages (render with textContent only) */
   function notices(r) { return ((r && r.notices) || []).map(function (n) { return txt(n && n.message); }).filter(Boolean); }
   function problems(r) { return ((r && r.problems) || []).map(function (n) { return txt(n && n.message); }).filter(Boolean); }
   return { LOW: LOW, isAsk: isAsk, canReq: canReq, available: available, hasBaseline: hasBaseline, view: view, sizeState: sizeState,
-    isRequest: isRequest, maxQty: maxQty, notices: notices, problems: problems };
+    isRequest: isRequest, maxQty: maxQty, lowStock: lowStock, notices: notices, problems: problems };
 })();
 if (typeof module !== "undefined") module.exports = IENNStock;

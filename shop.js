@@ -18,7 +18,8 @@
   function sizeOf(p, k) { return p && p.sizes.find(function (z) { return z.key === k; }); }
   function lines() {
     return Object.keys(cart).map(function (k) { var i = k.lastIndexOf("|"), p = byId(k.slice(0, i)), z = sizeOf(p, k.slice(i + 1));
-      return p && z && canAdd(z) ? { key: k, p: p, z: z, q: cart[k], total: cart[k] * z.price } : null; }).filter(Boolean);
+      if (!(p && z && canAdd(z))) return null; var q = Math.min(cart[k], IENNStock.maxQty(z)); if (!(q > 0)) return null;   // never send more than ready stock
+      return { key: k, p: p, z: z, q: q, total: q * z.price }; }).filter(Boolean);
   }
   function appeal(p) { var t = (p.name + " " + p.botanical).toLowerCase(); for (var i = 0; i < APPEAL_KEYWORDS.length; i++) if (t.indexOf(APPEAL_KEYWORDS[i]) >= 0) return i; return 999; }
   function rk(p) { return p.rank == null || p.rank === "" || isNaN(Number(p.rank)) ? 1e9 : Number(p.rank); }
@@ -70,7 +71,7 @@
       if (lo.length) ph.appendChild(el("span", { class: "price-tag", "aria-hidden": "true" }, (lo.length > 1 ? "from $" : "$") + Math.min.apply(null, lo)));
       if (p.badge) ph.appendChild(el("span", { class: "pick-badge" + (p.badgeAuto ? " auto-" + p.badgeAuto : "") }, String(p.badge)));
       if (p.badge) ph.removeAttribute("aria-hidden");
-      card.appendChild(ph);
+      capOverlays(ph); card.appendChild(ph);
       card.addEventListener("touchstart", function () { card.classList.add("lift"); }, { passive: true });
       ["touchend", "touchcancel"].forEach(function (t) { card.addEventListener(t, function () { setTimeout(function () { card.classList.remove("lift"); }, 160); }); });
       var cr = p.image && typeof ienPhoto === "function" && ienPhoto(p.name); cr = cr && cr.src === p.image && cr.credit;
@@ -88,16 +89,24 @@
       var pick = null, only = sizes.filter(function (z) { return canAdd(z); }); if (BASELINE ? only.length : only.length === 1) pick = only[0];   // default: first available size
       var fs = el("fieldset", { class: "chips" }); fs.appendChild(el("legend", {}, "Size"));
       var info = el("span", { class: "price" }), ask = askNote(); ask.hidden = true;
-      var add, minus, inp, plus;
+      var add, minus, inp, plus, msg;
       function want() { return clamp(inp ? inp.value : 1); }
+      function room() { return pick ? Math.max(0, IENNStock.maxQty(pick) - (cart[p.id + "|" + pick.key] || 0)) : 99; }
+      var CAPMSG = "That's all we have in this size right now";
       function showInfo() {
         var ok = canAdd(pick), st = pick ? IENNStock.sizeState(pick, (cart[p.id + "|" + pick.key] || 0) + want()) : null;
         info.textContent = "";
         ask.hidden = !(st === "ask");
         if (add) { add.disabled = false; add.textContent = "Add to tray"; add.dataset.ready = ok ? "1" : "0"; }
         if (pick) hint.textContent = "";
-        if (inp && pick) inp.max = String(IENNStock.maxQty(pick));
+        var rm = room();
+        if (inp && pick) inp.max = String(Math.max(1, rm));
         [minus, inp, plus].forEach(function (x) { if (x) x.disabled = !ok; });
+        if (plus && ok) { var atCap = want() >= rm; plus.disabled = atCap; plus.classList.toggle("at-cap", atCap); }
+        if (add && ok && rm <= 0) { add.disabled = true; add.textContent = "In your tray"; [minus, inp, plus].forEach(function (x) { if (x) x.disabled = true; }); }
+        if (msg && !msg.dataset.keep) { msg.className = "incart"; msg.textContent = "";
+          if (ok && rm <= 0) { msg.classList.add("cap-msg"); msg.textContent = CAPMSG; }
+          else if (ok && IENNStock.lowStock(pick)) { msg.classList.add("low-tag"); msg.textContent = "Only a few left"; } }
       }
       var saved = UI[p.id], savedZ = saved && sizes.find(function (z) { return z.key === saved.key && canAdd(z); });
       if (savedZ) pick = savedZ;
@@ -121,13 +130,14 @@
       [minus, inp, plus].forEach(function (x) { stp.appendChild(x); });
       function remember() { UI[p.id] = { key: pick ? pick.key : (UI[p.id] && UI[p.id].key), qty: clamp(inp.value) }; }
       if (saved && saved.qty > 1) inp.value = Math.min(saved.qty, pick ? IENNStock.maxQty(pick) : 99);
-      function cap(v) { return Math.min(clamp(v), pick ? IENNStock.maxQty(pick) : 99); }
+      function cap(v) { return Math.min(clamp(v), Math.max(1, room())); }
+      function flash(t) { if (!msg) return; msg.dataset.keep = "1"; msg.className = "incart cap-msg"; msg.textContent = t; clearTimeout(msg._t); msg._t = setTimeout(function () { delete msg.dataset.keep; showInfo(); }, 2600); }
       minus.addEventListener("click", function () { inp.value = cap(inp.value - 1); remember(); showInfo(); });
-      plus.addEventListener("click", function () { var nv = clamp(+inp.value + 1); inp.value = cap(nv); remember(); showInfo(); if (pick && pick.qty != null && nv > pick.qty) ask.hidden = false; });
+      plus.addEventListener("click", function () { var nv = clamp(+inp.value + 1); inp.value = cap(nv); remember(); showInfo(); if (pick && nv > room()) flash(CAPMSG); });
       inp.addEventListener("input", function () { remember(); showInfo(); });
-      inp.addEventListener("change", function () { var raw = clamp(inp.value); inp.value = cap(raw); showInfo(); if (pick && pick.qty != null && raw > pick.qty) ask.hidden = false; });
+      inp.addEventListener("change", function () { var raw = clamp(inp.value); inp.value = cap(raw); remember(); showInfo(); if (pick && raw > room()) flash(CAPMSG); });
       add = el("button", { type: "button", class: "add" }, "Add to tray");
-      var msg = el("div", { class: "incart", "aria-live": "polite" });
+      msg = el("div", { class: "incart", "aria-live": "polite" });
       add.addEventListener("click", function () {
         if (!canAdd(pick)) {
           if (fs.querySelector('.chip-request[aria-pressed="true"]')) { hint.textContent = "This size is by request: add it in Notes and we'll confirm."; return; }
@@ -135,10 +145,11 @@
         }
         hint.textContent = "";
         var k = p.id + "|" + pick.key, wantN = (cart[k] || 0) + clamp(inp.value), mx = IENNStock.maxQty(pick);
-        if (pick.qty != null && wantN > mx) { wantN = mx; ask.hidden = false; msg.textContent = "✓ Added what we have."; }
-        else if (IENNStock.isRequest(pick, wantN)) { ask.hidden = false; msg.textContent = "✓ Added " + wantN + " × " + pick.label + " as a request. We'll confirm."; }
-        else msg.textContent = "✓ Added " + wantN + " × " + pick.label;
+        var capped = wantN > mx; if (capped) wantN = mx;
+        if (wantN <= (cart[k] || 0)) { flash(CAPMSG); return; }
         cart[k] = Math.min(wantN, 99); lastAdded = k; save(); inp.value = 1; remember(); update(); showInfo(); bumpTray();
+        msg.dataset.keep = "1"; msg.className = "incart"; msg.textContent = capped ? "✓ Added. " + CAPMSG : "✓ Added " + wantN + " × " + pick.label;
+        clearTimeout(msg._t); msg._t = setTimeout(function () { delete msg.dataset.keep; showInfo(); }, 2600);
       });
       row.appendChild(stp); row.appendChild(add);
       b.appendChild(row); b.appendChild(msg); showInfo();
@@ -236,6 +247,11 @@
     pane.appendChild(inn);
     return { pane: pane };
   }
+  /* Eric's rule: never more than 3 text overlays on the front photo. Priority: badge > price > life-form > anything else. */
+  var OVERLAY_PRIORITY = [".pick-badge", ".price-tag", ".form-ribbon"], MAX_OVERLAYS = 3;
+  function capOverlays(ph) { if (!ph) return; var all = Array.prototype.filter.call(ph.children, function (c) { return c.tagName === "SPAN" && !c.classList.contains("leaf"); });
+    function pr(c) { for (var i = 0; i < OVERLAY_PRIORITY.length; i++) if (c.matches(OVERLAY_PRIORITY[i])) return i; return 99; }
+    all.sort(function (a, b) { return pr(a) - pr(b); }).slice(MAX_OVERLAYS).forEach(function (c) { c.remove(); }); }
   var peeked = false; try { peeked = sessionStorage.getItem("ienn-peek") === "1"; } catch (e) {}
   /* Third panel: the front photo alone, full-bleed, no overlays (so shoppers can see the plant). Panels loop front -> basics -> photo -> front. */
   var CLEAN = true;
@@ -245,6 +261,7 @@
     while (card.firstChild) front.appendChild(card.firstChild);
     var bp = basicsPane(p, x), ph0 = front.querySelector(".ph");
     if (ph0 && x.form) ph0.appendChild(el("span", { class: "form-ribbon on-photo", "aria-hidden": "true" }, x.form));
+    capOverlays(ph0);
     var fimg0 = ph0 && ph0.querySelector("img"), cp = null;
     if (CLEAN && fimg0) { cp = el("div", { class: "pane-clean", "aria-hidden": "true" }); var ci = fimg0.cloneNode(); ci.removeAttribute("loading"); cp.appendChild(ci); }
     var NP = cp ? 3 : 2;
@@ -284,12 +301,22 @@
     return card;
   }
 
-  var lastAdded = null, BASELINE = false;
+  var lastAdded = null, BASELINE = false, clampNote = "";
+  /* Live stock changed since the tray was filled: trim lines to what's ready now, drop sizes that ran out. */
+  function reconcile() {
+    if (!BASELINE) return; var trimmed = false, gone = false;
+    Object.keys(cart).forEach(function (k) { var i = k.lastIndexOf("|"), p = byId(k.slice(0, i)), z = sizeOf(p, k.slice(i + 1));
+      if (!p || !z || !inStock(z)) { delete cart[k]; gone = true; return; }
+      var mx = IENNStock.maxQty(z); if (cart[k] > mx) { cart[k] = mx; trimmed = true; } });
+    if (trimmed || gone) { save(); clampNote = gone && trimmed ? "Stock changed since you visited, so we trimmed your tray to what's ready now." : gone ? "Some plants in your tray just sold out, so we took them off." : "Stock changed since you visited, so we trimmed your tray to what's ready now."; }
+  }
   function bumpTray() { var cb = document.getElementById("cartbar-count"); cb.classList.remove("bump"); void cb.offsetWidth; cb.classList.add("bump"); }
   function update() {
     var ls = lines(), count = ls.reduce(function (a, l) { return a + l.q; }, 0), sub = ls.reduce(function (a, l) { return a + l.total; }, 0);
     document.querySelectorAll(".card").forEach(function (c) { c.classList.toggle("in-cart", ls.some(function (l) { return l.p.id === c.dataset.id; })); });
     var sb = document.getElementById("summary-body"); if (sb) sb.innerHTML = "";
+    if (!sb) {}
+    if (sb && clampNote) sb.appendChild(el("p", { class: "clamp-note", role: "status" }, clampNote));
     if (!sb) {}
     else if (!ls.length) sb.appendChild(el("p", { class: "empty" }, "No plants added yet."));
     else {
@@ -301,6 +328,7 @@
         dm.addEventListener("click", function () { if (l.q <= 1) delete cart[l.key]; else cart[l.key] = l.q - 1; lastAdded = null; save(); update(); });
         dp.addEventListener("click", function () { cart[l.key] = Math.min(l.q + 1, mx); lastAdded = null; save(); update(); });
         dp.disabled = l.q >= mx; tq.appendChild(dm); tq.appendChild(el("span", { "aria-live": "polite" }, String(l.q))); tq.appendChild(dp); li.appendChild(tq);
+        if (l.q >= mx && l.z.qty != null) li.appendChild(el("small", { class: "tray-cap" }, "That's all we have"));
         var rm = el("button", { type: "button", class: "rm", "aria-label": "Remove " + l.p.name + " " + l.z.label }, "Remove");
         rm.addEventListener("click", function () { delete cart[l.key]; save(); update(); });
         li.appendChild(rm); ul.appendChild(li);
@@ -508,7 +536,8 @@
     save();
   }
   var lastSig = null;
-  function use(l, msg, d, quick) { BASELINE = IENNStock.hasBaseline(d, l); PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l)).filter(function (p) { return !(typeof iennHidden === "function" && iennHidden(p)); })).map(function (p) { var dn = typeof iennDisplayName === "function" && iennDisplayName(p.name); if (dn && dn !== p.name) { p.feedName = p.feedName || p.name; p.name = dn; } return p; });   // display-name overrides; id/fullName keep the feed name for cart + orders if (!quick) prefill();
+  function use(l, msg, d, quick) { BASELINE = IENNStock.hasBaseline(d, l); PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l)).filter(function (p) { return !(typeof iennHidden === "function" && iennHidden(p)); })).map(function (p) { var dn = typeof iennDisplayName === "function" && iennDisplayName(p.name); if (dn && dn !== p.name) { p.feedName = p.feedName || p.name; p.name = dn; } return p; });   // display-name overrides; id/fullName keep the feed name for cart + orders
+    if (!quick) { prefill(); reconcile(); }
     var sig = JSON.stringify([BASELINE, PLANTS]); if (sig !== lastSig) { lastSig = sig; render(); } else update();   // same data: keep the grid as is if (quick) return; status.textContent = msg || ""; status.hidden = !msg;
     if (params.get("checkout") === "1" && !autoOpened && lines().length) { autoOpened = true; if (window.iennOpenCheckout) window.iennOpenCheckout(); } }
   var autoOpened = false;
