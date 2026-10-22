@@ -168,17 +168,22 @@
   function plantShape(x, cx, base, gw, gh) {
     var G = "#4d7c55", r = gw / 2, f = x.shape || x.form || "Shrub", P = function (d) { return '<path fill="' + G + '" d="' + d + '"/>'; }, L = function (d, w) { return '<path fill="none" stroke="' + G + '" stroke-width="' + (w || 1.4) + '" stroke-linecap="round" d="' + d + '"/>'; }, top = base - gh, o = "";
     if (false) return '<rect x="' + (cx - 1.2) + '" y="' + (base - gh * .1) + '" width="2.4" height="' + (gh * .1) + '" fill="' + G + '"/>' + P("M" + cx + " " + top + "C" + (cx + r * .35) + " " + (top + gh * .3) + " " + (cx + r * .55) + " " + (base - gh * .35) + " " + (cx + r * .4) + " " + (base - gh * .1) + "H" + (cx - r * .4) + "C" + (cx - r * .55) + " " + (base - gh * .35) + " " + (cx - r * .35) + " " + (top + gh * .3) + " " + cx + " " + top + "z");
-    if (f === "Tree" || f === "Small tree") { var cw = Math.max(gw, gh * 1.5) / 2, ch = gh * .62, ctop = top, cb = ctop + ch, tk = Math.max(2.4, cw * .12);   // coast-live-oak: short trunk, branching, broad lumpy canopy
+    if (f === "Small tree" || f === "SmallTree") { var sw = Math.max(gw, gh * 1.2) / 2, sch = gh * .72, sb = top + sch;   // small tree / large shrub: 2-3 short stems, low rounded lumpy canopy
+      [-.28, 0, .28].forEach(function (k) { o += P("M" + (cx + k * sw * .25 - 1.1) + " " + base + "L" + (cx + k * sw * .7 - .9) + " " + (sb - sch * .2) + "h1.8L" + (cx + k * sw * .25 + 1.1) + " " + base + "z"); });
+      [[-.5, .55, .5, .42], [.5, .55, .5, .42], [0, .38, .6, .45], [-.2, .62, .55, .38], [.25, .62, .55, .38]].forEach(function (l) { o += '<ellipse cx="' + (cx + l[0] * sw) + '" cy="' + (top + l[1] * sch) + '" rx="' + (l[2] * sw) + '" ry="' + (l[3] * sch) + '" fill="' + G + '"/>'; });
+      return o; }
+    if (f === "Tree") { var cw = Math.max(gw, gh * 1.5) / 2, ch = gh * .62, ctop = top, cb = ctop + ch, tk = Math.max(2.4, cw * .12);   // coast-live-oak: short trunk, branching, broad lumpy canopy
       o += P("M" + (cx - tk) + " " + base + "L" + (cx - tk * .7) + " " + (cb - ch * .05) + "L" + (cx - cw * .55) + " " + (cb - ch * .25) + "L" + (cx - cw * .5) + " " + (cb - ch * .15) + "L" + (cx - tk * .2) + " " + (cb + ch * .1) + "L" + (cx + tk * .2) + " " + (cb + ch * .1) + "L" + (cx + cw * .5) + " " + (cb - ch * .15) + "L" + (cx + cw * .55) + " " + (cb - ch * .25) + "L" + (cx + tk * .7) + " " + (cb - ch * .05) + "L" + (cx + tk) + " " + base + "z");
       [[-.62, .62, .4, .38], [.62, .62, .4, .38], [-.3, .4, .45, .45], [.3, .38, .45, .45], [0, .3, .4, .42], [-.85, .72, .2, .25], [.85, .72, .2, .25], [0, .65, .7, .3]].forEach(function (l) { o += '<ellipse cx="' + (cx + l[0] * cw) + '" cy="' + (ctop + l[1] * ch) + '" rx="' + (l[2] * cw) + '" ry="' + (l[3] * ch) + '" fill="' + G + '"/>'; });
       return o; }
     if (f === "Grass") { for (var i = -4; i <= 4; i++) { var tx = cx + i * r * .26, ty = top + Math.abs(i) * gh * .1 + gh * .05; o += L("M" + (cx + i * .6) + " " + base + "Q" + (cx + i * r * .1) + " " + (base - gh * .6) + " " + tx + " " + ty, 2.2); }
       [-.45, .05, .5].forEach(function (k) { var sx = cx + k * r * .8; o += L("M" + cx + " " + base + "Q" + sx + " " + (base - gh * .5) + " " + (sx + k * 2) + " " + (top - 1), .8) + '<ellipse cx="' + (sx + k * 2) + '" cy="' + top + '" rx="1.1" ry="2.4" fill="' + G + '"/>'; });
       return P("M" + (cx - r * .3) + " " + base + "Q" + cx + " " + (base - gh * .3) + " " + (cx + r * .3) + " " + base + "z") + o; }
-    if (f === "Vine") { var vh = gh * .85, vt = base - vh, vw = Math.max(30, Math.min(gw, vh * .9)), pp = cx;   // simplified leafy vine on a post (not strictly to scale)
-      o += '<rect x="' + (pp - 1.3) + '" y="' + (vt - 2) + '" width="2.6" height="' + (vh + 2) + '" fill="#a8a29e"/><rect x="' + (pp - vw * .45) + '" y="' + (vt + vh * .12) + '" width="' + (vw * .9) + '" height="1.6" fill="#a8a29e"/>';
-      for (var q = 0; q < 7; q++) { var ly = base - vh * (q + .6) / 7.2, sx = (q % 2 ? 1 : -1), lw = vw * (.42 - q * .02); o += '<ellipse cx="' + (pp + sx * lw * .5) + '" cy="' + ly + '" rx="' + lw * .62 + '" ry="' + Math.max(2.8, vh * .11) + '" fill="' + G + '"/>'; }
-      o += P("M" + (pp - vw * .3) + " " + base + "Q" + pp + " " + (base - vh * .35) + " " + (pp + vw * .3) + " " + base + "z");
+    if (f === "Vine") { var vh = gh * .85, vt = base - vh, pp = cx, amp = Math.max(4, Math.min(gw * .25, 8));   // simple: post + one twining stem + a few leaves
+      o += '<rect x="' + (pp - 1.4) + '" y="' + vt + '" width="2.8" height="' + vh + '" rx="1" fill="#a8a29e"/>';
+      o += L("M" + pp + " " + base + "C" + (pp + amp) + " " + (base - vh * .2) + " " + (pp - amp) + " " + (base - vh * .4) + " " + pp + " " + (base - vh * .55) + "S" + (pp + amp) + " " + (base - vh * .85) + " " + (pp - 1) + " " + (vt + 1), 1.8);
+      [[.18, 1], [.42, -1], [.66, 1], [.88, -1]].forEach(function (q) { var ly = base - vh * q[0], lx = pp + q[1] * amp * .9, sz = Math.max(3, amp * .7);
+        o += P("M" + (lx - q[1] * sz * .3) + " " + ly + "Q" + (lx + q[1] * sz * .6) + " " + (ly - sz * .9) + " " + (lx + q[1] * sz * 1.4) + " " + (ly - sz * .2) + "Q" + (lx + q[1] * sz * .6) + " " + (ly + sz * .5) + " " + (lx - q[1] * sz * .3) + " " + ly + "z"); });
       return o; }
     if (f === "Succulent") { for (var j = -5; j <= 5; j++) { var ang = j / 5 * 1.3, len = gh * .62 * (1 - Math.abs(j) * .05); o += P("M" + (cx - 2.2) + " " + base + "L" + (cx + Math.sin(ang) * Math.max(len, r * .9)) + " " + (base - Math.cos(ang) * len) + "L" + (cx + 2.2) + " " + base + "z"); }
       return o + L("M" + cx + " " + (base - gh * .3) + "V" + (top + gh * .2), 2) + P("M" + (cx - 2.4) + " " + (top + gh * .3) + "Q" + cx + " " + (top - 1) + " " + (cx + 2.4) + " " + (top + gh * .3) + "z"); }
@@ -247,6 +252,8 @@
     bp.pane.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " " || e.key === "Escape") { e.preventDefault(); to(0); if (ph0) setTimeout(function () { ph0.focus({ preventScroll: true }); }, 350); } });
     var t = null; track.addEventListener("scroll", function () { clearTimeout(t); t = setTimeout(function () { var on = onBack(); card.classList.toggle("showing-basics", on); front.setAttribute("aria-hidden", on ? "true" : "false"); bp.pane.setAttribute("aria-hidden", on ? "false" : "true"); }, 80); }, { passive: true });
     bp.pane.setAttribute("aria-hidden", "true");
+    function fit() { var h = bp.pane.clientHeight; if (!h) return; bp.pane.classList.toggle("tall", h >= 440); bp.pane.classList.toggle("compact", h < 440); }
+    if ("ResizeObserver" in window) new ResizeObserver(fit).observe(bp.pane); else { setTimeout(fit, 0); addEventListener("resize", fit); }
     if (!peeked && card.querySelector(".add, .soon-pill")) { peeked = true; try { sessionStorage.setItem("ienn-peek", "1"); } catch (e) {}   // one gentle peek per session, first card only
       if (!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches)) setTimeout(function () { if (!card.isConnected) return; track.scrollTo({ left: 46, behavior: "smooth" }); setTimeout(function () { track.scrollTo({ left: 0, behavior: "smooth" }); }, 650); }, 1400); }
     return card;

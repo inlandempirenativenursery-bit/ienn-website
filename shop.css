@@ -175,7 +175,7 @@ html.ty-open, html.ty-open body { overflow:hidden; }
 .card-track { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; overscroll-behavior-x:contain; scrollbar-width:none; -webkit-overflow-scrolling:touch; height:100%; }
 .card-track::-webkit-scrollbar { display:none; }
 .pane-front { flex:0 0 100%; scroll-snap-align:start; display:flex; flex-direction:column; min-width:0; }
-.pane-basics { flex:0 0 100%; scroll-snap-align:start; position:relative; min-width:0; background:#fff; border-left:1px solid #eee; container-type:size; }
+.pane-basics { flex:0 0 100%; scroll-snap-align:start; position:relative; min-width:0; background:#fff; border-left:1px solid #eee;  }
 @media (prefers-reduced-motion:no-preference) { .card-track { scroll-behavior:smooth; } }
 .basics-in { position:absolute; inset:0; overflow-y:auto; padding:0.5rem; display:flex; flex-direction:column; gap:0.4rem; color:#111827; }
 .form-ribbon { display:inline-block; white-space:nowrap; background:var(--sage); color:#fff; font-weight:800; font-size:0.66rem; letter-spacing:.06em; text-transform:uppercase; padding:0.15rem 0.55rem; border-radius:4px; }
@@ -200,16 +200,19 @@ html.ty-open, html.ty-open body { overflow:hidden; }
 .size-art { width:72px; height:38px; flex:none; }
 .size-v { display:flex; flex-direction:column; font-size:0.74rem; color:#111827; line-height:1.2; }
 .basics-fine { margin:0; margin-top:auto; font-size:0.6rem; color:#6b7280; }
-@container (min-height:440px) {
-  .basics-in { gap:0.5rem; padding:0.65rem 0.55rem; }
-  .basics-tag { font-size:0.9rem; }
-  .fchip { min-height:34px; padding:0.25rem 0.45rem; } .fchip-t { font-size:0.82rem; }
-  .bi { width:24px; height:24px; } .water .bi { width:16px; height:22px; }
-  .sp { font-size:0.74rem; padding:0.25rem 0; }
-  .size-art { width:100px; height:54px; } .size-v { font-size:0.86rem; }
-}
+.pane-basics.tall .basics-in { gap:0.5rem; padding:0.65rem 0.55rem; }
+.pane-basics.tall .basics-tag { font-size:0.9rem; }
+.pane-basics.tall .fchip { min-height:34px; padding:0.25rem 0.45rem; }
+.pane-basics.tall .fchip-t { font-size:0.82rem; }
+.pane-basics.tall .bi { width:24px; height:24px; }
+.pane-basics.tall .water .bi { width:16px; height:22px; }
+.pane-basics.tall .sp { font-size:0.74rem; padding:0.25rem 0; }
+.pane-basics.tall .size-art { width:100px; height:54px; }
+.pane-basics.tall .size-v { font-size:0.86rem; }
 .basics-in { gap:0.3rem; } .fchip { min-height:22px; padding:0.1rem 0.35rem; } .size-v { white-space:nowrap; } .size-art { width:60px; height:34px; }
-@container (min-height:440px) { .basics-in { gap:0.5rem; } .fchip { min-height:34px; padding:0.25rem 0.45rem; } .size-art { width:90px; height:50px; } }
+.pane-basics.tall .basics-in { gap:0.5rem; }
+.pane-basics.tall .fchip { min-height:34px; padding:0.25rem 0.45rem; }
+.pane-basics.tall .size-art { width:90px; height:50px; }
 
 /* v5: seamless back (no chip bubbles), section dividers, dots, flippable photo */
 .fchip, .care .water, .care .sun, .care .soil { background:none; border:0; border-radius:0; padding:0.05rem 0; min-height:0; }
@@ -224,9 +227,16 @@ html.ty-open, html.ty-open body { overflow:hidden; }
 .ph.flippable:focus-visible, .pane-basics:focus-visible { outline:3px solid var(--sage); outline-offset:-3px; }
 .pane-basics { cursor:pointer; }
 .size-art { width:84px; height:44px; }
-@container (min-height:440px) { .fchip { min-height:30px; padding:0.1rem 0; } .care, .feats { gap:0.3rem; } .size-art { width:110px; height:58px; } }
-@container (min-height:440px) { .size-art { width:92px; height:48px; } .size-v { font-size:0.8rem; } }
-@container (max-height:439px) { .care, .seasons, .feats, .size { padding-top:0.2rem; } .basics-in { gap:0.22rem; padding:0.4rem 0.5rem; } .size-art { width:66px; height:35px; } .pane-basics .flip-dots { display:none; } .basics-tag { font-size:0.74rem; } }
+.pane-basics.tall .fchip { min-height:30px; padding:0.1rem 0; }
+.pane-basics.tall .care,.pane-basics.tall .feats { gap:0.3rem; }
+.pane-basics.tall .size-art { width:110px; height:58px; }
+.pane-basics.tall .size-art { width:92px; height:48px; }
+.pane-basics.tall .size-v { font-size:0.8rem; }
+.pane-basics.compact .care,.pane-basics.compact .seasons,.pane-basics.compact .feats,.pane-basics.compact .size { padding-top:0.2rem; }
+.pane-basics.compact .basics-in { gap:0.22rem; padding:0.4rem 0.5rem; }
+.pane-basics.compact .size-art { width:66px; height:35px; }
+.pane-basics.compact .pane-basics .flip-dots { display:none; }
+.pane-basics.compact .basics-tag { font-size:0.74rem; }
 
 /* v7: calm bloom row */
 .seasons { display:flex; flex-direction:column; gap:0.2rem; }
@@ -238,5 +248,16 @@ html.ty-open, html.ty-open body { overflow:hidden; }
 .size { gap:0.3rem; padding-right:0.35rem; min-width:0; }
 .size-art { width:64px !important; height:34px !important; flex:0 0 auto; }
 .size-v { font-size:0.72rem !important; min-width:0; }
-@container (min-height:440px) { .size-art { width:76px !important; height:40px !important; } .size-v { font-size:0.76rem !important; } }
-@container (max-height:439px) { .basics-in { gap:0.15rem; padding:0.35rem 0.45rem; } .fchip { min-height:0; padding:0; } .fchip-t { font-size:0.66rem; } .bi { width:16px; height:16px; } .water .bi { width:11px; height:15px; } .care, .feats { gap:0.1rem; } .care, .seasons, .feats, .size { padding-top:0.15rem; } .seasons .sp { font-size:0.6rem; padding:0.05rem 0; } .size-art { width:56px !important; height:30px !important; } .form-ribbon { font-size:0.6rem; padding:0.1rem 0.45rem; } }
+.pane-basics.tall .size-art { width:76px !important; height:40px !important; }
+.pane-basics.tall .size-v { font-size:0.76rem !important; }
+.pane-basics.compact .basics-in { gap:0.15rem; padding:0.35rem 0.45rem; }
+.pane-basics.compact .fchip { min-height:0; padding:0; }
+.pane-basics.compact .fchip-t { font-size:0.66rem; }
+.pane-basics.compact .bi { width:16px; height:16px; }
+.pane-basics.compact .water .bi { width:11px; height:15px; }
+.pane-basics.compact .care,.pane-basics.compact .feats { gap:0.1rem; }
+.pane-basics.compact .care,.pane-basics.compact .seasons,.pane-basics.compact .feats,.pane-basics.compact .size { padding-top:0.15rem; }
+.pane-basics.compact .seasons .sp { font-size:0.6rem; padding:0.05rem 0; }
+.pane-basics.compact .size-art { width:56px !important; height:30px !important; }
+.pane-basics.compact .form-ribbon { font-size:0.6rem; padding:0.1rem 0.45rem; }
+.pane-basics.tall .basics-in { justify-content:space-evenly; } .pane-basics.tall .basics-fine { margin-top:0; }

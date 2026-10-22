@@ -29,7 +29,7 @@ var IENN_BASICS = {
     desc:"Monkeyflowers bloom heavily in spring with tubular flowers hummingbirds visit. Afternoon shade and little summer water keep them happy." },
   Penstemon: { water:1, sun:["full"], soil:"Fast-draining", bloom:["Sp","Su"], wild:["pollinators","hummingbirds","containers"], h:[2,4], w:[1,3], ie:true, genusLevel:true,
     desc:"Upright spikes of tubular flowers that hummingbirds find fast. Needs good drainage; avoid overwatering." },
-  Rhus: { water:1, sun:["full","part"], soil:"Adaptable", bloom:["W","Sp"], wild:["pollinators","birds"], h:[6,10], w:[6,10], ie:true,
+  Rhus: { shape:"SmallTree", water:1, sun:["full","part"], soil:"Adaptable", bloom:["W","Sp"], wild:["pollinators","birds"], h:[6,10], w:[6,10], ie:true,
     desc:"A sturdy evergreen shrub with glossy leaves and small pink-white flowers. Useful as a hedge or screen once established." },
   Achillea: { water:2, sun:["full","part"], soil:"Adaptable", bloom:["Sp","Su"], wild:["pollinators","fragrant","containers"], h:[1,3], w:[1,3], ie:true,
     desc:"Feathery, aromatic leaves with flat clusters of small flowers. Spreads into a soft patch and can even be mowed as a lawn alternative." },
@@ -45,7 +45,7 @@ var IENN_BASICS = {
     desc:"Bright red-orange tubular flowers in late summer and fall, just when hummingbirds need them most. Cut back in winter to keep it tidy." },
   Hesperocyparis: { water:1, sun:["full"], soil:"Adaptable", bloom:[], wild:["birds","fragrant"], h:[20,40], w:[10,20], ie:true,
     desc:"A drought-tolerant evergreen conifer with blue-gray, aromatic foliage. Makes a strong vertical accent or windbreak." },
-  Dendromecon: { water:1, sun:["full"], soil:"Fast-draining", bloom:["W","Sp"], wild:["pollinators"], h:[4,8], w:[4,8], ie:true,
+  Dendromecon: { shape:"SmallTree", water:1, sun:["full"], soil:"Fast-draining", bloom:["W","Sp"], wild:["pollinators"], h:[4,8], w:[4,8], ie:true,
     desc:"A chaparral shrub with bright yellow poppy flowers. Needs excellent drainage and dislikes summer water." },
   Heteromeles: { water:1, sun:["full","part"], soil:"Adaptable", bloom:["Su"], wild:["pollinators","birds"], h:[8,15], w:[6,12], ie:true,
     desc:"An evergreen shrub with white summer flowers and bright red winter berries that birds love. A classic native hedge or small tree." }
