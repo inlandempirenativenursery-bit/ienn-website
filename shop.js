@@ -538,7 +538,8 @@
   var lastSig = null;
   function use(l, msg, d, quick) { BASELINE = IENNStock.hasBaseline(d, l); PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l)).filter(function (p) { return !(typeof iennHidden === "function" && iennHidden(p)); })).map(function (p) { var dn = typeof iennDisplayName === "function" && iennDisplayName(p.name); if (dn && dn !== p.name) { p.feedName = p.feedName || p.name; p.name = dn; } return p; });   // display-name overrides; id/fullName keep the feed name for cart + orders
     if (!quick) { prefill(); reconcile(); }
-    var sig = JSON.stringify([BASELINE, PLANTS]); if (sig !== lastSig) { lastSig = sig; render(); } else update();   // same data: keep the grid as is if (quick) return; status.textContent = msg || ""; status.hidden = !msg;
+    var sig = JSON.stringify([BASELINE, PLANTS]); if (sig !== lastSig) { lastSig = sig; render(); } else update();   // same data: keep the grid as is
+    if (quick) return; status.textContent = msg || ""; status.hidden = !msg;
     if (params.get("checkout") === "1" && !autoOpened && lines().length) { autoOpened = true; if (window.iennOpenCheckout) window.iennOpenCheckout(); } }
   var autoOpened = false;
   function load() {
