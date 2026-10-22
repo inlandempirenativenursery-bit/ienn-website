@@ -74,9 +74,11 @@
       var b = el("div", { class: "body" });
       var h3 = el("h3", { id: p.id + "-name" }); h3.appendChild(el("span", { class: "slot", "aria-hidden": "true" }, String.fromCharCode(65 + Math.floor(idx / 6)) + (idx % 6 + 1))); h3.appendChild(document.createTextNode(p.name)); b.appendChild(h3);
       if (p.botanical) b.appendChild(el("span", { class: "note" }, p.botanical));
+      var bx = typeof iennBasics === "function" && iennBasics(p.botanical);
+      if (bx) { var go = el("button", { type: "button", class: "basics-go", "aria-label": "Plant basics for " + p.name }, "Plant basics \u203a"); b.appendChild(go); }
       /* With a stock baseline, a size is available only if qty > 0 or canRequest; show only those. No available size => "Coming soon". */
       var sizes = BASELINE ? p.sizes.filter(function (z) { return z.qty > 0 || IENNStock.canReq(z); }) : p.sizes;
-      if (BASELINE && !sizes.length) { card.classList.add("coming-soon"); b.appendChild(el("span", { class: "soon-pill" }, "Coming soon")); card.appendChild(b); return card; }
+      if (BASELINE && !sizes.length) { card.classList.add("coming-soon"); b.appendChild(el("span", { class: "soon-pill" }, "Coming soon")); card.appendChild(b); return withBasics(card, p, bx); }
       var badge = el("span", { class: "badge " + ps }, ps === "ok" ? "Available · Get yours now" : ps === "ask" ? "We'll confirm availability" : ON_REQUEST);
       b.appendChild(badge);
       var pick = null, only = sizes.filter(function (z) { return canAdd(z); }); if (BASELINE ? only.length : only.length === 1) pick = only[0];   // default: first available size
@@ -136,7 +138,68 @@
       });
       row.appendChild(stp); row.appendChild(add);
       b.appendChild(row); b.appendChild(msg); showInfo();
-      card.appendChild(b); return card;
+      card.appendChild(b); return withBasics(card, p, bx);
+  }
+  /* Plant basics: swipe right-to-left (or tap "Plant basics ›") to a second panel. Data: data/plant-basics.js. */
+  var SVGNS = "http://www.w3.org/2000/svg";
+  function svg(w, h, inner, cls) { var s = document.createElementNS(SVGNS, "svg"); s.setAttribute("viewBox", "0 0 " + w + " " + h); s.setAttribute("aria-hidden", "true"); if (cls) s.setAttribute("class", cls); s.innerHTML = inner; return s; }
+  var ICON = {   /* IENN line set: 24px grid, 1.8 rounded stroke (sage), soft lilac/cream accent fills via .acc */
+    drop: '<path class="acc" d="M12 3.5C9.2 8 6.5 10.8 6.5 14.6a5.5 5.5 0 0 0 11 0C17.5 10.8 14.8 8 12 3.5z"/>',
+    full: '<circle class="acc" cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>',
+    part: '<path class="acc" d="M12 8a4 4 0 0 0 0 8z"/><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M5.6 5.6l1.4 1.4M5.6 18.4L7 17"/><path d="M15 15.5h4.5a2.5 2.5 0 0 0 0-5 3.5 3.5 0 0 0-5.5-1.2"/>',
+    shade: '<path class="acc" d="M4 13a8 8 0 0 1 16 0z"/><path d="M12 13v6.5a1.5 1.5 0 0 0 3 0"/>',
+    pollinators: '<path class="acc" d="M12 11C10 6.5 5 5 4 7.5s2.5 5 8 3.5zM12 11c2-4.5 7-6 8-3.5s-2.5 5-8 3.5z"/><path d="M12 12c-2 2.5-5 5.5-3.5 6.5S12 16 12 12zm0 0c2 2.5 5 5.5 3.5 6.5S12 16 12 12z"/><path d="M12 8v10M10.5 5l1.5 3 1.5-3"/>',
+    hummingbirds: '<path class="acc" d="M9 13c0-3 2.5-5.5 5.5-5.5 1.5 0 2.5 1 2.5 2.5 0 4-3.5 7-7.5 7.5z"/><path d="M17 9.5l5-1.5M9 13L3 7.5c3 0 5 1 6.5 3M9.5 17.5L7 21"/><circle cx="15" cy="9.6" r=".5"/>',
+    birds: '<path class="acc" d="M4 14.5c2-4 6-5.5 9.5-3.5 1.5-2.5 4-3.5 6.5-2.5-1.5 1-2.2 2.6-2.5 4.5-.7 3.6-4.5 5.5-8 4.5z"/><path d="M9.5 17.5L7 20.5M12 18l-1 3"/><circle cx="16.5" cy="10.6" r=".5"/>',
+    fragrant: '<path class="acc" d="M8 18a4 4 0 0 0 8 0z"/><path d="M9 14c-1.5-2 1.5-3 0-5s1.5-3 0-5M15 14c-1.5-2 1.5-3 0-5s1.5-3 0-5M12 13c-1.5-2 1.5-3 0-5"/>',
+    containers: '<path class="acc" d="M6 12h12l-1.6 8H7.6z"/><path d="M12 12V7M12 8.5c-.5-2.5-3-3.5-5-2.5 1 2 3 3 5 2.5zM12 8.5c.5-2.5 3-3.5 5-2.5-1 2-3 3-5 2.5z"/>'
+  };
+
+  var SUNL = { full: "Full sun", part: "Part sun", shade: "Shade" }, WATL = ["", "About monthly", "Twice a month", "Weekly"];
+  var WILDL = { pollinators: "Butterflies & pollinators", hummingbirds: "Hummingbirds", birds: "Birds & habitat", fragrant: "Fragrant", containers: "Good in containers" };
+  function ft(a) { return a[0] === a[1] ? a[0] + "'" : a[0] + "\u2013" + a[1] + "'"; }
+  function icon(name, label, off) { var s = svg(24, 24, ICON[name], "bi" + (off ? " off" : "")); if (label) { s.setAttribute("role", "img"); s.removeAttribute("aria-hidden"); s.setAttribute("aria-label", label); } return s; }
+  function sizeArt(x) {   // plant silhouette vs a 6' person, same scale
+    var H = 56, top = Math.max(6, x.h[1]), sc = (H - 4) / top, ph = 6 * sc, gw = Math.min(70, x.w[1] * sc), gh = x.h[1] * sc, cx = 18 + 10 + gw / 2;
+    var person = '<g fill="#8a9a88"><circle cx="9" cy="' + (H - ph + ph * .09) + '" r="' + (ph * .09) + '"/><rect x="' + (9 - ph * .09) + '" y="' + (H - ph * .8) + '" width="' + (ph * .18) + '" height="' + (ph * .8) + '" rx="' + (ph * .06) + '"/></g>';
+    var plant = '<ellipse cx="' + cx + '" cy="' + (H - gh / 2) + '" rx="' + Math.max(3, gw / 2) + '" ry="' + Math.max(2, gh / 2) + '" fill="var(--sage)" opacity=".85"/>';
+    return svg(110, H + 2, '<path d="M0 ' + H + 'H110" stroke="#c9c4b8" stroke-width="1.5"/>' + person + plant, "size-art");
+  }
+  function basicsPane(p, x) {
+    var pane = el("section", { class: "pane-basics", "aria-label": "Plant basics: " + p.name }), inn = el("div", { class: "basics-in" });
+    var hd = el("div", { class: "basics-hd" }); var back = el("button", { type: "button", class: "basics-back", "aria-label": "Back to " + p.name }, "\u2039");
+    hd.appendChild(back); hd.appendChild(el("span", { class: "bt-k" }, "Plant basics")); inn.appendChild(hd);
+    var top = el("div", { class: "basics-top" });
+    var w = el("div", { class: "bt" }); w.appendChild(el("span", { class: "bt-k" }, "Water")); var wi = el("span", { class: "bt-i water", role: "img", "aria-label": "Water: " + WATL[x.water] });
+    for (var i = 1; i <= 3; i++) { var d = icon("drop", null, i > x.water); wi.appendChild(d); } w.appendChild(wi); top.appendChild(w);
+    var s = el("div", { class: "bt" }); s.appendChild(el("span", { class: "bt-k" }, "Sun")); var si = el("span", { class: "bt-i sun" });
+    x.sun.forEach(function (k) { si.appendChild(icon(k, SUNL[k])); }); s.appendChild(si); top.appendChild(s);
+    var so = el("div", { class: "bt" }); so.appendChild(el("span", { class: "bt-k" }, "Soil")); so.appendChild(el("span", { class: "bt-v soil", title: x.soil }, { "Fast-draining": "Fast drain", "Clay-tolerant": "Clay OK", "Adaptable": "Any soil" }[x.soil] || x.soil)); top.appendChild(so);
+    inn.appendChild(top);
+    var bl = el("div", { class: "bloom", role: "img", "aria-label": x.bloom.length ? "Blooms: " + x.bloom.map(function (k) { return { W: "winter", Sp: "spring", Su: "summer", F: "fall" }[k]; }).join(", ") : "No showy flowers" });
+    bl.appendChild(el("span", { class: "bt-k" }, "Bloom"));
+    var bar = el("span", { class: "bloom-bar" }); [["W", "Winter"], ["Sp", "Spring"], ["Su", "Summer"], ["F", "Fall"]].forEach(function (q) { bar.appendChild(el("span", { class: x.bloom.indexOf(q[0]) >= 0 ? "on" : "", title: q[1] }, q[0] === "W" ? "Win" : q[0] === "Sp" ? "Spr" : q[0] === "Su" ? "Sum" : "Fall")); });
+    bl.appendChild(bar); inn.appendChild(bl);
+    if (x.wild && x.wild.length) { var wl = el("ul", { class: "wild" }); x.wild.forEach(function (k) { var li = el("li"); li.appendChild(icon(k, WILDL[k])); li.title = WILDL[k]; wl.appendChild(li); }); inn.appendChild(wl); }
+    var sz = el("div", { class: "size" }); sz.appendChild(sizeArt(x)); var st = el("div"); st.appendChild(el("span", { class: "bt-k" }, "Mature size")); st.appendChild(el("span", { class: "size-v" }, ft(x.h) + " H \u00d7 " + ft(x.w) + " W")); sz.appendChild(st); inn.appendChild(sz);
+    inn.appendChild(el("p", { class: "basics-desc" }, x.desc));
+    if (x.ie) inn.appendChild(el("p", { class: "ie-line" }, "Thrives in Inland Empire heat"));
+    inn.appendChild(el("p", { class: "basics-fine" }, "Water: in-ground, after year one." + (x.genusLevel ? " Group-level info." : "")));
+    pane.appendChild(inn);
+    return { pane: pane, back: back };
+  }
+  function withBasics(card, p, x) {
+    if (!x) return card;
+    var track = el("div", { class: "card-track" }), front = el("div", { class: "pane-front" });
+    while (card.firstChild) front.appendChild(card.firstChild);
+    var bp = basicsPane(p, x); track.appendChild(front); track.appendChild(bp.pane); card.appendChild(track); card.classList.add("has-basics");
+    var go = front.querySelector(".basics-go");
+    function to(i) { track.scrollTo({ left: i ? track.scrollWidth : 0, behavior: "smooth" }); }
+    if (go) go.addEventListener("click", function () { to(1); });
+    bp.back.addEventListener("click", function () { to(0); });
+    var t = null; track.addEventListener("scroll", function () { clearTimeout(t); t = setTimeout(function () { var on = track.scrollLeft > track.clientWidth / 2; card.classList.toggle("showing-basics", on); bp.pane.setAttribute("aria-hidden", on ? "false" : "true"); front.setAttribute("aria-hidden", on ? "true" : "false"); if ("inert" in bp.pane) { bp.pane.inert = !on; front.inert = on; } }, 80); }, { passive: true });
+    bp.pane.setAttribute("aria-hidden", "true"); if ("inert" in bp.pane) bp.pane.inert = true;
+    return card;
   }
 
   var lastAdded = null, BASELINE = false;
