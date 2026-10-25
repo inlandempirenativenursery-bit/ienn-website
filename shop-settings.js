@@ -34,7 +34,7 @@ var FALLBACK_PLANTS = [
 var STARTER_TEASER_DELAY_MS = 60000;
 var STARTER_TEASER_COLOR = "lilac";   // "honey" | "lilac" | "sage" | "red" (same 3-D gloss/edge; preview any with ?teaser=now&teasercolor=red)
 var STARTER_TEASER_FONT = "baloo";   // heading font: "dancing" (Dancing Script, already loaded) | "fredoka" | "baloo" | "lilita" | "rubik" | "bricolage" (only the chosen one loads; preview with ?teaser=now&teaserfont=fredoka)
-var STARTER_TEASER_SHAPE = "calochortus";   // "pill" | "card" | "leaf" | "badge" | "packet" | "tag" | flowers: "calochortus" | "calochortus-glass" | "calochortus-side" | "salvia" | "trichostema" (preview with ?teaser=now&teasershape=leaf)
+var STARTER_TEASER_SHAPE = "aster";   // "pill" | "card" | "leaf" | "badge" | "packet" | "tag" | flowers: "calochortus" | "calochortus-glass" | "calochortus-side" | "salvia" | "trichostema" | "aster" (preview with ?teaser=now&teasershape=leaf)
 var PICKUP_POLICY = { lead: "Please pick up on time.",
   text: "We set your plants aside just for you. If you can't make your pickup, let us know ahead of time. Orders that aren't picked up are released, and the plants go back on sale." };
 var ORDER_EMAIL = "plants@inlandempirenativenursery.com"; // mailto fallback only if the order endpoint fails

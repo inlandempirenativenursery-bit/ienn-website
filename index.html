@@ -175,6 +175,13 @@
     .st-glass .fl-mark { opacity:.4; }
     .st-glass .fl-calyx { fill-opacity:.75; }
     .st-shape-calochortus-glass .st-title, .st-shape-calochortus-glass .st-sub, .st-shape-calochortus-side .st-title, .st-shape-calochortus-side .st-sub { color:#2a1d3b; text-shadow:0 1px 0 rgba(255,255,255,.5); }
+    /* Aster: flat opaque lilac petals (subtle gloss only), darker-lilac radiating lines, honey disk with dark-brown Baloo text. */
+    .st-shape-aster .fl-petal { fill:var(--st-mid); stroke:var(--st-bot); stroke-width:1.4; stroke-linejoin:round; }
+    .st-shape-aster .fl-mark { fill:var(--st-edge); opacity:.6; }
+    .st-shape-aster .fl-disk { fill:var(--honey, #e8b04b); stroke:var(--honey-edge, #b98a2e); stroke-width:2.5; }
+    .st-shape-aster .st-title, .st-shape-aster .st-sub { color:#4a2c12; text-shadow:0 1px 0 rgba(255,255,255,.3); }
+    .st-shape-aster .st-title { font-size:1.22rem !important; }
+    .st-shape-aster .st-sub { font-size:0.74rem; font-weight:600; }
     .starter-teaser:focus-visible { outline:3px solid var(--sage-dark); outline-offset:3px; }
     .starter-teaser.out { animation:st-out .28s ease-in forwards; pointer-events:none; }
     @keyframes st-drop { 0% { opacity:0; transform:translateY(-60px) scale(.9); } 60% { opacity:1; transform:translateY(8px) scale(1.02); } 80% { transform:translateY(-3px); } 100% { opacity:1; transform:none; } }
