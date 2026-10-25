@@ -1,0 +1,39 @@
+## A fresh, feed 7s calls 1 errs none
+    1s:{"cards":3,"skel":0,"busy":"false","status":"","first":"A1Woolly Blue Curls"}
+    3s:{"cards":3,"skel":0,"busy":"false","status":"","first":"A1Woolly Blue Curls"}
+    8s:{"cards":12,"skel":0,"busy":"false","status":"","first":"A1White sage"}
+    15s:{"cards":12,"skel":0,"busy":"false","status":"","first":"A1White sage"}
+## B fresh, feed hangs (timeout 4s for test) calls 1 errs none
+    1s:{"cards":3,"skel":0,"busy":"false","status":"","first":"A1Woolly Blue Curls"}
+    3s:{"cards":3,"skel":0,"busy":"false","status":"","first":"A1Woolly Blue Curls"}
+    6s:{"cards":3,"skel":0,"busy":"false","status":"","first":"A1Woolly Blue Curls"}
+    9s:{"cards":3,"skel":0,"busy":"false","status":"","first":"A1Woolly Blue Curls"}
+    12s:{"cards":3,"skel":0,"busy":"false","status":"","first":"A1Woolly Blue Curls"}
+## C fresh, 1st reply {ok:false}, retry ok calls 1 errs none
+    1s:{"cards":3,"skel":0,"busy":"false","status":"Live stock is unavailable right now — showing our offline pl","first":"A1Woolly Blue Curls"}
+    3s:{"cards":3,"skel":0,"busy":"false","status":"Live stock is unavailable right now — showing our offline pl","first":"A1Woolly Blue Curls"}
+    6s:{"cards":3,"skel":0,"busy":"false","status":"Live stock is unavailable right now — showing our offline pl","first":"A1Woolly Blue Curls"}
+    9s:{"cards":3,"skel":0,"busy":"false","status":"Live stock is unavailable right now — showing our offline pl","first":"A1Woolly Blue Curls"}
+## C2 fresh, 1st reply fallback:true short, retry ok calls 1 errs none
+    1s:{"cards":5,"skel":0,"busy":"false","status":"","first":"A1White sage"}
+    3s:{"cards":5,"skel":0,"busy":"false","status":"","first":"A1White sage"}
+    6s:{"cards":5,"skel":0,"busy":"false","status":"","first":"A1White sage"}
+    9s:{"cards":5,"skel":0,"busy":"false","status":"","first":"A1White sage"}
+## D0 warm the cache calls 1 errs none
+    3s:{"cards":12,"skel":0,"busy":"false","status":"","first":"A1White sage"}
+## D1 cached, feed returns 5 plants (no flag) twice calls 1 errs none
+    1s:{"cards":12,"skel":0,"busy":"false","status":"","first":"A1White sage"}
+    3s:{"cards":5,"skel":0,"busy":"false","status":"","first":"A1White sage"}
+    6s:{"cards":5,"skel":0,"busy":"false","status":"","first":"A1White sage"}
+    9s:{"cards":5,"skel":0,"busy":"false","status":"","first":"A1White sage"}
+## D2 cached, feed hangs calls 1 errs none
+    1s:{"cards":5,"skel":0,"busy":"false","status":"","first":"A1White sage"}
+    6s:{"cards":5,"skel":0,"busy":"false","status":"","first":"A1White sage"}
+    12s:{"cards":5,"skel":0,"busy":"false","status":"","first":"A1White sage"}
+## D3 cached, feed 500 calls 1 errs none
+    1s:{"cards":5,"skel":0,"busy":"false","status":"Couldn't refresh live stock — showing the list from 10/25/20","first":"A1White sage"}
+    4s:{"cards":5,"skel":0,"busy":"false","status":"Couldn't refresh live stock — showing the list from 10/25/20","first":"A1White sage"}
+## E fresh, feed 500 twice (no cache) calls 1 errs none
+    1s:{"cards":3,"skel":0,"busy":"false","status":"Live stock is unavailable right now — showing our offline pl","first":"A1Woolly Blue Curls"}
+    3s:{"cards":3,"skel":0,"busy":"false","status":"Live stock is unavailable right now — showing our offline pl","first":"A1Woolly Blue Curls"}
+    6s:{"cards":3,"skel":0,"busy":"false","status":"Live stock is unavailable right now — showing our offline pl","first":"A1Woolly Blue Curls"}

@@ -19,6 +19,10 @@
 .price { font-size:0.95rem; font-weight:600; color:var(--text); min-height:0; }
 .price:empty { display:none; }
 .inv-status { margin:0.5rem 1rem; padding:0.6rem 0.8rem; border-radius:8px; background:#fff7e0; color:#5c4a00; font-size:0.9rem; }
+.inv-status.loading { background:#f1f5ef; color:#4a5a4a; display:flex; align-items:center; gap:0.55rem; }
+.inv-status.loading::before { content:""; flex:none; width:14px; height:14px; border-radius:50%; border:2px solid #b9c8b5; border-top-color:#5f7a5b; animation:inv-spin .9s linear infinite; }
+@keyframes inv-spin { to { transform:rotate(360deg); } }
+@media (prefers-reduced-motion:reduce) { .inv-status.loading::before { animation:none; } }
 .skel { min-height:240px; background:linear-gradient(90deg,#f3f2ef 25%,#faf9f7 50%,#f3f2ef 75%); background-size:200% 100%; animation:sh 1.2s infinite; }
 @keyframes sh { to { background-position:-200% 0; } }
 @media (prefers-reduced-motion:reduce) { .skel { animation:none; } }
