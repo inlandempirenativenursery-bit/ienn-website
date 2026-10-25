@@ -18,3 +18,11 @@ Default stays `calochortus` (face-on, solid) until Eric picks.
 - `calochortus-side`: a side view based on Jepson's open bowl- or cup-shaped flower. Three broad wedge petals rise into a cup with slightly recurved tips. The front petal holds a frosted text plate and a nectary mark near its base. Two narrower sepals spread below and behind, and a short sage pedicel sits underneath. The flower uses the same translucent treatment as the glass variant.
 
 You can preview either one with `?teaser=now&teasershape=calochortus-glass` or `?teaser=now&teasershape=calochortus-side`.
+
+## Aster (Eric's pick, now the default: `STARTER_TEASER_SHAPE = "aster"`)
+
+Eric's reference image was used for style only. Nothing was copied or embedded from it, and its ring, text and yellow are not used.
+
+The aster is a bold, flat-graphic, face-on flower with 8 broad, overlapping lilac petals. Each petal has 4 soft scallops across its tip. Thin, darker-lilac lines radiate from the disk onto the petals. The large honey disk (`--honey`, the same color as Add to tray) has a slightly bumpy edge, and the Baloo heading and subline sit inside it in dark brown.
+
+The shape is built in `teaser.js` at runtime, so no large path data is stored. It keeps the same 3-D treatment as the other flowers: a darker-lilac offset edge, a drop shadow, a 6px press-sink and dismissal by tap or Escape.
