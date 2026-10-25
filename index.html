@@ -92,19 +92,28 @@
     section { padding: 2rem 1.25rem; }
     h2 { color: var(--sage-dark); margin-bottom: 0.75rem; font-size: 1.4rem; }
     .problem, .guide { margin-bottom: 1.5rem; }
-    .starter-teaser { position:fixed; left:0.6rem; right:0.6rem; z-index:99; max-width:560px; margin:0 auto; display:flex; align-items:center; gap:0.45rem;
-      background:var(--cream); border:1px solid #e2d8ec; border-left:4px solid var(--lilac); border-radius:12px; box-shadow:0 6px 18px rgba(74,90,74,.16);
-      padding:0.45rem 0.25rem 0.45rem 0.6rem; color:var(--sage-dark); font-size:0.8rem; line-height:1.35;
-      transform:translateY(calc(-100% - 90px)); opacity:0; transition:transform .45s cubic-bezier(.2,.8,.2,1), opacity .3s ease; }
-    .starter-teaser.in { transform:none; opacity:1; }
-    .starter-teaser.out { transform:translateY(calc(-100% - 90px)); opacity:0; }
-    .starter-teaser p { margin:0; flex:1; min-width:0; }
-    .starter-teaser b { color:var(--sage-dark); }
-    .starter-teaser span { color:#56604f; }
-    .starter-teaser .st-ic { flex:none; color:var(--sage-dark); }
-    .starter-teaser .st-x { flex:none; width:32px; height:36px; border:0; background:none; color:var(--sage-dark); font-size:1.35rem; line-height:1; border-radius:8px; cursor:pointer; }
-    .starter-teaser .st-x:focus-visible { outline:2px solid var(--sage); }
-    @media (prefers-reduced-motion: reduce) { .starter-teaser, .starter-teaser.out { transform:none; transition:opacity .25s linear; } }
+    /* Starter packs teaser: a big juicy honey button, same visual language as the card "Add to tray" button (shop.css .card .add: --honey fill, light inset top, --honey-edge bottom edge) */
+    .starter-teaser { position:fixed; left:0; right:0; margin:0 auto; z-index:99; width:min(92vw, 400px); display:block; text-align:center; cursor:pointer;
+      border:0; border-radius:999px; padding:0.6rem 1.4rem 0.75rem; font:inherit; color:#3b2a10; -webkit-tap-highlight-color:transparent; overflow:hidden;
+      background:linear-gradient(180deg, #f8d27c 0%, var(--honey,#e8b04b) 52%, #dc9f37 100%);
+      box-shadow:inset 0 2px 0 rgba(255,255,255,.6), inset 0 -3px 0 rgba(120,80,20,.12), 0 6px 0 var(--honey-edge,#b98a2e), 0 12px 24px rgba(110,75,20,.30);
+      opacity:0; transform:translateY(-140%); }
+    .starter-teaser::before { content:""; position:absolute; left:10%; right:10%; top:4px; height:42%; border-radius:999px; background:linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,0)); pointer-events:none; }
+    .starter-teaser .st-title { position:relative; display:block; font-family:"Dancing Script","Satisfy",cursive; font-weight:700; font-size:1.75rem; line-height:1.1; color:#3b2a10; text-shadow:0 1px 0 rgba(255,255,255,.45); }
+    .starter-teaser .st-sub { position:relative; display:block; margin-top:0.15rem; font-size:0.84rem; font-weight:600; line-height:1.3; color:#4a3a1c; }
+    .starter-teaser.in { opacity:1; transform:none; animation:st-drop .75s cubic-bezier(.2,.9,.3,1.2) both, st-pulse 2.4s ease-in-out .9s 2; }
+    .starter-teaser:active { transform:translateY(4px); box-shadow:inset 0 2px 0 rgba(255,255,255,.5), 0 2px 0 var(--honey-edge,#b98a2e), 0 6px 12px rgba(110,75,20,.25); animation:none; }
+    .starter-teaser:focus-visible { outline:3px solid var(--sage-dark); outline-offset:3px; }
+    .starter-teaser.out { animation:st-out .3s ease-in forwards; pointer-events:none; }
+    @keyframes st-drop { 0% { opacity:0; transform:translateY(-140%) scale(.9); } 60% { opacity:1; transform:translateY(8px) scale(1.02); } 80% { transform:translateY(-3px); } 100% { opacity:1; transform:none; } }
+    @keyframes st-pulse { 0%, 100% { transform:scale(1); } 50% { transform:scale(1.035); } }
+    @keyframes st-out { to { opacity:0; transform:scale(.6); } }
+    @media (prefers-reduced-motion: reduce) {
+      .starter-teaser { transform:none; transition:opacity .25s linear; }
+      .starter-teaser.in { animation:none; }
+      .starter-teaser:active { transform:none; }
+      .starter-teaser.out { animation:none; opacity:0; transition:opacity .2s linear; }
+    }
     .benefit-list { list-style:none; margin:0.75rem 0 0; padding:0; display:grid; grid-template-columns:1fr; gap:0.45rem; }
     .benefit-list li { display:flex; align-items:center; gap:0.6rem; background:var(--cream); border:1px solid #ebe6ef; border-radius:10px; padding:0.5rem 0.75rem; font-size:0.95rem; font-weight:600; color:var(--sage-dark); line-height:1.3; }
     .benefit-list .bn-ic { flex:none; color:var(--sage-dark); }
