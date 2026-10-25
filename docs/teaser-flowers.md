@@ -26,3 +26,9 @@ Eric's reference image was used for style only. Nothing was copied or embedded f
 The aster is a bold, flat-graphic, face-on flower with 8 broad, overlapping lilac petals. Each petal has 4 soft scallops across its tip. Thin, darker-lilac lines radiate from the disk onto the petals. The large honey disk (`--honey`, the same color as Add to tray) has a slightly bumpy edge, and the Baloo heading and subline sit inside it in dark brown.
 
 The shape is built in `teaser.js` at runtime, so no large path data is stored. It keeps the same 3-D treatment as the other flowers: a darker-lilac offset edge, a drop shadow, a 6px press-sink and dismissal by tap or Escape.
+
+### Aster, juicier pass (Eric: "soften the yellow, a little transparency, juicier")
+- **Disk:** soft buttery gold in a domed radial gradient (#fcefc4 → #f6d98a → #eac46c), with a soft white dome gloss. The subline text (#4a2c12) has a contrast of 7.6:1 against the darkest gold and 11:1 against the highlight.
+- **Transparency:** petals are about 88% opaque and the disk about 90%. Behind them, a backdrop blur is clipped to the flower's outline where the browser supports it. The 3-D edge is 9px deep and about 82% opaque. The text is HTML laid on top, so it stays crisp.
+- **Petals:** shading from the center to the tip makes them look plump, and each petal has a curved white sheen on its outer part. The drop shadow is softer and larger.
+- **Motion:** the flower springs in, scaling from 0.6 up to 1.08 and settling at 1 with a tiny wobble, then breathes slowly (scale 1 to 1.022 over 4.8s). A press squishes it (`translateY(6px) scale(.96)`) before dismissing. With `prefers-reduced-motion`, it simply appears, with no spring, breathing or squish.
