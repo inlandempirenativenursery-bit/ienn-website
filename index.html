@@ -114,8 +114,9 @@
        pill/card/leaf/badge use border-radius + box-shadow; packet/tag are clip-path shapes drawn on ::after, with the edge and shadow from filter:drop-shadow. */
     .starter-teaser.st-shape-card { border-radius:18px; padding:0.95rem 1.4rem 1.1rem; }
     .starter-teaser.st-shape-card::before { border-radius:14px; }
-    .starter-teaser.st-shape-leaf { width:min(90vw, 380px); border-radius:70% 10% 70% 10% / 90% 18% 90% 18%; padding:1.05rem 2.3rem 1.15rem; }
-    .starter-teaser.st-shape-leaf::before { left:12%; right:12%; border-radius:70% 10% 70% 10% / 90% 18% 90% 18%; }
+    .starter-teaser.st-shape-leaf { width:min(90vw, 360px); border-radius:75% 8% 75% 8% / 75% 14% 75% 14%; padding:1.3rem 3rem 1.45rem; }
+    .starter-teaser.st-shape-leaf::before { left:16%; right:10%; top:6px; height:36%; border-radius:75% 8% 75% 8% / 75% 14% 75% 14%; }
+    .starter-teaser.st-shape-leaf .st-title { font-size:1.5rem !important; line-height:1.05 !important; text-wrap:balance; }
     .starter-teaser.st-shape-badge { width:236px; height:236px; border-radius:50%; padding:1.4rem; display:flex; flex-direction:column; align-items:center; justify-content:center;
       outline:2px dashed rgba(255,255,255,.6); outline-offset:-11px; }
     .starter-teaser.st-shape-badge::before { left:18%; right:18%; top:8px; height:34%; }
@@ -127,7 +128,7 @@
       background:linear-gradient(180deg, rgba(255,255,255,.5) 0 2px, rgba(255,255,255,0) 2px), linear-gradient(0deg, rgba(0,0,0,.10) 0 3px, rgba(0,0,0,0) 3px), linear-gradient(180deg, var(--st-top) 0%, var(--st-mid) 52%, var(--st-bot) 100%); }
     .starter-teaser.st-shape-packet { width:min(86vw, 350px); padding:1.35rem 1.4rem 0.95rem; }
     .starter-teaser.st-shape-packet::after { clip-path:polygon(0.00% 9px, 5.56% 0, 11.11% 9px, 16.67% 0, 22.22% 9px, 27.78% 0, 33.33% 9px, 38.89% 0, 44.44% 9px, 50.00% 0, 55.56% 9px, 61.11% 0, 66.67% 9px, 72.22% 0, 77.78% 9px, 83.33% 0, 88.89% 9px, 94.44% 0, 100.00% 9px, 100% 100%, 0 100%); border-radius:0 0 10px 10px; }
-    .starter-teaser.st-shape-packet::before { top:16px; left:6%; right:6%; height:35%; border-radius:10px; }
+    .starter-teaser.st-shape-packet::before { top:16px; left:6%; right:6%; height:32%; border-radius:10px; opacity:.7; }
     .starter-teaser.st-shape-packet .st-title::after { content:""; display:block; width:56%; margin:0.35rem auto 0.1rem; border-top:2px dashed rgba(255,255,255,.55); }
     .starter-teaser.st-shape-tag { width:min(92vw, 390px); padding:0.75rem 1.2rem 0.85rem 3.1rem; }
     .starter-teaser.st-shape-tag::after { clip-path:polygon(34px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 34px 100%, 0 50%); }
