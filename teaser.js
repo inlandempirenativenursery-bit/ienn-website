@@ -92,7 +92,7 @@
   function seen() { try { return localStorage.getItem(KEY) === "1"; } catch (e) { return false; } }
   function mark() { try { localStorage.setItem(KEY, "1"); } catch (e) {} }
   if (!now && seen()) return;
-  var delay = now ? 0 : (typeof STARTER_TEASER_DELAY_MS === "number" ? STARTER_TEASER_DELAY_MS : 60000);
+  var delay = now ? 0 : (typeof STARTER_TEASER_DELAY_MS === "number" ? STARTER_TEASER_DELAY_MS : 30000);
   function busy() { return document.body.classList.contains("drawer-open") || document.querySelector(".ienn-promo, .confirm-modal:not([hidden]), #checkout:not([hidden])"); }
   function show() {
     if (busy()) { setTimeout(show, 1000); return; }   // wait until the drawer / pop-up is closed
