@@ -25,7 +25,11 @@
     function onKey(e) { if (e.key === "Escape" || e.key === "Esc") dismiss(false); }
     b.addEventListener("pointerdown", function () { if (!gone) b.classList.add("pressed"); });
     b.addEventListener("pointerleave", function () { if (!gone) b.classList.remove("pressed"); });
-    b.addEventListener("click", function () { dismiss(true); });   // also fires for Enter/Space
+    b.addEventListener("pointercancel", function () { if (!gone) b.classList.remove("pressed"); });
+    b.addEventListener("pointerup", function () { dismiss(true); });   // dismiss on release (mouse, pen, touch)
+    // touch: cancel the follow-up synthetic click so the tap never "falls through" to the plant grid underneath once the teaser fades
+    b.addEventListener("touchend", function (e) { if (e.cancelable) e.preventDefault(); dismiss(true); }, { passive: false });
+    b.addEventListener("click", function () { dismiss(true); });   // keyboard Enter/Space (and any click that still arrives)
     document.addEventListener("keydown", onKey);
   }
   function start() { setTimeout(show, delay); }
