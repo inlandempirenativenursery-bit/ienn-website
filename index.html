@@ -92,6 +92,150 @@
     section { padding: 2rem 1.25rem; }
     h2 { color: var(--sage-dark); margin-bottom: 0.75rem; font-size: 1.4rem; }
     .problem, .guide { margin-bottom: 1.5rem; }
+    /* Starter packs teaser: a big juicy 3-D button, same visual language as the card "Add to tray" button (shop.css .card .add:
+       solid fill, light inset top, darker bottom edge). Centered in the viewport. Color = STARTER_TEASER_COLOR (shop-settings.js). */
+    .starter-teaser { --st-top:#f8d27c; --st-mid:#e8b04b; --st-bot:#dc9f37; --st-edge:#b98a2e; --st-ink:#3b2a10; --st-sub:#4a3a1c; --st-glow:rgba(110,75,20,.30); --st-ts:rgba(255,255,255,.45);
+      position:fixed; inset:0; margin:auto; height:fit-content; z-index:99; width:min(92vw, 400px); display:block; text-align:center; cursor:pointer;
+      border:0; border-radius:999px; padding:0.6rem 1.4rem 0.75rem; font:inherit; color:var(--st-ink); -webkit-tap-highlight-color:transparent; overflow:hidden; touch-action:manipulation;
+      background:linear-gradient(180deg, var(--st-top) 0%, var(--st-mid) 52%, var(--st-bot) 100%);
+      box-shadow:inset 0 2px 0 rgba(255,255,255,.55), inset 0 -3px 0 rgba(0,0,0,.10), 0 6px 0 var(--st-edge), 0 12px 24px var(--st-glow);
+      opacity:0; transition:transform 120ms ease-out, box-shadow 120ms ease-out; }
+    .starter-teaser.st-lilac { --st-top:#d3bfe8; --st-mid:#ab8ecb; --st-bot:#9476b8; --st-edge:#6c5290; --st-ink:#2a1d3b; --st-sub:#34264a; --st-glow:rgba(80,55,110,.32); --st-ts:rgba(255,255,255,.35); }
+    .starter-teaser.st-sage { --st-top:#94a592; --st-mid:#6b7c6a; --st-bot:#5a6a59; --st-edge:#3b483b; --st-ink:#fff; --st-sub:#eef3ec; --st-glow:rgba(40,55,40,.32); --st-ts:rgba(0,0,0,.28); }
+    .starter-teaser.st-red { --st-top:#e2394f; --st-mid:#c8102e; --st-bot:#a50d22; --st-edge:#6f0816; --st-ink:#fff; --st-sub:#ffe9ec; --st-glow:rgba(110,10,25,.32); --st-ts:rgba(0,0,0,.28); }
+    .starter-teaser::before { content:""; position:absolute; left:5%; right:5%; top:3px; height:40%; border-radius:999px; background:linear-gradient(180deg, rgba(255,255,255,.38), rgba(255,255,255,0) 90%); pointer-events:none; }
+    .starter-teaser .st-title { position:relative; display:block; font-family:"Dancing Script","Satisfy",cursive; font-weight:700; font-size:1.75rem; line-height:1.1; color:var(--st-ink); text-shadow:0 1px 0 var(--st-ts); }
+    .starter-teaser .st-sub { position:relative; display:block; margin-top:0.15rem; font-size:0.82rem; text-wrap:balance; font-weight:600; line-height:1.3; color:var(--st-sub); }
+    .starter-teaser.in { opacity:1; animation:st-drop .75s cubic-bezier(.2,.9,.3,1.2) backwards, st-pulse 2.4s ease-in-out .9s 2; }
+    @media (hover:hover) { .starter-teaser.in:hover { transform:translateY(-2px); box-shadow:inset 0 2px 0 rgba(255,255,255,.6), inset 0 -3px 0 rgba(0,0,0,.10), 0 8px 0 var(--st-edge), 0 16px 28px var(--st-glow); } }
+    /* press: sinks by the edge height and the edge collapses, then dismisses (teaser.js) */
+    .starter-teaser.in:active, .starter-teaser.pressed { animation:none; transform:translateY(6px); box-shadow:inset 0 2px 0 rgba(255,255,255,.45), inset 0 -2px 0 rgba(0,0,0,.08), 0 0 0 var(--st-edge), 0 3px 8px var(--st-glow); }
+    /* Shapes = STARTER_TEASER_SHAPE (pill | card | leaf | badge | packet | tag). All keep the lilac gloss, thick bottom edge, press-sink.
+       pill/card/leaf/badge use border-radius + box-shadow; packet/tag are clip-path shapes drawn on ::after, with the edge and shadow from filter:drop-shadow. */
+    .starter-teaser.st-shape-card { border-radius:18px; padding:0.95rem 1.4rem 1.1rem; }
+    .starter-teaser.st-shape-card::before { border-radius:14px; }
+    .starter-teaser.st-shape-leaf { width:min(90vw, 360px); border-radius:75% 8% 75% 8% / 75% 14% 75% 14%; padding:1.3rem 3rem 1.45rem; }
+    .starter-teaser.st-shape-leaf::before { left:16%; right:10%; top:6px; height:36%; border-radius:75% 8% 75% 8% / 75% 14% 75% 14%; }
+    .starter-teaser.st-shape-leaf .st-title { font-size:1.5rem !important; line-height:1.05 !important; text-wrap:balance; }
+    .starter-teaser.st-shape-badge { width:236px; height:236px; border-radius:50%; padding:1.4rem; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      outline:2px dashed rgba(255,255,255,.6); outline-offset:-11px; }
+    .starter-teaser.st-shape-badge::before { left:18%; right:18%; top:8px; height:34%; }
+    .starter-teaser.st-shape-badge .st-title { font-size:1.55rem !important; line-height:1.05 !important; text-wrap:balance; }
+    .starter-teaser.st-shape-badge .st-sub { margin-top:0.35rem; font-size:0.78rem; }
+    .starter-teaser.st-shape-packet, .starter-teaser.st-shape-tag { background:none; border-radius:0; overflow:visible; box-shadow:none;
+      filter:drop-shadow(0 6px 0 var(--st-edge)) drop-shadow(0 10px 12px var(--st-glow)); transition:transform 120ms ease-out, filter 120ms ease-out; }
+    .starter-teaser.st-shape-packet::after, .starter-teaser.st-shape-tag::after { content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+      background:linear-gradient(180deg, rgba(255,255,255,.5) 0 2px, rgba(255,255,255,0) 2px), linear-gradient(0deg, rgba(0,0,0,.10) 0 3px, rgba(0,0,0,0) 3px), linear-gradient(180deg, var(--st-top) 0%, var(--st-mid) 52%, var(--st-bot) 100%); }
+    .starter-teaser.st-shape-packet { width:min(86vw, 350px); padding:1.35rem 1.4rem 0.95rem; }
+    .starter-teaser.st-shape-packet::after { clip-path:polygon(0.00% 9px, 5.56% 0, 11.11% 9px, 16.67% 0, 22.22% 9px, 27.78% 0, 33.33% 9px, 38.89% 0, 44.44% 9px, 50.00% 0, 55.56% 9px, 61.11% 0, 66.67% 9px, 72.22% 0, 77.78% 9px, 83.33% 0, 88.89% 9px, 94.44% 0, 100.00% 9px, 100% 100%, 0 100%); border-radius:0 0 10px 10px; }
+    .starter-teaser.st-shape-packet::before { top:16px; left:6%; right:6%; height:32%; border-radius:10px; opacity:.7; }
+    .starter-teaser.st-shape-packet .st-title::after { content:""; display:block; width:56%; margin:0.35rem auto 0.1rem; border-top:2px dashed rgba(255,255,255,.55); }
+    .starter-teaser.st-shape-tag { width:min(92vw, 390px); padding:0.75rem 1.2rem 0.85rem 3.1rem; }
+    .starter-teaser.st-shape-tag::after { clip-path:polygon(34px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 34px 100%, 0 50%); }
+    .starter-teaser.st-shape-tag::before { left:40px; right:4%; border-radius:8px; }
+    .starter-teaser .st-hole { display:none; }
+    .starter-teaser.st-shape-tag .st-hole { display:block; position:absolute; left:20px; top:50%; width:13px; height:13px; margin-top:-6.5px; border-radius:50%;
+      background:#fbf9fc; box-shadow:inset 0 2px 3px rgba(40,25,60,.45), 0 1px 0 rgba(255,255,255,.5); }
+    @media (hover:hover) { .starter-teaser.in.st-shape-packet:hover, .starter-teaser.in.st-shape-tag:hover { transform:translateY(-2px); box-shadow:none; filter:drop-shadow(0 8px 0 var(--st-edge)) drop-shadow(0 14px 16px var(--st-glow)); } }
+    .starter-teaser.st-shape-packet.in:active, .starter-teaser.st-shape-packet.pressed, .starter-teaser.st-shape-tag.in:active, .starter-teaser.st-shape-tag.pressed {
+      box-shadow:none; filter:drop-shadow(0 0 0 var(--st-edge)) drop-shadow(0 3px 5px var(--st-glow)); }
+    /* Flower outlines (calochortus | salvia | trichostema): SVG silhouette; edge = copy of the flower 6px lower; only the painted flower is clickable. */
+    .starter-teaser.st-flowerish { background:none; box-shadow:none; border-radius:0; padding:0; overflow:visible; pointer-events:none; outline:none; }
+    .starter-teaser.st-flowerish::before, .starter-teaser.st-flowerish::after { display:none; }
+    .starter-teaser.st-flowerish:focus-visible { outline:3px solid var(--sage-dark); outline-offset:3px; }
+    .st-flower { display:block; height:auto; overflow:visible; filter:drop-shadow(0 10px 10px var(--st-glow)); transition:filter 120ms ease-out; }
+    .st-flower .st-edge, .st-flower .st-face { pointer-events:visiblePainted; cursor:pointer; }
+    .st-flower .st-edge { transform:translateY(6px); transition:transform 120ms ease-out; }
+    .st-flower .fl-edge { fill:var(--st-edge); }
+    .st-flower .fl-edge-s { fill:none; stroke:var(--st-edge); stroke-width:6; stroke-linecap:round; }
+    .st-flower .fl-petal { fill:url(#stf-g); stroke:rgba(255,255,255,.35); stroke-width:1.2; }
+    .st-flower .fl-sepal { fill:var(--st-bot); stroke:rgba(255,255,255,.25); stroke-width:1; }
+    .st-flower .fl-center { fill:#f3ecf9; stroke:var(--st-mid); stroke-width:2; }
+    .st-flower .fl-mark { fill:var(--st-edge); opacity:.55; }
+    .st-flower .fl-calyx { fill:#7d8e7b; stroke:#5a6a59; stroke-width:1.2; }
+    .st-flower .fl-stamen { fill:none; stroke:var(--st-mid); stroke-width:5; stroke-linecap:round; }
+    .st-flower .fl-anther { fill:var(--st-edge); }
+    .starter-teaser .st-textbox { position:absolute; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; text-align:center; }
+    .st-flowerish .st-title { font-size:1.28rem !important; line-height:1.05 !important; text-wrap:balance; }
+    .st-flowerish .st-sub { font-size:0.72rem; line-height:1.25; margin-top:0.25rem; text-wrap:balance; }
+    .st-shape-calochortus .st-title, .st-shape-calochortus .st-sub { color:#2a1d3b; text-shadow:none; }
+    @media (hover:hover) { .starter-teaser.in.st-flowerish:hover { box-shadow:none; } .starter-teaser.in.st-flowerish:hover .st-flower { filter:drop-shadow(0 14px 14px var(--st-glow)); } }
+    .starter-teaser.st-flowerish.in:active, .starter-teaser.st-flowerish.pressed { box-shadow:none; }
+    .starter-teaser.st-flowerish.pressed .st-edge, .starter-teaser.st-flowerish.in:active .st-edge { transform:none; }
+    .starter-teaser.st-flowerish.pressed .st-flower { filter:drop-shadow(0 3px 4px var(--st-glow)); }
+    /* Glass lily (calochortus-glass | calochortus-side): translucent petals/sepals, thin darker outline, semi-transparent edge, frosted cream text backing. */
+    .st-glass .st-blur { position:absolute; left:0; top:0; width:100%; height:100%; pointer-events:none; -webkit-mask-size:100% 100%; mask-size:100% 100%; -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
+      -webkit-backdrop-filter:blur(7px) saturate(1.15); backdrop-filter:blur(7px) saturate(1.15); }
+    .st-flowerish .st-flower { position:relative; }
+    .st-glass .st-flower { filter:drop-shadow(0 8px 10px rgba(80,55,110,.22)); }
+    .st-glass .st-edge { opacity:.42; }
+    .st-glass .fl-petal { fill-opacity:.62; stroke:var(--st-edge); stroke-opacity:.75; stroke-width:1.6; }
+    .st-glass .fl-sepal { fill-opacity:.5; stroke:var(--st-edge); stroke-opacity:.6; stroke-width:1.3; }
+    .st-glass .fl-center { fill:#fbf7fd; fill-opacity:.82; stroke:var(--st-edge); stroke-opacity:.45; stroke-width:1.4; }
+    .st-glass .fl-mark { opacity:.4; }
+    .st-glass .fl-calyx { fill-opacity:.75; }
+    .st-shape-calochortus-glass .st-title, .st-shape-calochortus-glass .st-sub, .st-shape-calochortus-side .st-title, .st-shape-calochortus-side .st-sub { color:#2a1d3b; text-shadow:0 1px 0 rgba(255,255,255,.5); }
+    /* Aster (Eric's pick): lilac petals with plump inner shading + curved sheen, soft buttery-gold domed disk, dark-brown Baloo text.
+       Whole flower ~88% opaque over a backdrop blur (where supported); the 3-D edge is deeper and a little translucent. Text is HTML on top, so it stays crisp. */
+    .st-shape-aster .fl-petal { fill:url(#stf-pr); fill-opacity:.88; stroke:#8f72b5; stroke-opacity:.55; stroke-width:1.4; stroke-linejoin:round; }
+    .st-shape-aster .fl-sheen { fill:url(#stf-sh); pointer-events:none; }
+    .st-shape-aster .fl-mark { fill:var(--st-edge); opacity:.5; }
+    .st-shape-aster .fl-disk { fill:url(#stf-dk); fill-opacity:.9; stroke:#d4b05a; stroke-width:2.2; }
+    .st-shape-aster .fl-dome { fill:url(#stf-sh); opacity:.8; pointer-events:none; }
+    .st-shape-aster .st-edge { transform:translateY(9px); opacity:.82; }
+    .st-shape-aster .st-flower { filter:drop-shadow(0 18px 24px rgba(80,55,110,.26)) drop-shadow(0 4px 6px rgba(80,55,110,.18)); }
+    .st-frost .st-blur { position:absolute; left:0; top:0; width:100%; height:100%; pointer-events:none; -webkit-mask-size:100% 100%; mask-size:100% 100%; -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
+      -webkit-backdrop-filter:blur(6px) saturate(1.1); backdrop-filter:blur(6px) saturate(1.1); }
+    .st-shape-aster .st-title, .st-shape-aster .st-sub { color:#4a2c12; text-shadow:0 1px 0 rgba(255,255,255,.35); }
+    .st-shape-aster .st-title { font-size:1.18rem !important; }
+    .starter-teaser .st-nw { white-space:nowrap; }
+    .st-shape-aster .st-sub { font-size:0.74rem; font-weight:600; }
+    /* Aster: toned-down whites (Eric): faint sheens, faint top-edge glow on the disk, and the shared top gloss kept off the text. */
+    .st-shape-aster .fl-dome { opacity:.45; }
+    .st-shape-aster .fl-under { fill:var(--st-mid); }
+    .st-juicy.pop .k-under { opacity:0; transition:opacity .12s linear; }
+    .st-shape-aster .st-face > rect { opacity:.3; }
+    /* Pop on dismiss (tap/click/Escape): squish ~90ms, then petals fly out + spin + shrink, disk swells 1.15 and fades, confetti drifts out. ~550ms. */
+    .st-juicy .st-flower path, .st-juicy .st-flower ellipse { transform-box:fill-box; transform-origin:center; }
+    .starter-teaser.st-juicy.pop { opacity:1; animation:none; transform:translateY(3px); pointer-events:none; }
+    .st-juicy.pop .st-flower { filter:none; }
+    .st-juicy.pop .st-blur, .st-juicy.pop .k-mark, .st-juicy.pop .k-sheen { opacity:0; transition:opacity .12s linear; }
+    .st-juicy.pop .k-petal { transform:translate(var(--px), var(--py)) rotate(var(--pr)) scale(.55); opacity:0; transition:transform .5s cubic-bezier(.15,.75,.3,1), opacity .42s ease-in .08s; }
+    .st-juicy.pop .k-disk, .st-juicy.pop .k-dome { transform:scale(1.15); opacity:0; transition:transform .26s cubic-bezier(.2,.8,.3,1.4), opacity .22s ease-in .1s; }
+    .st-juicy.pop .st-edge .k-disk { opacity:0; transition:opacity .1s linear; }
+    .st-juicy.pop .st-textbox { transform:scale(1.15); opacity:0; transition:transform .26s ease-out, opacity .2s ease-in .06s; }
+    .st-confetti { position:absolute; left:50%; top:50%; width:10px; height:10px; margin:-5px 0 0 -5px; border-radius:50%; pointer-events:none; opacity:0; animation:st-conf .55s cubic-bezier(.2,.7,.3,1) forwards; }
+    .st-confetti.st-mini { width:8px; height:15px; margin:-7px 0 0 -4px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; }
+    @keyframes st-conf { 0% { opacity:1; transform:translate(var(--sx), var(--sy)) scale(.5); } 70% { opacity:.9; } 100% { opacity:0; transform:translate(var(--tx), var(--ty)) rotate(var(--cr)) scale(1); } }
+    /* Juicy motion: springy scale-up with a tiny wobble, then a slow, subtle breathing pulse; press sinks with a squish. */
+    .starter-teaser.st-juicy.in { animation:st-spring .9s cubic-bezier(.3,.7,.4,1) backwards, st-breathe 4.8s ease-in-out .9s infinite; transform-origin:50% 55%; }
+    .starter-teaser.st-juicy.in:active, .starter-teaser.st-juicy.pressed { animation:none; transform:translateY(6px) scale(.96); transition:transform 110ms ease-out; }
+    .starter-teaser.st-juicy.pressed .st-edge, .starter-teaser.st-juicy.in:active .st-edge { transform:translateY(1px); }
+    .starter-teaser.st-juicy.pressed .st-flower { filter:drop-shadow(0 4px 6px rgba(80,55,110,.22)); }
+    @media (hover:hover) { .starter-teaser.st-juicy.in:hover { animation-play-state:running; } .starter-teaser.st-juicy.in:hover .st-flower { filter:drop-shadow(0 22px 28px rgba(80,55,110,.28)) drop-shadow(0 4px 6px rgba(80,55,110,.18)); } }
+    .starter-teaser.st-juicy.out { animation:st-out .28s ease-in forwards; }
+    @keyframes st-spring { 0% { opacity:0; transform:scale(.6) rotate(-4deg); } 45% { opacity:1; transform:scale(1.08) rotate(2deg); } 62% { transform:scale(.97) rotate(-1.2deg); } 78% { transform:scale(1.02) rotate(.5deg); } 90% { transform:scale(.995) rotate(-.2deg); } 100% { opacity:1; transform:none; } }
+    @keyframes st-breathe { 0%, 100% { transform:scale(1); } 50% { transform:scale(1.022); } }
+    @media (prefers-reduced-motion: reduce) {
+      .starter-teaser.st-juicy.in { animation:none; }
+      .starter-teaser.st-juicy.in:active, .starter-teaser.st-juicy.pressed { transform:none; transition:none; }
+      .starter-teaser.st-juicy.out { animation:none; opacity:0; }
+    }
+    .starter-teaser:focus-visible { outline:3px solid var(--sage-dark); outline-offset:3px; }
+    .starter-teaser.out { animation:st-out .28s ease-in forwards; pointer-events:none; }
+    @keyframes st-drop { 0% { opacity:0; transform:translateY(-60px) scale(.9); } 60% { opacity:1; transform:translateY(8px) scale(1.02); } 80% { transform:translateY(-3px); } 100% { opacity:1; transform:none; } }
+    @keyframes st-pulse { 0%, 100% { transform:scale(1); } 50% { transform:scale(1.035); } }
+    @keyframes st-out { from { opacity:1; transform:translateY(6px); } to { opacity:0; transform:translateY(6px) scale(.6); } }
+    @media (prefers-reduced-motion: reduce) {
+      .starter-teaser { transition:opacity .2s linear, box-shadow 80ms linear; }
+      .starter-teaser.in { animation:none; }
+      .starter-teaser.in:hover, .starter-teaser.in:active, .starter-teaser.pressed { transform:none; }
+      .starter-teaser.out { animation:none; opacity:0; }
+    }
+    .benefit-list { list-style:none; margin:0.75rem 0 0; padding:0; display:grid; grid-template-columns:1fr; gap:0.45rem; }
+    .benefit-list li { display:flex; align-items:center; gap:0.6rem; background:var(--cream); border:1px solid #ebe6ef; border-radius:10px; padding:0.5rem 0.75rem; font-size:0.95rem; font-weight:600; color:var(--sage-dark); line-height:1.3; }
+    .benefit-list .bn-ic { flex:none; color:var(--sage-dark); }
+    @media (min-width: 700px) { .benefit-list { grid-template-columns:1fr 1fr; } .benefit-list li:last-child { grid-column:1 / -1; justify-self:center; } }
     .plan-steps {
       display: flex;
       flex-direction: column;
@@ -140,7 +284,7 @@
     .ig-top { min-width:44px; flex-shrink:0; justify-content:center; color:var(--sage-dark); font-weight:600; font-size:0.85rem; text-decoration:none; }
     @media (max-width: 480px) { .ig-top-text { display:none; } .ig-top svg { width:22px; height:22px; } }
   </style>
-  <link rel="stylesheet" href="shop.css?v=1f723dc">
+  <link rel="stylesheet" href="shop.css?v=f26275f">
   <style>
     .shop { max-width:1080px; margin:0 auto; padding:0; }
     .shop .inv-status[hidden] { display:none; }
@@ -220,18 +364,18 @@
   </div>
 
   <section class="problem">
-    <h2>Tired of plants that don’t make it?</h2>
-    <p>Big-box plants often fail in our hot, dry Inland Empire climate. You waste money, water, and time on plants that were never meant for this place.</p>
+    <h2>Plants keep dying in this heat?</h2>
+    <p>Store-bought plants aren’t grown for 105° summers. Skip the dead plants, high water bills and starting over.</p>
   </section>
 
   <section class="guide">
-    <h2>We’re local growers who get it</h2>
-    <p>IENN focuses on California native plants suited to the Inland Empire. We grow them so you can plant with confidence.</p>
+    <h2>Proven plants, hand-picked</h2>
+    <p>Years of growing in Inland Empire yards shaped this collection. We grow what works here, so you can too.</p>
     <p style="margin-top:0.75rem; font-style:italic; color:#666; font-size:0.9rem;">Pickup-only • Fontana area</p>
   </section>
 
   <section class="plan">
-    <h2>Simple 3-step plan</h2>
+    <h2>Easy as 1, 2, 3</h2>
     <div class="plan-steps">
       <div class="step">
         <div class="step-number">1</div>
@@ -248,18 +392,19 @@
     </div>
   </section>
 
-  <section class="success">
-    <h2>What success looks like</h2>
-    <p>Plants that actually thrive in the Inland Empire — less water, fewer replacements, and a landscape that fits the place.</p>
-  </section>
-
-  <section class="failure">
-    <h2>Skip the frustration</h2>
-    <p>Avoid dead plants, high water bills, and the cycle of replacing things that were never a good fit.</p>
+  <section class="benefits" aria-labelledby="benefits-title">
+    <h2 id="benefits-title">A yard that loves the heat</h2>
+    <ul class="benefit-list">
+      <li><svg class="bn-ic" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4" fill="#d4c4e0" stroke="currentColor" stroke-width="1.8"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg><span>Made for our climate</span></li>
+      <li><svg class="bn-ic" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path fill="#d4c4e0" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M12 3c3 4 5.5 7 5.5 10.2A5.5 5.5 0 0 1 6.5 13.2C6.5 10 9 7 12 3z"/></svg><span>Less water, fertilizer and upkeep</span></li>
+      <li><svg class="bn-ic" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path fill="#d4c4e0" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M11.3 11C9.8 6 4.8 4.4 3.3 6.2c-1.2 1.6.4 5 3.1 5.8 1.8.5 3.6.1 4.9-1zM12.7 11c1.5-5 6.5-6.6 8-4.8 1.2 1.6-.4 5-3.1 5.8-1.8.5-3.6.1-4.9-1zM11.4 12.2c-1.6.4-4.5 2-4.3 4.2.2 1.8 2.7 2 4.3-.6zM12.6 12.2c1.6.4 4.5 2 4.3 4.2-.2 1.8-2.7 2-4.3-.6z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 8v10M12 8l-1.5-3M12 8l1.5-3"/></svg><span>Brings in butterflies, birds and bees</span></li>
+      <li><svg class="bn-ic" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path fill="#d4c4e0" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M5 19c0-8 5-14 14-14 0 9-6 14-14 14z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M5 19l8-8"/></svg><span>Fits any style: modern, Japanese or formal</span></li>
+      <li><svg class="bn-ic" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path fill="#d4c4e0" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg><span>Stands out from the same old plants</span></li>
+    </ul>
   </section>
 
   <section class="cta-section" id="order">
-    <h2 style="color:var(--sage-dark);">Ready to plant something that works here?</h2>
+    <h2 style="color:var(--sage-dark);">Ready to grow the difference?</h2>
     <p style="margin:0.75rem 0 1.25rem;">Add plants to your tray above, then check out.</p>
     <p><a href="#plants" style="color:var(--sage-dark);font-weight:700;">See all plants ↑</a></p>
     <p class="disclaimer">Availability varies by season and stock • Local pickup only (Fontana area); Cash or Zelle at time of pickup • Plant care and native-planting info is general guidance • Photos are representative.</p>
@@ -271,13 +416,14 @@
     <p style="margin-top:0.5rem;font-size:0.75rem;"><a href="credits.html">Photo credits</a></p>
   </footer>
   <script>window.IENN_PROMO_OPTS = { cta: "Shop now", onShop: function () { var g = document.getElementById("plant-list"); if (g) g.scrollIntoView({ behavior: "smooth" }); } };</script>
-  <script src="promo.js?v=1f723dc"></script>
-  <script src="plant-photos.js?v=1f723dc"></script>
-  <script src="feed-order.js?v=1f723dc"></script>
-  <script src="stock-view.js?v=1f723dc"></script>
-  <script src="shop-settings.js?v=1f723dc"></script>
-  <script src="data/plant-basics.js?v=1f723dc"></script>
-  <script src="shop.js?v=1f723dc"></script>
+  <script src="promo.js?v=f26275f"></script>
+  <script src="plant-photos.js?v=f26275f"></script>
+  <script src="feed-order.js?v=f26275f"></script>
+  <script src="stock-view.js?v=f26275f"></script>
+  <script src="shop-settings.js?v=f26275f"></script>
+  <script src="data/plant-basics.js?v=f26275f"></script>
+  <script src="shop.js?v=f26275f"></script>
   <script>document.getElementById("printlist-link").href = APPS_SCRIPT_URL + "?view=print";</script>
-  <script src="site-links.js?v=1f723dc"></script>
+  <script src="site-links.js?v=f26275f"></script>
+  <script src="teaser.js?v=f26275f"></script>
 </body></html>
