@@ -1,7 +1,7 @@
 /* "Starter packs coming soon" teaser (index.html only): a big juicy 3-D button centered in the viewport.
    Shows after STARTER_TEASER_DELAY_MS (shop-settings.js), once per visitor; color from STARTER_TEASER_COLOR ("honey" | "lilac" | "sage" | "red").
    Waits while the checkout drawer, promo or a dialog is open. Press anywhere on it: it sinks (~120ms), then shrinks/fades away. Escape also dismisses.
-   Heading font from STARTER_TEASER_FONT (only that one Google Font loads). Preview: ?teaser=now (ignores the seen flag), optional &teasercolor=lilac &teaserfont=fredoka &teasershape=leaf (STARTER_TEASER_SHAPE). No email capture, prices or pack names. */
+   Heading font from STARTER_TEASER_FONT (only that one Google Font loads). Preview: ?teaser=now (ignores the seen flag), optional &teasercolor=lilac &teaserfont=fredoka &teasershape=leaf (STARTER_TEASER_SHAPE; flowers: calochortus, salvia, trichostema). No email capture, prices or pack names. */
 (function () {
   var KEY = "ienn-starter-teaser-seen", q = location.search, now = /[?&]teaser=now\b/.test(q);
   var COLORS = ["honey", "lilac", "sage", "red"], m = /[?&]teasercolor=([a-z]+)/.exec(q);
@@ -22,8 +22,34 @@
     var done = false; function go() { if (!done) { done = true; cb(); } } setTimeout(go, 1500);
     try { var fam = FONT.family.split(",")[0]; (function poll(n) { if (document.fonts && document.fonts.check(FONT.weight + " 20px " + fam)) return go(); if (n > 0) setTimeout(function () { poll(n - 1); }, 100); })(14); } catch (e) { go(); }
   }
-  var SHAPES = ["pill", "card", "leaf", "badge", "packet", "tag"], sm = /[?&]teasershape=([a-z]+)/.exec(q);
+  /* Flower outlines (simplified from the Jepson eFlora genus descriptions; see docs/teaser-flowers.md). Drawn as SVG:
+     an edge copy offset 6px below (the thick 3-D edge), the face (lilac gradient), a clipped gloss band, then the text box on top.
+     parts: [kind, geometry]; text: [x, y, w, h] box in viewBox units; w: rendered width in px. */
+  var FLOWERS = {"calochortus":{"parts":[["sepal","M 273.0,184.4 C 310.2,132.9 361.8,126.2 394.5,135.0 C 385.8,167.8 354.2,209.1 291.0,215.6 Z"],["sepal","M 248.0,290.0 C 274.0,348.0 254.0,396.0 230.0,420.0 C 206.0,396.0 186.0,348.0 212.0,290.0 Z"],["sepal","M 169.0,215.6 C 105.8,209.1 74.2,167.8 65.5,135.0 C 98.2,126.2 149.8,132.9 187.0,184.4 Z"],["petal","M 196.0,160.0 C 146.0,120.0 112.0,70.0 138.0,36.0 C 170.0,2.0 290.0,2.0 322.0,36.0 C 348.0,70.0 314.0,120.0 264.0,160.0 Z"],["petal","M 307.6,235.6 C 367.3,212.3 427.6,207.8 444.0,247.3 C 457.5,292.0 397.5,396.0 352.0,406.7 C 309.6,412.2 283.3,357.7 273.6,294.4 Z"],["petal","M 186.4,294.4 C 176.7,357.7 150.4,412.2 108.0,406.7 C 62.5,396.0 2.5,292.0 16.0,247.3 C 32.4,207.8 92.7,212.3 152.4,235.6 Z"],["circle","230,230,110"],["mark","M 210.0,108.0 Q 230.0,120.0 250.0,108.0 Q 230.0,90.0 210.0,108.0 Z"],["mark","M 345.7,273.7 Q 325.3,285.0 325.7,308.3 Q 351.2,300.0 345.7,273.7 Z"],["mark","M 134.3,308.3 Q 134.7,285.0 114.3,273.7 Q 108.8,300.0 134.3,308.3 Z"]],"text":[138,168,184,124],"vb":[-6,-6,471,440],"w":340},"salvia":{"parts":[["calyx","M 12,176 C 22,152 56,146 82,150 L 86,190 C 58,198 26,196 12,176 Z"],["petal","M 74,150 C 104,140 128,128 146,116 L 168,172 C 136,186 104,192 76,192 Z"],["petal","M 128,128 C 138,70 190,30 246,38 C 288,44 304,78 296,106 C 272,98 246,98 222,106 C 192,118 168,130 152,142 Z"],["ellipse","140,170,40,30,-20"],["ellipse","326,156,34,28,25"],["ellipse","222,212,112,80,0"],["stamen","M 160,146 Q 200,116 250,104"],["stamen","M 164,152 Q 206,124 258,114"]],"text":[132,166,180,100],"vb":[4,22,364,316],"w":340},"trichostema":{"parts":[["ellipse","112,140,30,20,-30"],["ellipse","150,120,30,20,-12"],["ellipse","212,120,30,20,12"],["ellipse","250,140,30,20,30"],["petal","M 140,150 C 150,128 212,128 222,150 Z"],["ellipse","181,222,124,76,0"],["stamen","M 169,140 C 165,56 96,14 48,30 C 32,42 28,70 46,84"],["anther","46,84,6"],["stamen","M 177,140 C 173,53 112,12 64,32 C 40,44 36,71 54,84"],["anther","54,84,6"],["stamen","M 185,140 C 181,50 128,10 80,34 C 48,46 44,72 62,84"],["anther","62,84,6"],["stamen","M 193,140 C 189,47 144,8 96,36 C 56,48 52,73 70,84"],["anther","70,84,6"]],"text":[101,180,160,90],"vb":[20,0,293,360],"w":300}};
+  var SHAPES = ["pill", "card", "leaf", "badge", "packet", "tag", "calochortus", "salvia", "trichostema"], sm = /[?&]teasershape=([a-z]+)/.exec(q);
   var shape = (sm && SHAPES.indexOf(sm[1]) >= 0) ? sm[1] : (typeof STARTER_TEASER_SHAPE === "string" && SHAPES.indexOf(STARTER_TEASER_SHAPE) >= 0 ? STARTER_TEASER_SHAPE : "pill");
+  function flowerSVG(f) {
+    var NS = 'xmlns="http://www.w3.org/2000/svg"', vb = f.vb, out = [], clip = [];
+    function el(kind, g, cls) {
+      if (kind === "circle" || kind === "anther") { var c = g.split(","); return '<circle class="' + cls + '" cx="' + c[0] + '" cy="' + c[1] + '" r="' + c[2] + '"/>'; }
+      if (kind === "ellipse") { var e = g.split(","); return '<ellipse class="' + cls + '" cx="' + e[0] + '" cy="' + e[1] + '" rx="' + e[2] + '" ry="' + e[3] + '" transform="rotate(' + e[4] + " " + e[0] + " " + e[1] + ')"/>'; }
+      return '<path class="' + cls + '" d="' + g + '"/>';
+    }
+    var edge = [], face = [];
+    f.parts.forEach(function (p) {
+      var k = p[0], fill = k === "stamen" ? "fl-stamen" : k === "calyx" ? "fl-calyx" : k === "sepal" ? "fl-sepal" : k === "circle" ? "fl-center" : k === "mark" ? "fl-mark" : k === "anther" ? "fl-anther" : "fl-petal";
+      if (k !== "mark") edge.push(el(k, p[1], k === "stamen" ? "fl-edge-s" : "fl-edge"));
+      face.push(el(k, p[1], fill));
+      if (k === "petal" || k === "ellipse" || k === "circle" || k === "sepal") clip.push(el(k, p[1], ""));
+    });
+    var gy = vb[1], gh = vb[3] * 0.42;
+    return '<svg class="st-flower" ' + NS + ' viewBox="' + vb.join(" ") + '" width="' + f.w + '" aria-hidden="true" focusable="false">' +
+      '<defs><linearGradient id="stf-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--st-top)"/><stop offset=".55" style="stop-color:var(--st-mid)"/><stop offset="1" style="stop-color:var(--st-bot)"/></linearGradient>' +
+      '<linearGradient id="stf-gl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
+      '<clipPath id="stf-c">' + clip.join("") + '</clipPath></defs>' +
+      '<g class="st-edge">' + edge.join("") + '</g><g class="st-face">' + face.join("") +
+      '<rect x="' + vb[0] + '" y="' + gy + '" width="' + vb[2] + '" height="' + gh + '" fill="url(#stf-g)" style="fill:url(#stf-gl)" clip-path="url(#stf-c)" pointer-events="none"/></g></svg>';
+  }
   function seen() { try { return localStorage.getItem(KEY) === "1"; } catch (e) { return false; } }
   function mark() { try { localStorage.setItem(KEY, "1"); } catch (e) {} }
   if (!now && seen()) return;
@@ -34,6 +60,13 @@
     var b = document.createElement("button"); b.type = "button"; b.className = "starter-teaser st-" + color + " st-font-" + fontKey + " st-shape-" + shape;
     b.setAttribute("aria-label", "Starter packs coming soon. Plants grouped to grow well together and fill in fast. Tap to dismiss");
     b.innerHTML = '<span class="st-hole" aria-hidden="true"></span><span class="st-title" aria-hidden="true">Starter packs coming soon</span><span class="st-sub" aria-hidden="true">Plants grouped to grow well together and fill in fast.</span>';
+    var fl = FLOWERS[shape];
+    if (fl) {   // flower outline: SVG silhouette is the hit area; text box placed over the flower's broad part
+      b.classList.add("st-flowerish"); b.insertAdjacentHTML("afterbegin", flowerSVG(fl));
+      var s = fl.w / fl.vb[2], tb = fl.text, box = document.createElement("span"); box.className = "st-textbox";
+      box.style.left = ((tb[0] - fl.vb[0]) * s) + "px"; box.style.top = ((tb[1] - fl.vb[1]) * s) + "px"; box.style.width = (tb[2] * s) + "px"; box.style.height = (tb[3] * s) + "px";
+      box.appendChild(b.querySelector(".st-title")); box.appendChild(b.querySelector(".st-sub")); b.appendChild(box); b.style.width = fl.w + "px";
+    }
     var t = b.querySelector(".st-title"); t.style.fontFamily = FONT.family; t.style.fontWeight = FONT.weight; t.style.fontSize = FONT.size;
     if (fontKey !== "dancing") { t.style.letterSpacing = "0.01em"; t.style.lineHeight = "1.15"; }
     document.body.appendChild(b); mark();

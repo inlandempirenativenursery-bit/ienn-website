@@ -139,6 +139,30 @@
     @media (hover:hover) { .starter-teaser.in.st-shape-packet:hover, .starter-teaser.in.st-shape-tag:hover { transform:translateY(-2px); box-shadow:none; filter:drop-shadow(0 8px 0 var(--st-edge)) drop-shadow(0 14px 16px var(--st-glow)); } }
     .starter-teaser.st-shape-packet.in:active, .starter-teaser.st-shape-packet.pressed, .starter-teaser.st-shape-tag.in:active, .starter-teaser.st-shape-tag.pressed {
       box-shadow:none; filter:drop-shadow(0 0 0 var(--st-edge)) drop-shadow(0 3px 5px var(--st-glow)); }
+    /* Flower outlines (calochortus | salvia | trichostema): SVG silhouette; edge = copy of the flower 6px lower; only the painted flower is clickable. */
+    .starter-teaser.st-flowerish { background:none; box-shadow:none; border-radius:0; padding:0; overflow:visible; pointer-events:none; outline:none; }
+    .starter-teaser.st-flowerish::before, .starter-teaser.st-flowerish::after { display:none; }
+    .starter-teaser.st-flowerish:focus-visible { outline:3px solid var(--sage-dark); outline-offset:3px; }
+    .st-flower { display:block; height:auto; overflow:visible; filter:drop-shadow(0 10px 10px var(--st-glow)); transition:filter 120ms ease-out; }
+    .st-flower .st-edge, .st-flower .st-face { pointer-events:visiblePainted; cursor:pointer; }
+    .st-flower .st-edge { transform:translateY(6px); transition:transform 120ms ease-out; }
+    .st-flower .fl-edge { fill:var(--st-edge); }
+    .st-flower .fl-edge-s { fill:none; stroke:var(--st-edge); stroke-width:6; stroke-linecap:round; }
+    .st-flower .fl-petal { fill:url(#stf-g); stroke:rgba(255,255,255,.35); stroke-width:1.2; }
+    .st-flower .fl-sepal { fill:var(--st-bot); stroke:rgba(255,255,255,.25); stroke-width:1; }
+    .st-flower .fl-center { fill:#f3ecf9; stroke:var(--st-mid); stroke-width:2; }
+    .st-flower .fl-mark { fill:var(--st-edge); opacity:.55; }
+    .st-flower .fl-calyx { fill:#7d8e7b; stroke:#5a6a59; stroke-width:1.2; }
+    .st-flower .fl-stamen { fill:none; stroke:var(--st-mid); stroke-width:5; stroke-linecap:round; }
+    .st-flower .fl-anther { fill:var(--st-edge); }
+    .starter-teaser .st-textbox { position:absolute; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; text-align:center; }
+    .st-flowerish .st-title { font-size:1.28rem !important; line-height:1.05 !important; text-wrap:balance; }
+    .st-flowerish .st-sub { font-size:0.72rem; line-height:1.25; margin-top:0.25rem; text-wrap:balance; }
+    .st-shape-calochortus .st-title, .st-shape-calochortus .st-sub { color:#2a1d3b; text-shadow:none; }
+    @media (hover:hover) { .starter-teaser.in.st-flowerish:hover { box-shadow:none; } .starter-teaser.in.st-flowerish:hover .st-flower { filter:drop-shadow(0 14px 14px var(--st-glow)); } }
+    .starter-teaser.st-flowerish.in:active, .starter-teaser.st-flowerish.pressed { box-shadow:none; }
+    .starter-teaser.st-flowerish.pressed .st-edge, .starter-teaser.st-flowerish.in:active .st-edge { transform:none; }
+    .starter-teaser.st-flowerish.pressed .st-flower { filter:drop-shadow(0 3px 4px var(--st-glow)); }
     .starter-teaser:focus-visible { outline:3px solid var(--sage-dark); outline-offset:3px; }
     .starter-teaser.out { animation:st-out .28s ease-in forwards; pointer-events:none; }
     @keyframes st-drop { 0% { opacity:0; transform:translateY(-60px) scale(.9); } 60% { opacity:1; transform:translateY(8px) scale(1.02); } 80% { transform:translateY(-3px); } 100% { opacity:1; transform:none; } }
