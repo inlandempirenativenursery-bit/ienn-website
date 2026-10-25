@@ -5,6 +5,11 @@
    adding a plant = add it to the tool's Catalog; stock = the weekly counts minus orders since the last count. */
 var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec";
 var REFRESH_MINUTES = 5;
+/* Live feed loading: the Apps Script feed usually answers in 5-9 s. Wait this long per try, retry this many times,
+   and treat a reply with fewer than FEED_SHORT_RATIO x the last good plant count as a backend fallback (retry / use last good). */
+var FEED_TIMEOUT_MS = 25000;
+var FEED_RETRIES = 1;
+var FEED_SHORT_RATIO = 0.7;   // e.g. 31 known-good -> a reply under 22 plants is retried before it is shown (the backend's old 19-plant fallback list)
 /* "Only a few left" shows when a size has this many or fewer ready (never shows the number). */
 var LOW_STOCK = 5;
 /* Prices by size. Shown only until live data loads; the server (IENN_Config.gs IENN_SIZES) is authoritative. */

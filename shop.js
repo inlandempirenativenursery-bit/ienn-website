@@ -1,6 +1,6 @@
 /* Shared shop: plant grid, size chips, Add to tray, tray (localStorage "ienn-cart-v2"), Check out. Used by index.html and order.html; the checkout drawer only exists on order.html. */
 (function () {
-  var KEY = "ienn-cart-v2", CACHE = "ienn-inventory-v2", cart = {}, PLANTS = [];
+  var KEY = "ienn-cart-v2", CACHE = "ienn-inventory-v3", cart = {}, PLANTS = [];
   try { cart = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { cart = {}; }
   var list = document.getElementById("plant-list"), status = document.getElementById("inv-status");
   function save() { try { localStorage.setItem(KEY, JSON.stringify(cart)); } catch (e) {} }
@@ -567,24 +567,55 @@
     if (quick) return; status.textContent = msg || ""; status.hidden = !msg;
     if (params.get("checkout") === "1" && !autoOpened && lines().length) { autoOpened = true; if (window.iennOpenCheckout) window.iennOpenCheckout(); } }
   var autoOpened = false;
-  function load() {
-    fetch(APPS_SCRIPT_URL + "?view=inventory", { cache: "no-store" }).then(function (r) { if (!r.ok) throw 0; return r.text(); }).then(function (t) {
-      var d = JSON.parse(t), l = fromInventory(d); if (!l.length) throw 0; if (window.iennPromo) window.iennPromo(d.promo);
-      try { localStorage.setItem(CACHE, JSON.stringify({ t: Date.now(), d: d })); } catch (e) {}
-      use(l, "", d);
-    }).catch(function () {
-      var c = null; try { c = JSON.parse(localStorage.getItem(CACHE)); } catch (e) {}
-      if (c && c.d) use(fromInventory(c.d), "Couldn't refresh live stock — showing the list from " + new Date(c.t).toLocaleString() + ". Stock may be out of date.", c.d);
-      else use(fallback(), "Live stock is unavailable right now — showing our offline plant list. Stock may be out of date; we'll confirm availability.");
+  /* Loading the live feed (Apps Script ?view=inventory, typically 5-9 s to respond):
+     - First visit (nothing cached): skeleton cards + "Loading today's plants…", never a partial or built-in list while we wait.
+     - Each request gets FEED_TIMEOUT_MS; a failed, timed-out, flagged (fallback:true / ok:false) or suspiciously short reply is retried FEED_RETRIES times.
+     - If it still fails: last good feed from localStorage (with a dated note), else the built-in offline list (with a note), and keep retrying quietly.
+     - Once a good list is showing, a failed background refresh keeps it as is (never downgrades to a shorter list). */
+  var TIMEOUT = typeof FEED_TIMEOUT_MS === "number" ? FEED_TIMEOUT_MS : 25000, RETRIES = typeof FEED_RETRIES === "number" ? FEED_RETRIES : 1;
+  var SHORT = typeof FEED_SHORT_RATIO === "number" ? FEED_SHORT_RATIO : 0.7, good = false, live = false, loadingNow = false, retryTimer = null;
+  try { localStorage.removeItem("ienn-inventory-v2"); } catch (e) {}   // old cache could hold a short list
+  function cached() { var c = null; try { c = JSON.parse(localStorage.getItem(CACHE)); } catch (e) {} return c && c.d && (c.d.plants || []).length ? c : null; }
+  function rawCount(d) { return d && Array.isArray(d.plants) ? d.plants.length : 0; }
+  function showLoading() {   // clear loading state, no plants yet
+    if (good || list.querySelector(".card:not(.skel)")) return;   // something real (or the offline list + its note) is already showing
+    if (list.querySelectorAll(".skel").length < 6) { list.innerHTML = ""; for (var i = 0; i < 6; i++) list.appendChild(el("div", { class: "card skel", "aria-hidden": "true" })); }
+    list.setAttribute("aria-busy", "true"); status.className = "inv-status loading"; status.textContent = "Loading today\u2019s plants\u2026"; status.hidden = false;
+  }
+  function getFeed() {
+    var ctl = "AbortController" in window ? new AbortController() : null, timer;
+    var t = new Promise(function (_, no) { timer = setTimeout(function () { if (ctl) ctl.abort(); no("timeout"); }, TIMEOUT); });
+    var f = fetch(APPS_SCRIPT_URL + "?view=inventory", { cache: "no-store", signal: ctl ? ctl.signal : undefined })
+      .then(function (r) { if (!r.ok) throw "http " + r.status; return r.text(); }).then(function (x) { return JSON.parse(x); });
+    return Promise.race([f, t]).then(function (d) { clearTimeout(timer); return d; }, function (e) { clearTimeout(timer); throw e; });
+  }
+  function load(attempt) {
+    attempt = attempt || 0; if (attempt === 0 && loadingNow) return; loadingNow = true; clearTimeout(retryTimer);
+    if (attempt === 0) showLoading();
+    getFeed().then(function (d) {
+      var l = fromInventory(d), c = cached(), n = rawCount(d);
+      if (!l.length || d.ok === false || d.fallback === true) throw "fallback";
+      // far fewer plants than the last good feed: likely a backend fallback, so retry; if the retry says the same (and isn't flagged), it's a real change: accept it
+      if (c && c.n && n < Math.ceil(c.n * SHORT) && attempt < RETRIES) throw "short";
+      try { localStorage.setItem(CACHE, JSON.stringify({ t: Date.now(), n: n, d: d })); } catch (e) {}
+      if (window.iennPromo) window.iennPromo(d.promo);
+      loadingNow = false; good = live = true; status.className = "inv-status"; use(l, "", d);
+    }).catch(function (why) {
+      if (attempt < RETRIES) { retryTimer = setTimeout(function () { load(attempt + 1); }, 1500); return; }   // still "Loading…" while retrying
+      loadingNow = false; status.className = "inv-status";
+      retryTimer = setTimeout(function () { load(0); }, 60000);   // keep trying quietly
+      var c = cached();
+      if (live) return;   // live list already showing: keep it as is
+      if (good && c) { status.textContent = "Couldn\u2019t refresh live stock \u2014 showing the list from " + new Date(c.t).toLocaleString() + ". Stock may be out of date."; status.hidden = false; return; }   // cached list showing: just add the note
+      if (c) { good = true; use(fromInventory(c.d), "Couldn\u2019t refresh live stock \u2014 showing the list from " + new Date(c.t).toLocaleString() + ". Stock may be out of date.", c.d); }
+      else use(fallback(), "Live stock is unavailable right now \u2014 showing our offline plant list. Stock may be out of date; we\u2019ll confirm availability.");
     });
   }
-  for (var i = 0; i < 4; i++) list.appendChild(el("div", { class: "card skel", "aria-hidden": "true" }));
-  // Instant first paint: last cached feed, else the built-in list; the live feed then refreshes quietly.
-  (function () { var c = null; try { c = JSON.parse(localStorage.getItem(CACHE)); } catch (e) {}
-    try { if (c && c.d && fromInventory(c.d).length) use(fromInventory(c.d), "", c.d, true); else use(fallback(), "", null, true); } catch (e) {} })();
+  // Instant first paint from the last good feed (full list); with nothing cached, a loading state (not the short built-in list).
+  (function () { var c = cached(); try { if (c && fromInventory(c.d).length) { use(fromInventory(c.d), "", c.d, true); good = true; } else showLoading(); } catch (e) { showLoading(); } })();
   load();
-  setInterval(load, REFRESH_MINUTES * 60000);
-  document.addEventListener("visibilitychange", function () { if (!document.hidden) load(); });
+  setInterval(function () { load(0); }, REFRESH_MINUTES * 60000);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) load(0); });
 })();
 /* No-show pickup policy: one source of truth in shop-settings.js (PICKUP_POLICY). */
 (function () { if (typeof PICKUP_POLICY === "undefined") return;
