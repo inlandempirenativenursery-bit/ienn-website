@@ -189,6 +189,21 @@
     .st-shape-aster .st-title, .st-shape-aster .st-sub { color:#4a2c12; text-shadow:0 1px 0 rgba(255,255,255,.35); }
     .st-shape-aster .st-title { font-size:1.22rem !important; }
     .st-shape-aster .st-sub { font-size:0.74rem; font-weight:600; }
+    /* Aster: toned-down whites (Eric): faint sheens, faint top-edge glow on the disk, and the shared top gloss kept off the text. */
+    .st-shape-aster .fl-dome { opacity:.45; }
+    .st-shape-aster .st-face > rect { opacity:.3; }
+    /* Pop on dismiss (tap/click/Escape): squish ~90ms, then petals fly out + spin + shrink, disk swells 1.15 and fades, confetti drifts out. ~550ms. */
+    .st-juicy .st-flower path, .st-juicy .st-flower ellipse { transform-box:fill-box; transform-origin:center; }
+    .starter-teaser.st-juicy.pop { opacity:1; animation:none; transform:translateY(3px); pointer-events:none; }
+    .st-juicy.pop .st-flower { filter:none; }
+    .st-juicy.pop .st-blur, .st-juicy.pop .k-mark, .st-juicy.pop .k-sheen { opacity:0; transition:opacity .12s linear; }
+    .st-juicy.pop .k-petal { transform:translate(var(--px), var(--py)) rotate(var(--pr)) scale(.55); opacity:0; transition:transform .5s cubic-bezier(.15,.75,.3,1), opacity .42s ease-in .08s; }
+    .st-juicy.pop .k-disk, .st-juicy.pop .k-dome { transform:scale(1.15); opacity:0; transition:transform .26s cubic-bezier(.2,.8,.3,1.4), opacity .22s ease-in .1s; }
+    .st-juicy.pop .st-edge .k-disk { opacity:0; transition:opacity .1s linear; }
+    .st-juicy.pop .st-textbox { transform:scale(1.15); opacity:0; transition:transform .26s ease-out, opacity .2s ease-in .06s; }
+    .st-confetti { position:absolute; left:50%; top:50%; width:10px; height:10px; margin:-5px 0 0 -5px; border-radius:50%; pointer-events:none; opacity:0; animation:st-conf .55s cubic-bezier(.2,.7,.3,1) forwards; }
+    .st-confetti.st-mini { width:8px; height:15px; margin:-7px 0 0 -4px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; }
+    @keyframes st-conf { 0% { opacity:1; transform:translate(var(--sx), var(--sy)) scale(.5); } 70% { opacity:.9; } 100% { opacity:0; transform:translate(var(--tx), var(--ty)) rotate(var(--cr)) scale(1); } }
     /* Juicy motion: springy scale-up with a tiny wobble, then a slow, subtle breathing pulse; press sinks with a squish. */
     .starter-teaser.st-juicy.in { animation:st-spring .9s cubic-bezier(.3,.7,.4,1) backwards, st-breathe 4.8s ease-in-out .9s infinite; transform-origin:50% 55%; }
     .starter-teaser.st-juicy.in:active, .starter-teaser.st-juicy.pressed { animation:none; transform:translateY(6px) scale(.96); transition:transform 110ms ease-out; }

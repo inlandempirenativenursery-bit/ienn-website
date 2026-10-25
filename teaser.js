@@ -42,7 +42,8 @@
         if (Math.abs(v) < 1) r -= 14 * (1 - Math.pow(Math.abs(Math.sin(Math.PI * 2 * (v + 1))), 0.45)) * (1 - Math.pow(Math.abs(v), 6));   // 4 scallops across the tip
         var a = c + u * HW; pts.push([r * Math.sin(a), -r * Math.cos(a)]);
       }
-      parts.push(["petal", poly(pts)]);
+      var D = 66 + 10 * ((k * 5) % 3), pop = "--px:" + f1(D * Math.sin(c)) + "px;--py:" + f1(-D * Math.cos(c)) + "px;--pr:" + (k % 2 ? 14 : -12) + "deg";   // pop: fly out along its own angle
+      parts.push(["petal", poly(pts), pop]);
       var sx = 146 * Math.sin(c) - 12 * Math.cos(c), sy = -146 * Math.cos(c) - 12 * Math.sin(c);   // curved sheen on the petal's outer part, nudged toward the light
       parts.push(["sheen", f1(sx) + "," + f1(sy) + ",20,40," + f1(c * 180 / Math.PI)]);
     }
@@ -53,7 +54,7 @@
     var dp = [];
     for (i = 0; i < 120; i++) { var t = 2 * Math.PI * i / 120, rr = 112 + 3.2 * Math.sin(26 * t) + 1.6 * Math.sin(7 * t + 1) + 1.2 * Math.sin(11 * t + 2.2); dp.push([rr * Math.cos(t), rr * Math.sin(t)]); }
     parts.push(["disk", poly(dp)]);
-    parts.push(["dome", "0,-50,74,40,0"]);   // domed gloss on the disk
+    parts.push(["dome", "0,-97,66,13,0"]);   // very faint top-edge glow on the disk, clear of the text
     return { parts: parts, text: [-94, -82, 188, 164], vb: [-213, -213, 426, 438], w: 340, juicy: true, frost: true };
   })();
   function flowerSVG(f) {
@@ -68,8 +69,9 @@
     var edge = [], face = [];
     f.parts.forEach(function (p) {
       var k = p[0], fill = k === "stamen" ? "fl-stamen" : k === "calyx" ? "fl-calyx" : k === "sepal" ? "fl-sepal" : k === "circle" || k === "plate" ? "fl-center" : k === "disk" ? "fl-disk" : k === "sheen" ? "fl-sheen" : k === "dome" ? "fl-dome" : k === "mark" ? "fl-mark" : k === "anther" ? "fl-anther" : "fl-petal";
-      if (k !== "mark" && k !== "sheen" && k !== "dome") edge.push(el(k, p[1], k === "stamen" ? "fl-edge-s" : "fl-edge"));
-      face.push(el(k, p[1], fill));
+      var tag = function (s) { return s.replace(/^<(\w+) class="([^"]*)"/, '<$1 class="$2 k-' + k + '"' + (p[2] ? ' style="' + p[2] + '"' : "")); };
+      if (k !== "mark" && k !== "sheen" && k !== "dome") edge.push(tag(el(k, p[1], k === "stamen" ? "fl-edge-s" : "fl-edge")));
+      face.push(tag(el(k, p[1], fill)));
       if (k === "petal" || k === "ellipse" || k === "circle" || k === "sepal" || k === "disk") clip.push(el(k, p[1], ""));
       if (k !== "mark" && k !== "stamen" && k !== "anther" && k !== "sheen" && k !== "dome") sil.push(el(k, p[1], "").replace('class=""', 'fill="#000"'));
     });
@@ -78,8 +80,8 @@
     return '<svg class="st-flower" ' + NS + ' viewBox="' + vb.join(" ") + '" width="' + f.w + '" aria-hidden="true" focusable="false">' +
       '<defs><linearGradient id="stf-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--st-top)"/><stop offset=".55" style="stop-color:var(--st-mid)"/><stop offset="1" style="stop-color:var(--st-bot)"/></linearGradient>' +
       '<linearGradient id="stf-gl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
-      (f.juicy ? '<radialGradient id="stf-pr" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="210"><stop offset=".42" stop-color="#dccbee"/><stop offset=".78" style="stop-color:var(--st-mid)"/><stop offset="1" stop-color="#8f72b5"/></radialGradient>' +
-        '<radialGradient id="stf-sh"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset=".6" stop-color="#fff" stop-opacity=".25"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>' +
+      (f.juicy ? '<radialGradient id="stf-pr" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="210"><stop offset=".42" stop-color="#d6c3eb"/><stop offset=".74" style="stop-color:var(--st-mid)"/><stop offset="1" stop-color="#8a6cb0"/></radialGradient>' +
+        '<radialGradient id="stf-sh"><stop offset="0" stop-color="#fff" stop-opacity=".25"/><stop offset=".6" stop-color="#fff" stop-opacity=".08"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>' +
         '<radialGradient id="stf-dk" gradientUnits="userSpaceOnUse" cx="-10" cy="-40" r="140"><stop offset="0" stop-color="#fcefc4"/><stop offset=".55" stop-color="#f6d98a"/><stop offset="1" stop-color="#eac46c"/></radialGradient>' : '') +
       '<clipPath id="stf-c">' + clip.join("") + '</clipPath></defs>' +
       '<g class="st-edge">' + edge.join("") + '</g><g class="st-face">' + face.join("") +
@@ -111,9 +113,23 @@
     document.body.appendChild(b); mark();
     requestAnimationFrame(function () { requestAnimationFrame(function () { b.classList.add("in"); }); });
     var gone = false;
-    function out() { b.classList.remove("in", "pressed"); b.classList.add("out"); setTimeout(function () { b.remove(); }, 320); }
+    var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    function out() {
+      if (b.classList.contains("st-juicy") && !still) { pop(); return; }
+      b.classList.remove("in", "pressed"); b.classList.add("out"); setTimeout(function () { b.remove(); }, 320); }
+    function pop() {   // playful burst: petals fly out, disk swells and fades, a few confetti dots/mini petals drift out (transforms + opacity only)
+      var cols = ["#c9b2e2", "#f3d27a", "#ab8ecb", "#f6d98a"];
+      for (var i = 0; i < 10; i++) {
+        var a = (i / 10) * 2 * Math.PI + 0.3, r0 = 60, r1 = 135 + (i % 3) * 22, c = document.createElement("span");
+        c.className = "st-confetti" + (i % 3 === 1 ? " st-mini" : ""); c.setAttribute("aria-hidden", "true"); c.style.background = cols[i % 4];
+        c.style.setProperty("--sx", (r0 * Math.cos(a)).toFixed(1) + "px"); c.style.setProperty("--sy", (r0 * Math.sin(a)).toFixed(1) + "px");
+        c.style.setProperty("--tx", (r1 * Math.cos(a)).toFixed(1) + "px"); c.style.setProperty("--ty", (r1 * Math.sin(a) + 18).toFixed(1) + "px");
+        c.style.setProperty("--cr", ((i % 2 ? 1 : -1) * (90 + i * 20)) + "deg"); c.style.animationDelay = (i % 4) * 15 + "ms"; b.appendChild(c);
+      }
+      b.classList.remove("in", "pressed"); b.classList.add("pop"); setTimeout(function () { b.remove(); }, 600);
+    }
     function dismiss(press) { if (gone) return; gone = true; mark(); document.removeEventListener("keydown", onKey);
-      if (press) { b.classList.add("pressed"); setTimeout(out, 120); } else out(); }   // let the sink read, then shrink/fade
+      if (press) { b.classList.add("pressed"); setTimeout(out, b.classList.contains("st-juicy") ? 90 : 120); } else out(); }   // let the sink read, then shrink/fade
     function onKey(e) { if (e.key === "Escape" || e.key === "Esc") dismiss(false); }
     b.addEventListener("pointerdown", function () { if (!gone) b.classList.add("pressed"); });
     b.addEventListener("pointerleave", function () { if (!gone) b.classList.remove("pressed"); });
