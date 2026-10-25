@@ -33,16 +33,16 @@ Common name follows Calscape: "St. Catherine's Lace". The site keeps the feed's 
   - Theodore Payne: "frost tender" / "cold hardy to 32 °F".
   - Calscape text also says it "does not do well in frost".
 
-  IE valleys usually stay above about 25 °F, but cold pockets and foothills can drop lower. Young plants may need frost cloth on hard-freeze nights. This isn't shown on the card.
+  IE valleys usually stay above about 25 °F, but cold pockets and foothills can drop lower. Young plants may need frost cloth on hard-freeze nights. **Eric 2026-10-25: no frost note on the card.**
 
 ## Basics values (set)
 | Field | Sources | Set | Notes |
 |---|---|---|---|
 | Type | Calscape/TPF/FNA: shrub | Shrub (genus form) | |
-| Height | Calscape 2–5 ft (text: 2 ft up to over 9 ft); TPF 6 ft; UC Sonoma 4–8 ft; Waterwise 8–10 ft; FNA 1–6.5 ft (to 11 ft) | **2–5 ft** | **uncertain**: Calscape overview used. In IE gardens 4–6 ft is typical; the sources range up to 8–10 ft |
+| Height | Calscape 2–5 ft (text: 2 ft up to over 9 ft); TPF 6 ft; UC Sonoma 4–8 ft; Waterwise 8–10 ft; FNA 1–6.5 ft (to 11 ft) | **3–8 ft** | Eric 2026-10-25: 3–8 ft (Calscape's 2–5 ft runs small for garden plants) |
 | Width | Calscape 4–10 ft; TPF 6 ft; FNA 1.5–6.5 ft (to 11 ft) | **4–10 ft** | Calscape |
 | Sun | Calscape full sun; TPF full to partial | Full sun | |
-| Water | Calscape Very Low, max 1x/month in summer; Waterwise every 3–4 weeks; TPF low; UC Davis 1–2x/month | **Low (1)** | **slightly uncertain**: UC Davis says once or twice a month. A `[1,2]` range is possible if Eric prefers. Calscape first gives 1 |
+| Water | Calscape Very Low, max 1x/month in summer; Waterwise every 3–4 weeks; TPF low; UC Davis 1–2x/month | **Low–moderate (range 1–2)** | Eric 2026-10-25: show a range, like Blue grama (UC Davis: once or twice a month) |
 | Soil | Calscape fast drainage, rocky/gravelly; clay-tolerant when drainage is fast; Waterwise lists clay and calcareous soils; TPF "any" | Fast-draining | |
 | Bloom | Calscape spring/summer/fall; TPF Jun–Oct; Jepson year-round (var. giganteum) | Sp, Su, F | Flowers dry to rust and stay showy |
 | Wildlife | Calscape: honey bees, native bees, butterflies (Painted Lady and Gray Hairstreak confirmed), birds and small mammals; UC Sonoma: birds eat the seeds; UC Davis: beneficial insects | Bees & butterflies; Birds | |
@@ -55,4 +55,4 @@ Description (horticultural and visual only; no medicinal, ceremonial or cultural
 No tagline is shown. The card doesn't display taglines, and none was added for this species.
 
 ## Photos
-Neither Eric (ericbg2) nor Keith (keithwg1) has any iNaturalist observations of this species. There are 6 openly licensed research-grade candidates in `/workspace/new-plant-photos-3/`: a contact sheet and `credits.tsv`. They are not committed until Eric picks one.
+Neither Eric (ericbg2) nor Keith (keithwg1) has any iNaturalist observations of this species. There were 6 openly licensed research-grade candidates (contact sheet and `credits.tsv` in `/workspace/new-plant-photos-3/`). **Eric picked #5**: Kat B (sorrykb), Bolsa Chica Ecological Reserve, Huntington Beach, 2023-05-28, CC BY 4.0, https://www.inaturalist.org/observations/164364143 (photo 284380469). Resized only, with a credit in the photo's corner. It's a planted mainland shrub, not a wild Channel Islands plant.
