@@ -72,6 +72,9 @@ var IENN_BASICS_SPECIES = {
   "Eriogonum crocatum": { water:1, sun:["full"], soil:"Clay-tolerant", bloom:["Sp","Su"], wild:["pollinators"], h:[1,3], w:[2,3], ie:false, genusLevel:false,
     desc:"A low, mounding evergreen with silvery woolly leaves and bright sulfur-yellow flower clusters. Easy and low water once established." },
   "Atriplex canescens": { genusLevel:false },
+  /* Added 2026-10-25c (see docs/factcheck-2026-10-25c.md). Feed row: Catalog id "giganteum" = Eriogonum giganteum, St. Catherine's lace. */
+  "Eriogonum giganteum": { water:1, sun:["full"], soil:"Fast-draining", bloom:["Sp","Su","F"], wild:["pollinators","birds"], h:[2,5], w:[4,10], ie:true, genusLevel:false,
+    desc:"The largest buckwheat: a rounded shrub with woolly gray-white leaves and broad, lacy cream flower heads that age to rust. Give it room and good drainage; cut back after bloom." },
   "Bouteloua gracilis": { water:[1,2], wild:["butterflies","containers"], genusLevel:false },   // Eric 2026-10-25: Low–moderate water; butterflies only (skippers)
   "Encelia californica": { sun:["full","part"], soil:"Adaptable", h:[3,4], w:[3,5], genusLevel:false },
   "Encelia farinosa": { h:[1,5], w:[2,4], soil:"Fast-draining", genusLevel:false, desc:"A desert shrub with silver leaves and bright yellow daisies held above the foliage. Loves heat and needs very little water." },
