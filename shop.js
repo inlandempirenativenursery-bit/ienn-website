@@ -64,7 +64,7 @@
     n.appendChild(el("a", { class: "contact-sms", href: "sms:" + CONTACT_TEL }, "text")); n.appendChild(document.createTextNode(" Andrew")); return n; }
   function card(p, idx) {
       var ps = pstate(p), card = el("article", { class: "card" + (ps === "out" ? " sold-out" : ""), "aria-labelledby": p.id + "-name" });
-      card.dataset.id = p.id;
+      card.dataset.id = p.id; if (String(p.name).length >= 16) card.classList.add("long-name");   // may wrap to 2 lines: slightly smaller title, tighter gaps (shop.css)
       var ph = el("div", { class: "ph" });
       if (p.image) ph.appendChild(el("img", p.srcset ? { src: p.image, srcset: p.srcset, sizes: "(max-width: 600px) 48vw, 260px", alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" } : { src: p.image, alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" })); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }
       var lo = p.sizes.filter(function (z) { return inStock(z) && isFinite(z.price); }).map(function (z) { return z.price; });
