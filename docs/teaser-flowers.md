@@ -9,3 +9,12 @@
 | `trichostema` (woolly bluecurls) | https://ucjeps.berkeley.edu/eflora/eflora_display.php?name=Trichostema | "corolla … lobes 5, lowest a generally reflexed lip; stamens 4, attached near throat, generally much-exserted, ascending between upper corolla lobes, generally arched". Drawn as 4 small upper lobes, a large lower lip holding the text, and 4 long stamens that rise between the upper lobes and arch over the top. |
 
 Simplified for a phone-size button. Not a botanical illustration.
+
+## Mariposa lily variants (Eric: "more transparency, or maybe a side shot")
+
+Default stays `calochortus` (face-on, solid) until Eric picks.
+
+- `calochortus-glass`: the same face-on lily, with petals at about 62% opacity and sepals at about 50%. A blur of the page behind is clipped to the flower outline, using `backdrop-filter` with a mask where the browser supports it. It also has a thin darker-lilac outline, a 3-D edge at 42% opacity, the same soft white gloss, and a frosted cream disc behind the text.
+- `calochortus-side`: a side view based on Jepson's open bowl- or cup-shaped flower. Three broad wedge petals rise into a cup with slightly recurved tips. The front petal holds a frosted text plate and a nectary mark near its base. Two narrower sepals spread below and behind, and a short sage pedicel sits underneath. The flower uses the same translucent treatment as the glass variant.
+
+You can preview either one with `?teaser=now&teasershape=calochortus-glass` or `?teaser=now&teasershape=calochortus-side`.
