@@ -15,7 +15,7 @@ var ON_REQUEST = "Available on request";   // 2" and Tree pot (not counted yet)
 var CONTACT_PHONE = "(909) 609-9373", CONTACT_TEL = "+19096099373";   // Andrew, call/text fallback
 /* Appeal sort (earlier keyword = shown first); plants with stock come first, not available last. */
 /* Default order (an explicit feed/sheet rank still wins): popular + colorful first. */
-var APPEAL_KEYWORDS = ["white sage", "salvia apiana", "sticky monkeyflower", "diplacus aurantiacus", "rock monkeyflower", "diplacus calycinus",
+var APPEAL_KEYWORDS = ["white sage", "salvia apiana", "sticky monkeyflower", "diplacus aurantiacus", "diplacus longiflorus", "rock monkeyflower", "diplacus calycinus",
   "monkeyflower", "mimulus", "diplacus", "california poppy", "eschscholzia", "showy penstemon", "penstemon spectabilis", "scarlet bugler",
   "penstemon centranthifolius", "matilija", "romneya", "milkweed", "asclepias", "penstemon", "poppy", "sage", "salvia", "buckwheat", "eriogonum",
   "lupine", "lupinus", "woolly blue curls", "trichostema", "ceanothus", "lilac", "yarrow", "achillea", "verbena", "aster", "fuchsia", "epilobium",
@@ -24,7 +24,7 @@ var APPEAL_KEYWORDS = ["white sage", "salvia apiana", "sticky monkeyflower", "di
 var FALLBACK_PLANTS = [
   { name: "Blue Pyramid Cypress", sizes: ['1 gal'] },
   { name: "Woolly Blue Curls",    sizes: ['4"'] },
-  { name: "Sticky Monkeyflower",  sizes: ['1 gal'] },
+  { name: "Sticky Monkeyflower",  botanical: "Diplacus longiflorus", sizes: ['1 gal'] },
   { name: "Yarrow",               sizes: ['4"'] }
 ];
 var ORDER_EMAIL = "plants@inlandempirenativenursery.com"; // mailto fallback only if the order endpoint fails
