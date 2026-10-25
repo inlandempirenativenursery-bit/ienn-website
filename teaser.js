@@ -36,11 +36,10 @@
     function f1(v) { return v.toFixed(1); }
     function poly(pts) { return "M " + pts.map(function (q) { return f1(q[0]) + "," + f1(q[1]); }).join(" L ") + " Z"; }
     for (k = 0; k < 8; k++) {
-      var c = k * Math.PI / 4 + Math.PI / 8, pts = [];
+      var c = k * Math.PI / 4 + Math.PI / 8, pts = [[0, 0]];
       for (i = 0; i <= 96; i++) {
         var u = -1 + 2 * i / 96, r = R * Math.pow(1 - Math.pow(Math.abs(u), 3.2), 0.42), v = u / 0.66;
         if (Math.abs(v) < 1) r -= 14 * (1 - Math.pow(Math.abs(Math.sin(Math.PI * 2 * (v + 1))), 0.45)) * (1 - Math.pow(Math.abs(v), 6));   // 4 scallops across the tip
-        r = Math.max(r, 92);   // petals start under the disk rim, so no petal lines show through the text
         var a = c + u * HW; pts.push([r * Math.sin(a), -r * Math.cos(a)]);
       }
       var D = 66 + 10 * ((k * 5) % 3), pop = "--px:" + f1(D * Math.sin(c)) + "px;--py:" + f1(-D * Math.cos(c)) + "px;--pr:" + (k % 2 ? 14 : -12) + "deg";   // pop: fly out along its own angle
@@ -54,7 +53,7 @@
     }
     var dp = [];
     for (i = 0; i < 120; i++) { var t = 2 * Math.PI * i / 120, rr = 112 + 3.2 * Math.sin(26 * t) + 1.6 * Math.sin(7 * t + 1) + 1.2 * Math.sin(11 * t + 2.2); dp.push([rr * Math.cos(t), rr * Math.sin(t)]); }
-    parts.push(["under", "0,0,104"]);   // even lilac under the disk, so nothing (petal seams, page) shows through behind the text
+    parts.push(["under", "0,0,104"]);   // solid lilac under the disk, so petal seams never show through behind the text
     parts.push(["disk", poly(dp)]);
     parts.push(["dome", "0,-97,66,13,0"]);   // very faint top-edge glow on the disk, clear of the text
     return { parts: parts, text: [-102, -80, 204, 160], vb: [-213, -213, 426, 438], w: 340, juicy: true, frost: true };
