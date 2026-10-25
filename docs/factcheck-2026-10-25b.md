@@ -22,9 +22,9 @@ All sources were checked 2026-10-25 (PDT). The text is horticultural and visual 
 | | Size | 6–24 in tall, 2 ft wide | 6 in–2 ft tall, 2 ft wide | |
 | | Bloom / color | Summer, Fall; yellow, with eyelash-shaped seed heads | Su, F | |
 | | Sun | Full Sun, Partial Shade | Sun / part sun | |
-| | Water | Very Low; max 2x/month in summer | Low (1) | **slightly uncertain**: the summer max of 2x/month would allow level 2 |
+| | Water | Very Low; max 2x/month in summer | **Low–moderate (range 1–2)** | Eric 2026-10-25: show a range (summer up to about twice a month) |
 | | Soil | Variety of soils with adequate drainage; drainage fast/medium | Fast-draining | |
-| | Wildlife | 2 skipper butterflies (Juba, Western branded skipper), visitors and larval hosts | Bees & butterflies | **uncertain**: the chip says bees too; it's really skipper butterflies |
+| | Wildlife | 2 skipper butterflies (Juba, Western branded skipper), visitors and larval hosts | **Butterflies** | Eric 2026-10-25: butterflies only, no bees |
 | | Pots | Containers, Groundcover, Lawn alternative | Pot-friendly | |
 | | Heat tough | Sunset zones include 18–24; cold to 15 °F; arid mountains | Heat tough | |
 | **Buffalo grass**: not on Calscape. Sources: FEIS https://www.fs.usda.gov/database/feis/plants/graminoid/boudac/all.html, USDA PLANTS BODA2, UC turf report https://turfgrass.ucr.edu/sites/default/files/2023-08/ctc45_12.pdf | Common name | USDA/FEIS: "buffalograss" | Buffalo grass | spelling differs only |

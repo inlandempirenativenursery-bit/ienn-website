@@ -1,8 +1,8 @@
 /* Plant basics for the card's swipe panel. Original wording; general horticultural knowledge, kept conservative.
    Keyed by genus (from the botanical name) with optional per-species overrides in IENN_BASICS_SPECIES (merged over the genus).
-   water: 1 = about monthly, 2 = twice a month, 3 = weekly (once established, after year one)
+   water: 1 = about monthly, 2 = twice a month, 3 = weekly (once established, after year one); or a range [min,max], e.g. [1,2] = "Low–moderate"
    sun: "full" | "part" | "shade"   soil: "Fast-draining" | "Clay-tolerant" | "Adaptable"
-   bloom: any of "W","Sp","Su","F"   wild: "pollinators","hummingbirds","birds","fragrant","containers"
+   bloom: any of "W","Sp","Su","F"   wild: "pollinators","butterflies","hummingbirds","birds","fragrant","containers"
    h/w: mature size in feet [min,max]   ie: thrives in Inland Empire heat   genusLevel: true = genus-level info, not species-specific */
 var IENN_BASICS = {
   Salvia: { water:1, sun:["full"], soil:"Fast-draining", bloom:["Sp","Su"], wild:["pollinators","hummingbirds","birds","fragrant"], h:[3,5], w:[3,5], ie:true, genusLevel:true,
@@ -72,7 +72,7 @@ var IENN_BASICS_SPECIES = {
   "Eriogonum crocatum": { water:1, sun:["full"], soil:"Clay-tolerant", bloom:["Sp","Su"], wild:["pollinators"], h:[1,3], w:[2,3], ie:false, genusLevel:false,
     desc:"A low, mounding evergreen with silvery woolly leaves and bright sulfur-yellow flower clusters. Easy and low water once established." },
   "Atriplex canescens": { genusLevel:false },
-  "Bouteloua gracilis": { genusLevel:false },
+  "Bouteloua gracilis": { water:[1,2], wild:["butterflies","containers"], genusLevel:false },   // Eric 2026-10-25: Low–moderate water; butterflies only (skippers)
   "Encelia californica": { sun:["full","part"], soil:"Adaptable", h:[3,4], w:[3,5], genusLevel:false },
   "Encelia farinosa": { h:[1,5], w:[2,4], soil:"Fast-draining", genusLevel:false, desc:"A desert shrub with silver leaves and bright yellow daisies held above the foliage. Loves heat and needs very little water." },
   "Diplacus longiflorus": { sun:["full","part"], soil:"Fast-draining", water:1, bloom:["Sp","Su"], h:[1,3], w:[1,3], genusLevel:false,
