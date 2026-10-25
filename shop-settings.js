@@ -32,7 +32,7 @@ var FALLBACK_PLANTS = [
 /* Homepage "Starter packs coming soon" teaser: slides down once per visitor after this long on index.html (ms).
    Preview now with ?teaser=now. Shown-flag: localStorage "ienn-starter-teaser-seen". */
 var STARTER_TEASER_DELAY_MS = 60000;
-var STARTER_TEASER_COLOR = "honey";   // "honey" | "lilac" | "sage" | "red" (same 3-D gloss/edge; preview any with ?teaser=now&teasercolor=red)
+var STARTER_TEASER_COLOR = "lilac";   // "honey" | "lilac" | "sage" | "red" (same 3-D gloss/edge; preview any with ?teaser=now&teasercolor=red)
 var PICKUP_POLICY = { lead: "Please pick up on time.",
   text: "We set your plants aside just for you. If you can't make your pickup, let us know ahead of time. Orders that aren't picked up are released, and the plants go back on sale." };
 var ORDER_EMAIL = "plants@inlandempirenativenursery.com"; // mailto fallback only if the order endpoint fails
