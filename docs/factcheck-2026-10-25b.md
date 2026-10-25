@@ -1,4 +1,6 @@
-# Plant basics fact-check, 2026-10-25b: Blue grama and Buffalo grass
+# Plant basics fact-check, 2026-10-25b: Blue grama (Buffalo grass excluded)
+
+**Decision 2026-10-25: Eric excluded Buffalo grass (*Bouteloua dactyloides*) because it is not native to California.** Its basics entry was removed, and it is hidden by name and botanical (`IENN_HIDDEN_PLANTS` / `IENN_HIDDEN_BOTANICAL`), so the feed row (id `buffalograss`) never shows even if it stays in the sheet. Its findings below are kept for the record.
 
 Feed rows from Lobo: Catalog row 31, id `grama`, is "Blue grama (Bouteloua gracilis)". Row 32, id `buffalograss`, is "Buffalo grass (Bouteloua dactyloides)".
 Both rows have 0 stock, so they show as "Coming soon". `data/plant-basics.js` matches on these exact botanical names (genus `Bouteloua` plus species entries).
@@ -36,4 +38,4 @@ All sources were checked 2026-10-25 (PDT). The text is horticultural and visual 
 | | Heat tough | FEIS: drought-, heat- and cold-resistant | Heat tough | |
 | | Dormancy | UC: long winter dormancy (tan) | in desc | |
 
-The size panel now shows heights under 1 ft in inches (e.g. "2–5 in"), and the person silhouette keeps a 1-ft frame for very low plants.
+The size panel now shows heights under 1 ft in inches (Blue grama: "6 in–2 ft tall").

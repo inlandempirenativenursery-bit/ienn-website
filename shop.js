@@ -221,8 +221,7 @@
   }
   function sizeArt(x) {   // plant silhouette vs a 6' person, true scale per frame, auto-zoomed so the plant reads well
     var W = 96, H = 50, base = H - 1, room = H - 7, hmax = x.h[1];
-    var sc = hmax <= 3 ? room * .9 / Math.max(1, hmax) :   /* under 1 ft (low grasses): keep a 1-ft frame so the person isn't a blown-up block */
-      room / Math.max(6, hmax);   // small: zoom in (person cropped); mid: fit person; big: fit plant
+    var sc = hmax <= 3 ? room * .9 / hmax : room / Math.max(6, hmax);   // small: zoom in (person cropped); mid: fit person; big: fit plant
     var ph = 6 * sc, gh = hmax * sc, gw = Math.min(60, Math.max(22, x.w[1] * sc * 1.1)), px = 4, cx = 24 + gw / 2, o = "";
     var hr = ph * .085, bw = ph * .1;
     o += '<g fill="#9ca3af"><circle cx="' + (px + 6) + '" cy="' + (base - ph + hr) + '" r="' + hr + '"/><path d="M' + (px + 6 - bw) + ' ' + base + 'V' + (base - ph * .5) + 'Q' + (px + 6 - bw * 1.2) + ' ' + (base - ph * .79) + ' ' + (px + 6) + ' ' + (base - ph * .8) + 'Q' + (px + 6 + bw * 1.2) + ' ' + (base - ph * .79) + ' ' + (px + 6 + bw) + ' ' + (base - ph * .5) + 'V' + base + 'z"/></g>';
