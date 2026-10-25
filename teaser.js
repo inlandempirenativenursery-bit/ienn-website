@@ -43,6 +43,8 @@
         var a = c + u * HW; pts.push([r * Math.sin(a), -r * Math.cos(a)]);
       }
       parts.push(["petal", poly(pts)]);
+      var sx = 146 * Math.sin(c) - 12 * Math.cos(c), sy = -146 * Math.cos(c) - 12 * Math.sin(c);   // curved sheen on the petal's outer part, nudged toward the light
+      parts.push(["sheen", f1(sx) + "," + f1(sy) + ",20,40," + f1(c * 180 / Math.PI)]);
     }
     for (k = 0; k < 24; k++) {   // radiating lines: thin tapered slivers
       var b = k * Math.PI / 12 + 0.07 * Math.sin(k * 1.7), r0 = 104, r1 = 148 + 14 * Math.sin(k * 2.3), dx = Math.cos(b), dy = Math.sin(b), w = 2.6;
@@ -51,29 +53,34 @@
     var dp = [];
     for (i = 0; i < 120; i++) { var t = 2 * Math.PI * i / 120, rr = 112 + 3.2 * Math.sin(26 * t) + 1.6 * Math.sin(7 * t + 1) + 1.2 * Math.sin(11 * t + 2.2); dp.push([rr * Math.cos(t), rr * Math.sin(t)]); }
     parts.push(["disk", poly(dp)]);
-    return { parts: parts, text: [-94, -82, 188, 164], vb: [-213, -213, 426, 434], w: 340 };
+    parts.push(["dome", "0,-50,74,40,0"]);   // domed gloss on the disk
+    return { parts: parts, text: [-94, -82, 188, 164], vb: [-213, -213, 426, 438], w: 340, juicy: true, frost: true };
   })();
   function flowerSVG(f) {
     var NS = 'xmlns="http://www.w3.org/2000/svg"', vb = f.vb, out = [], clip = [], sil = [];
     function el(kind, g, cls) {
       if (kind === "circle" || kind === "anther") { var c = g.split(","); return '<circle class="' + cls + '" cx="' + c[0] + '" cy="' + c[1] + '" r="' + c[2] + '"/>'; }
       if (kind === "plate") { var r = g.split(","); return '<rect class="' + cls + '" x="' + r[0] + '" y="' + r[1] + '" width="' + r[2] + '" height="' + r[3] + '" rx="' + r[4] + '"/>'; }
+      if (kind === "sheen" || kind === "dome") kind = "ellipse";
       if (kind === "ellipse") { var e = g.split(","); return '<ellipse class="' + cls + '" cx="' + e[0] + '" cy="' + e[1] + '" rx="' + e[2] + '" ry="' + e[3] + '" transform="rotate(' + e[4] + " " + e[0] + " " + e[1] + ')"/>'; }
       return '<path class="' + cls + '" d="' + g + '"/>';
     }
     var edge = [], face = [];
     f.parts.forEach(function (p) {
-      var k = p[0], fill = k === "stamen" ? "fl-stamen" : k === "calyx" ? "fl-calyx" : k === "sepal" ? "fl-sepal" : k === "circle" || k === "plate" ? "fl-center" : k === "disk" ? "fl-disk" : k === "mark" ? "fl-mark" : k === "anther" ? "fl-anther" : "fl-petal";
-      if (k !== "mark") edge.push(el(k, p[1], k === "stamen" ? "fl-edge-s" : "fl-edge"));
+      var k = p[0], fill = k === "stamen" ? "fl-stamen" : k === "calyx" ? "fl-calyx" : k === "sepal" ? "fl-sepal" : k === "circle" || k === "plate" ? "fl-center" : k === "disk" ? "fl-disk" : k === "sheen" ? "fl-sheen" : k === "dome" ? "fl-dome" : k === "mark" ? "fl-mark" : k === "anther" ? "fl-anther" : "fl-petal";
+      if (k !== "mark" && k !== "sheen" && k !== "dome") edge.push(el(k, p[1], k === "stamen" ? "fl-edge-s" : "fl-edge"));
       face.push(el(k, p[1], fill));
       if (k === "petal" || k === "ellipse" || k === "circle" || k === "sepal" || k === "disk") clip.push(el(k, p[1], ""));
-      if (k !== "mark" && k !== "stamen" && k !== "anther") sil.push(el(k, p[1], "").replace('class=""', 'fill="#000"'));
+      if (k !== "mark" && k !== "stamen" && k !== "anther" && k !== "sheen" && k !== "dome") sil.push(el(k, p[1], "").replace('class=""', 'fill="#000"'));
     });
     var gy = vb[1], gh = vb[3] * 0.42;
     f.mask = "url(\"data:image/svg+xml," + encodeURIComponent('<svg ' + NS + ' viewBox="' + vb.join(" ") + '">' + sil.join("") + '</svg>') + "\")";   // flower silhouette, for the frosted blur layer
     return '<svg class="st-flower" ' + NS + ' viewBox="' + vb.join(" ") + '" width="' + f.w + '" aria-hidden="true" focusable="false">' +
       '<defs><linearGradient id="stf-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--st-top)"/><stop offset=".55" style="stop-color:var(--st-mid)"/><stop offset="1" style="stop-color:var(--st-bot)"/></linearGradient>' +
       '<linearGradient id="stf-gl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
+      (f.juicy ? '<radialGradient id="stf-pr" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="210"><stop offset=".42" stop-color="#dccbee"/><stop offset=".78" style="stop-color:var(--st-mid)"/><stop offset="1" stop-color="#8f72b5"/></radialGradient>' +
+        '<radialGradient id="stf-sh"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset=".6" stop-color="#fff" stop-opacity=".25"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>' +
+        '<radialGradient id="stf-dk" gradientUnits="userSpaceOnUse" cx="-10" cy="-40" r="140"><stop offset="0" stop-color="#fcefc4"/><stop offset=".55" stop-color="#f6d98a"/><stop offset="1" stop-color="#eac46c"/></radialGradient>' : '') +
       '<clipPath id="stf-c">' + clip.join("") + '</clipPath></defs>' +
       '<g class="st-edge">' + edge.join("") + '</g><g class="st-face">' + face.join("") +
       '<rect x="' + vb[0] + '" y="' + gy + '" width="' + vb[2] + '" height="' + gh + '" fill="url(#stf-g)" style="fill:url(#stf-gl)" clip-path="url(#stf-c)" pointer-events="none"/></g></svg>';
@@ -91,8 +98,9 @@
     var fl = FLOWERS[shape];
     if (fl) {   // flower outline: SVG silhouette is the hit area; text box placed over the flower's broad part
       b.classList.add("st-flowerish"); b.insertAdjacentHTML("afterbegin", flowerSVG(fl));
-      if (fl.glass) {   // translucent "glass" lily: blur what's behind, clipped to the flower silhouette (where backdrop-filter is supported)
-        b.classList.add("st-glass"); var bl = document.createElement("span"); bl.className = "st-blur"; bl.setAttribute("aria-hidden", "true");
+      if (fl.frost) b.classList.add("st-frost", "st-juicy");
+      if (fl.glass || fl.frost) {   // translucent "glass" lily: blur what's behind, clipped to the flower silhouette (where backdrop-filter is supported)
+        if (fl.glass) b.classList.add("st-glass"); var bl = document.createElement("span"); bl.className = "st-blur"; bl.setAttribute("aria-hidden", "true");
         bl.style.webkitMaskImage = bl.style.maskImage = fl.mask; b.insertBefore(bl, b.firstChild); }
       var s = fl.w / fl.vb[2], tb = fl.text, box = document.createElement("span"); box.className = "st-textbox";
       box.style.left = ((tb[0] - fl.vb[0]) * s) + "px"; box.style.top = ((tb[1] - fl.vb[1]) * s) + "px"; box.style.width = (tb[2] * s) + "px"; box.style.height = (tb[3] * s) + "px";
