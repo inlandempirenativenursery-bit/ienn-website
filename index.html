@@ -92,6 +92,23 @@
     section { padding: 2rem 1.25rem; }
     h2 { color: var(--sage-dark); margin-bottom: 0.75rem; font-size: 1.4rem; }
     .problem, .guide { margin-bottom: 1.5rem; }
+    .starter-teaser { position:fixed; left:0.6rem; right:0.6rem; z-index:99; max-width:560px; margin:0 auto; display:flex; align-items:center; gap:0.55rem;
+      background:var(--cream); border:1px solid #e2d8ec; border-left:4px solid var(--lilac); border-radius:12px; box-shadow:0 6px 18px rgba(74,90,74,.16);
+      padding:0.5rem 0.4rem 0.5rem 0.7rem; color:var(--sage-dark); font-size:0.88rem; line-height:1.35;
+      transform:translateY(calc(-100% - 90px)); opacity:0; transition:transform .45s cubic-bezier(.2,.8,.2,1), opacity .3s ease; }
+    .starter-teaser.in { transform:none; opacity:1; }
+    .starter-teaser.out { transform:translateY(calc(-100% - 90px)); opacity:0; }
+    .starter-teaser p { margin:0; flex:1; min-width:0; }
+    .starter-teaser b { color:var(--sage-dark); }
+    .starter-teaser span { color:#56604f; }
+    .starter-teaser .st-ic { flex:none; color:var(--sage-dark); }
+    .starter-teaser .st-x { flex:none; width:36px; height:36px; border:0; background:none; color:var(--sage-dark); font-size:1.35rem; line-height:1; border-radius:8px; cursor:pointer; }
+    .starter-teaser .st-x:focus-visible { outline:2px solid var(--sage); }
+    @media (prefers-reduced-motion: reduce) { .starter-teaser, .starter-teaser.out { transform:none; transition:opacity .25s linear; } }
+    .benefit-list { list-style:none; margin:0.75rem 0 0; padding:0; display:grid; grid-template-columns:1fr; gap:0.45rem; }
+    .benefit-list li { display:flex; align-items:center; gap:0.6rem; background:var(--cream); border:1px solid #ebe6ef; border-radius:10px; padding:0.5rem 0.75rem; font-size:0.95rem; font-weight:600; color:var(--sage-dark); line-height:1.3; }
+    .benefit-list .bn-ic { flex:none; color:var(--sage-dark); }
+    @media (min-width: 700px) { .benefit-list { grid-template-columns:1fr 1fr; } .benefit-list li:last-child { grid-column:1 / -1; justify-self:center; } }
     .plan-steps {
       display: flex;
       flex-direction: column;
@@ -220,18 +237,18 @@
   </div>
 
   <section class="problem">
-    <h2>Tired of plants that don’t make it?</h2>
-    <p>Big-box plants often fail in our hot, dry Inland Empire climate. You waste money, water, and time on plants that were never meant for this place.</p>
+    <h2>Plants keep dying in this heat?</h2>
+    <p>Store-bought plants aren’t grown for 105° summers. Skip the dead plants, high water bills and starting over.</p>
   </section>
 
   <section class="guide">
-    <h2>We’re local growers who get it</h2>
-    <p>IENN focuses on California native plants suited to the Inland Empire. We grow them so you can plant with confidence.</p>
+    <h2>Proven plants, hand-picked</h2>
+    <p>Years of growing in Inland Empire yards shaped this collection. We grow what works here, so you can too.</p>
     <p style="margin-top:0.75rem; font-style:italic; color:#666; font-size:0.9rem;">Pickup-only • Fontana area</p>
   </section>
 
   <section class="plan">
-    <h2>Simple 3-step plan</h2>
+    <h2>Easy as 1, 2, 3</h2>
     <div class="plan-steps">
       <div class="step">
         <div class="step-number">1</div>
@@ -248,18 +265,19 @@
     </div>
   </section>
 
-  <section class="success">
-    <h2>What success looks like</h2>
-    <p>Plants that actually thrive in the Inland Empire — less water, fewer replacements, and a landscape that fits the place.</p>
-  </section>
-
-  <section class="failure">
-    <h2>Skip the frustration</h2>
-    <p>Avoid dead plants, high water bills, and the cycle of replacing things that were never a good fit.</p>
+  <section class="benefits" aria-labelledby="benefits-title">
+    <h2 id="benefits-title">A yard that loves the heat</h2>
+    <ul class="benefit-list">
+      <li><svg class="bn-ic" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4" fill="#d4c4e0" stroke="currentColor" stroke-width="1.8"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg><span>Made for our climate</span></li>
+      <li><svg class="bn-ic" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path fill="#d4c4e0" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M12 3c3 4 5.5 7 5.5 10.2A5.5 5.5 0 0 1 6.5 13.2C6.5 10 9 7 12 3z"/></svg><span>Less water, fertilizer and upkeep</span></li>
+      <li><svg class="bn-ic" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path fill="#d4c4e0" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M11.3 11C9.8 6 4.8 4.4 3.3 6.2c-1.2 1.6.4 5 3.1 5.8 1.8.5 3.6.1 4.9-1zM12.7 11c1.5-5 6.5-6.6 8-4.8 1.2 1.6-.4 5-3.1 5.8-1.8.5-3.6.1-4.9-1zM11.4 12.2c-1.6.4-4.5 2-4.3 4.2.2 1.8 2.7 2 4.3-.6zM12.6 12.2c1.6.4 4.5 2 4.3 4.2-.2 1.8-2.7 2-4.3-.6z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 8v10M12 8l-1.5-3M12 8l1.5-3"/></svg><span>Brings in butterflies, birds and bees</span></li>
+      <li><svg class="bn-ic" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path fill="#d4c4e0" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M5 19c0-8 5-14 14-14 0 9-6 14-14 14z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M5 19l8-8"/></svg><span>Fits any style: modern, Japanese or formal</span></li>
+      <li><svg class="bn-ic" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path fill="#d4c4e0" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg><span>Stands out from the same old plants</span></li>
+    </ul>
   </section>
 
   <section class="cta-section" id="order">
-    <h2 style="color:var(--sage-dark);">Ready to plant something that works here?</h2>
+    <h2 style="color:var(--sage-dark);">Ready to grow the difference?</h2>
     <p style="margin:0.75rem 0 1.25rem;">Add plants to your tray above, then check out.</p>
     <p><a href="#plants" style="color:var(--sage-dark);font-weight:700;">See all plants ↑</a></p>
     <p class="disclaimer">Availability varies by season and stock • Local pickup only (Fontana area); Cash or Zelle at time of pickup • Plant care and native-planting info is general guidance • Photos are representative.</p>
@@ -280,4 +298,5 @@
   <script src="shop.js?v=1f723dc"></script>
   <script>document.getElementById("printlist-link").href = APPS_SCRIPT_URL + "?view=print";</script>
   <script src="site-links.js?v=1f723dc"></script>
+  <script src="teaser.js?v=1f723dc"></script>
 </body></html>

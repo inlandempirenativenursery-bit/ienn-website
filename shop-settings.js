@@ -29,6 +29,9 @@ var FALLBACK_PLANTS = [
 ];
 /* No-show pickup policy (Eric-approved 2026-10-25). Shown in the checkout drawer above "Place order", on the thank-you ticket,
    and in "Pickup & payment" on order.html. Edit the wording here only; no hold time on purpose (pickup is Saturdays). */
+/* Homepage "Starter packs coming soon" teaser: slides down once per visitor after this long on index.html (ms).
+   Preview now with ?teaser=now. Shown-flag: localStorage "ienn-starter-teaser-seen". */
+var STARTER_TEASER_DELAY_MS = 60000;
 var PICKUP_POLICY = { lead: "Please pick up on time.",
   text: "We set your plants aside just for you. If you can't make your pickup, let us know ahead of time. Orders that aren't picked up are released, and the plants go back on sale." };
 var ORDER_EMAIL = "plants@inlandempirenativenursery.com"; // mailto fallback only if the order endpoint fails
