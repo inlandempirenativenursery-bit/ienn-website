@@ -59,6 +59,8 @@ var IENN_BASICS_SPECIES = {
   "Eriogonum fasciculatum": { h:[2,4], w:[3,5], genusLevel:false },
   "Encelia californica": { sun:["full","part"], soil:"Adaptable", h:[3,4], w:[3,5], genusLevel:false },
   "Encelia farinosa": { h:[1,5], w:[2,4], soil:"Fast-draining", genusLevel:false, desc:"A desert shrub with silver leaves and bright yellow daisies held above the foliage. Loves heat and needs very little water." },
+  "Diplacus longiflorus": { sun:["full","part"], soil:"Fast-draining", water:1, bloom:["Sp","Su"], h:[1,3], w:[1,3], genusLevel:false,
+    desc:"A compact shrub with large pale-yellow to orange flowers in spring and summer. Give it good drainage and very little summer water." },
   "Diplacus calycinus": { sun:["full","part"], h:[1,3], w:[1,3], genusLevel:false },
   "Penstemon centranthifolius": { h:[2,4], w:[1,2], wild:["hummingbirds","pollinators"], genusLevel:false, desc:"Slender stems of scarlet tubular flowers rise from blue-green leaves. Built for hummingbirds; keep it on the dry side." },
   "Penstemon spectabilis": { h:[3,4], w:[2,3], genusLevel:false, desc:"Tall stems packed with lavender-blue tubular flowers in spring. Needs good drainage and little summer water." },
@@ -73,24 +75,33 @@ var IENN_FORM = { Salvia:["Shrub","Fragrant bee magnet"], Eriogonum:["Shrub","To
   Rhus:["Shrub","Glossy evergreen hedge"], Achillea:["Perennial","Lacy, tough lawn alternative"], Datura:["Perennial","Big white evening trumpets; toxic if eaten"], Artemisia:["Shrub","Silver scent of the hills"],
   Trichostema:["Sub-shrub","Woolly purple, wildly fragrant"], Baccharis:["Shrub","Tough evergreen cover"], Epilobium:["Perennial","Fall feast for hummingbirds"], Hesperocyparis:["Tree","Blue evergreen spire"],
   Dendromecon:["Shrub","Golden chaparral poppies"], Heteromeles:["Small tree","Red winter berries for birds"] };
-var IENN_FORM_SPECIES = { "Salvia apiana":[null,"Silvery leaves, tall bee-covered flower spikes"], "Salvia spathacea":["Perennial","Shade-loving hummingbird sage"], "Salvia mellifera":[null,"Honeybee favorite"],
+var IENN_FORM_SPECIES = { "Diplacus longiflorus":["Shrub",null], "Salvia apiana":[null,"Silvery leaves, tall bee-covered flower spikes"], "Salvia spathacea":["Perennial","Shade-loving hummingbird sage"], "Salvia mellifera":[null,"Honeybee favorite"],
   "Encelia farinosa":[null,"Silver desert sunshine"], "Eriogonum fasciculatum":[null,"Tough, long-blooming bee favorite"], "Baccharis pilularis":["Shrub","Tough evergreen groundcover"] };
+/* Old feed botanical -> species key (an older cached feed may still say aurantiacus for Southern bush monkeyflower, formerly "Sticky monkeyflower"). */
+var IENN_BASICS_ALIAS = { "Diplacus aurantiacus": "Diplacus longiflorus" };
 /* Look up basics for a botanical name, e.g. "Salvia apiana". Returns null if the genus is unknown. */
 function iennBasics(botanical) {
   var b = String(botanical || "").trim(), g = b.split(/\s+/)[0], base = IENN_BASICS[g]; if (!base) return null;
-  var key = b.split(/\s+/).slice(0, 2).join(" "), sp = IENN_BASICS_SPECIES[key] || {}, out = {}, k;
+  var key = b.split(/\s+/).slice(0, 2).join(" "); key = IENN_BASICS_ALIAS[key] || key; var sp = IENN_BASICS_SPECIES[key] || {}, out = {}, k;
   for (k in base) out[k] = base[k]; for (k in sp) out[k] = sp[k];
   if (IENN_BASICS_SPECIES[key] && sp.genusLevel == null && sp.desc) out.genusLevel = false;
   var f = IENN_FORM[g] || [], fs = IENN_FORM_SPECIES[key] || []; out.form = fs[0] || f[0] || ""; out.tag = fs[1] || f[1] || "";
   return out;
 }
 /* Display-name overrides: feed name (matching/orders unchanged) -> name shown on the site. */
-var IENN_DISPLAY_NAMES = { "Sacred datura": "Datura" };
-function iennDisplayName(n) { return IENN_DISPLAY_NAMES[n] || n; }
+var IENN_DISPLAY_NAMES = { "Sacred datura": "Datura", "Sticky monkeyflower": "Southern bush monkeyflower" };   // keys match case-insensitively
+function iennDisplayName(n) { if (IENN_DISPLAY_NAMES[n]) return IENN_DISPLAY_NAMES[n]; var k = String(n || "").toLowerCase().trim();
+  for (var x in IENN_DISPLAY_NAMES) if (x.toLowerCase() === k) return IENN_DISPLAY_NAMES[x]; return n; }
+/* Botanical-name overrides (exact species, case-insensitive): feed botanical -> name shown on the site and used for basics.
+   The live feed now says Diplacus longiflorus (fixed in the sheet 2026-10-24); this only covers an older feed cached in a visitor's browser. */
+var IENN_DISPLAY_BOTANICAL = { "diplacus aurantiacus": "Diplacus longiflorus" };
+function iennDisplayBotanical(b) { var k = String(b || "").toLowerCase().replace(/\s+/g, " ").trim(); return IENN_DISPLAY_BOTANICAL[k] || b; }
 /* Plants hidden from the shop (index + order pages). Case-insensitive match on the feed name or botanical name; add more as needed. */
-var IENN_HIDDEN_PLANTS = ["California encelia", "Coyote brush", "Bush poppy", "Arizona cypress, Blue Pyramid", "Arizona cypress", "Blue Pyramid Cypress"];
+var IENN_HIDDEN_PLANTS = ["California encelia", "Coyote brush", "Bush poppy", "Arizona cypress, Blue Pyramid", "Arizona cypress", "Blue Pyramid Cypress",
+  "Cleveland sage", "Purple sage", "Hummingbird sage", "Other"];   // "Other" is a catch-all feed row with no botanical name
 // Botanical matches (prefix: cultivars like "Hesperocyparis arizonica 'Blue Pyramid'" also match). Never add Encelia californica: California brittlebush shares it and must stay visible.
-var IENN_HIDDEN_BOTANICAL = ["Baccharis pilularis", "Dendromecon rigida", "Hesperocyparis arizonica", "Cupressus arizonica"];
+var IENN_HIDDEN_BOTANICAL = ["Baccharis pilularis", "Dendromecon rigida", "Hesperocyparis arizonica", "Cupressus arizonica",
+  "Salvia clevelandii", "Salvia leucophylla", "Salvia spathacea"];   // exact species only: never "Salvia" alone (Black and White sage stay visible)
 function iennHidden(p) { function c(x) { return String(x || "").toLowerCase().replace(/\s+/g, " ").trim(); }
   var full = c(p.feedName || p.fullName), names = [c(p.name), full, full.replace(/\s*\(.*$/, "")], b = c(p.botanical || (/\(([^)]*)\)/.exec(full) || [])[1]);
   if (IENN_HIDDEN_PLANTS.some(function (h) { return names.indexOf(c(h)) >= 0; })) return true;

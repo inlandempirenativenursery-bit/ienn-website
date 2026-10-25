@@ -25,13 +25,13 @@ function ienNormSize(s) {
 }
 function ienPrice(size) { var z = ienNormSize(size); return z ? IENN_SIZE_PRICES[z] : null; }
 var IENN_LOW_STOCK = 5;          // qty at or below this => "Low stock"
-var IENN_PINNED = [/salvia apiana|white sage/i, /sticky monkey ?flower|diplacus aurantiacus/i, /rock monkey ?flower|diplacus calycinus/i, /diplacus|mimulus|monkey ?flower/i,
+var IENN_PINNED = [/salvia apiana|white sage/i, /sticky monkey ?flower|southern bush monkey ?flower|diplacus (aurantiacus|longiflorus)/i, /rock monkey ?flower|diplacus calycinus/i, /diplacus|mimulus|monkey ?flower/i,
   /california poppy|eschscholzia/i, /showy penstemon|penstemon spectabilis/i, /scarlet bugler|centranthifolius/i, /matilija|romneya/i, /milkweed|asclepias/i]; // shown first (sheet rank still wins)
 var IENN_COLORFUL = /flower|bloom|curls|poppy|penstemon|salvia|sage|lupin|ceanothus|buckwheat|yarrow|milkweed|aster|primrose|verbena|iris|fuchsia|gilia|phacelia|clarkia/i;
 
 /* MARKED FALLBACK ONLY: names/sizes from existing site copy; stock unknown, no prices. */
 var IENN_FALLBACK = [
-  { name: "Sticky Monkeyflower", botanical: "Diplacus aurantiacus", sizes: [{ size: "1-gallon" }] },
+  { name: "Southern bush monkeyflower", botanical: "Diplacus longiflorus", sizes: [{ size: "1-gallon" }] },
   { name: "Woolly Blue Curls", botanical: "Trichostema lanatum", sizes: [{ size: "4-inch" }] },
   { name: "Yarrow", botanical: "Achillea millefolium", sizes: [{ size: "4-inch" }] },
   { name: "Blue Pyramid Cypress", botanical: "Cupressus arizonica 'Blue Pyramid'", sizes: [{ size: "1-gallon" }] }

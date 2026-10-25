@@ -273,6 +273,12 @@ html.ty-open, html.ty-open body { overflow:hidden; }
 .card.has-basics .ph { aspect-ratio:4/3; flex:none; }
 .card.has-basics .pane-front .body { flex:1; min-height:0; }
 .card.has-basics h3 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+/* Long names wrap to 2 lines: never let the title shrink (it was clipping the 2nd line); make room with a slightly smaller title and tighter gaps */
+.card.has-basics h3 { flex:none; }
+.card.has-basics.long-name h3 { font-size:0.9rem; line-height:1.18; }
+.card.has-basics.long-name .body { gap:0.25rem; }
+/* Wider cards (big phones, tablet, desktop): cap the photo height so the in-stock front (sizes, stepper, Add) still fits the 436px card; phones up to ~400px are unchanged */
+.card.has-basics .ph { max-height:150px; }
 .card.has-basics .row { margin-top:auto; }
 .card.has-basics .ph { aspect-ratio:5/4; }   /* taller: the credit line below the photo moved inside it */
 .card.has-basics .body { gap:0.35rem; padding:0.5rem 0.55rem 0.55rem; }

@@ -64,7 +64,7 @@
     n.appendChild(el("a", { class: "contact-sms", href: "sms:" + CONTACT_TEL }, "text")); n.appendChild(document.createTextNode(" Andrew")); return n; }
   function card(p, idx) {
       var ps = pstate(p), card = el("article", { class: "card" + (ps === "out" ? " sold-out" : ""), "aria-labelledby": p.id + "-name" });
-      card.dataset.id = p.id;
+      card.dataset.id = p.id; if (String(p.name).length >= 16) card.classList.add("long-name");   // may wrap to 2 lines: slightly smaller title, tighter gaps (shop.css)
       var ph = el("div", { class: "ph" });
       if (p.image) ph.appendChild(el("img", p.srcset ? { src: p.image, srcset: p.srcset, sizes: "(max-width: 600px) 48vw, 260px", alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" } : { src: p.image, alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" })); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }
       var lo = p.sizes.filter(function (z) { return inStock(z) && isFinite(z.price); }).map(function (z) { return z.price; });
@@ -532,7 +532,7 @@
   }
   function fallback() {
     return FALLBACK_PLANTS.map(function (p) { var nb = split(p.name);
-      return { id: slug(nb[0]), name: nb[0], fullName: p.name, botanical: nb[1], image: (typeof ienPhoto === "function" && ienPhoto(nb[0]) || {}).src || "", srcset: (typeof ienPhoto === "function" && ienPhoto(nb[0]) || {}).srcset || "", sizes: p.sizes.map(function (k) { return { key: k, label: SIZE_LABELS[k], price: PRICES[k], qty: null }; }) }; });
+      return { id: slug(nb[0]), name: nb[0], fullName: p.name, botanical: p.botanical || nb[1], image: (typeof ienPhoto === "function" && ienPhoto(nb[0]) || {}).src || "", srcset: (typeof ienPhoto === "function" && ienPhoto(nb[0]) || {}).srcset || "", sizes: p.sizes.map(function (k) { return { key: k, label: SIZE_LABELS[k], price: PRICES[k], qty: null }; }) }; });
   }
   var params = new URLSearchParams(location.search), prefilled = false;
   function prefill() { // home-page cart link: order.html?white-sage=2 or ?white-sage|1%20gal=1 (slug or slug|size)
@@ -546,7 +546,15 @@
     save();
   }
   var lastSig = null;
-  function use(l, msg, d, quick) { BASELINE = IENNStock.hasBaseline(d, l); PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l)).filter(function (p) { return !(typeof iennHidden === "function" && iennHidden(p)); })).map(function (p) { var dn = typeof iennDisplayName === "function" && iennDisplayName(p.name); if (dn && dn !== p.name) { p.feedName = p.feedName || p.name; p.name = dn; } return p; });   // display-name overrides; id/fullName keep the feed name for cart + orders
+  /* During a sheet rename the feed can briefly carry both the old row and the new one (e.g. "Sticky monkeyflower" and "Southern bush monkeyflower").
+     Both then show under the same display name: keep one card, preferring the row already named that way, then the one with stock. */
+  function dedupeShown(list) { var seen = {};
+    function stock(p) { return (p.sizes || []).reduce(function (t, z) { return t + (z.qty > 0 ? z.qty : 0); }, 0); }
+    list.forEach(function (p) { var k = String(p.name).toLowerCase(), o = seen[k];
+      if (!o || (o.feedName && !p.feedName) || (!!o.feedName === !!p.feedName && stock(p) > stock(o))) seen[k] = p; });
+    return list.filter(function (p) { return seen[String(p.name).toLowerCase()] === p; }); }
+  function use(l, msg, d, quick) { BASELINE = IENNStock.hasBaseline(d, l); PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l)).filter(function (p) { return !(typeof iennHidden === "function" && iennHidden(p)); })).map(function (p) { var dn = typeof iennDisplayName === "function" && iennDisplayName(p.name); if (dn && dn !== p.name) { p.feedName = p.feedName || p.name; p.name = dn; } if (typeof iennDisplayBotanical === "function" && p.botanical) p.botanical = iennDisplayBotanical(p.botanical); return p; });
+    PLANTS = dedupeShown(PLANTS);   // display-name overrides; id/fullName keep the feed name for cart + orders
     if (!quick) { prefill(); reconcile(); }
     var sig = JSON.stringify([BASELINE, PLANTS]); if (sig !== lastSig) { lastSig = sig; render(); } else update();   // same data: keep the grid as is
     if (quick) return; status.textContent = msg || ""; status.hidden = !msg;
