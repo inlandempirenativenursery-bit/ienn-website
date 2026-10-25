@@ -32,3 +32,15 @@ The shape is built in `teaser.js` at runtime, so no large path data is stored. I
 - **Transparency:** petals are about 88% opaque and the disk about 90%. Behind them, a backdrop blur is clipped to the flower's outline where the browser supports it. The 3-D edge is 9px deep and about 82% opaque. The text is HTML laid on top, so it stays crisp.
 - **Petals:** shading from the center to the tip makes them look plump, and each petal has a curved white sheen on its outer part. The drop shadow is softer and larger.
 - **Motion:** the flower springs in, scaling from 0.6 up to 1.08 and settling at 1 with a tiny wobble, then breathes slowly (scale 1 to 1.022 over 4.8s). A press squishes it (`translateY(6px) scale(.96)`) before dismissing. With `prefers-reduced-motion`, it simply appears, with no spring, breathing or squish.
+
+### Pop + new copy (Eric)
+- **Copy** (this applies to every teaser shape):
+  - Heading: "Planting bundles coming soon". On the aster it breaks as "Planting bundles / coming soon".
+  - Subline: "Pollinator & landscape starter packs".
+  - aria-label: "Planting bundles coming soon. Pollinator & landscape starter packs. Tap to dismiss".
+- **Pop on dismiss** (tap, click or Escape): the flower squishes for about 90ms. Then the 8 petals fly 66–86 units (about 50–70px) outward along their own angles, turning ±12–14° as they shrink and fade. The disk swells to 1.15 and fades, and 10 lilac and soft-gold dots and mini petals drift out. The whole pop takes about 600ms and uses only transforms and opacity, and then the teaser is removed. Taps never reach the page underneath. With `prefers-reduced-motion`, it just fades out quickly.
+- **Highlights toned down:**
+  - The petal sheens are about ⅓ as bright as before.
+  - The disk's dome gloss is now only a faint glow at its top edge, clear of the text.
+  - The shared top gloss is at 30%.
+  - A solid lilac layer under the disk keeps petal seams from showing behind the text. The petals stay about 88% opaque.
