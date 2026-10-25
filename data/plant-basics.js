@@ -48,7 +48,16 @@ var IENN_BASICS = {
   Dendromecon: { shape:"SmallTree", water:1, sun:["full"], soil:"Fast-draining", bloom:["W","Sp"], wild:["pollinators"], h:[4,8], w:[4,8], ie:true,
     desc:"A chaparral shrub with bright yellow poppy flowers. Needs excellent drainage and dislikes summer water." },
   Heteromeles: { water:1, sun:["full","part"], soil:"Adaptable", bloom:["Su"], wild:["pollinators","birds"], h:[8,15], w:[6,12], ie:true,
-    desc:"An evergreen shrub with white summer flowers and bright red winter berries that birds love. A classic native hedge or small tree." }
+    desc:"An evergreen shrub with white summer flowers and bright red winter berries that birds love. A classic native hedge or small tree." },
+  /* Added 2026-10-25 (Calscape-verified, see docs/factcheck-2026-10-25.md) */
+  Atriplex: { water:1, sun:["full"], soil:"Adaptable", bloom:["W","Sp","Su","F"], wild:["birds","pollinators"], h:[1,10], w:[3,7], ie:true, genusLevel:true,
+    desc:"A tough gray-green shrub with small yellow-green flowers and showy clusters of papery four-winged fruit. Handles salty, alkaline or clay soil; keep it dry." },
+  Acmispon: { water:1, sun:["full"], soil:"Adaptable", bloom:["Sp","Su"], wild:["pollinators"], h:[2,3], w:[3,3], ie:true, genusLevel:true,
+    desc:"Wiry green stems covered in small yellow pea flowers that age to red. Fast and airy; cut back in late summer or fall for fresh growth." },
+  Sphaeralcea: { water:1, sun:["full"], soil:"Fast-draining", bloom:["Sp","Su"], wild:["pollinators","containers"], h:[3,5], w:[2,4], ie:true, genusLevel:true,
+    desc:"Fuzzy gray-green leaves and bowl-shaped apricot-orange flowers. Loves heat and sharp drainage; prune after bloom to keep it compact." },
+  Erythranthe: { water:3, sun:["full","part"], soil:"Adaptable", bloom:["Sp","Su","F"], wild:["hummingbirds","pollinators","containers"], h:[2,3], w:[3,3], ie:false, genusLevel:true,
+    desc:"Bright red-orange tubular flowers over soft, toothed leaves. Likes regular water and some afternoon shade; deadhead for more blooms." }
 };
 var IENN_BASICS_SPECIES = {
   "Salvia apiana": { h:[3,5], w:[3,8], bloom:["Sp","Su"], desc:"Striking silver-white leaves with a strong fragrance and tall flower wands bees crowd around. Water very little once established." },
@@ -57,6 +66,9 @@ var IENN_BASICS_SPECIES = {
   "Salvia leucophylla": { h:[2,5], w:[3,10], bloom:["Sp","Su"], desc:"Soft gray leaves and pinkish-lavender flower whorls. Spreads wide and handles heat well." },
   "Salvia spathacea": { water:2, sun:["part","shade"], soil:"Adaptable", h:[1,3], w:[2,4], bloom:["W","Sp"], desc:"A low, spreading sage with magenta flower spikes, made for dry shade under trees. Hummingbirds visit often." },
   "Eriogonum fasciculatum": { h:[2,4], w:[3,5], genusLevel:false },
+  "Eriogonum crocatum": { water:1, sun:["full"], soil:"Clay-tolerant", bloom:["Sp","Su"], wild:["pollinators"], h:[1,3], w:[2,3], ie:false, genusLevel:false,
+    desc:"A low, mounding evergreen with silvery woolly leaves and bright sulfur-yellow flower clusters. Easy and low water once established." },
+  "Atriplex canescens": { genusLevel:false }, "Acmispon glaber": { genusLevel:false }, "Sphaeralcea ambigua": { genusLevel:false }, "Erythranthe cardinalis": { genusLevel:false },
   "Encelia californica": { sun:["full","part"], soil:"Adaptable", h:[3,4], w:[3,5], genusLevel:false },
   "Encelia farinosa": { h:[1,5], w:[2,4], soil:"Fast-draining", genusLevel:false, desc:"A desert shrub with silver leaves and bright yellow daisies held above the foliage. Loves heat and needs very little water." },
   "Diplacus longiflorus": { sun:["full","part"], soil:"Fast-draining", water:1, bloom:["Sp","Su"], h:[1,3], w:[1,3], genusLevel:false,
@@ -74,7 +86,8 @@ var IENN_FORM = { Salvia:["Shrub","Fragrant bee magnet"], Eriogonum:["Shrub","To
   Romneya:["Perennial","Giant fried-egg flowers"], Asclepias:["Perennial","Monarch caterpillar host"], Diplacus:["Sub-shrub","Hummingbird spring show"], Penstemon:["Perennial","Hummingbird flower spikes"],
   Rhus:["Shrub","Glossy evergreen hedge"], Achillea:["Perennial","Lacy, tough lawn alternative"], Datura:["Perennial","Big white evening trumpets; toxic if eaten"], Artemisia:["Shrub","Silver scent of the hills"],
   Trichostema:["Sub-shrub","Woolly purple, wildly fragrant"], Baccharis:["Shrub","Tough evergreen cover"], Epilobium:["Perennial","Fall feast for hummingbirds"], Hesperocyparis:["Tree","Blue evergreen spire"],
-  Dendromecon:["Shrub","Golden chaparral poppies"], Heteromeles:["Small tree","Red winter berries for birds"] };
+  Dendromecon:["Shrub","Golden chaparral poppies"], Heteromeles:["Small tree","Red winter berries for birds"],
+  Atriplex:["Shrub",""], Acmispon:["Perennial",""], Sphaeralcea:["Shrub",""], Erythranthe:["Perennial",""] };
 var IENN_FORM_SPECIES = { "Diplacus longiflorus":["Shrub",null], "Salvia apiana":[null,"Silvery leaves, tall bee-covered flower spikes"], "Salvia spathacea":["Perennial","Shade-loving hummingbird sage"], "Salvia mellifera":[null,"Honeybee favorite"],
   "Encelia farinosa":[null,"Silver desert sunshine"], "Eriogonum fasciculatum":[null,"Tough, long-blooming bee favorite"], "Baccharis pilularis":["Shrub","Tough evergreen groundcover"] };
 /* Old feed botanical -> species key (an older cached feed may still say aurantiacus for Southern bush monkeyflower, formerly "Sticky monkeyflower"). */
