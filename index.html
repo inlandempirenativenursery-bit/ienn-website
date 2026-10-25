@@ -163,6 +163,18 @@
     .starter-teaser.st-flowerish.in:active, .starter-teaser.st-flowerish.pressed { box-shadow:none; }
     .starter-teaser.st-flowerish.pressed .st-edge, .starter-teaser.st-flowerish.in:active .st-edge { transform:none; }
     .starter-teaser.st-flowerish.pressed .st-flower { filter:drop-shadow(0 3px 4px var(--st-glow)); }
+    /* Glass lily (calochortus-glass | calochortus-side): translucent petals/sepals, thin darker outline, semi-transparent edge, frosted cream text backing. */
+    .st-glass .st-blur { position:absolute; left:0; top:0; width:100%; height:100%; pointer-events:none; -webkit-mask-size:100% 100%; mask-size:100% 100%; -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
+      -webkit-backdrop-filter:blur(7px) saturate(1.15); backdrop-filter:blur(7px) saturate(1.15); }
+    .st-flowerish .st-flower { position:relative; }
+    .st-glass .st-flower { filter:drop-shadow(0 8px 10px rgba(80,55,110,.22)); }
+    .st-glass .st-edge { opacity:.42; }
+    .st-glass .fl-petal { fill-opacity:.62; stroke:var(--st-edge); stroke-opacity:.75; stroke-width:1.6; }
+    .st-glass .fl-sepal { fill-opacity:.5; stroke:var(--st-edge); stroke-opacity:.6; stroke-width:1.3; }
+    .st-glass .fl-center { fill:#fbf7fd; fill-opacity:.82; stroke:var(--st-edge); stroke-opacity:.45; stroke-width:1.4; }
+    .st-glass .fl-mark { opacity:.4; }
+    .st-glass .fl-calyx { fill-opacity:.75; }
+    .st-shape-calochortus-glass .st-title, .st-shape-calochortus-glass .st-sub, .st-shape-calochortus-side .st-title, .st-shape-calochortus-side .st-sub { color:#2a1d3b; text-shadow:0 1px 0 rgba(255,255,255,.5); }
     .starter-teaser:focus-visible { outline:3px solid var(--sage-dark); outline-offset:3px; }
     .starter-teaser.out { animation:st-out .28s ease-in forwards; pointer-events:none; }
     @keyframes st-drop { 0% { opacity:0; transform:translateY(-60px) scale(.9); } 60% { opacity:1; transform:translateY(8px) scale(1.02); } 80% { transform:translateY(-3px); } 100% { opacity:1; transform:none; } }
