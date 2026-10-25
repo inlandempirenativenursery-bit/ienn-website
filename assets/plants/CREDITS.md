@@ -46,3 +46,4 @@ Eric's photos (catalogue and ericbg2) are © Eric Bo Garcia / IENN. The keithwg1
 | apricot-mallow.jpg | Apricot mallow | Eric Bo Garcia (ericbg2) via iNaturalist (photo 503350038), 2025-05-09, Joshua Tree NP, CA; resized only | https://www.inaturalist.org/observations/280266588 |
 | scarlet-monkeyflower.jpg | Scarlet monkeyflower | Eric Bo Garcia (ericbg2) via iNaturalist (photo 680552542), 2026-06-15, San Bernardino NF (Crestline), CA; resized only | https://www.inaturalist.org/observations/372433208 |
 | conejo-buckwheat.jpg | Conejo buckwheat | iNaturalist, (c) Adam J. Searcy, some rights reserved (CC BY), CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) (photo 649385437); resized only | https://www.inaturalist.org/observations/356100160 |
+| blue-grama.jpg | Blue grama | Eric Bo Garcia (ericbg2) via iNaturalist (photo 231255900), 2022-09-15, Gunnison County, CO; resized only | https://www.inaturalist.org/observations/135576224 |
