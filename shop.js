@@ -178,7 +178,10 @@
   var SOILL = { "Fast-draining": "Fast-draining", "Clay-tolerant": "Clay OK", "Adaptable": "Any soil" };
   var SEAS = [["W", "Win", "Winter"], ["Sp", "Spr", "Spring"], ["Su", "Sum", "Summer"], ["F", "Fall", "Fall"]];
   var WILDL = { pollinators: "Bees & butterflies", hummingbirds: "Hummingbirds", birds: "Birds", fragrant: "Fragrant", containers: "Pot-friendly", heat: "Heat tough" };
-  function ft(a) { return (a[0] === a[1] ? a[0] : a[0] + "\u2013" + a[1]) + " ft"; }
+  function ft(a) { function i(v) { return Math.round(v * 12); }   // sizes under 1 ft read in inches (e.g. low grasses)
+    if (a[1] < 1) return (a[0] === a[1] ? i(a[0]) : i(a[0]) + "\u2013" + i(a[1])) + " in";
+    if (a[0] < 1) return i(a[0]) + " in\u2013" + a[1] + " ft";
+    return (a[0] === a[1] ? a[0] : a[0] + "\u2013" + a[1]) + " ft"; }
   function icon(name, label, off) { var s = svg(24, 24, ICON[name], "bi" + (off ? " off" : "")); if (label) { s.setAttribute("role", "img"); s.removeAttribute("aria-hidden"); s.setAttribute("aria-label", label); var t = document.createElementNS(SVGNS, "title"); t.textContent = label; s.insertBefore(t, s.firstChild); } return s; }
   /* Generic solid silhouettes by life form, one green; drawn in a box gw wide x gh tall sitting on the ground line. */
   function plantShape(x, cx, base, gw, gh) {
@@ -218,7 +221,8 @@
   }
   function sizeArt(x) {   // plant silhouette vs a 6' person, true scale per frame, auto-zoomed so the plant reads well
     var W = 96, H = 50, base = H - 1, room = H - 7, hmax = x.h[1];
-    var sc = hmax <= 3 ? room * .9 / hmax : room / Math.max(6, hmax);   // small: zoom in (person cropped); mid: fit person; big: fit plant
+    var sc = hmax <= 3 ? room * .9 / Math.max(1, hmax) :   /* under 1 ft (low grasses): keep a 1-ft frame so the person isn't a blown-up block */
+      room / Math.max(6, hmax);   // small: zoom in (person cropped); mid: fit person; big: fit plant
     var ph = 6 * sc, gh = hmax * sc, gw = Math.min(60, Math.max(22, x.w[1] * sc * 1.1)), px = 4, cx = 24 + gw / 2, o = "";
     var hr = ph * .085, bw = ph * .1;
     o += '<g fill="#9ca3af"><circle cx="' + (px + 6) + '" cy="' + (base - ph + hr) + '" r="' + hr + '"/><path d="M' + (px + 6 - bw) + ' ' + base + 'V' + (base - ph * .5) + 'Q' + (px + 6 - bw * 1.2) + ' ' + (base - ph * .79) + ' ' + (px + 6) + ' ' + (base - ph * .8) + 'Q' + (px + 6 + bw * 1.2) + ' ' + (base - ph * .79) + ' ' + (px + 6 + bw) + ' ' + (base - ph * .5) + 'V' + base + 'z"/></g>';
@@ -578,4 +582,11 @@
   load();
   setInterval(load, REFRESH_MINUTES * 60000);
   document.addEventListener("visibilitychange", function () { if (!document.hidden) load(); });
+})();
+/* No-show pickup policy: one source of truth in shop-settings.js (PICKUP_POLICY). */
+(function () { if (typeof PICKUP_POLICY === "undefined") return;
+  var ic = '<svg class="pp-ic" viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 5.5V10l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  Array.prototype.forEach.call(document.querySelectorAll("[data-pickup-policy]"), function (n) {
+    n.innerHTML = ic; var t = document.createElement("span"), b = document.createElement("b"); b.textContent = PICKUP_POLICY.lead;
+    t.appendChild(b); t.appendChild(document.createTextNode(" " + PICKUP_POLICY.text)); n.appendChild(t); });
 })();
