@@ -77,7 +77,7 @@ var IENN_FORM = { Salvia:["Shrub","Fragrant bee magnet"], Eriogonum:["Shrub","To
   Dendromecon:["Shrub","Golden chaparral poppies"], Heteromeles:["Small tree","Red winter berries for birds"] };
 var IENN_FORM_SPECIES = { "Diplacus longiflorus":["Shrub",null], "Salvia apiana":[null,"Silvery leaves, tall bee-covered flower spikes"], "Salvia spathacea":["Perennial","Shade-loving hummingbird sage"], "Salvia mellifera":[null,"Honeybee favorite"],
   "Encelia farinosa":[null,"Silver desert sunshine"], "Eriogonum fasciculatum":[null,"Tough, long-blooming bee favorite"], "Baccharis pilularis":["Shrub","Tough evergreen groundcover"] };
-/* Old feed botanical -> species key (an older cached feed may still say aurantiacus for Sticky monkeyflower). */
+/* Old feed botanical -> species key (an older cached feed may still say aurantiacus for Southern bush monkeyflower, formerly "Sticky monkeyflower"). */
 var IENN_BASICS_ALIAS = { "Diplacus aurantiacus": "Diplacus longiflorus" };
 /* Look up basics for a botanical name, e.g. "Salvia apiana". Returns null if the genus is unknown. */
 function iennBasics(botanical) {
@@ -89,8 +89,9 @@ function iennBasics(botanical) {
   return out;
 }
 /* Display-name overrides: feed name (matching/orders unchanged) -> name shown on the site. */
-var IENN_DISPLAY_NAMES = { "Sacred datura": "Datura" };
-function iennDisplayName(n) { return IENN_DISPLAY_NAMES[n] || n; }
+var IENN_DISPLAY_NAMES = { "Sacred datura": "Datura", "Sticky monkeyflower": "Southern bush monkeyflower" };   // keys match case-insensitively
+function iennDisplayName(n) { if (IENN_DISPLAY_NAMES[n]) return IENN_DISPLAY_NAMES[n]; var k = String(n || "").toLowerCase().trim();
+  for (var x in IENN_DISPLAY_NAMES) if (x.toLowerCase() === k) return IENN_DISPLAY_NAMES[x]; return n; }
 /* Botanical-name overrides (exact species, case-insensitive): feed botanical -> name shown on the site and used for basics.
    The live feed now says Diplacus longiflorus (fixed in the sheet 2026-10-24); this only covers an older feed cached in a visitor's browser. */
 var IENN_DISPLAY_BOTANICAL = { "diplacus aurantiacus": "Diplacus longiflorus" };

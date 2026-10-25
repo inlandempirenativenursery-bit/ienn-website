@@ -1,4 +1,4 @@
-# Plant basics fact-check, 2026-10-24: Sticky monkeyflower → *Diplacus longiflorus*
+# Plant basics fact-check, 2026-10-24: Sticky monkeyflower → Southern bush monkeyflower (*Diplacus longiflorus*)
 
 Eric confirmed the stock sold as "Sticky monkeyflower" is *Diplacus longiflorus*, not *D. aurantiacus*. Lobo updated the sheet, so the live feed now sends
 "Sticky monkeyflower (Diplacus longiflorus)". The frontend data was keyed and updated to match (`data/plant-basics.js` species entry
@@ -33,3 +33,8 @@ Photo (`assets/plants/sticky-monkeyflower.jpg`, Eric's catalogue photo `photos/s
 ## Also hidden 2026-10-24
 Cleveland sage (*Salvia clevelandii*), Purple sage (*S. leucophylla*), Hummingbird sage (*S. spathacea*) and the "Other" feed row (no botanical) are hidden
 from the shop by exact name and exact species. Black sage and White sage stay visible.
+
+## Common name (2026-10-24)
+Calscape, Calflora and USDA PLANTS all use "Southern bush monkeyflower" as the standard name for *D. longiflorus*. Eric chose to rename it on the site.
+The live feed now sends "Southern bush monkeyflower (Diplacus longiflorus)". The frontend keeps a fallback display override (`IENN_DISPLAY_NAMES`, case-insensitive)
+for any old cached feed. The photo alias (`southern-bush-monkeyflower` → `sticky-monkeyflower.jpg`) and the pin/sort keywords work with either name.

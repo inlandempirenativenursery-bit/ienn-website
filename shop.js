@@ -546,7 +546,15 @@
     save();
   }
   var lastSig = null;
-  function use(l, msg, d, quick) { BASELINE = IENNStock.hasBaseline(d, l); PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l)).filter(function (p) { return !(typeof iennHidden === "function" && iennHidden(p)); })).map(function (p) { var dn = typeof iennDisplayName === "function" && iennDisplayName(p.name); if (dn && dn !== p.name) { p.feedName = p.feedName || p.name; p.name = dn; } if (typeof iennDisplayBotanical === "function" && p.botanical) p.botanical = iennDisplayBotanical(p.botanical); return p; });   // display-name overrides; id/fullName keep the feed name for cart + orders
+  /* During a sheet rename the feed can briefly carry both the old row and the new one (e.g. "Sticky monkeyflower" and "Southern bush monkeyflower").
+     Both then show under the same display name: keep one card, preferring the row already named that way, then the one with stock. */
+  function dedupeShown(list) { var seen = {};
+    function stock(p) { return (p.sizes || []).reduce(function (t, z) { return t + (z.qty > 0 ? z.qty : 0); }, 0); }
+    list.forEach(function (p) { var k = String(p.name).toLowerCase(), o = seen[k];
+      if (!o || (o.feedName && !p.feedName) || (!!o.feedName === !!p.feedName && stock(p) > stock(o))) seen[k] = p; });
+    return list.filter(function (p) { return seen[String(p.name).toLowerCase()] === p; }); }
+  function use(l, msg, d, quick) { BASELINE = IENNStock.hasBaseline(d, l); PLANTS = sortPlants(IENNStock.view(l, IENNStock.hasBaseline(d, l)).filter(function (p) { return !(typeof iennHidden === "function" && iennHidden(p)); })).map(function (p) { var dn = typeof iennDisplayName === "function" && iennDisplayName(p.name); if (dn && dn !== p.name) { p.feedName = p.feedName || p.name; p.name = dn; } if (typeof iennDisplayBotanical === "function" && p.botanical) p.botanical = iennDisplayBotanical(p.botanical); return p; });
+    PLANTS = dedupeShown(PLANTS);   // display-name overrides; id/fullName keep the feed name for cart + orders
     if (!quick) { prefill(); reconcile(); }
     var sig = JSON.stringify([BASELINE, PLANTS]); if (sig !== lastSig) { lastSig = sig; render(); } else update();   // same data: keep the grid as is
     if (quick) return; status.textContent = msg || ""; status.hidden = !msg;
