@@ -1,4 +1,4 @@
-/* "Starter packs coming soon" teaser (index.html only): a big juicy 3-D button centered in the viewport.
+/* "Planting bundles coming soon" (starter packs) teaser (index.html only): a big juicy 3-D button centered in the viewport.
    Shows after STARTER_TEASER_DELAY_MS (shop-settings.js), once per visitor; color from STARTER_TEASER_COLOR ("honey" | "lilac" | "sage" | "red").
    Waits while the checkout drawer, promo or a dialog is open. Press anywhere on it: it sinks (~120ms), then shrinks/fades away. Escape also dismisses.
    Heading font from STARTER_TEASER_FONT (only that one Google Font loads). Preview: ?teaser=now (ignores the seen flag), optional &teasercolor=lilac &teaserfont=fredoka &teasershape=leaf (STARTER_TEASER_SHAPE; flowers: calochortus, calochortus-glass, calochortus-side, salvia, trichostema). No email capture, prices or pack names. */
@@ -57,7 +57,7 @@
     parts.push(["under", "0,0,104"]);   // even lilac under the disk, so nothing (petal seams, page) shows through behind the text
     parts.push(["disk", poly(dp)]);
     parts.push(["dome", "0,-97,66,13,0"]);   // very faint top-edge glow on the disk, clear of the text
-    return { parts: parts, text: [-94, -82, 188, 164], vb: [-213, -213, 426, 438], w: 340, juicy: true, frost: true };
+    return { parts: parts, text: [-102, -80, 204, 160], vb: [-213, -213, 426, 438], w: 340, juicy: true, frost: true };
   })();
   function flowerSVG(f) {
     var NS = 'xmlns="http://www.w3.org/2000/svg"', vb = f.vb, out = [], clip = [], sil = [];
@@ -98,8 +98,8 @@
   function show() {
     if (busy()) { setTimeout(show, 1000); return; }   // wait until the drawer / pop-up is closed
     var b = document.createElement("button"); b.type = "button"; b.className = "starter-teaser st-" + color + " st-font-" + fontKey + " st-shape-" + shape;
-    b.setAttribute("aria-label", "Starter packs coming soon. Plants grouped to grow well together and fill in fast. Tap to dismiss");
-    b.innerHTML = '<span class="st-hole" aria-hidden="true"></span><span class="st-title" aria-hidden="true">Starter packs coming soon</span><span class="st-sub" aria-hidden="true">Plants grouped to grow well together and fill in fast.</span>';
+    b.setAttribute("aria-label", "Planting bundles coming soon. Pollinator & landscape starter packs. Tap to dismiss");
+    b.innerHTML = '<span class="st-hole" aria-hidden="true"></span><span class="st-title" aria-hidden="true"><span class="st-nw">Planting bundles</span> <span class="st-nw">coming soon</span></span><span class="st-sub" aria-hidden="true">Pollinator &amp; landscape starter packs</span>';
     var fl = FLOWERS[shape];
     if (fl) {   // flower outline: SVG silhouette is the hit area; text box placed over the flower's broad part
       b.classList.add("st-flowerish"); b.insertAdjacentHTML("afterbegin", flowerSVG(fl));
