@@ -1,9 +1,11 @@
-/* "Starter packs coming soon" teaser (index.html only): a big juicy honey button floating upper-center, below the header.
-   Shows after STARTER_TEASER_DELAY_MS (shop-settings.js), once per visitor. Waits while the checkout drawer, promo or a dialog is open.
-   Tap/click anywhere on it, or press Escape, to dismiss. ?teaser=now shows it right away (ignores the seen flag).
-   No email capture, prices or pack names. */
+/* "Starter packs coming soon" teaser (index.html only): a big juicy 3-D button centered in the viewport.
+   Shows after STARTER_TEASER_DELAY_MS (shop-settings.js), once per visitor; color from STARTER_TEASER_COLOR ("honey" | "lilac" | "sage" | "red").
+   Waits while the checkout drawer, promo or a dialog is open. Press anywhere on it: it sinks (~120ms), then shrinks/fades away. Escape also dismisses.
+   Preview: ?teaser=now (ignores the seen flag), optional &teasercolor=lilac. No email capture, prices or pack names. */
 (function () {
-  var KEY = "ienn-starter-teaser-seen", now = /[?&]teaser=now\b/.test(location.search);
+  var KEY = "ienn-starter-teaser-seen", q = location.search, now = /[?&]teaser=now\b/.test(q);
+  var COLORS = ["honey", "lilac", "sage", "red"], m = /[?&]teasercolor=([a-z]+)/.exec(q);
+  var color = (m && COLORS.indexOf(m[1]) >= 0) ? m[1] : (typeof STARTER_TEASER_COLOR === "string" && COLORS.indexOf(STARTER_TEASER_COLOR) >= 0 ? STARTER_TEASER_COLOR : "honey");
   function seen() { try { return localStorage.getItem(KEY) === "1"; } catch (e) { return false; } }
   function mark() { try { localStorage.setItem(KEY, "1"); } catch (e) {} }
   if (!now && seen()) return;
@@ -11,18 +13,20 @@
   function busy() { return document.body.classList.contains("drawer-open") || document.querySelector(".ienn-promo, .confirm-modal:not([hidden]), #checkout:not([hidden])"); }
   function show() {
     if (busy()) { setTimeout(show, 1000); return; }   // wait until the drawer / pop-up is closed
-    var hd = document.querySelector("header"), top = hd ? Math.max(0, Math.round(hd.getBoundingClientRect().bottom)) : 0;
-    var b = document.createElement("button"); b.type = "button"; b.className = "starter-teaser";
+    var b = document.createElement("button"); b.type = "button"; b.className = "starter-teaser st-" + color;
     b.setAttribute("aria-label", "Starter packs coming soon. Plants grouped to grow well together and fill in fast. Tap to dismiss");
-    b.style.top = (top + 18) + "px";
     b.innerHTML = '<span class="st-title" aria-hidden="true">Starter packs coming soon</span><span class="st-sub" aria-hidden="true">Plants grouped to grow well together and fill in fast.</span>';
     document.body.appendChild(b); mark();
     requestAnimationFrame(function () { requestAnimationFrame(function () { b.classList.add("in"); }); });
     var gone = false;
-    function dismiss() { if (gone) return; gone = true; mark(); document.removeEventListener("keydown", onKey);
-      b.classList.remove("in"); b.classList.add("out"); setTimeout(function () { b.remove(); }, 350); }
-    function onKey(e) { if (e.key === "Escape" || e.key === "Esc") dismiss(); }
-    b.addEventListener("click", dismiss); document.addEventListener("keydown", onKey);
+    function out() { b.classList.remove("in", "pressed"); b.classList.add("out"); setTimeout(function () { b.remove(); }, 320); }
+    function dismiss(press) { if (gone) return; gone = true; mark(); document.removeEventListener("keydown", onKey);
+      if (press) { b.classList.add("pressed"); setTimeout(out, 120); } else out(); }   // let the sink read, then shrink/fade
+    function onKey(e) { if (e.key === "Escape" || e.key === "Esc") dismiss(false); }
+    b.addEventListener("pointerdown", function () { if (!gone) b.classList.add("pressed"); });
+    b.addEventListener("pointerleave", function () { if (!gone) b.classList.remove("pressed"); });
+    b.addEventListener("click", function () { dismiss(true); });   // also fires for Enter/Space
+    document.addEventListener("keydown", onKey);
   }
   function start() { setTimeout(show, delay); }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
