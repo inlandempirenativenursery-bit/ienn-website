@@ -1,7 +1,7 @@
 /* "Starter packs coming soon" teaser (index.html only): a big juicy 3-D button centered in the viewport.
    Shows after STARTER_TEASER_DELAY_MS (shop-settings.js), once per visitor; color from STARTER_TEASER_COLOR ("honey" | "lilac" | "sage" | "red").
    Waits while the checkout drawer, promo or a dialog is open. Press anywhere on it: it sinks (~120ms), then shrinks/fades away. Escape also dismisses.
-   Heading font from STARTER_TEASER_FONT (only that one Google Font loads). Preview: ?teaser=now (ignores the seen flag), optional &teasercolor=lilac &teaserfont=fredoka. No email capture, prices or pack names. */
+   Heading font from STARTER_TEASER_FONT (only that one Google Font loads). Preview: ?teaser=now (ignores the seen flag), optional &teasercolor=lilac &teaserfont=fredoka &teasershape=leaf (STARTER_TEASER_SHAPE). No email capture, prices or pack names. */
 (function () {
   var KEY = "ienn-starter-teaser-seen", q = location.search, now = /[?&]teaser=now\b/.test(q);
   var COLORS = ["honey", "lilac", "sage", "red"], m = /[?&]teasercolor=([a-z]+)/.exec(q);
@@ -22,6 +22,8 @@
     var done = false; function go() { if (!done) { done = true; cb(); } } setTimeout(go, 1500);
     try { var fam = FONT.family.split(",")[0]; (function poll(n) { if (document.fonts && document.fonts.check(FONT.weight + " 20px " + fam)) return go(); if (n > 0) setTimeout(function () { poll(n - 1); }, 100); })(14); } catch (e) { go(); }
   }
+  var SHAPES = ["pill", "card", "leaf", "badge", "packet", "tag"], sm = /[?&]teasershape=([a-z]+)/.exec(q);
+  var shape = (sm && SHAPES.indexOf(sm[1]) >= 0) ? sm[1] : (typeof STARTER_TEASER_SHAPE === "string" && SHAPES.indexOf(STARTER_TEASER_SHAPE) >= 0 ? STARTER_TEASER_SHAPE : "pill");
   function seen() { try { return localStorage.getItem(KEY) === "1"; } catch (e) { return false; } }
   function mark() { try { localStorage.setItem(KEY, "1"); } catch (e) {} }
   if (!now && seen()) return;
@@ -29,9 +31,9 @@
   function busy() { return document.body.classList.contains("drawer-open") || document.querySelector(".ienn-promo, .confirm-modal:not([hidden]), #checkout:not([hidden])"); }
   function show() {
     if (busy()) { setTimeout(show, 1000); return; }   // wait until the drawer / pop-up is closed
-    var b = document.createElement("button"); b.type = "button"; b.className = "starter-teaser st-" + color + " st-font-" + fontKey;
+    var b = document.createElement("button"); b.type = "button"; b.className = "starter-teaser st-" + color + " st-font-" + fontKey + " st-shape-" + shape;
     b.setAttribute("aria-label", "Starter packs coming soon. Plants grouped to grow well together and fill in fast. Tap to dismiss");
-    b.innerHTML = '<span class="st-title" aria-hidden="true">Starter packs coming soon</span><span class="st-sub" aria-hidden="true">Plants grouped to grow well together and fill in fast.</span>';
+    b.innerHTML = '<span class="st-hole" aria-hidden="true"></span><span class="st-title" aria-hidden="true">Starter packs coming soon</span><span class="st-sub" aria-hidden="true">Plants grouped to grow well together and fill in fast.</span>';
     var t = b.querySelector(".st-title"); t.style.fontFamily = FONT.family; t.style.fontWeight = FONT.weight; t.style.fontSize = FONT.size;
     if (fontKey !== "dancing") { t.style.letterSpacing = "0.01em"; t.style.lineHeight = "1.15"; }
     document.body.appendChild(b); mark();
