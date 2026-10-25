@@ -317,3 +317,11 @@ html.bg-light .pane-basics { --bg-op:.12; } html.bg-strong .pane-basics { --bg-o
 .tq button:disabled { color:#c7c5bd; background:#efeee9; cursor:default; }
 
 .pane-clean .photo-credit { max-width:calc(100% - 0.6rem); bottom:1.6rem; }   /* clean panel: full width, sits above the dots */
+
+/* No-show pickup policy note: calm lilac/sage callout (never red), compact on phones */
+.pickup-policy { display:flex; gap:0.45rem; align-items:flex-start; margin:0.6rem 0; padding:0.5rem 0.65rem; background:#f4eff8; border:1px solid #e2d8ec; border-left:3px solid #a993c2; border-radius:8px; color:#4a5a4a; font-size:0.8rem; line-height:1.4; text-align:left; }
+.pickup-policy:empty { display:none; }
+.pickup-policy b { color:#4a5a4a; }
+.pickup-policy .pp-ic { flex:none; margin-top:0.1rem; color:#7d6a99; }
+.info .pickup-policy { margin:0.5rem 0; }
+.water .bi.half { opacity:.55; }   /* upper end of a water range */

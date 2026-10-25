@@ -177,8 +177,12 @@
   var SUNL = { full: "Full sun", part: "Part sun", shade: "Shade" }, WATL = ["", "Low water", "Moderate water", "Regular water"];
   var SOILL = { "Fast-draining": "Fast-draining", "Clay-tolerant": "Clay OK", "Adaptable": "Any soil" };
   var SEAS = [["W", "Win", "Winter"], ["Sp", "Spr", "Spring"], ["Su", "Sum", "Summer"], ["F", "Fall", "Fall"]];
-  var WILDL = { pollinators: "Bees & butterflies", hummingbirds: "Hummingbirds", birds: "Birds", fragrant: "Fragrant", containers: "Pot-friendly", heat: "Heat tough" };
-  function ft(a) { return (a[0] === a[1] ? a[0] : a[0] + "\u2013" + a[1]) + " ft"; }
+  ICON.butterflies = ICON.pollinators;   // butterflies-only chip (e.g. Blue grama: skippers, no bee records)
+  var WILDL = { pollinators: "Bees & butterflies", butterflies: "Butterflies", hummingbirds: "Hummingbirds", birds: "Birds", fragrant: "Fragrant", containers: "Pot-friendly", heat: "Heat tough" };
+  function ft(a) { function i(v) { return Math.round(v * 12); }   // sizes under 1 ft read in inches (e.g. low grasses)
+    if (a[1] < 1) return (a[0] === a[1] ? i(a[0]) : i(a[0]) + "\u2013" + i(a[1])) + " in";
+    if (a[0] < 1) return i(a[0]) + " in\u2013" + a[1] + " ft";
+    return (a[0] === a[1] ? a[0] : a[0] + "\u2013" + a[1]) + " ft"; }
   function icon(name, label, off) { var s = svg(24, 24, ICON[name], "bi" + (off ? " off" : "")); if (label) { s.setAttribute("role", "img"); s.removeAttribute("aria-hidden"); s.setAttribute("aria-label", label); var t = document.createElementNS(SVGNS, "title"); t.textContent = label; s.insertBefore(t, s.firstChild); } return s; }
   /* Generic solid silhouettes by life form, one green; drawn in a box gw wide x gh tall sitting on the ground line. */
   function plantShape(x, cx, base, gw, gh) {
@@ -233,7 +237,10 @@
     var hd = el("div", { class: "basics-hd" }); var back = null;
     if (x.form) hd.appendChild(el("span", { class: "form-ribbon" }, x.form)); inn.appendChild(hd);
     var care = el("div", { class: "care" });
-    var drops = []; for (var i = 1; i <= 3; i++) drops.push(icon("drop", null, i > x.water)); care.appendChild(chip(drops, WATL[x.water], "water"));
+    /* water: a level 1-3, or a range [min,max] (e.g. [1,2] = "Low–moderate water"; drops above min shown half-tone) */
+    var wr = Array.isArray(x.water) ? x.water : [x.water, x.water], wlo = wr[0], whi = wr[1];
+    var drops = []; for (var i = 1; i <= 3; i++) { var dr = icon("drop", null, i > whi); if (i > wlo && i <= whi) dr.classList.add("half"); drops.push(dr); }
+    care.appendChild(chip(drops, wlo === whi ? WATL[wlo] : WATL[wlo].replace(/ water$/, "") + "\u2013" + WATL[whi].replace(/ water$/, "").toLowerCase() + " water", "water"));
     care.appendChild(chip(x.sun.slice(0, 2).map(function (k) { return icon(k); }), x.sun.map(function (k) { return SUNL[k]; }).join(" / ").replace("Full sun / Part sun", "Sun / part sun"), "sun"));
     care.appendChild(chip([icon("soil")], SOILL[x.soil] || x.soil, "soil"));
     inn.appendChild(care);
@@ -578,4 +585,11 @@
   load();
   setInterval(load, REFRESH_MINUTES * 60000);
   document.addEventListener("visibilitychange", function () { if (!document.hidden) load(); });
+})();
+/* No-show pickup policy: one source of truth in shop-settings.js (PICKUP_POLICY). */
+(function () { if (typeof PICKUP_POLICY === "undefined") return;
+  var ic = '<svg class="pp-ic" viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 5.5V10l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  Array.prototype.forEach.call(document.querySelectorAll("[data-pickup-policy]"), function (n) {
+    n.innerHTML = ic; var t = document.createElement("span"), b = document.createElement("b"); b.textContent = PICKUP_POLICY.lead;
+    t.appendChild(b); t.appendChild(document.createTextNode(" " + PICKUP_POLICY.text)); n.appendChild(t); });
 })();

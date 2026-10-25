@@ -1,8 +1,8 @@
 /* Plant basics for the card's swipe panel. Original wording; general horticultural knowledge, kept conservative.
    Keyed by genus (from the botanical name) with optional per-species overrides in IENN_BASICS_SPECIES (merged over the genus).
-   water: 1 = about monthly, 2 = twice a month, 3 = weekly (once established, after year one)
+   water: 1 = about monthly, 2 = twice a month, 3 = weekly (once established, after year one); or a range [min,max], e.g. [1,2] = "Low–moderate"
    sun: "full" | "part" | "shade"   soil: "Fast-draining" | "Clay-tolerant" | "Adaptable"
-   bloom: any of "W","Sp","Su","F"   wild: "pollinators","hummingbirds","birds","fragrant","containers"
+   bloom: any of "W","Sp","Su","F"   wild: "pollinators","butterflies","hummingbirds","birds","fragrant","containers"
    h/w: mature size in feet [min,max]   ie: thrives in Inland Empire heat   genusLevel: true = genus-level info, not species-specific */
 var IENN_BASICS = {
   Salvia: { water:1, sun:["full"], soil:"Fast-draining", bloom:["Sp","Su"], wild:["pollinators","hummingbirds","birds","fragrant"], h:[3,5], w:[3,5], ie:true, genusLevel:true,
@@ -56,6 +56,9 @@ var IENN_BASICS = {
     desc:"Wiry green stems covered in small yellow pea flowers that age to red. Fast and airy; cut back in late summer or fall for fresh growth." },
   Sphaeralcea: { water:1, sun:["full"], soil:"Fast-draining", bloom:["Sp","Su"], wild:["pollinators","containers"], h:[3,5], w:[2,4], ie:true, genusLevel:true,
     desc:"Fuzzy gray-green leaves and bowl-shaped apricot-orange flowers. Loves heat and sharp drainage; prune after bloom to keep it compact." },
+  /* Added 2026-10-25b (see docs/factcheck-2026-10-25b.md). Feed row: Catalog id "grama" = Bouteloua gracilis. (Buffalo grass, id "buffalograss", is hidden: not CA native, Eric 2026-10-25.) */
+  Bouteloua: { water:1, sun:["full","part"], soil:"Fast-draining", bloom:["Su","F"], wild:["pollinators","containers"], h:[0.5,2], w:[2,2], ie:true, genusLevel:true,
+    desc:"A fine-textured, low-water bunchgrass with eyelash-shaped seed heads held above the blades. Goes tan when dormant in winter." },
   Erythranthe: { water:3, sun:["full","part"], soil:"Adaptable", bloom:["Sp","Su","F"], wild:["hummingbirds","pollinators","containers"], h:[2,3], w:[3,3], ie:false, genusLevel:true,
     desc:"Bright red-orange tubular flowers over soft, toothed leaves. Likes regular water and some afternoon shade; deadhead for more blooms." }
 };
@@ -68,7 +71,8 @@ var IENN_BASICS_SPECIES = {
   "Eriogonum fasciculatum": { h:[2,4], w:[3,5], genusLevel:false },
   "Eriogonum crocatum": { water:1, sun:["full"], soil:"Clay-tolerant", bloom:["Sp","Su"], wild:["pollinators"], h:[1,3], w:[2,3], ie:false, genusLevel:false,
     desc:"A low, mounding evergreen with silvery woolly leaves and bright sulfur-yellow flower clusters. Easy and low water once established." },
-  "Atriplex canescens": { genusLevel:false }, "Acmispon glaber": { genusLevel:false }, "Sphaeralcea ambigua": { genusLevel:false }, "Erythranthe cardinalis": { genusLevel:false },
+  "Atriplex canescens": { genusLevel:false },
+  "Bouteloua gracilis": { water:[1,2], wild:["butterflies","containers"], genusLevel:false },   // Eric 2026-10-25: Low–moderate water; butterflies only (skippers)
   "Encelia californica": { sun:["full","part"], soil:"Adaptable", h:[3,4], w:[3,5], genusLevel:false },
   "Encelia farinosa": { h:[1,5], w:[2,4], soil:"Fast-draining", genusLevel:false, desc:"A desert shrub with silver leaves and bright yellow daisies held above the foliage. Loves heat and needs very little water." },
   "Diplacus longiflorus": { sun:["full","part"], soil:"Fast-draining", water:1, bloom:["Sp","Su"], h:[1,3], w:[1,3], genusLevel:false,
@@ -87,7 +91,7 @@ var IENN_FORM = { Salvia:["Shrub","Fragrant bee magnet"], Eriogonum:["Shrub","To
   Rhus:["Shrub","Glossy evergreen hedge"], Achillea:["Perennial","Lacy, tough lawn alternative"], Datura:["Perennial","Big white evening trumpets; toxic if eaten"], Artemisia:["Shrub","Silver scent of the hills"],
   Trichostema:["Sub-shrub","Woolly purple, wildly fragrant"], Baccharis:["Shrub","Tough evergreen cover"], Epilobium:["Perennial","Fall feast for hummingbirds"], Hesperocyparis:["Tree","Blue evergreen spire"],
   Dendromecon:["Shrub","Golden chaparral poppies"], Heteromeles:["Small tree","Red winter berries for birds"],
-  Atriplex:["Shrub",""], Acmispon:["Perennial",""], Sphaeralcea:["Shrub",""], Erythranthe:["Perennial",""] };
+  Atriplex:["Shrub",""], Bouteloua:["Grass",""], Acmispon:["Perennial",""], Sphaeralcea:["Shrub",""], Erythranthe:["Perennial",""] };
 var IENN_FORM_SPECIES = { "Diplacus longiflorus":["Shrub",null], "Salvia apiana":[null,"Silvery leaves, tall bee-covered flower spikes"], "Salvia spathacea":["Perennial","Shade-loving hummingbird sage"], "Salvia mellifera":[null,"Honeybee favorite"],
   "Encelia farinosa":[null,"Silver desert sunshine"], "Eriogonum fasciculatum":[null,"Tough, long-blooming bee favorite"], "Baccharis pilularis":["Shrub","Tough evergreen groundcover"] };
 /* Old feed botanical -> species key (an older cached feed may still say aurantiacus for Southern bush monkeyflower, formerly "Sticky monkeyflower"). */
@@ -111,10 +115,12 @@ var IENN_DISPLAY_BOTANICAL = { "diplacus aurantiacus": "Diplacus longiflorus" };
 function iennDisplayBotanical(b) { var k = String(b || "").toLowerCase().replace(/\s+/g, " ").trim(); return IENN_DISPLAY_BOTANICAL[k] || b; }
 /* Plants hidden from the shop (index + order pages). Case-insensitive match on the feed name or botanical name; add more as needed. */
 var IENN_HIDDEN_PLANTS = ["California encelia", "Coyote brush", "Bush poppy", "Arizona cypress, Blue Pyramid", "Arizona cypress", "Blue Pyramid Cypress",
-  "Cleveland sage", "Purple sage", "Hummingbird sage", "Other"];   // "Other" is a catch-all feed row with no botanical name
+  "Cleveland sage", "Purple sage", "Hummingbird sage", "Other",
+  "Buffalo grass", "Buffalograss"];   // Buffalo grass: not California native, excluded by Eric 2026-10-25   // "Other" is a catch-all feed row with no botanical name
 // Botanical matches (prefix: cultivars like "Hesperocyparis arizonica 'Blue Pyramid'" also match). Never add Encelia californica: California brittlebush shares it and must stay visible.
 var IENN_HIDDEN_BOTANICAL = ["Baccharis pilularis", "Dendromecon rigida", "Hesperocyparis arizonica", "Cupressus arizonica",
-  "Salvia clevelandii", "Salvia leucophylla", "Salvia spathacea"];   // exact species only: never "Salvia" alone (Black and White sage stay visible)
+  "Salvia clevelandii", "Salvia leucophylla", "Salvia spathacea",
+  "Bouteloua dactyloides", "Buchloe dactyloides"];   // exact species only: never "Salvia" alone (Black and White sage stay visible)
 function iennHidden(p) { function c(x) { return String(x || "").toLowerCase().replace(/\s+/g, " ").trim(); }
   var full = c(p.feedName || p.fullName), names = [c(p.name), full, full.replace(/\s*\(.*$/, "")], b = c(p.botanical || (/\(([^)]*)\)/.exec(full) || [])[1]);
   if (IENN_HIDDEN_PLANTS.some(function (h) { return names.indexOf(c(h)) >= 0; })) return true;

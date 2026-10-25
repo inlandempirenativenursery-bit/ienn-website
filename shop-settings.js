@@ -27,4 +27,8 @@ var FALLBACK_PLANTS = [
   { name: "Southern bush monkeyflower", botanical: "Diplacus longiflorus", sizes: ['1 gal'] },
   { name: "Yarrow",               sizes: ['4"'] }
 ];
+/* No-show pickup policy (Eric-approved 2026-10-25). Shown in the checkout drawer above "Place order", on the thank-you ticket,
+   and in "Pickup & payment" on order.html. Edit the wording here only; no hold time on purpose (pickup is Saturdays). */
+var PICKUP_POLICY = { lead: "Please pick up on time.",
+  text: "We set your plants aside just for you. If you can't make your pickup, let us know ahead of time. Orders that aren't picked up are released, and the plants go back on sale." };
 var ORDER_EMAIL = "plants@inlandempirenativenursery.com"; // mailto fallback only if the order endpoint fails
