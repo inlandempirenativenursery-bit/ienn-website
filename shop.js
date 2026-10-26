@@ -42,33 +42,30 @@
   list.addEventListener("pointerdown", function () { pressing = true; }, true);
   function release() { if (!pressing) return; pressing = false; if (pendingRender) setTimeout(function () { if (!pressing && pendingRender) render(); }, 0); }
   ["pointerup", "pointercancel"].forEach(function (t) { document.addEventListener(t, function () { setTimeout(release, 0); }, true); });
-  /* Plant search (UI in plant-search.js): filters the grid by common name (as displayed, plus the feed name) or botanical name.
-     Case-, accent- and punctuation-insensitive; every typed word must appear somewhere (partial words OK), e.g. "st catherines" -> St. Catherine's lace. */
-  var Q = "", QRAW = "", VIEW = [];
+  /* Plant search (UI in plant-search.js): suggestions only, never filters the grid (Eric 2026-10-25: no jumping while typing). Picking a suggestion scrolls to that card.
+     Case-, accent- and punctuation-insensitive matching on the shown common name and the botanical name. */
   function norm(t) { t = String(t || ""); if (t.normalize) t = t.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     return t.toLowerCase().replace(/['\u2018\u2019`]/g, "").replace(/[^a-z0-9]+/g, " ").trim(); }
-  function matchQ(p) { var h = " " + norm([p.name, p.botanical, p.feedName, split(p.fullName)[1]].join(" ")) + " ";
-    return Q.split(" ").every(function (w) { return h.indexOf(w) >= 0; }); }
-  /* For the search bar's suggestions (plant-search.js): the current shown list (hidden plants already removed, display names applied), in card order. */
+  /* For the search bar's suggestions: the current shown list (hidden plants already removed, display names applied), in card order. */
   window.iennSearchNorm = norm;
   window.iennSearchPlants = function () { return PLANTS.map(function (p) { var th = p.srcset ? String(p.srcset).split(",")[0].trim().split(/\s+/)[0] : p.image;
-    return { id: p.id, name: p.name, botanical: p.botanical || split(p.fullName)[1] || "", feedName: p.feedName || "", thumb: th || "" }; }); };
-  window.iennSearch = function (q) { var n = norm(q); QRAW = String(q || "").trim(); if (n !== Q) { Q = n; if (PLANTS.length) render(); } else { var e = list.querySelector(".search-empty-q"); if (e) e.textContent = QRAW; } return { query: Q, matches: Q ? VIEW.length : PLANTS.length, total: PLANTS.length }; };
+    return { id: p.id, name: p.name, botanical: p.botanical || split(p.fullName)[1] || "", thumb: th || "" }; }); };
+  /* Card element for a plant id, rendering further batches first if it isn't on the page yet (progressive render). */
+  window.iennCardFor = function (id) { var i = -1; PLANTS.some(function (p, k) { if (p.id === id) { i = k; return true; } return false; }); if (i < 0) return null;
+    var grew = false; while (shown <= i && shown < PLANTS.length) { more(); grew = true; } if (grew) update();
+    var c = null; Array.prototype.some.call(list.querySelectorAll(".card"), function (x) { if (x.dataset.id === id) { c = x; return true; } return false; }); return c; };
   function render() {
     if (pressing) { pendingRender = true; return; } pendingRender = false;
     var keep = shown;
-    VIEW = Q ? PLANTS.filter(matchQ) : PLANTS;
     list.innerHTML = ""; list.setAttribute("aria-busy", "false"); shown = 0; if (io) io.disconnect();
-    more(); while (keep > shown && shown < VIEW.length) more(); update();
-    if (Q && PLANTS.length && !VIEW.length) { var none = el("p", { class: "search-empty", role: "status" }); none.appendChild(document.createTextNode("No plants match \u201c")); none.appendChild(el("span", { class: "search-empty-q" }, QRAW)); none.appendChild(document.createTextNode("\u201d. "));
-      none.appendChild(el("button", { type: "button", class: "search-empty-clear" }, "Clear search")); list.appendChild(none); }
-    document.dispatchEvent(new CustomEvent("ienn-grid-rendered", { detail: { query: Q, matches: VIEW.length, total: PLANTS.length } }));
+    more(); while (keep > shown && shown < PLANTS.length) more(); update();
+    document.dispatchEvent(new CustomEvent("ienn-grid-rendered"));
   }
   function more() {   // progressive render: next BATCH cards when the sentinel scrolls near view
     var old = list.querySelector(".grid-more"); if (old) old.remove();
-    VIEW.slice(shown, shown + BATCH).forEach(function (p, j) { list.appendChild(card(p, shown + j)); });
-    shown = Math.min(VIEW.length, shown + BATCH);
-    if (shown < VIEW.length) {
+    PLANTS.slice(shown, shown + BATCH).forEach(function (p, j) { list.appendChild(card(p, shown + j)); });
+    shown = Math.min(PLANTS.length, shown + BATCH);
+    if (shown < PLANTS.length) {
       var s = el("div", { class: "grid-more", "aria-hidden": "true" }); list.appendChild(s);
       if ("IntersectionObserver" in window) { io = new IntersectionObserver(function (es) { if (es.some(function (x) { return x.isIntersecting; })) { io.disconnect(); more(); update(); } }, { rootMargin: "800px" }); io.observe(s); }
       else more();
