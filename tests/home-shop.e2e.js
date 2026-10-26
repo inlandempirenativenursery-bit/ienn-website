@@ -10,7 +10,7 @@ const feed = { version: 3, countDate: '2026-10-17', sortedBy: 'pin,popularity90d
 (async () => {
   const b = await chromium.launch({ executablePath: process.env.CHROME || '/usr/bin/google-chrome' });
   for (const w of [390, 1280]) {
-    const ctx = await b.newContext({ viewport: { width: w, height: w < 500 ? 844 : 800 }, hasTouch: w < 500 }); const page = await ctx.newPage();
+    const ctx = await b.newContext({ viewport: { width: w, height: w < 500 ? 844 : 800 }, hasTouch: w < 500 }); await require('./stub-analytics')(ctx); const page = await ctx.newPage();
     const errs = []; page.on('pageerror', e => errs.push(String(e)));
     let posts = 0; await page.route(/script\.google\.com/, r => r.request().method() === 'POST' ? (posts++, r.fulfill({ contentType: 'application/json', body: '{"ok":true,"orderId":"INV-T"}' })) : r.fulfill({ contentType: 'application/json', body: JSON.stringify(feed) }));
     await page.goto(BASE + 'index.html'); await page.evaluate(() => localStorage.clear()); await page.reload();

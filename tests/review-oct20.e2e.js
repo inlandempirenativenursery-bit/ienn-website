@@ -10,7 +10,7 @@ const uncounted = { version: 3, baseline: null, plants: counted.plants.map(p => 
 (async () => {
   const b = await chromium.launch({ executablePath: process.env.CHROME || '/usr/bin/google-chrome' }); let posts = 0;
   async function open(w, feed) {
-    const ctx = await b.newContext({ viewport: { width: w, height: w < 500 ? 812 : 900 }, hasTouch: w < 500 }); const page = await ctx.newPage(); const errs = [];
+    const ctx = await b.newContext({ viewport: { width: w, height: w < 500 ? 812 : 900 }, hasTouch: w < 500 }); await require('./stub-analytics')(ctx); const page = await ctx.newPage(); const errs = [];
     page.on('pageerror', e => errs.push(String(e))); page.on('console', m => m.type() === 'error' && !/404|favicon/.test(m.text()) && errs.push(m.text()));
     await page.route(/script\.google\.com/, r => { if (r.request().method() === 'POST') { posts++; return r.abort(); } if (feed) return r.fulfill({ contentType: 'application/json', body: JSON.stringify(feed) }); return r.continue(); });
     await page.goto(BASE); await page.evaluate(() => localStorage.clear()); await page.reload(); await page.waitForSelector('.card:not(.skel)', { timeout: 20000 });
@@ -52,7 +52,7 @@ const uncounted = { version: 3, baseline: null, plants: counted.plants.map(p => 
     assert.ok(await page.locator('.submit-btn').isEnabled()); assert.deepStrictEqual(errs, [], 'console ' + w);
     console.log('live', w, 'cards', n); await ctx.close(); }
   // 4) home page cards: same rules (stock-view.js)
-  async function home(w, feed) { const ctx = await b.newContext({ viewport: { width: w, height: w < 500 ? 812 : 900 }, hasTouch: w < 500 }); const page = await ctx.newPage(); const errs = [];
+  async function home(w, feed) { const ctx = await b.newContext({ viewport: { width: w, height: w < 500 ? 812 : 900 }, hasTouch: w < 500 }); await require('./stub-analytics')(ctx); const page = await ctx.newPage(); const errs = [];
     page.on('pageerror', e => errs.push(String(e))); page.on('console', m => m.type() === 'error' && !/404|favicon/.test(m.text()) && errs.push(m.text()));
     await page.route(/script\.google\.com/, r => feed ? r.fulfill({ contentType: 'application/json', body: JSON.stringify(feed) }) : r.continue());
     await page.goto(BASE.replace('order.html', 'index.html')); await page.waitForSelector('#plant-list .card:not(.skel)', { timeout: 40000 }); await page.waitForTimeout(feed ? 1200 : 12000); return { ctx, page, errs }; }
