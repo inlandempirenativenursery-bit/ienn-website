@@ -49,6 +49,10 @@
     return t.toLowerCase().replace(/['\u2018\u2019`]/g, "").replace(/[^a-z0-9]+/g, " ").trim(); }
   function matchQ(p) { var h = " " + norm([p.name, p.botanical, p.feedName, split(p.fullName)[1]].join(" ")) + " ";
     return Q.split(" ").every(function (w) { return h.indexOf(w) >= 0; }); }
+  /* For the search bar's suggestions (plant-search.js): the current shown list (hidden plants already removed, display names applied), in card order. */
+  window.iennSearchNorm = norm;
+  window.iennSearchPlants = function () { return PLANTS.map(function (p) { var th = p.srcset ? String(p.srcset).split(",")[0].trim().split(/\s+/)[0] : p.image;
+    return { id: p.id, name: p.name, botanical: p.botanical || split(p.fullName)[1] || "", feedName: p.feedName || "", thumb: th || "" }; }); };
   window.iennSearch = function (q) { var n = norm(q); QRAW = String(q || "").trim(); if (n !== Q) { Q = n; if (PLANTS.length) render(); } else { var e = list.querySelector(".search-empty-q"); if (e) e.textContent = QRAW; } return { query: Q, matches: Q ? VIEW.length : PLANTS.length, total: PLANTS.length }; };
   function render() {
     if (pressing) { pendingRender = true; return; } pendingRender = false;

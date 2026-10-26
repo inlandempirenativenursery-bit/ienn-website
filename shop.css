@@ -360,6 +360,23 @@ html.bg-light .pane-basics { --bg-op:.12; } html.bg-strong .pane-basics { --bg-o
 .ps-clear[hidden] { display:none; }
 .ps-close svg { background:#e4d9ee; border-radius:50%; width:30px; height:30px; padding:7px; box-sizing:border-box; }
 .ps-clear:focus-visible, .ps-close:focus-visible { outline:3px solid var(--sage-dark, #4a5a4a); outline-offset:-3px; }
+/* autocomplete list under the search bar */
+.ps-list { position:absolute; top:calc(100% + 2px); left:0; right:0; width:calc(100% - 16px); max-width:640px; margin:0 auto; list-style:none; padding:4px 0; background:#fff;
+  border:1.5px solid #d4c4e0; border-radius:14px; box-shadow:0 10px 24px rgba(60,40,80,.18); overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
+.ps-list[hidden] { display:none; }
+.ps-opt { display:flex; align-items:center; gap:0.65rem; min-height:50px; padding:0.3rem 0.85rem; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.ps-opt + .ps-opt { border-top:1px solid #f1edf4; }
+.ps-opt:hover, .ps-opt.active { background:#f3edf8; }
+.ps-thumb { flex:none; width:32px; height:32px; border-radius:50%; object-fit:cover; background:#e9efe6; border:1px solid #e3dcea; }
+.ps-thumb-none { background:radial-gradient(circle at 50% 60%, #b9cdb4 0 35%, #e9efe6 36%); }
+.ps-o-text { display:flex; flex-direction:column; min-width:0; line-height:1.2; }
+.ps-o-name { color:#2c2c2c; font-size:1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ps-o-name b, .ps-o-bot b { font-weight:800; color:#3f4f3f; }
+.ps-o-bot { color:#7a7480; font-style:italic; font-size:0.82rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+/* chosen suggestion: soft lilac glow on its card for ~1 s */
+.card.ps-hit { animation:ps-hit 1.2s ease-out; }
+@keyframes ps-hit { 0%, 55% { box-shadow:0 0 0 3px #cbb7dc, 0 0 22px 6px rgba(203,183,220,.85); } 100% { box-shadow:0 0 0 0 rgba(203,183,220,0); } }
+@media (prefers-reduced-motion: reduce) { .card.ps-hit { animation:none; box-shadow:0 0 0 3px #cbb7dc; } }
 @media (prefers-reduced-motion: reduce) { .ps-btn, .ps-btn:not(.ps-off), .ps-bar, .ps-bar.open, .ps-btn .ps-dot { transition:none; } .ps-btn-corner.ps-off { transform:none; } }
 .search-empty { grid-column:1 / -1; text-align:center; color:#4a5a4a; background:#f8f6f3; border:1px dashed #d4c4e0; border-radius:12px; padding:1.1rem 1rem; margin:0.25rem 0; font-size:0.98rem; }
 .search-empty-q { font-weight:700; }

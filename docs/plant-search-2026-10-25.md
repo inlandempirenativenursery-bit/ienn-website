@@ -1,5 +1,7 @@
 # Plant search, 2026-10-25
 
+Rev 3 adds autocomplete suggestions.
+
 **Rev 2 (Eric's feedback):** "smaller, more to the right", "I don't like the icons". As a compromise with Amazon's pinned search bar, the plant icons are gone. Search is now a plain magnifier circle in the header that opens a search bar sliding down from the top.
 
 ## Files
@@ -46,6 +48,40 @@ A 40px circle with a lilac fill.
 - **Enter:** dismisses the keyboard.
 - **Reduced motion:** turns the slide animation off.
 
+## Suggestions (rev 3, Eric: "auto populate words so it's easy")
+Eric picked the header circle, so `SEARCH_PLACEMENT` stays `"header"`.
+
+- **When they show:** from the first letter typed, a list drops down under the bar. Nothing shows while the field is empty.
+- **What's listed:** up to 6 plants from the current list, using the same normalization as the filter (case, accents and punctuation ignored).
+  - Hidden plants are never included.
+  - Plants are listed by their shown name, e.g. "Datura". The sheet's old name, "Sacred datura", isn't used for suggestions; the card filter still matches it.
+- **Each row:** 50px tall. It has a 32px round thumbnail (the card's 400px photo, usually already cached; a plain dot if there's no photo), the common name with the matched part in bold, and the botanical name in small gray italics with its matched part bold.
+- **Order:**
+  1. Common name starts with the text.
+  2. A word in the common name starts with it.
+  3. Botanical name starts with it.
+  4. A botanical word starts with it.
+  5. Any other match.
+
+  Ties keep the card order. Examples:
+  - "sa": White sage, Black sage, California sagebrush, Four-winged saltbush, then Brittlebush (Encelia farino**sa**) and Showy milkweed (Asclepias specio**sa**).
+  - "salv": White sage and Black sage, via *Salvia*.
+- **Choosing:** tap or click a row, or use ↑/↓ then Enter. This:
+  - fills the field with the plant's name and closes the list;
+  - filters the grid to that plant and scrolls its card to just under the bar;
+  - gives the card a soft lilac glow for about 1.2 s (a static ring with reduced motion);
+  - dismisses the keyboard.
+- **Typing:** cards still filter live as you type.
+- **Closing the list:**
+  - Esc closes the list first; a second Esc closes the bar.
+  - Clear ⊗, close ✕ and a tap outside the bar also close it.
+- **Fit:** the list is capped at 6 rows and at the space above the on-screen keyboard (`visualViewport`), and scrolls if needed. It is 8px in from each edge at 360 and 390, and at most 640px wide on desktop.
+- **Accessibility:**
+  - Input: `role="combobox"`, `aria-autocomplete="list"`, `aria-expanded` and `aria-controls="ps-list"`.
+  - Keyboard highlight: `aria-activedescendant`.
+  - List: `role="listbox"`, rows `role="option"` with `aria-selected`.
+- **Code:** shop.js exposes `iennSearchPlants()` (the current shown list) and `iennSearchNorm()`. The suggestions are built in plant-search.js.
+
 ## Matching (unchanged from rev 1)
 - Searches the common name as displayed (e.g. "Datura"), the feed name, and the botanical name.
 - Ignores case, accents and punctuation, so "st catherines" finds St. Catherine's lace.
@@ -71,3 +107,8 @@ In `docs/screenshots/plant-search/`:
 - `desktop-header-1280.png`
 - `desktop-search-salvia-1280.png`
 - `header-search-clip-390.mp4`
+- `suggest-sa-390.png`
+- `suggest-sa-360.png`
+- `suggest-salv-390.png`
+- `suggest-chosen-highlight-390.png`
+- `desktop-suggest-keyboard-1280.png`
