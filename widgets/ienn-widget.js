@@ -18,9 +18,14 @@ const THRESHOLDS = {};
 
 const REFRESH_MINUTES = 15;                 // iOS decides the real schedule; this is the earliest we ask for
 const SITE = "https://www.inlandempirenativenursery.com";
-const C = {                                 // IENN palette (shop.css)
-  cream: new Color("#f8f6f3"), sage: new Color("#6b7c6a"), sageDark: new Color("#4a5a4a"),
-  lilac: new Color("#d4c4e0"), muted: new Color("#7d8a7c"), good: new Color("#2f7d4a"), bad: new Color("#b0413e"),
+const ASSET_BASE = "https://www.inlandempirenativenursery.com/widgets/";   // bg-small.jpg, bg-medium.jpg, logo.jpg (committed in the repo)
+const ASSET_VERSION = "1";                  // bump when the images change so phones re-download them
+const C = {                                 // IENN palette; text shades darkened so every label is >= 4.5:1 (WCAG AA) on its panel
+  cream: new Color("#f8f6f3"), panel: new Color("#f8f6f3", 0.86), lilac: new Color("#d4c4e0"),
+  ink: new Color("#3f4d3f"),                // numbers
+  label: new Color("#4f5e4e"),              // metric names
+  muted: new Color("#5a6859"),              // period values, captions, footer
+  good: new Color("#2a6e40"), bad: new Color("#a33a37"),
 };
 
 const PERIODS = {   // key: [header label, short label]
@@ -55,6 +60,21 @@ function withCache(r) {
   return r;
 }
 
+// Images: downloaded once, kept in Scriptable's local files, re-checked every 30 days. Missing/offline -> plain cream + text title.
+async function asset(name) {
+  const path = fm.joinPath(fm.documentsDirectory(), `ienn-${ASSET_VERSION}-${name}`);
+  const have = fm.fileExists(path);
+  const fresh = have && (Date.now() - fm.modificationDate(path).getTime()) < 30 * 864e5;
+  if (!fresh) {
+    try {
+      const req = new Request(`${ASSET_BASE}${name}?v=${ASSET_VERSION}`); req.timeoutInterval = 15;
+      const img = await req.loadImage();
+      if (img && img.size && img.size.width > 0) { fm.writeImage(path, img); return img; }
+    } catch (e) {}
+  }
+  try { return have ? fm.readImage(path) : null; } catch (e) { return null; }
+}
+
 // ---------- formatting ----------
 function fmtNum(v, unit) {
   if (v === null || v === undefined) return "–";
@@ -84,17 +104,25 @@ function timeLabel(iso) {
 }
 
 // ---------- layout ----------
-function header(w, small, period) {
+function pill(parent) { const p = parent.addStack(); p.backgroundColor = C.panel; p.cornerRadius = 8; p.setPadding(3, 7, 3, 7); p.centerAlignContent(); return p; }
+
+// Logo used as-is (scaled only), on its own white frame with rounded corners, so it reads as a header chip, not a pasted box.
+const LOGO_RATIO = 1500 / 847;
+function header(w, small, period, img) {
   const h = w.addStack(); h.centerAlignContent();
-  const name = h.addText(small ? "IENN" : "Inland Empire Native Nursery");
-  name.font = Font.boldSystemFont(small ? 15 : 13); name.textColor = C.sageDark; name.lineLimit = 1; name.minimumScaleFactor = 0.8;
+  if (img.logo) {
+    const hgt = small ? 30 : 36, li = h.addImage(img.logo);
+    li.imageSize = new Size(Math.round(hgt * LOGO_RATIO), hgt); li.cornerRadius = 8;
+  } else {
+    const p = pill(h), name = p.addText(small ? "IENN" : "Inland Empire Native Nursery");
+    name.font = Font.boldSystemFont(small ? 15 : 13); name.textColor = C.ink; name.lineLimit = 1; name.minimumScaleFactor = 0.8;
+  }
   h.addSpacer();
   if (period !== "all") {
-    const leg = h.addText(small ? `today · ${PERIODS[period][1]}` : `today  ·  ${PERIODS[period][0].toLowerCase()}`);
-    leg.font = Font.mediumSystemFont(10); leg.textColor = C.muted; leg.lineLimit = 1;
+    const p = pill(h), leg = p.addText(small ? `today · ${PERIODS[period][1]}` : `today · ${PERIODS[period][0].toLowerCase()}`);
+    leg.font = Font.semiboldSystemFont(10); leg.textColor = C.muted; leg.lineLimit = 1; leg.minimumScaleFactor = 0.8;
   }
-  const bar = w.addStack(); bar.size = new Size(0, 2); bar.backgroundColor = C.lilac; bar.cornerRadius = 1;   // lilac rule
-  w.addSpacer(small ? 6 : 8);
+  w.addSpacer(small ? 6 : 7);
 }
 function num(stack, m, key, font, color, star) {
   const v = val(m, key), t = stack.addText(fmtNum(v, m.unit) + (star && clipped(m, key) ? "*" : ""));
@@ -104,17 +132,17 @@ function num(stack, m, key, font, color, star) {
 
 function rowSmall(w, m, period) {
   const r = w.addStack(); r.centerAlignContent();
-  const l = r.addText(m.label); l.font = Font.mediumSystemFont(12); l.textColor = C.sage; l.lineLimit = 1;
+  const l = r.addText(m.label); l.font = Font.mediumSystemFont(12); l.textColor = C.label; l.lineLimit = 1;
   r.addSpacer();
-  num(r, m, "today", Font.boldRoundedSystemFont(17), C.sageDark);
+  num(r, m, "today", Font.boldRoundedSystemFont(17), C.ink);
   r.addSpacer(6);
   num(r, m, period, Font.mediumRoundedSystemFont(12), C.muted, true).rightAlignText();
 }
 
 function colMedium(row, m, period) {
-  const c = row.addStack(); c.layoutVertically(); c.backgroundColor = Color.white(); c.cornerRadius = 10; c.setPadding(7, 9, 7, 9);
-  const l = c.addText(m.label); l.font = Font.mediumSystemFont(11); l.textColor = C.sage; l.lineLimit = 1;
-  num(c, m, "today", Font.boldRoundedSystemFont(24), C.sageDark);
+  const c = row.addStack(); c.layoutVertically(); c.backgroundColor = C.panel; c.cornerRadius = 12; c.setPadding(6, 9, 6, 9);
+  const l = c.addText(m.label); l.font = Font.mediumSystemFont(11); l.textColor = C.label; l.lineLimit = 1;
+  num(c, m, "today", Font.boldRoundedSystemFont(24), C.ink);
   const k = c.addStack(); k.centerAlignContent();
   const pl = k.addText(PERIODS[period][1] + "  "); pl.font = Font.mediumSystemFont(11); pl.textColor = C.muted;
   num(k, m, period, Font.mediumRoundedSystemFont(11), C.muted, true);
@@ -122,8 +150,9 @@ function colMedium(row, m, period) {
 }
 
 // Medium 'all': label column + Today/7d/30d/QTD/YTD columns (fixed widths so the numbers line up).
-const ALL_KEYS = ["today", "d7", "d30", "qtd", "ytd"], LABEL_W = 62, COL_W = 52;
-function tableAll(w, ms) {
+const ALL_KEYS = ["today", "d7", "d30", "qtd", "ytd"], LABEL_W = 60, COL_W = 52;
+function tableAll(w0, ms) {
+  const w = w0.addStack(); w.layoutVertically(); w.backgroundColor = C.panel; w.cornerRadius = 12; w.setPadding(5, 8, 3, 8);
   const hr = w.addStack(); hr.centerAlignContent();
   const sp = hr.addStack(); sp.size = new Size(LABEL_W, 0);
   ALL_KEYS.forEach(k => { const c = hr.addStack(); c.size = new Size(COL_W, 0); c.addSpacer();
@@ -132,16 +161,17 @@ function tableAll(w, ms) {
   ms.forEach(m => {
     const r = w.addStack(); r.centerAlignContent();
     const lc = r.addStack(); lc.size = new Size(LABEL_W, 0);
-    const l = lc.addText(m.label); l.font = Font.mediumSystemFont(12); l.textColor = C.sage; l.lineLimit = 1; l.minimumScaleFactor = 0.7; lc.addSpacer();
+    const l = lc.addText(m.label); l.font = Font.mediumSystemFont(12); l.textColor = C.label; l.lineLimit = 1; l.minimumScaleFactor = 0.7; lc.addSpacer();
     ALL_KEYS.forEach(k => { const c = r.addStack(); c.size = new Size(COL_W, 0); c.addSpacer();
-      num(c, m, k, k === "today" ? Font.boldRoundedSystemFont(15) : Font.mediumRoundedSystemFont(13), k === "today" ? C.sageDark : C.muted, true); });
-    w.addSpacer(4);
+      num(c, m, k, k === "today" ? Font.boldRoundedSystemFont(15) : Font.mediumRoundedSystemFont(13), k === "today" ? C.ink : C.muted, true); });
+    w.addSpacer(2);
   });
 }
 
 function footer(w, res, ms, period) {
   w.addSpacer();
   const f = w.addStack(); f.centerAlignContent();
+  const fp = pill(f); f.addSpacer();
   let msg;
   if (res.data && res.data.updated) msg = `Updated ${timeLabel(res.data.updated)}`;
   if (res.stale) msg = `${res.error} · ${msg}`;
@@ -150,29 +180,33 @@ function footer(w, res, ms, period) {
   const keys = period === "all" ? ALL_KEYS : [period];
   const since = (ms || []).map(m => keys.map(k => clipped(m, k) && m.since[k]).find(Boolean)).find(Boolean);
   if (since) msg += ` · *from ${shortDate(since)}`;
-  const t = f.addText(msg || ""); t.font = Font.systemFont(9); t.textColor = res.error ? C.bad : C.muted; t.lineLimit = 1; t.minimumScaleFactor = 0.7;
+  const t = fp.addText(msg || ""); t.font = Font.mediumSystemFont(9); t.textColor = res.error ? C.bad : C.muted; t.lineLimit = 1; t.minimumScaleFactor = 0.7;
 }
 function shortDate(ymd) { const df = new DateFormatter(); df.dateFormat = "MMM d"; return df.string(new Date(ymd + "T12:00:00")); }
 
-function build(res, family, param) {
+function build(res, family, param, img = {}) {
   const small = family === "small", period = choosePeriod(param, small);
   const w = new ListWidget();
   w.backgroundColor = C.cream; w.url = SITE;
-  w.setPadding(12, 14, 10, 14);
+  if (img.bg) w.backgroundImage = img.bg;          // washed photo baked into the JPG; cream stays underneath as the fallback
+  w.setPadding(10, 12, 9, 12);
   w.refreshAfterDate = new Date(Date.now() + REFRESH_MINUTES * 60 * 1000);
-  header(w, small, period);
+  header(w, small, period, img);
   if (res.setup) {
-    const t = w.addText("Open the script and paste ENDPOINT and KEY at the top."); t.font = Font.systemFont(12); t.textColor = C.sageDark;
+    const t = w.addText("Open the script and paste ENDPOINT and KEY at the top."); t.font = Font.systemFont(12); t.textColor = C.ink;
     return w;
   }
   if (!res.data) {
     const t = w.addText(res.error === "Offline" ? "No connection yet — will retry." : res.error);
-    t.font = Font.mediumSystemFont(13); t.textColor = C.sageDark;
+    t.font = Font.mediumSystemFont(13); t.textColor = C.ink;
     footer(w, res, [], period); return w;
   }
   const ms = (res.data.metrics || []).slice(0, 4);
   if (period === "all") tableAll(w, ms);
-  else if (small) ms.forEach((m, i) => { if (i) w.addSpacer(4); rowSmall(w, m, period); });
+  else if (small) {
+    const panel = w.addStack(); panel.layoutVertically(); panel.backgroundColor = C.panel; panel.cornerRadius = 12; panel.setPadding(5, 8, 5, 8);
+    ms.forEach((m, i) => { if (i) panel.addSpacer(3); rowSmall(panel, m, period); });
+  }
   else { const row = w.addStack(); row.spacing = 8; ms.forEach(m => colMedium(row, m, period)); }
   footer(w, res, ms, period);
   return w;
@@ -181,7 +215,9 @@ function build(res, family, param) {
 // ---------- run ----------
 const res = await load();
 const family = config.runsInWidget ? config.widgetFamily : "medium";
-const widget = build(res, family === "small" ? "small" : "medium", args.widgetParameter);
+const size = family === "small" ? "small" : "medium";
+const [bg, logo] = await Promise.all([asset(`bg-${size}.jpg`), asset("logo.jpg")]);
+const widget = build(res, size, args.widgetParameter, { bg, logo });
 if (config.runsInWidget) Script.setWidget(widget);
 else if (family === "small") await widget.presentSmall();
 else await widget.presentMedium();
