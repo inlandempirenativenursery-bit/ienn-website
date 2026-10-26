@@ -7,7 +7,7 @@ const feed = { version: 3, taxIncluded: true, plants: names.map(([n, b]) => ({ n
 (async () => {
   fs.mkdirSync(OUT, { recursive: true }); const b = await chromium.launch({ executablePath: process.env.CHROME || '/usr/bin/google-chrome' }); let fail = 0;
   for (const page_ of ['order.html', 'index.html']) for (const w of [375, 1280]) {
-    const ctx = await b.newContext({ viewport: { width: w, height: w < 500 ? 812 : 900 }, hasTouch: w < 500 }); const p = await ctx.newPage();
+    const ctx = await b.newContext({ viewport: { width: w, height: w < 500 ? 812 : 900 }, hasTouch: w < 500 }); await require('./stub-analytics')(ctx); const p = await ctx.newPage();
     const errs = [], bad = [], bytes = {}; p.on('pageerror', e => errs.push(String(e))); p.on('console', m => m.type() === 'error' && errs.push(m.text()));
     p.on('response', async r => { if (/\.(jpg|png)$/.test(r.url())) { if (!r.ok()) bad.push(r.status() + ' ' + r.url()); else try { bytes[r.url()] = (await r.body()).length; } catch (e) {} } });
     p.on('requestfailed', r => bad.push('failed ' + r.url()));

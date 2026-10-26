@@ -2,7 +2,7 @@ const { chromium } = require('/usr/local/lib/pnpm/5/.pnpm/playwright@1.63.0-alph
 const D='docs/screenshots/stock-cap/', B='http://localhost:8836/';
 (async()=>{const b=await chromium.launch({executablePath:'/usr/bin/google-chrome'});
 for (const w of [360,390]){
-const ctx=await b.newContext({viewport:{width:w,height:844},hasTouch:true,isMobile:true,deviceScaleFactor:2});const pg=await ctx.newPage();
+const ctx=await b.newContext({viewport:{width:w,height:844},hasTouch:true,isMobile:true,deviceScaleFactor:2}); await require('./stub-analytics')(ctx);const pg=await ctx.newPage();
 await pg.route(/script\.google\.com/,r=>r.request().method()==='POST'?r.abort():r.continue());
 await pg.goto(B+'index.html');await pg.waitForTimeout(9000);
 const m=await pg.$$eval('.card',cs=>cs.map(c=>{const f=c.querySelector('.pane-front')||c;const ph=c.querySelector('.ph');return{n:c.dataset.id,h:Math.round(c.getBoundingClientRect().height),of:f.scrollHeight>f.clientHeight+1,ov:ph?[...ph.children].filter(x=>x.tagName==='SPAN'&&!x.classList.contains('leaf')).length:0,low:(c.querySelector('.incart.low-tag')||{}).textContent||''}}));

@@ -12,7 +12,7 @@ const NOTE = 'We have 3 ready now. We may have a few smaller ones; Andrew will r
 const EVIL = 'Note <img src=x onerror=window.__xss=1> & <b>bold</b>';;
 (async () => {
   const b = await chromium.launch({ executablePath: process.env.CHROME || '/usr/bin/google-chrome' }); let reply = null, posts = [];
-  const ctx = await b.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true, deviceScaleFactor: 2 }); const page = await ctx.newPage(); const errs = [];
+  const ctx = await b.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true, deviceScaleFactor: 2 }); await require('./stub-analytics')(ctx); const page = await ctx.newPage(); const errs = [];
   page.on('pageerror', e => errs.push(String(e)));
   await page.route(/script\.google\.com/, r => {
     if (r.request().method() === 'POST') { posts.push(JSON.parse(r.request().postData())); return r.fulfill({ contentType: 'application/json', body: JSON.stringify(reply) }); }
@@ -55,7 +55,7 @@ const EVIL = 'Note <img src=x onerror=window.__xss=1> & <b>bold</b>';;
   // old success shape (no notices) still fine
   await ctx.close();
   // home cards
-  const c2 = await b.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true }); const h = await c2.newPage(); h.on('pageerror', e => errs.push(String(e)));
+  const c2 = await b.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true }); await require('./stub-analytics')(c2); const h = await c2.newPage(); h.on('pageerror', e => errs.push(String(e)));
   await h.route(/script\.google\.com/, r => r.request().method() === 'POST' ? r.abort() : r.fulfill({ contentType: 'application/json', body: JSON.stringify(feed) }));
   await h.goto(BASE + 'index.html'); await h.waitForFunction(() => [...document.querySelectorAll('#plant-list .card h3')].some(x => /Yarrow/.test(x.textContent))); await h.waitForTimeout(300);
   const hn = await h.locator('#plant-list .card h3').allInnerTexts(); assert.ok(!hn.some(n => /Toyon/.test(n)), 'home hides Toyon'); assert.strictEqual(hn.length, 2);

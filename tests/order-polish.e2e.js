@@ -12,7 +12,7 @@ const feed = () => ({ version: 3, updated: new Date().toISOString(), taxIncluded
 (async () => {
   const b = await chromium.launch({ executablePath: process.env.CHROME || '/usr/bin/google-chrome' }); const out = [];
   async function open(w, mode, page_ = 'order.html') {
-    const ctx = await b.newContext({ viewport: { width: w, height: w < 500 ? 812 : 900 }, hasTouch: w < 500 }); const page = await ctx.newPage();
+    const ctx = await b.newContext({ viewport: { width: w, height: w < 500 ? 812 : 900 }, hasTouch: w < 500 }); await require('./stub-analytics')(ctx); const page = await ctx.newPage();
     const errs = []; page.on('pageerror', e => errs.push(String(e))); page.on('console', m => m.type() === 'error' && !/Failed to load resource|net::/.test(m.text()) && errs.push(m.text()));
     await page.route(/script\.google\.com/, async r => {
       const u = r.request().url();

@@ -4,7 +4,7 @@ const BASE = process.env.BASE || 'http://localhost:8765/', SHOTS = process.env.S
 (async () => {
   const b = await chromium.launch({ executablePath: process.env.CHROME || '/usr/bin/google-chrome' }); let posts = 0;
   for (const w of [375, 1280]) {
-    const ctx = await b.newContext({ viewport: { width: w, height: w < 500 ? 812 : 900 }, hasTouch: w < 500 }); const page = await ctx.newPage(); const errs = [];
+    const ctx = await b.newContext({ viewport: { width: w, height: w < 500 ? 812 : 900 }, hasTouch: w < 500 }); await require('./stub-analytics')(ctx); const page = await ctx.newPage(); const errs = [];
     page.on('pageerror', e => errs.push(String(e))); page.on('console', m => m.type() === 'error' && !/404|favicon/.test(m.text()) && errs.push(m.text()));
     await page.route(/script\.google\.com/, r => { if (r.request().method() === 'POST') { posts++; return r.abort(); } return r.continue(); });
     await page.goto(BASE + 'order.html'); await page.evaluate(() => localStorage.clear()); await page.reload(); await page.waitForSelector('.card:not(.skel)', { timeout: 30000 });
