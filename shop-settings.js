@@ -40,6 +40,10 @@ var STARTER_TEASER_DELAY_MS = 30000;   // 30 s (Eric 2026-10-25; was 60 s)
 var STARTER_TEASER_COLOR = "lilac";   // "honey" | "lilac" | "sage" | "red" (same 3-D gloss/edge; preview any with ?teaser=now&teasercolor=red)
 var STARTER_TEASER_FONT = "baloo";   // heading font: "dancing" (Dancing Script, already loaded) | "fredoka" | "baloo" | "lilita" | "rubik" | "bricolage" (only the chosen one loads; preview with ?teaser=now&teaserfont=fredoka)
 var STARTER_TEASER_SHAPE = "aster";   // "pill" | "card" | "leaf" | "badge" | "packet" | "tag" | flowers: "calochortus" | "calochortus-glass" | "calochortus-side" | "salvia" | "trichostema" | "aster" (preview with ?teaser=now&teasershape=leaf)
+/* Plant search button (Eric 2026-10-25): plain magnifier. "header" = small circle top-right on the title row, always reachable (pinned while scrolling);
+   "corner" = floating circle bottom-right, only while the plant grid is on screen. Both open a search bar that slides down from the top.
+   Preview with ?searchplace=corner. Search matches common or botanical name only. */
+var SEARCH_PLACEMENT = "header";
 var PICKUP_POLICY = { lead: "Please pick up on time.",
   text: "We set your plants aside just for you. If you can't make your pickup, let us know ahead of time. Orders that aren't picked up are released, and the plants go back on sale." };
 var ORDER_EMAIL = "plants@inlandempirenativenursery.com"; // mailto fallback only if the order endpoint fails
