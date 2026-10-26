@@ -1,6 +1,6 @@
 # Plant photo credits
 
-Single photo set: `assets/plants/<slug>.jpg` (800px max) and `<slug>-400.jpg` (400px, via `srcset`), mapped by common name in `plant-photos.js` (`IENN_PHOTOS`). Eric-approved ★ picks from `docs/photo-choices/README.md` (board v2), plus toyon and woolly blue curls (Eric's own iNaturalist photos). Files were only resized and recompressed. A photo from the feed (Catalog `Photo` column) still takes priority.
+Single photo set: `assets/plants/<slug>.jpg` (800px max) and `<slug>-400.jpg` (400px, via `srcset`), mapped by common name in `plant-photos.js` (`IENN_PHOTOS`). Eric-approved ★ picks from `docs/photo-choices/README.md` (board v2), plus toyon, woolly blue curls and Grinnell's beardtongue (Eric's own iNaturalist photos). Files were only resized and recompressed. A photo from the feed (Catalog `Photo` column) still takes priority.
 
 | File | Plant | Source | Link |
 |---|---|---|---|
@@ -24,6 +24,7 @@ Single photo set: `assets/plants/<slug>.jpg` (800px max) and `<slug>-400.jpg` (4
 | showy-milkweed.jpg | Showy milkweed | "Asclepias speciosa - Showy Milkweed (7-15-24) 02" by Jasper Shide, Wikimedia Commons, CC0 1.0 (verified on the file page Oct 20, 2026). From main 9f30bea; not the catalogue file. | https://commons.wikimedia.org/wiki/File:Asclepias_speciosa_-_Showy_Milkweed_(7-15-24)_02.jpg |
 | toyon.jpg | Toyon | Eric Bo Garcia (ericbg2) via iNaturalist, 2022-12-15, Willits, CA, US | https://www.inaturalist.org/observations/144448253 |
 | woolly-blue-curls.jpg | Woolly blue curls | Eric Bo Garcia (ericbg2) via iNaturalist, 2025-05-16, Fontana, CA | https://www.inaturalist.org/observations/282646314 |
+| grinnell-s-beardtongue.jpg | Grinnell's beardtongue | Eric Bo Garcia (ericbg2) via iNaturalist (photo 136610234), 2021-06-15, San Bernardino National Forest, Mentone, CA; resized only | https://www.inaturalist.org/observations/83192704 |
 
 Eric's photos (catalogue and ericbg2) are © Eric Bo Garcia / IENN. The keithwg1 photos are © Keith and used with his permission. Showy milkweed is CC0 1.0 (Wikimedia Commons).
 

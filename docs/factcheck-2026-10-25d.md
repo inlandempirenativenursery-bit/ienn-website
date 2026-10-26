@@ -69,7 +69,7 @@ Requested by Eric as "penstemon grindelili". The correct spelling is *Penstemon 
 7. **Fragrance:** only Las Pilitas mentions it. Not set.
 
 ## Photos
-Not added in this PR. Candidates for Eric to pick from are in `/workspace/ienn-photo-candidates/penstemon-grinnellii/`, with `CANDIDATES.md` (license, author, URL) and `contact-sheet.jpg`:
+**Eric picked #02** (his own, ericbg2, obs 83192704, photo 136610234, Mentone 2021): `assets/plants/grinnell-s-beardtongue.jpg` + `-400.jpg`, resized only, no on-card credit (same as his other photos). Candidates for Eric to pick from are in `/workspace/ienn-photo-candidates/penstemon-grinnellii/`, with `CANDIDATES.md` (license, author, URL) and `contact-sheet.jpg`:
 - 3 of Eric's own (ericbg2, obs 83192704 and 223651067).
 - 4 openly licensed backups (CC0 or CC BY 4.0, research grade, SoCal).
 
