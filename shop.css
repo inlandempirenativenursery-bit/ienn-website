@@ -345,7 +345,7 @@ html.bg-light .pane-basics { --bg-op:.12; } html.bg-strong .pane-basics { --bg-o
 .ps-btn-corner { right:calc(6px + env(safe-area-inset-right)); bottom:calc(14px + env(safe-area-inset-bottom)); justify-content:center; z-index:55; --ps-size:40px; transition:opacity .2s ease, transform .25s ease, visibility 0s linear .25s, bottom .2s ease; }
 .ps-btn-corner .ps-dot { background:radial-gradient(circle at 35% 28%, #f1e9f6 0%, #dccdea 55%, #cbb7dc 100%); border-color:#b9a5cb; box-shadow:0 2px 0 #b19cc4, 0 4px 10px rgba(60,40,80,.2); }
 .ps-btn-corner.ps-off { transform:translateY(10px); }
-.ps-bar { position:fixed; top:0; left:0; right:0; z-index:120; background:#fff; border-bottom:2px solid #d4c4e0; box-shadow:0 4px 14px rgba(60,40,80,.14);
+.ps-bar { position:fixed; top:var(--ps-vv-y, 0px); left:0; right:0; z-index:120; background:#fff; border-bottom:2px solid #d4c4e0; box-shadow:0 4px 14px rgba(60,40,80,.14);
   padding:calc(6px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) 6px calc(8px + env(safe-area-inset-left));
   transform:translateY(-110%); visibility:hidden; transition:transform .24s ease-out, visibility 0s linear .24s; }
 .ps-bar.open { transform:none; visibility:visible; transition:transform .24s ease-out, visibility 0s; }
@@ -373,11 +373,11 @@ html.bg-light .pane-basics { --bg-op:.12; } html.bg-strong .pane-basics { --bg-o
 .ps-o-name { color:#2c2c2c; font-size:1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .ps-o-name b, .ps-o-bot b { font-weight:800; color:#3f4f3f; }
 .ps-o-bot { color:#7a7480; font-style:italic; font-size:0.82rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ps-none { padding:0.85rem 1rem; min-height:48px; color:#4a5a4a; font-size:0.98rem; }
+.ps-none b { font-weight:700; }
+.card[tabindex="-1"]:focus { outline:none; }
 /* chosen suggestion: soft lilac glow on its card for ~1 s */
 .card.ps-hit { animation:ps-hit 1.2s ease-out; }
 @keyframes ps-hit { 0%, 55% { box-shadow:0 0 0 3px #cbb7dc, 0 0 22px 6px rgba(203,183,220,.85); } 100% { box-shadow:0 0 0 0 rgba(203,183,220,0); } }
 @media (prefers-reduced-motion: reduce) { .card.ps-hit { animation:none; box-shadow:0 0 0 3px #cbb7dc; } }
 @media (prefers-reduced-motion: reduce) { .ps-btn, .ps-btn:not(.ps-off), .ps-bar, .ps-bar.open, .ps-btn .ps-dot { transition:none; } .ps-btn-corner.ps-off { transform:none; } }
-.search-empty { grid-column:1 / -1; text-align:center; color:#4a5a4a; background:#f8f6f3; border:1px dashed #d4c4e0; border-radius:12px; padding:1.1rem 1rem; margin:0.25rem 0; font-size:0.98rem; }
-.search-empty-q { font-weight:700; }
-.search-empty-clear { border:none; background:none; color:#4a5a4a; font:inherit; font-weight:700; text-decoration:underline; cursor:pointer; padding:0.5rem 0.25rem; min-height:44px; }
