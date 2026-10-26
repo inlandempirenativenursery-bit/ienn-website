@@ -1,57 +1,73 @@
 # Plant search, 2026-10-25
 
-Eric picked a floating, plant-themed search button with no filter chips.
+**Rev 2 (Eric's feedback):** "smaller, more to the right", "I don't like the icons". As a compromise with Amazon's pinned search bar, the plant icons are gone. Search is now a plain magnifier circle in the header that opens a search bar sliding down from the top.
 
 ## Files
-- `plant-search.js`: the button, search pill and icons.
-- `shop.js`: the filter, `window.iennSearch(q)`, applied inside `render()`.
-- `shop.css`: styles at the end of the file.
-- `shop-settings.js`: `SEARCH_ICON`.
+- `plant-search.js`: the button and the slide-down bar.
+- `shop.js`: the filter, `window.iennSearch(q)`, applied in `render()`. Unchanged from rev 1.
+- `shop.css`: the plant-search section at the end.
+- `shop-settings.js`: `SEARCH_PLACEMENT`.
 - Loaded on both index.html and order.html.
 
-## Button and visibility
-- **Button:** 54px round, lilac, with a light "juicy" edge and shadow.
-- **Position:** bottom-right, 12px in, respecting iOS safe areas.
-- **Above the tray bar:** when "View tray / Check out" shows, the button sits 12px above it. A MutationObserver watches the tray bar.
-- **Above the keyboard:** while the search is open, it uses `visualViewport` to stay above the on-screen keyboard.
-- **Layering:** z-index 55, so it's above the tray bar (50) and below the checkout drawer (60/61), the teaser and dialogs.
-- **When it shows:** an IntersectionObserver on `#plant-list` with `rootMargin: 0px 0px -60% 0px`. It fades and springs in once the grid reaches the top 40% of the screen, and fades out once the last plant card scrolls above that line.
-  - It never shows while the grid only has loading skeletons.
-  - `prefers-reduced-motion` turns the animation off.
+## Placement: `SEARCH_PLACEMENT` (preview with `?searchplace=corner`)
 
-## Search
-- **Opening:** tap the button. A pill (54px tall, up to 420px wide) grows out of the button, and the input gets focus.
-  - It contains the icon, the "Search plants…" field, a clear (⊗) button and a close (✕) button.
-  - Every button is a 44px tap target.
-  - The input is 16px, so iOS doesn't zoom.
+### `header` (default)
+A small circle with a magnifier glyph: cream fill, lilac edge, sage glyph, light shadow.
+- **Mobile:** sits on the title row, right of "Inland Empire Native Nursery".
+- **Desktop:** sits just left of the Instagram link.
+- **Unchanged:** the logo, title and script tagline don't move or shrink.
+- **Size:** fitted to the free space beside the title, with at least 5px of gap:
+
+  | Screen | Circle | Gap to title | From edge |
+  |---|---|---|---|
+  | 360 | 28px | 5px | 4px |
+  | 390 | 31px | 7px | 4px |
+  | 430 | 38px | — | — |
+  | Desktop | 38px | — | — |
+
+  The tap target is always 44×44.
+- **Pinned while scrolling:**
+  - index.html: the header is already sticky.
+  - order.html: the header isn't sticky, so only the button is fixed at the title-row height in the top-right corner. It stays under the checkout drawer (z-index 59).
+- **Visible on the whole page,** hidden only while the search bar is open.
+
+### `corner`
+A 40px circle with a lilac fill.
+- **Position:** bottom-right, 8px from the edge, respecting the iPhone safe area.
+- **Visibility:** shows only while the plant grid is on screen (it reaches the top 40% of the screen), and hides after the last plant card.
+- **Tray bar:** sits 10–12px above the tray bar when it shows.
+
+## Search bar (both placements)
+- **Opening:** tap the circle. A full-width bar slides down from the top (0.24 s). It holds a magnifier, the "Search plants…" field (already focused, 16px so iOS doesn't zoom), clear ⊗ and close ✕.
 - **Filtering:** live, with a 120 ms debounce.
-- **What it matches:**
-  - Common name as displayed (e.g. "Datura"), the feed name, and the botanical name.
-  - Case-, accent- and punctuation-insensitive, so "st catherines" finds St. Catherine's lace.
-  - Each typed word must appear somewhere; partial words are OK ("monk" finds all three monkeyflowers).
-- **Order:** matches keep the normal card order.
-- **Hidden plants:** they stay hidden. They're removed before search ever sees them.
-- **No results:** "No plants match "x". Clear search".
-- **Scrolling:** if the grid start has scrolled above the screen while you type, the page jumps so the results are just under the header.
-- **Clear (⊗):** shows all plants and keeps the field open.
-- **Close (✕) and Esc:** clear the search, show all plants and return focus to the button.
+- **Scrolling:** the page scrolls so the results start just under the bar (and under the sticky header on index). Typing from the story section below the grid jumps back up to the grid.
+- **Clear ⊗:** shows all plants again and keeps the bar open.
+- **Close ✕ and Esc:** clear the search, show all plants, slide the bar away and return focus to the circle.
 - **Enter:** dismisses the keyboard.
-- **Accessibility:** `role="search"`; the button has `aria-label="Search plants"` and `aria-expanded`; the input has a label; a polite live region announces "N plants match".
+- **Reduced motion:** turns the slide animation off.
 
-## Icons
-Set with `SEARCH_ICON` in shop-settings.js, or preview with `?searchicon=`.
-- `sprout` (default): a seedling inside a magnifier. It keeps the classic magnifier outline, so it still reads as "search" at small size, with the plant inside.
-- `leaf`: a leaf with a small lens.
-- `sage`: a sage sprig with a lens.
+## Matching (unchanged from rev 1)
+- Searches the common name as displayed (e.g. "Datura"), the feed name, and the botanical name.
+- Ignores case, accents and punctuation, so "st catherines" finds St. Catherine's lace.
+- Every typed word must appear somewhere; partial words are OK.
+- Matches keep the normal card order. Hidden plants never appear.
+- No matches shows: No plants match "x". Clear search.
+
+## Accessibility
+- The button has `aria-label="Search plants"`, `aria-expanded` and `aria-controls`.
+- The bar has `role="search"`, and the input has a label.
+- When the bar is closed, it is `aria-hidden` and its controls are removed from the tab order.
+- A polite live region announces "N plants match".
 
 ## Screenshots
-In `docs/screenshots/plant-search/`, at 390px (iPhone 13, WebKit, mocked real feed):
-- `visible-mid-grid-{sprout,leaf,sage}-390.png`
-- `icons-side-by-side.png`
-- `search-sage-390.png`
-- `search-salvia-390.png`
+In `docs/screenshots/plant-search/`:
+- `header-top-360.png`
+- `header-top-390.png`
+- `header-pinned-mid-page-390.png`
+- `search-open-sage-390.png`
 - `search-no-results-390.png`
-- `visible-with-tray-bar-390.png`
-- `hidden-above-grid-390.png`
-- `hidden-after-last-plant-390.png`
-- `search-button-scroll-390.mp4` (15 s clip)
+- `corner-mid-grid-390.png`
+- `corner-search-open-390.png`
+- `desktop-header-1280.png`
+- `desktop-search-salvia-1280.png`
+- `header-search-clip-390.mp4`

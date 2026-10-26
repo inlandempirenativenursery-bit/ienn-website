@@ -1,71 +1,70 @@
-/* Floating plant search (Eric 2026-10-25): a small round plant-themed button, bottom-right, shown only while the plant grid is on screen.
-   Tap -> a compact search pill; live filtering by common or botanical name (filter logic: window.iennSearch in shop.js).
-   Icon: SEARCH_ICON in shop-settings.js ("sprout" | "leaf" | "sage"); preview any with ?searchicon=leaf. */
+/* Plant search (Eric 2026-10-25): a small plain-magnifier circle opens a search bar that slides down from the top.
+   SEARCH_PLACEMENT in shop-settings.js (preview: ?searchplace=corner):
+   - "header" (default): top-right on the title row, sized to fit beside the title, pinned while scrolling, visible on the whole page.
+   - "corner": floating bottom-right, only while the plant grid is on screen, kept above the tray bar.
+   Filter logic (common / botanical name): window.iennSearch in shop.js. */
 (function () {
   var list = document.getElementById("plant-list"); if (!list || typeof window.iennSearch !== "function") return;
-  var ICONS = {
-    /* seedling inside a magnifier: keeps the classic search silhouette, plant inside */
-    sprout: '<circle cx="10" cy="10" r="7" fill="#fbfaf7" stroke="#3f4f3f" stroke-width="2.2"/><path d="M15.2 15.2L21 21" stroke="#3f4f3f" stroke-width="3.2" stroke-linecap="round"/>' +
-      '<path d="M10 14.6V9.6" stroke="#3d6b45" stroke-width="1.6" stroke-linecap="round"/><path fill="#4d8a57" d="M10 10.8C7.6 11 6 9.5 6 7.3c2.4-.1 3.9 1.3 4 3.5z"/><path fill="#6aa86f" d="M10 9.7c.1-2.3 1.7-3.8 4-3.7 0 2.2-1.6 3.7-4 3.7z"/>',
-    /* leaf with a small lens over its tip */
-    leaf: '<path fill="#5a9460" d="M2.8 14.2C2.4 7.4 6.8 2.6 15.6 2.6c.4 7.8-4.4 12.2-12.8 11.6z"/><path d="M3.6 13.4L12.4 5.4" stroke="#e8f0e2" stroke-width="1.2" stroke-linecap="round"/>' +
-      '<circle cx="15.4" cy="15.4" r="4.6" fill="#fbfaf7" fill-opacity=".85" stroke="#3f4f3f" stroke-width="2"/><path d="M18.8 18.8L22 22" stroke="#3f4f3f" stroke-width="2.8" stroke-linecap="round"/>',
-    /* sage sprig (paired gray-green leaves) with a lens */
-    sage: '<path d="M7.2 21.5C7.4 15.5 8 9.5 9.6 3" stroke="#4d7c55" stroke-width="1.5" fill="none" stroke-linecap="round"/>' +
-      '<g fill="#7fa07c"><ellipse cx="5.1" cy="16.2" rx="1.6" ry="3" transform="rotate(-38 5.1 16.2)"/><ellipse cx="10.2" cy="14.4" rx="1.6" ry="3" transform="rotate(38 10.2 14.4)"/>' +
-      '<ellipse cx="5.9" cy="10.4" rx="1.4" ry="2.7" transform="rotate(-36 5.9 10.4)"/><ellipse cx="11" cy="8.6" rx="1.4" ry="2.7" transform="rotate(38 11 8.6)"/>' +
-      '<ellipse cx="7.6" cy="4.9" rx="1.2" ry="2.2" transform="rotate(-30 7.6 4.9)"/><ellipse cx="11.4" cy="3.8" rx="1.1" ry="2" transform="rotate(40 11.4 3.8)"/></g>' +
-      '<circle cx="16.2" cy="15.6" r="4.3" fill="#fbfaf7" fill-opacity=".85" stroke="#3f4f3f" stroke-width="2"/><path d="M19.4 18.8L22.4 21.8" stroke="#3f4f3f" stroke-width="2.8" stroke-linecap="round"/>'
-  };
-  var q = null; try { q = new URLSearchParams(location.search).get("searchicon"); } catch (e) {}
-  var which = ICONS[q] ? q : (typeof SEARCH_ICON === "string" && ICONS[SEARCH_ICON] ? SEARCH_ICON : "sprout");
-  function svg(name, size) { return '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" aria-hidden="true" focusable="false">' + ICONS[name] + "</svg>"; }
+  var sp = null; try { sp = new URLSearchParams(location.search).get("searchplace"); } catch (e) {}
+  var place = sp === "corner" || sp === "header" ? sp : (typeof SEARCH_PLACEMENT === "string" && SEARCH_PLACEMENT === "corner" ? "corner" : "header");
+  var GLYPH = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M15.4 15.4L20.5 20.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>';
 
-  var wrap = document.createElement("div"); wrap.className = "psearch"; wrap.setAttribute("role", "search"); wrap.dataset.icon = which;
-  wrap.innerHTML =
-    '<button type="button" class="ps-fab" aria-label="Search plants" aria-expanded="false" aria-controls="ps-pill">' + svg(which, 30) + "</button>" +
-    '<div class="ps-pill" id="ps-pill" hidden>' +
-      '<span class="ps-ic">' + svg(which, 24) + "</span>" +
-      '<label class="sr-only" for="ps-input">Search plants by common or botanical name</label>' +
-      '<input id="ps-input" class="ps-input" type="search" placeholder="Search plants\u2026" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">' +
-      '<button type="button" class="ps-clear" aria-label="Clear search" hidden><svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="8" fill="#b9b3c0"/><path d="M7 7l6 6M13 7l-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button>' +
-      '<button type="button" class="ps-close" aria-label="Close search"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>' +
-    "</div>" +
+  var btn = document.createElement("button"); btn.type = "button"; btn.className = "ps-btn ps-btn-" + place + (place === "corner" ? " ps-off" : "");
+  btn.setAttribute("aria-label", "Search plants"); btn.setAttribute("aria-expanded", "false"); btn.setAttribute("aria-controls", "ps-bar");
+  btn.innerHTML = '<span class="ps-dot">' + GLYPH + "</span>";
+  var bar = document.createElement("div"); bar.className = "ps-bar"; bar.id = "ps-bar"; bar.setAttribute("role", "search"); bar.setAttribute("aria-hidden", "true");
+  bar.innerHTML = '<div class="ps-bar-in">' + GLYPH +
+    '<label class="sr-only" for="ps-input">Search plants by common or botanical name</label>' +
+    '<input id="ps-input" class="ps-input" type="search" placeholder="Search plants\u2026" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" tabindex="-1">' +
+    '<button type="button" class="ps-clear" aria-label="Clear search" tabindex="-1" hidden><svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="8" fill="#b9b3c0"/><path d="M7 7l6 6M13 7l-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button>' +
+    '<button type="button" class="ps-close" aria-label="Close search" tabindex="-1"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button></div>' +
     '<span class="sr-only" aria-live="polite" id="ps-live"></span>';
-  document.body.appendChild(wrap);
-  var fab = wrap.querySelector(".ps-fab"), pill = wrap.querySelector(".ps-pill"), input = wrap.querySelector(".ps-input"),
-      clr = wrap.querySelector(".ps-clear"), live = wrap.querySelector("#ps-live"), open = false, inView = false, t = null;
+  document.body.appendChild(bar); document.body.appendChild(btn);
+  var input = bar.querySelector(".ps-input"), clr = bar.querySelector(".ps-clear"), cls = bar.querySelector(".ps-close"), live = bar.querySelector("#ps-live"), open = false, inView = false, t = null;
+  var header = document.querySelector("header"), sticky = !!header && getComputedStyle(header).position === "sticky";
+  if (!sticky) { btn.style.zIndex = place === "header" ? "59" : ""; bar.style.zIndex = "59"; }   // order.html: stay under the checkout drawer (z 60/61)
 
+  /* Header placement: the circle sits on the title row, right of the title (or left of the Instagram link on wide screens), never moving the title.
+     Its size shrinks only as far as needed to keep a gap from the title on narrow phones (min 28px; the tap target stays 44px). */
+  function fitHeader() { if (place !== "header" || !header) return;
+    var bn = header.querySelector(".brand-name"), ig = header.querySelector(".ig-top"), vw = document.documentElement.clientWidth; if (!bn) return;
+    var rg = document.createRange(); rg.selectNodeContents(bn); var tr = rg.getBoundingClientRect();
+    var igv = ig && ig.offsetWidth > 0 ? ig.getBoundingClientRect() : null, edge = igv ? igv.left - 8 : vw - 4;
+    var size = Math.max(28, Math.min(38, Math.floor(edge - tr.right - 6)));
+    btn.style.setProperty("--ps-size", size + "px");
+    btn.style.right = igv ? Math.round(vw - edge) + "px" : "";
+    var cy = (tr.top + tr.bottom) / 2 + (sticky ? 0 : window.pageYOffset);   // sticky header: same spot while scrolling; static header: pinned at the title-row height
+    btn.style.top = Math.round(cy - 22) + "px"; }
+
+  /* Corner placement: show while the grid reaches the top 40% of the screen; hide after the last card passes; sit above the tray bar. */
   function hasPlants() { return !!list.querySelector(".card:not(.skel)") || !!list.querySelector(".search-empty"); }
-  function sync() { wrap.classList.toggle("on", open || (inView && hasPlants())); }
-  /* Show once the grid reaches the top 40% of the screen (so not while the hero is still in view) and hide after the last plant card scrolls up past that line. */
-  if ("IntersectionObserver" in window) new IntersectionObserver(function (es) { inView = es[es.length - 1].isIntersecting; sync(); }, { rootMargin: "0px 0px -60% 0px" }).observe(list);
-  else { inView = true; }
+  function sync() { if (place === "corner") btn.classList.toggle("ps-off", open || !(inView && hasPlants())); else btn.classList.toggle("ps-off", open); }
+  function lift() { if (place !== "corner") return; var cb = document.getElementById("cartbar"), b = null;
+    if (cb && !cb.hidden) { var r = cb.getBoundingClientRect(); if (r.height) b = Math.max(0, window.innerHeight - r.top) + 10; }
+    btn.style.bottom = b == null ? "" : b + "px"; }
+  if (place === "corner") {
+    if ("IntersectionObserver" in window) new IntersectionObserver(function (es) { inView = es[es.length - 1].isIntersecting; sync(); }, { rootMargin: "0px 0px -60% 0px" }).observe(list); else inView = true;
+    var cbEl = document.getElementById("cartbar"); if (cbEl && "MutationObserver" in window) new MutationObserver(lift).observe(cbEl, { attributes: true, attributeFilter: ["hidden"] });
+  }
+  function layout() { fitHeader(); lift(); }
+  window.addEventListener("resize", layout); if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout); window.addEventListener("load", layout);
 
-  /* Sit above the tray bar when it shows, and above the on-screen keyboard while typing. */
-  function place() { var cb = document.getElementById("cartbar"), b = null, vv = window.visualViewport;
-    if (cb && !cb.hidden) { var r = cb.getBoundingClientRect(); if (r.height) b = Math.max(0, window.innerHeight - r.top) + 12; }
-    if (open && vv) { var kb = window.innerHeight - (vv.height + vv.offsetTop); if (kb > 60) b = kb + 10; }
-    wrap.style.bottom = b == null ? "" : b + "px"; }
-  var cbEl = document.getElementById("cartbar");
-  if (cbEl && "MutationObserver" in window) new MutationObserver(place).observe(cbEl, { attributes: true, attributeFilter: ["hidden"] });
-  window.addEventListener("resize", place); if (window.visualViewport) { visualViewport.addEventListener("resize", place); visualViewport.addEventListener("scroll", place); }
-
-  function headerH() { var h = document.querySelector("header"); return h && getComputedStyle(h).position === "sticky" ? h.getBoundingClientRect().height : 0; }
-  function toTop() { var top = list.getBoundingClientRect().top, off = headerH() + 12;   // keep results in view: grid start just under the sticky header
-    if (top < off - 4) window.scrollTo({ top: window.pageYOffset + top - off, behavior: "auto" }); }
-  function run() { var r = window.iennSearch(input.value); clr.hidden = !input.value; toTop();
+  /* Keep results in view: grid start just under the search bar (and under the sticky header, if any). From the story section below the grid this jumps back up. */
+  function toResults() { var off = bar.getBoundingClientRect().bottom; if (sticky) off = Math.max(off, header.getBoundingClientRect().bottom); off += 8;
+    var top = list.getBoundingClientRect().top; if (Math.abs(top - off) > 4) window.scrollTo(0, window.pageYOffset + top - off); }
+  function run() { var r = window.iennSearch(input.value); clr.hidden = !input.value; if (r.query) toResults();
     live.textContent = !r.query ? "" : r.matches ? r.matches + (r.matches === 1 ? " plant matches" : " plants match") : "No plants match"; }
-  function setOpen(on) { open = on; wrap.classList.toggle("open", on); fab.setAttribute("aria-expanded", on ? "true" : "false"); pill.hidden = !on; fab.hidden = on; place(); sync();
-    if (on) { input.focus({ preventScroll: true }); }
-    else { input.value = ""; clearTimeout(t); window.iennSearch(""); clr.hidden = true; live.textContent = ""; fab.focus({ preventScroll: true }); } }
-  fab.addEventListener("click", function () { setOpen(true); });
-  wrap.querySelector(".ps-close").addEventListener("click", function () { setOpen(false); });
+  function setOpen(on) { if (on === open) return; open = on; bar.classList.toggle("open", on); bar.setAttribute("aria-hidden", on ? "false" : "true");
+    [input, clr, cls].forEach(function (x) { x.tabIndex = on ? 0 : -1; }); btn.setAttribute("aria-expanded", on ? "true" : "false"); sync();
+    if (on) input.focus({ preventScroll: true });
+    else { input.value = ""; clearTimeout(t); window.iennSearch(""); clr.hidden = true; live.textContent = ""; input.blur(); btn.focus({ preventScroll: true }); } }
+  btn.addEventListener("click", function () { setOpen(true); });
+  cls.addEventListener("click", function () { setOpen(false); });
   clr.addEventListener("click", function () { input.value = ""; run(); input.focus({ preventScroll: true }); });
   input.addEventListener("input", function () { clearTimeout(t); t = setTimeout(run, 120); });
   input.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); clearTimeout(t); run(); input.blur(); } });
-  wrap.addEventListener("keydown", function (e) { if (e.key === "Escape") { e.preventDefault(); setOpen(false); } });
+  document.addEventListener("keydown", function (e) { if (open && e.key === "Escape") { e.preventDefault(); setOpen(false); } });
   document.addEventListener("click", function (e) { if (e.target.closest && e.target.closest(".search-empty-clear")) { input.value = ""; run(); if (open) input.focus({ preventScroll: true }); } });
   document.addEventListener("ienn-grid-rendered", sync);
-  place(); sync();
+  layout(); sync();
 })();
