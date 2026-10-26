@@ -1,8 +1,9 @@
 // IENN home screen widget for Scriptable (iPhone). Small + medium.
-// Setup: docs/widget-2026-10-25.md. Paste the two lines below, nothing else needs editing.
+// Setup: docs/widget-2026-10-25.md. Nothing to edit: run it once in the Scriptable app and enter the passphrase.
+// This file holds NO secret. The passphrase is kept only in this iPhone's Keychain (Scriptable Keychain, item below).
 
-const ENDPOINT = "PASTE_WEB_APP_URL_HERE";   // the Apps Script /exec URL (same one the website uses), e.g. https://script.google.com/macros/s/AKfy…/exec
-const KEY      = "PASTE_METRICS_KEY_HERE";   // the METRICS_KEY Lobo set in Script Properties
+const ENDPOINT = "https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec";   // public web-app URL the website already uses
+const KEYCHAIN_ITEM = "ienn_metrics_key";
 
 // Which period sits under "Today" is chosen PER WIDGET, no editing needed:
 //   long-press the widget > Edit Widget > Parameter:  7d (default) · 30d · qtd · ytd · all (medium only: every period in a table)
@@ -41,13 +42,16 @@ function choosePeriod(param, small) {
 const fm = FileManager.local();
 const cachePath = fm.joinPath(fm.documentsDirectory(), "ienn-widget-cache.json");
 
-async function load() {
-  if (ENDPOINT.startsWith("PASTE") || KEY.startsWith("PASTE")) return { setup: true };
+function savedKey() { try { return Keychain.contains(KEYCHAIN_ITEM) ? String(Keychain.get(KEYCHAIN_ITEM) || "") : ""; } catch (e) { return ""; } }
+
+async function load(key) {
+  if (!key) return { setup: true };
   try {
-    const req = new Request(`${ENDPOINT}?view=metrics&key=${encodeURIComponent(KEY)}`);
+    const req = new Request(`${ENDPOINT}?view=metrics&key=${encodeURIComponent(key)}`);
     req.timeoutInterval = 20;
     const j = await req.loadJSON();
-    if (!j || !j.ok) return withCache({ error: j && j.error === "unauthorized" ? "Key not accepted" : "Server not ready" });
+    if (j && j.error === "unauthorized") return withCache({ error: "Passphrase not accepted", unauthorized: true });
+    if (!j || !j.ok) return withCache({ error: "Server not ready" });
     fm.writeString(cachePath, JSON.stringify(j));
     return { data: j };
   } catch (e) {
@@ -193,11 +197,12 @@ function build(res, family, param, img = {}) {
   w.refreshAfterDate = new Date(Date.now() + REFRESH_MINUTES * 60 * 1000);
   header(w, small, period, img);
   if (res.setup) {
-    const t = w.addText("Open the script and paste ENDPOINT and KEY at the top."); t.font = Font.systemFont(12); t.textColor = C.ink;
+    const p = w.addStack(); p.backgroundColor = C.panel; p.cornerRadius = 12; p.setPadding(8, 10, 8, 10);
+    const t = p.addText("Open Scriptable and run IENN once to set it up"); t.font = Font.mediumSystemFont(13); t.textColor = C.ink;
     return w;
   }
   if (!res.data) {
-    const t = w.addText(res.error === "Offline" ? "No connection yet — will retry." : res.error);
+    const t = w.addText(res.error === "Offline" ? "No connection yet — will retry." : res.unauthorized ? "Passphrase not accepted — open Scriptable and run IENN" : res.error);
     t.font = Font.mediumSystemFont(13); t.textColor = C.ink;
     footer(w, res, [], period); return w;
   }
@@ -212,13 +217,63 @@ function build(res, family, param, img = {}) {
   return w;
 }
 
+// ---------- in-app setup (passphrase -> Keychain) ----------
+async function say(title, message) { const a = new Alert(); a.title = title; a.message = message; a.addAction("OK"); await a.presentAlert(); }
+
+/** Asks for the passphrase, saves it to the Keychain, tests it. Returns the load() result, or null if cancelled. */
+async function askPassphrase() {
+  const a = new Alert();
+  a.title = "IENN widget";
+  a.message = "Enter your IENN widget passphrase";
+  a.addSecureTextField("Passphrase", "");
+  a.addAction("Save");
+  a.addCancelAction("Cancel");
+  if ((await a.presentAlert()) === -1) return null;
+  const key = String(a.textFieldValue(0) || "").trim();
+  if (!key) { await say("IENN widget", "No passphrase entered. Nothing was saved."); return null; }
+  Keychain.set(KEYCHAIN_ITEM, key);
+  const res = await load(key);
+  if (res.unauthorized) {
+    Keychain.remove(KEYCHAIN_ITEM);
+    await say("Passphrase not accepted", "That passphrase didn't work, so it was cleared. Run IENN again to try another one.");
+    return null;
+  }
+  if (res.error) await say("Saved", `The passphrase is saved, but the server couldn't be reached right now (${res.error}). The widget will keep retrying.`);
+  else await say("Connected", "All set. Add the widget: long-press the Home Screen > + > Scriptable > pick IENN under Edit Widget > Script.");
+  return res;
+}
+
+/** In the app with a passphrase already saved: preview, change or remove it. Returns {res, family} to preview, or null. */
+async function appMenu(key) {
+  const a = new Alert();
+  a.title = "IENN widget";
+  a.message = "The passphrase is saved on this iPhone.";
+  a.addAction("Preview widget (medium)");
+  a.addAction("Preview widget (small)");
+  a.addAction("Change passphrase");
+  a.addDestructiveAction("Remove passphrase");
+  a.addCancelAction("Cancel");
+  const i = await a.presentAlert();
+  if (i === 0 || i === 1) return { res: await load(key), family: i === 0 ? "medium" : "small" };
+  if (i === 2) { const res = await askPassphrase(); return res ? { res, family: "medium" } : null; }
+  if (i === 3) { Keychain.remove(KEYCHAIN_ITEM); await say("Removed", "The passphrase was removed from this iPhone. Run IENN again to set a new one."); }
+  return null;
+}
+
+async function render(res, family) {
+  const size = family === "small" ? "small" : "medium";
+  const [bg, logo] = await Promise.all([asset(`bg-${size}.jpg`), asset("logo.jpg")]);
+  return build(res, size, args.widgetParameter, { bg, logo });
+}
+
 // ---------- run ----------
-const res = await load();
-const family = config.runsInWidget ? config.widgetFamily : "medium";
-const size = family === "small" ? "small" : "medium";
-const [bg, logo] = await Promise.all([asset(`bg-${size}.jpg`), asset("logo.jpg")]);
-const widget = build(res, size, args.widgetParameter, { bg, logo });
-if (config.runsInWidget) Script.setWidget(widget);
-else if (family === "small") await widget.presentSmall();
-else await widget.presentMedium();
+const key = savedKey();
+if (config.runsInWidget) {
+  Script.setWidget(await render(await load(key), config.widgetFamily));
+} else if (config.runsInApp) {
+  const pick = key ? await appMenu(key) : await askPassphrase().then(res => (res ? { res, family: "medium" } : null));
+  if (pick) { const w = await render(pick.res, pick.family); if (pick.family === "small") await w.presentSmall(); else await w.presentMedium(); }
+} else {
+  await (await render(await load(key), "medium")).presentMedium();    // Siri / Shortcuts: just show it
+}
 Script.complete();
