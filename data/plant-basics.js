@@ -83,6 +83,9 @@ var IENN_BASICS_SPECIES = {
   "Diplacus calycinus": { sun:["full","part"], h:[1,3], w:[1,3], genusLevel:false },
   "Penstemon centranthifolius": { h:[2,4], w:[1,2], wild:["hummingbirds","pollinators"], genusLevel:false, desc:"Slender stems of scarlet tubular flowers rise from blue-green leaves. Built for hummingbirds; keep it on the dry side." },
   "Penstemon spectabilis": { h:[3,4], w:[2,3], genusLevel:false, desc:"Tall stems packed with lavender-blue tubular flowers in spring. Needs good drainage and little summer water." },
+  /* Added 2026-10-25d (see docs/factcheck-2026-10-25d.md). Waiting on a Catalog row: botanical "Penstemon grinnellii", Grinnell's beardtongue. Mountain native: ie:false (no Heat tough chip). */
+  "Penstemon grinnellii": { water:1, sun:["full","part"], soil:"Fast-draining", bloom:["Sp","Su"], wild:["pollinators","hummingbirds","containers"], h:[1,3], w:[1.5,2.5], ie:false, genusLevel:false,
+    desc:"A bushy clump of gray-green leaves with stems of wide-throated, pale pink to lavender flowers striped with purple guide lines. Needs sharp drainage, little summer water and some afternoon shade inland." },
   "Asclepias fascicularis": { bloom:["Sp","Su","F"], h:[2,3], w:[1,3], genusLevel:false },
   "Asclepias speciosa": { h:[2,4], w:[2,4], genusLevel:false },
   "Asclepias eriocarpa": { h:[1,3], w:[1,2], water:1, genusLevel:false }

@@ -91,7 +91,12 @@
     }
     section { padding: 2rem 1.25rem; }
     h2 { color: var(--sage-dark); margin-bottom: 0.75rem; font-size: 1.4rem; }
-    .problem, .guide { margin-bottom: 1.5rem; }
+    /* Story blocks below the shop: a compact flow (Eric 2026-10-25: "paragraphs should be closer"). ~28px from a paragraph to the next heading. */
+    .problem, .guide, .plan, .benefits { padding-top:0.875rem; padding-bottom:0.875rem; }
+    .problem { padding-top:1.5rem; }
+    .benefits { padding-bottom:1.75rem; }
+    .problem h2, .guide h2, .plan h2, .benefits h2 { margin-bottom:0.5rem; line-height:1.25; }
+    .plan .plan-steps { margin-top:0.75rem; }
     /* Starter packs teaser: a big juicy 3-D button, same visual language as the card "Add to tray" button (shop.css .card .add:
        solid fill, light inset top, darker bottom edge). Centered in the viewport. Color = STARTER_TEASER_COLOR (shop-settings.js). */
     .starter-teaser { --st-top:#f8d27c; --st-mid:#e8b04b; --st-bot:#dc9f37; --st-edge:#b98a2e; --st-ink:#3b2a10; --st-sub:#4a3a1c; --st-glow:rgba(110,75,20,.30); --st-ts:rgba(255,255,255,.45);
@@ -265,7 +270,7 @@
     .cta-section {
       background: var(--lilac);
       text-align: center;
-      padding: 2.5rem 1.25rem;
+      padding: 2rem 1.25rem;
     }
     footer {
       background: var(--sage-dark);
@@ -284,7 +289,7 @@
     .ig-top { min-width:44px; flex-shrink:0; justify-content:center; color:var(--sage-dark); font-weight:600; font-size:0.85rem; text-decoration:none; }
     @media (max-width: 480px) { .ig-top-text { display:none; } .ig-top svg { width:22px; height:22px; } }
   </style>
-  <link rel="stylesheet" href="shop.css?v=dcb482e">
+  <link rel="stylesheet" href="shop.css?v=2516d51">
   <style>
     .shop { max-width:1080px; margin:0 auto; padding:0; }
     .shop .inv-status[hidden] { display:none; }
@@ -364,8 +369,8 @@
   </div>
 
   <section class="problem">
-    <h2>Plants keep dying in this heat?</h2>
-    <p>Store-bought plants aren’t grown for 105° summers. Skip the dead plants, high water bills and starting over.</p>
+    <h2>Tired of losing plants to the heat?</h2>
+    <p>Skip the disappointment, wasted effort and plants that just can’t hack it.</p>
   </section>
 
   <section class="guide">
@@ -416,14 +421,14 @@
     <p style="margin-top:0.5rem;font-size:0.75rem;"><a href="credits.html">Photo credits</a></p>
   </footer>
   <script>window.IENN_PROMO_OPTS = { cta: "Shop now", onShop: function () { var g = document.getElementById("plant-list"); if (g) g.scrollIntoView({ behavior: "smooth" }); } };</script>
-  <script src="promo.js?v=dcb482e"></script>
-  <script src="plant-photos.js?v=dcb482e"></script>
-  <script src="feed-order.js?v=dcb482e"></script>
-  <script src="stock-view.js?v=dcb482e"></script>
-  <script src="shop-settings.js?v=dcb482e"></script>
-  <script src="data/plant-basics.js?v=dcb482e"></script>
-  <script src="shop.js?v=dcb482e"></script>
+  <script src="promo.js?v=2516d51"></script>
+  <script src="plant-photos.js?v=2516d51"></script>
+  <script src="feed-order.js?v=2516d51"></script>
+  <script src="stock-view.js?v=2516d51"></script>
+  <script src="shop-settings.js?v=2516d51"></script>
+  <script src="data/plant-basics.js?v=2516d51"></script>
+  <script src="shop.js?v=2516d51"></script>
   <script>document.getElementById("printlist-link").href = APPS_SCRIPT_URL + "?view=print";</script>
-  <script src="site-links.js?v=dcb482e"></script>
-  <script src="teaser.js?v=dcb482e"></script>
+  <script src="site-links.js?v=2516d51"></script>
+  <script src="teaser.js?v=2516d51"></script>
 </body></html>
