@@ -71,6 +71,8 @@
       else more();
     }
   }
+  function SEAL_AT() { var q = null; try { q = new URLSearchParams(location.search).get("seal"); } catch (e) {}
+    return q === "photo" || q === "body" ? q : (typeof SEAL_PLACEMENT === "string" ? SEAL_PLACEMENT : "body"); }
   var SHORT = { '2"': "2-inch", '4"': "4-inch", 'Tree pot': "Tree pot", '1 gal': "1-gal" };
   function askNote() { var n = el("span", { class: "ask-note" }); n.appendChild(document.createTextNode("Ask us: "));
     n.appendChild(el("a", { class: "contact-tel", href: "tel:" + CONTACT_TEL }, "call")); n.appendChild(document.createTextNode(" or "));
@@ -90,9 +92,12 @@
       var cr = p.image && typeof ienPhoto === "function" && ienPhoto(p.name); cr = cr && cr.src === p.image && cr.credit;
       if (cr) { var ca = el("a", { class: "photo-credit", href: cr.url, target: "_blank", rel: "noopener", title: cr.text }, String(cr.text).replace(/^Photo:\s*/, "© "));   // credit sits inside the photo (bottom-right); an <a>, so capOverlays never counts it
         ca.addEventListener("click", function (e) { e.stopPropagation(); }); ph.appendChild(ca); }
+      var seal = typeof iennSeal === "function" && iennSeal(p.botanical), sealAt = SEAL_AT();
+      if (seal && sealAt === "photo") ph.appendChild(iennSealEl(seal, "photo"));   // a <div>, outside capOverlays' span count; never copied to the clean-photo panel (that clones only img + credit)
       var b = el("div", { class: "body" });
       var h3 = el("h3", { id: p.id + "-name" }); h3.appendChild(el("span", { class: "slot", "aria-hidden": "true" }, String.fromCharCode(65 + Math.floor(idx / 6)) + (idx % 6 + 1))); h3.appendChild(document.createTextNode(p.name)); b.appendChild(h3);
       if (p.botanical) b.appendChild(el("span", { class: "note" }, p.botanical));
+      if (seal && sealAt !== "photo") b.appendChild(iennSealEl(seal, "body"));
       var bx = typeof iennBasics === "function" && iennBasics(p.botanical);
 
       /* With a stock baseline, a size is available only if qty > 0 or canRequest; show only those. No available size => "Coming soon". */

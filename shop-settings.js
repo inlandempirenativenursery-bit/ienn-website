@@ -12,6 +12,9 @@ var FEED_RETRIES = 1;
 var FEED_SHORT_RATIO = 0.7;   // e.g. 31 known-good -> a reply under 22 plants is retried before it is shown (the backend's old 19-plant fallback list)
 /* "Only a few left" shows when a size has this many or fewer ready (never shows the number). */
 var LOW_STOCK = 5;
+/* Official-symbol seal (data/plant-seals.js, e.g. Purple needlegrass = California State Grass). "body" = small rosette + text line under the botanical name;
+   "photo" = round seal with curved text on the photo, right side above the credit. Preview the other one with ?seal=photo or ?seal=body. */
+var SEAL_PLACEMENT = "body";
 /* Prices by size. Shown only until live data loads; the server (IENN_Config.gs IENN_SIZES) is authoritative. */
 var PRICES = { '2"': 3, '4"': 6, 'Tree pot': 10, '1 gal': 15 };
 var SIZE_LABELS = { '2"': "2-inch pot", '4"': "4-inch pot", 'Tree pot': "Quarter tree pot", '1 gal': "1-gallon" };
