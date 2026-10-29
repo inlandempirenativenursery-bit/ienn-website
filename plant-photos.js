@@ -40,6 +40,10 @@ var IENN_PHOTO_CREDITS = {
   "text": "Photo: Adam J. Searcy, CC BY 4.0",
   "url": "https://www.inaturalist.org/observations/356100160"
  },
+ "purple-needlegrass": {
+  "text": "Photo: NPS, Santa Monica Mountains NRA, public domain",
+  "url": "https://commons.wikimedia.org/wiki/File:Purple_Needlegrass_(9098888940).jpg"
+ },
  "st-catherine-s-lace": {
   "text": "Photo: Kat B, CC BY 4.0",
   "url": "https://www.inaturalist.org/observations/164364143"

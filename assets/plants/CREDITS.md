@@ -1,6 +1,6 @@
 # Plant photo credits
 
-Single photo set: `assets/plants/<slug>.jpg` (800px max) and `<slug>-400.jpg` (400px, via `srcset`), mapped by common name in `plant-photos.js` (`IENN_PHOTOS`). Eric-approved ★ picks from `docs/photo-choices/README.md` (board v2), plus toyon, woolly blue curls, Grinnell's beardtongue and purple needlegrass (Eric's own iNaturalist photos). Files were only resized and recompressed. A photo from the feed (Catalog `Photo` column) still takes priority.
+Single photo set: `assets/plants/<slug>.jpg` (800px max) and `<slug>-400.jpg` (400px, via `srcset`), mapped by common name in `plant-photos.js` (`IENN_PHOTOS`). Eric-approved ★ picks from `docs/photo-choices/README.md` (board v2), plus toyon, woolly blue curls and Grinnell's beardtongue (Eric's own iNaturalist photos). Files were only resized and recompressed. A photo from the feed (Catalog `Photo` column) still takes priority.
 
 | File | Plant | Source | Link |
 |---|---|---|---|
@@ -25,7 +25,7 @@ Single photo set: `assets/plants/<slug>.jpg` (800px max) and `<slug>-400.jpg` (4
 | toyon.jpg | Toyon | Eric Bo Garcia (ericbg2) via iNaturalist, 2022-12-15, Willits, CA, US | https://www.inaturalist.org/observations/144448253 |
 | woolly-blue-curls.jpg | Woolly blue curls | Eric Bo Garcia (ericbg2) via iNaturalist, 2025-05-16, Fontana, CA | https://www.inaturalist.org/observations/282646314 |
 | grinnell-s-beardtongue.jpg | Grinnell's beardtongue | Eric Bo Garcia (ericbg2) via iNaturalist (photo 136610234), 2021-06-15, San Bernardino National Forest, Mentone, CA; resized only | https://www.inaturalist.org/observations/83192704 |
-| purple-needlegrass.jpg | Purple needlegrass | Eric Bo Garcia (ericbg2) via iNaturalist (photo 195193890), 2022-05-05, Zenia, Trinity County, CA; already 3:4, resized only. Note: the iNat observation is still "Needs ID" (one community ID of Nassella pulchra; Eric's own ID is Poaceae). Public-domain backup if Eric prefers: "Purple Needlegrass" by Santa Monica Mountains NRA (NPS), Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Purple_Needlegrass_(9098888940).jpg | https://www.inaturalist.org/observations/115653475 |
+| purple-needlegrass.jpg | Purple needlegrass | "Purple Needlegrass" by Santa Monica Mountains National Recreation Area (National Park Service), Wikimedia Commons (from the NPS Flickr stream, https://www.flickr.com/photos/santamonicamtns/9098888940), taken 2013-06-20. **Public domain** ({{PD-USGov-NPS}}: work of the U.S. National Park Service; Flickr Public Domain Mark, FlickreviewR passed 2025-03-18). Original is 600×800 (3:4): resized/recompressed only. Eric picked this over his own iNat photo (obs 115653475, ID unconfirmed) on 2026-10-28. | https://commons.wikimedia.org/wiki/File:Purple_Needlegrass_(9098888940).jpg |
 
 Eric's photos (catalogue and ericbg2) are © Eric Bo Garcia / IENN. The keithwg1 photos are © Keith and used with his permission. Showy milkweed is CC0 1.0 (Wikimedia Commons).
 
