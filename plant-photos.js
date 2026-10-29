@@ -1,7 +1,7 @@
 /* Plant photos (Eric-approved picks, see docs/photo-credits.md). Key = slug of the common name, matched case-insensitively.
    No entry => leaf placeholder. Woollypod milkweed now uses Eric's own iNaturalist photo (pending his approval). */
-var IENN_PHOTOS = ["white-sage","sticky-monkeyflower","narrow-leaf-milkweed","black-sage","california-buckwheat","california-encelia","california-poppy","desert-marigold","matilija-poppy","morning-glory","rock-monkeyflower","scarlet-bugler","showy-penstemon","sugarbush","yarrow","deergrass","showy-milkweed","yucca","toyon","woolly-blue-curls","sacred-datura","woollypod-milkweed","coyote-brush","bush-poppy","purple-sage","brittlebush","cleveland-sage","hummingbird-sage","california-sagebrush","california-fuchsia","arizona-cypress","four-winged-saltbush","deerweed","apricot-mallow","scarlet-monkeyflower","conejo-buckwheat","blue-grama","st-catherine-s-lace","grinnell-s-beardtongue"];
-var IENN_PHOTO_ALIAS = { "grinnells-beardtongue": "grinnell-s-beardtongue", "southern-woodland-penstemon": "grinnell-s-beardtongue", "st-catherines-lace": "st-catherine-s-lace", "saint-catherine-s-lace": "st-catherine-s-lace", "datura": "sacred-datura", "narrowleaf-milkweed": "narrow-leaf-milkweed", "buckwheat": "california-buckwheat", "encelia": "california-encelia", "bush-sunflower": "california-encelia", "poppy": "california-poppy", "matilija": "matilija-poppy", "bunch-grass-deer": "deergrass", "deer-grass": "deergrass", "chaparral-yucca": "yucca", "our-lord-s-candle": "yucca", "monkeyflower": "sticky-monkeyflower", "southern-bush-monkeyflower": "sticky-monkeyflower", "bush-monkeyflower": "sticky-monkeyflower", "penstemon": "showy-penstemon", "wild-morning-glory": "morning-glory", "island-morning-glory": "morning-glory", "california-brittlebush": "california-encelia", "arizona-cypress-blue-pyramid": "arizona-cypress" };
+var IENN_PHOTOS = ["white-sage","sticky-monkeyflower","narrow-leaf-milkweed","black-sage","california-buckwheat","california-encelia","california-poppy","desert-marigold","matilija-poppy","morning-glory","rock-monkeyflower","scarlet-bugler","showy-penstemon","sugarbush","yarrow","deergrass","showy-milkweed","yucca","toyon","woolly-blue-curls","sacred-datura","woollypod-milkweed","coyote-brush","bush-poppy","purple-sage","brittlebush","cleveland-sage","hummingbird-sage","california-sagebrush","california-fuchsia","arizona-cypress","four-winged-saltbush","deerweed","apricot-mallow","scarlet-monkeyflower","conejo-buckwheat","blue-grama","st-catherine-s-lace","grinnell-s-beardtongue","purple-needlegrass"];
+var IENN_PHOTO_ALIAS = { "purple-needle-grass": "purple-needlegrass", "purple-stipa": "purple-needlegrass", "grinnells-beardtongue": "grinnell-s-beardtongue", "southern-woodland-penstemon": "grinnell-s-beardtongue", "st-catherines-lace": "st-catherine-s-lace", "saint-catherine-s-lace": "st-catherine-s-lace", "datura": "sacred-datura", "narrowleaf-milkweed": "narrow-leaf-milkweed", "buckwheat": "california-buckwheat", "encelia": "california-encelia", "bush-sunflower": "california-encelia", "poppy": "california-poppy", "matilija": "matilija-poppy", "bunch-grass-deer": "deergrass", "deer-grass": "deergrass", "chaparral-yucca": "yucca", "our-lord-s-candle": "yucca", "monkeyflower": "sticky-monkeyflower", "southern-bush-monkeyflower": "sticky-monkeyflower", "bush-monkeyflower": "sticky-monkeyflower", "penstemon": "showy-penstemon", "wild-morning-glory": "morning-glory", "island-morning-glory": "morning-glory", "california-brittlebush": "california-encelia", "arizona-cypress-blue-pyramid": "arizona-cypress" };
 /* Photos that need a visible attribution on the card (e.g. CC BY). */
 var IENN_PHOTO_CREDITS = {
  "deergrass": {
@@ -39,6 +39,10 @@ var IENN_PHOTO_CREDITS = {
  "conejo-buckwheat": {
   "text": "Photo: Adam J. Searcy, CC BY 4.0",
   "url": "https://www.inaturalist.org/observations/356100160"
+ },
+ "purple-needlegrass": {
+  "text": "Photo: NPS, Santa Monica Mountains NRA, public domain",
+  "url": "https://commons.wikimedia.org/wiki/File:Purple_Needlegrass_(9098888940).jpg"
  },
  "st-catherine-s-lace": {
   "text": "Photo: Kat B, CC BY 4.0",

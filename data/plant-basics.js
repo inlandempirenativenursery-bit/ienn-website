@@ -60,7 +60,10 @@ var IENN_BASICS = {
   Bouteloua: { water:1, sun:["full","part"], soil:"Fast-draining", bloom:["Su","F"], wild:["pollinators","containers"], h:[0.5,2], w:[2,2], ie:true, genusLevel:true,
     desc:"A fine-textured, low-water bunchgrass with eyelash-shaped seed heads held above the blades. Goes tan when dormant in winter." },
   Erythranthe: { water:3, sun:["full","part"], soil:"Adaptable", bloom:["Sp","Su","F"], wild:["hummingbirds","pollinators","containers"], h:[2,3], w:[3,3], ie:false, genusLevel:true,
-    desc:"Bright red-orange tubular flowers over soft, toothed leaves. Likes regular water and some afternoon shade; deadhead for more blooms." }
+    desc:"Bright red-orange tubular flowers over soft, toothed leaves. Likes regular water and some afternoon shade; deadhead for more blooms." },
+  /* Added 2026-10-28 (see docs/factcheck-2026-10-28.md). Feed row: Catalog id "stipa" = Stipa pulchra, Purple needlegrass (syn. Nassella pulchra, mapped via IENN_BASICS_ALIAS). */
+  Stipa: { water:1, sun:["full","part"], soil:"Adaptable", bloom:["Sp","Su"], wild:["birds","butterflies"], h:[2,3], w:[1,2], ie:true, genusLevel:true,
+    desc:"A fine-textured, low-water bunchgrass with airy, nodding seed heads. Goes golden and dormant in summer." }
 };
 var IENN_BASICS_SPECIES = {
   "Salvia apiana": { h:[3,5], w:[3,8], bloom:["Sp","Su"], desc:"Striking silver-white leaves with a strong fragrance and tall flower wands bees crowd around. Water very little once established." },
@@ -86,6 +89,9 @@ var IENN_BASICS_SPECIES = {
   /* Added 2026-10-25d (see docs/factcheck-2026-10-25d.md). Waiting on a Catalog row: botanical "Penstemon grinnellii", Grinnell's beardtongue. Mountain native: ie:false (no Heat tough chip). */
   "Penstemon grinnellii": { water:1, sun:["full","part"], soil:"Fast-draining", bloom:["Sp","Su"], wild:["pollinators","hummingbirds","containers"], h:[1,3], w:[1.5,2.5], ie:false, genusLevel:false,
     desc:"A bushy clump of gray-green leaves with stems of wide-throated, pale pink to lavender flowers striped with purple guide lines. Needs sharp drainage, little summer water and some afternoon shade inland." },
+  /* Added 2026-10-28 (see docs/factcheck-2026-10-28.md). Feed row: Catalog id "stipa", botanical "Stipa pulchra". */
+  "Stipa pulchra": { water:1, sun:["full","part"], soil:"Adaptable", bloom:["Sp","Su"], wild:["birds","butterflies"], h:[2,3], w:[1,2], ie:true, genusLevel:false,
+    desc:"A fine-leaved bunchgrass with airy, nodding seed heads that open purple-tinged in spring and trail long, twisting awns. Turns golden and rests in summer with little water. The sharp seeds can catch in pet fur, so keep it away from dog runs." },
   "Asclepias fascicularis": { bloom:["Sp","Su","F"], h:[2,3], w:[1,3], genusLevel:false },
   "Asclepias speciosa": { h:[2,4], w:[2,4], genusLevel:false },
   "Asclepias eriocarpa": { h:[1,3], w:[1,2], water:1, genusLevel:false }
@@ -97,15 +103,16 @@ var IENN_FORM = { Salvia:["Shrub","Fragrant bee magnet"], Eriogonum:["Shrub","To
   Rhus:["Shrub","Glossy evergreen hedge"], Achillea:["Perennial","Lacy, tough lawn alternative"], Datura:["Perennial","Big white evening trumpets; toxic if eaten"], Artemisia:["Shrub","Silver scent of the hills"],
   Trichostema:["Sub-shrub","Woolly purple, wildly fragrant"], Baccharis:["Shrub","Tough evergreen cover"], Epilobium:["Perennial","Fall feast for hummingbirds"], Hesperocyparis:["Tree","Blue evergreen spire"],
   Dendromecon:["Shrub","Golden chaparral poppies"], Heteromeles:["Small tree","Red winter berries for birds"],
-  Atriplex:["Shrub",""], Bouteloua:["Grass",""], Acmispon:["Perennial",""], Sphaeralcea:["Shrub",""], Erythranthe:["Perennial",""] };
+  Atriplex:["Shrub",""], Bouteloua:["Grass",""], Acmispon:["Perennial",""], Sphaeralcea:["Shrub",""], Erythranthe:["Perennial",""], Stipa:["Grass",""] };
 var IENN_FORM_SPECIES = { "Diplacus longiflorus":["Shrub",null], "Salvia apiana":[null,"Silvery leaves, tall bee-covered flower spikes"], "Salvia spathacea":["Perennial","Shade-loving hummingbird sage"], "Salvia mellifera":[null,"Honeybee favorite"],
   "Encelia farinosa":[null,"Silver desert sunshine"], "Eriogonum fasciculatum":[null,"Tough, long-blooming bee favorite"], "Baccharis pilularis":["Shrub","Tough evergreen groundcover"] };
-/* Old feed botanical -> species key (an older cached feed may still say aurantiacus for Southern bush monkeyflower, formerly "Sticky monkeyflower"). */
-var IENN_BASICS_ALIAS = { "Diplacus aurantiacus": "Diplacus longiflorus" };
+/* Old feed botanical -> species key (an older cached feed may still say aurantiacus for Southern bush monkeyflower, formerly "Sticky monkeyflower").
+   Synonyms in another genus work too (the alias is resolved before the genus lookup): Nassella pulchra (USDA, older sources) = Stipa pulchra (Jepson). */
+var IENN_BASICS_ALIAS = { "Diplacus aurantiacus": "Diplacus longiflorus", "Nassella pulchra": "Stipa pulchra" };
 /* Look up basics for a botanical name, e.g. "Salvia apiana". Returns null if the genus is unknown. */
 function iennBasics(botanical) {
-  var b = String(botanical || "").trim(), g = b.split(/\s+/)[0], base = IENN_BASICS[g]; if (!base) return null;
-  var key = b.split(/\s+/).slice(0, 2).join(" "); key = IENN_BASICS_ALIAS[key] || key; var sp = IENN_BASICS_SPECIES[key] || {}, out = {}, k;
+  var b = String(botanical || "").trim(), key = b.split(/\s+/).slice(0, 2).join(" "); key = IENN_BASICS_ALIAS[key] || key;
+  var g = key.split(" ")[0], base = IENN_BASICS[g]; if (!base) return null; var sp = IENN_BASICS_SPECIES[key] || {}, out = {}, k;
   for (k in base) out[k] = base[k]; for (k in sp) out[k] = sp[k];
   if (IENN_BASICS_SPECIES[key] && sp.genusLevel == null && sp.desc) out.genusLevel = false;
   var f = IENN_FORM[g] || [], fs = IENN_FORM_SPECIES[key] || []; out.form = fs[0] || f[0] || ""; out.tag = fs[1] || f[1] || "";
