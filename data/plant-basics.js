@@ -119,7 +119,7 @@ function iennBasics(botanical) {
   return out;
 }
 /* Display-name overrides: feed name (matching/orders unchanged) -> name shown on the site. */
-var IENN_DISPLAY_NAMES = { "Sacred datura": "Datura", "Sticky monkeyflower": "Southern bush monkeyflower" };   // keys match case-insensitively
+var IENN_DISPLAY_NAMES = { "Sacred datura": "Datura", "Sticky monkeyflower": "Southern bush monkeyflower", "California brittlebush": "Bush sunflower" };   // keys match case-insensitively
 function iennDisplayName(n) { if (IENN_DISPLAY_NAMES[n]) return IENN_DISPLAY_NAMES[n]; var k = String(n || "").toLowerCase().trim();
   for (var x in IENN_DISPLAY_NAMES) if (x.toLowerCase() === k) return IENN_DISPLAY_NAMES[x]; return n; }
 /* Botanical-name overrides (exact species, case-insensitive): feed botanical -> name shown on the site and used for basics.
@@ -130,7 +130,7 @@ function iennDisplayBotanical(b) { var k = String(b || "").toLowerCase().replace
 var IENN_HIDDEN_PLANTS = ["California encelia", "Coyote brush", "Bush poppy", "Arizona cypress, Blue Pyramid", "Arizona cypress", "Blue Pyramid Cypress",
   "Cleveland sage", "Purple sage", "Hummingbird sage", "Other",
   "Buffalo grass", "Buffalograss"];   // Buffalo grass: not California native, excluded by Eric 2026-10-25   // "Other" is a catch-all feed row with no botanical name
-// Botanical matches (prefix: cultivars like "Hesperocyparis arizonica 'Blue Pyramid'" also match). Never add Encelia californica: California brittlebush shares it and must stay visible.
+// Botanical matches (prefix: cultivars like "Hesperocyparis arizonica 'Blue Pyramid'" also match). Never add Encelia californica: Bush sunflower (feed may still say "California brittlebush") shares it and must stay visible.
 var IENN_HIDDEN_BOTANICAL = ["Baccharis pilularis", "Dendromecon rigida", "Hesperocyparis arizonica", "Cupressus arizonica",
   "Salvia clevelandii", "Salvia leucophylla", "Salvia spathacea",
   "Bouteloua dactyloides", "Buchloe dactyloides"];   // exact species only: never "Salvia" alone (Black and White sage stay visible)
