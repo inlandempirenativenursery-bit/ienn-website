@@ -58,8 +58,8 @@
     return c; };
   /* Plant-type tabs (Keith/Eric 2026-10-30): one scrollable chip row above the grid. Filters by hiding cards (CSS), so search,
      cart and order stay on the full list. Plants with no life-form are in All only. Tab is remembered for this tab session only. */
-  var TYPES = [["all", "All"], ["shrub", "Shrubs"], ["wild", "Wildflowers"], ["grass", "Grasses"], ["tree", "Trees"], ["more", "More"]],
-      FORM_GROUP = { Shrub: "shrub", "Sub-shrub": "shrub", Perennial: "wild", Wildflower: "wild", Grass: "grass", Tree: "tree", "Small tree": "tree", Succulent: "more", Vine: "more" },
+  var TYPES = [["all", "All"], ["shrub", "Shrubs"], ["perennial", "Perennials"], ["wild", "Wildflowers"], ["grass", "Grasses"], ["tree", "Trees"], ["more", "More"]],
+      FORM_GROUP = { Shrub: "shrub", Perennial: "perennial", Wildflower: "wild", Annual: "wild", Grass: "grass", Tree: "tree", "Small tree": "tree", Succulent: "more", Vine: "more" },
       TKEY = "ienn-type-tab", TYPE = "all", tbar = null;
   try { TYPE = sessionStorage.getItem(TKEY) || "all"; } catch (e) {}
   function typeGroup(p) { var b = typeof iennBasics === "function" && iennBasics(p.botanical); return b && b.form ? FORM_GROUP[b.form] || "" : ""; }
@@ -262,7 +262,7 @@
       o += P("M" + (cx - r) + " " + base + "Q" + (cx - r) + " " + (base - ch) + " " + (cx - r * .4) + " " + (base - ch) + "Q" + cx + " " + (base - ch * 1.3) + " " + (cx + r * .4) + " " + (base - ch) + "Q" + (cx + r) + " " + (base - ch) + " " + (cx + r) + " " + base + "z");
       [-.5, 0, .45].forEach(function (k, i) { var fx = cx + k * r, fy = top + (i === 1 ? 0 : gh * .12); o += L("M" + fx + " " + (base - ch * .8) + "V" + (fy + 2), 1) + '<circle cx="' + fx + '" cy="' + (fy + 2) + '" r="' + Math.max(1.6, gh * .07) + '" fill="' + G + '"/>'; });
       return o; }
-    var sh = gh;   // Shrub / Sub-shrub: solid rounded mound
+    var sh = gh;   // Shrub (and Perennial/Wildflower): solid rounded mound
     return P("M" + (cx - r) + " " + base + "C" + (cx - r * 1.05) + " " + (base - sh * .75) + " " + (cx - r * .5) + " " + (base - sh) + " " + cx + " " + (base - sh) + "C" + (cx + r * .5) + " " + (base - sh) + " " + (cx + r * 1.05) + " " + (base - sh * .75) + " " + (cx + r) + " " + base + "z");
   }
   function sizeArt(x) {   // plant silhouette vs a 6' person, true scale per frame, auto-zoomed so the plant reads well

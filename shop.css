@@ -419,6 +419,6 @@ html.bg-light .pane-basics { --bg-op:.12; } html.bg-strong .pane-basics { --bg-o
 .type-chip:hover { border-color:var(--lilac, #b9a7d6); }
 .type-chip:focus-visible { outline:3px solid var(--lilac, #b9a7d6); outline-offset:2px; }
 .type-chip[aria-pressed="true"] { background:var(--sage-dark, #4d7c55); border-color:var(--sage-dark, #4d7c55); color:#fff; }
-#plant-list[data-type="shrub"] .card:not([data-group="shrub"]), #plant-list[data-type="wild"] .card:not([data-group="wild"]),
+#plant-list[data-type="shrub"] .card:not([data-group="shrub"]), #plant-list[data-type="wild"] .card:not([data-group="wild"]), #plant-list[data-type="perennial"] .card:not([data-group="perennial"]),
 #plant-list[data-type="grass"] .card:not([data-group="grass"]), #plant-list[data-type="tree"] .card:not([data-group="tree"]),
 #plant-list[data-type="more"] .card:not([data-group="more"]) { display:none; }
