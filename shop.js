@@ -151,7 +151,8 @@
         if (add && ok && rm <= 0) { add.disabled = true; add.textContent = "In your tray"; [minus, inp, plus].forEach(function (x) { if (x) x.disabled = true; }); }
         if (msg && !msg.dataset.keep) { msg.className = "incart"; msg.textContent = "";
           if (ok && rm <= 0) { msg.classList.add("cap-msg"); msg.textContent = CAPMSG; }
-          else if (ok && IENNStock.lowStock(pick)) { msg.classList.add("low-tag"); msg.textContent = "Only a few left"; } }
+          else if (ok && IENNStock.lowStock(pick)) { msg.classList.add("stock-tag", "low-tag"); msg.textContent = "Only a few left"; }
+          else if (ok && pick && !IENNStock.isAsk(pick) && pick.qty != null && pick.qty > 0) { msg.classList.add("stock-tag", "in-tag"); msg.textContent = "In stock"; } }
       }
       var saved = UI[p.id], savedZ = saved && sizes.find(function (z) { return z.key === saved.key && canAdd(z); });
       if (savedZ) pick = savedZ;
