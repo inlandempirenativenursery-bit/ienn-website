@@ -289,7 +289,7 @@
     .ig-top { min-width:44px; flex-shrink:0; justify-content:center; color:var(--sage-dark); font-weight:600; font-size:0.85rem; text-decoration:none; }
     @media (max-width: 480px) { .ig-top-text { display:none; } .ig-top svg { width:22px; height:22px; } }
   </style>
-  <link rel="stylesheet" href="shop.css?v=b1c2d30">
+  <link rel="stylesheet" href="shop.css?v=c4e8a51">
   <style>
     .shop { max-width:1080px; margin:0 auto; padding:0; }
     .shop .inv-status[hidden] { display:none; }
@@ -341,6 +341,15 @@
     .hero.hero-compact .steps-strip { padding:0.15rem 0.7rem !important; font-size:0.8rem; }
     .hero-compact + .shop.plants { padding-top:0.5rem; }
     @media (min-width:768px) { .hero.hero-compact { padding:0.35rem 1rem 0.6rem; } .hero.hero-compact h1 { font-size:1.1rem !important; } }
+    /* Hero v2 (Oct 30): tagline is the visual hero, steps as one polished pill */
+    .hdr-slogan { font-size:clamp(1.7rem, 8.6vw, 2.7rem) !important; margin:0.35rem 0 0.15rem !important; color:var(--sage-dark,#4f6b4e); }
+    .hero.hero-compact { padding:0.25rem 1rem 0.55rem; }
+    .hero.hero-compact .steps-strip { gap:0.7rem !important; padding:0.3rem 0.85rem !important; font-size:clamp(0.78rem,3.5vw,0.9rem) !important; background:#f8f5ee !important; border:1px solid #d9e2d4 !important; border-radius:999px; box-shadow:0 1px 3px rgba(60,80,60,.08); }
+    .hero.hero-compact .steps-strip li + li:not(:nth-child(2))::before { content:none !important; }
+    .hero.hero-compact .steps-strip li { display:inline-flex !important; align-items:center; gap:0.3rem; }
+    .hero.hero-compact .steps-strip b { display:inline-flex; align-items:center; justify-content:center; width:1.25em; height:1.25em; border-radius:50%; background:#8fae8b; color:#fff !important; font-size:0.78em; font-weight:700; }
+    .hero.hero-compact .steps-strip li.lead { color:#6b5a85; }
+    @media (min-width:768px) { .hero.hero-compact { padding:0.4rem 1rem 0.8rem; } }
   </style>
 </head>
 <body>
@@ -357,8 +366,8 @@
     <div class="hdr-slogan">Connecting people to native plants.</div>
   </header>
   <section class="hero hero-compact">
-    <h1>Growing the best plants for the Inland Empire.</h1>
-    <div class="strip-wrap"><ol class="steps-strip" aria-label="3 easy steps: 1. Click, 2. Order, 3. Pick up"><li class="lead">3 easy steps:</li><li><b>1.</b> Click</li><li><b>2.</b> Order</li><li><b>3.</b> Pick up</li></ol></div>
+    <h1 class="sr-only">Growing the best plants for the Inland Empire.</h1>
+    <div class="strip-wrap"><ol class="steps-strip" aria-label="3 easy steps: 1. Click, 2. Order, 3. Pick up"><li class="lead">3 easy steps:</li><li><b>1</b> Click</li><li><b>2</b> Order</li><li><b>3</b> Pick up</li></ol></div>
   </section>
 
   <section class="shop plants" id="plants" aria-labelledby="shop-title">
@@ -427,17 +436,17 @@
     <p style="margin-top:0.5rem;font-size:0.75rem;"><a href="credits.html">Photo credits</a></p>
   </footer>
   <script>window.IENN_PROMO_OPTS = { cta: "Shop now", onShop: function () { var g = document.getElementById("plant-list"); if (g) g.scrollIntoView({ behavior: "smooth" }); } };</script>
-  <script src="promo.js?v=b1c2d30"></script>
-  <script src="plant-photos.js?v=b1c2d30"></script>
-  <script src="feed-order.js?v=b1c2d30"></script>
-  <script src="stock-view.js?v=b1c2d30"></script>
-  <script src="shop-settings.js?v=b1c2d30"></script>
-  <script src="data/plant-basics.js?v=b1c2d30"></script>
-  <script src="data/plant-seals.js?v=b1c2d30"></script>
-  <script src="shop.js?v=b1c2d30"></script>
-  <script src="plant-search.js?v=b1c2d30"></script>
+  <script src="promo.js?v=c4e8a51"></script>
+  <script src="plant-photos.js?v=c4e8a51"></script>
+  <script src="feed-order.js?v=c4e8a51"></script>
+  <script src="stock-view.js?v=c4e8a51"></script>
+  <script src="shop-settings.js?v=c4e8a51"></script>
+  <script src="data/plant-basics.js?v=c4e8a51"></script>
+  <script src="data/plant-seals.js?v=c4e8a51"></script>
+  <script src="shop.js?v=c4e8a51"></script>
+  <script src="plant-search.js?v=c4e8a51"></script>
   <script>document.getElementById("printlist-link").href = APPS_SCRIPT_URL + "?view=print";</script>
-  <script src="site-links.js?v=b1c2d30"></script>
-  <script src="teaser.js?v=b1c2d30"></script>
+  <script src="site-links.js?v=c4e8a51"></script>
+  <script src="teaser.js?v=c4e8a51"></script>
   <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "00379ec8474248f69ace426cd21d2126"}'></script><!-- End Cloudflare Web Analytics -->
 </body></html>
