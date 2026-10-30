@@ -289,7 +289,7 @@
     .ig-top { min-width:44px; flex-shrink:0; justify-content:center; color:var(--sage-dark); font-weight:600; font-size:0.85rem; text-decoration:none; }
     @media (max-width: 480px) { .ig-top-text { display:none; } .ig-top svg { width:22px; height:22px; } }
   </style>
-  <link rel="stylesheet" href="shop.css?v=5a7c0e1">
+  <link rel="stylesheet" href="shop.css?v=b1c2d30">
   <style>
     .shop { max-width:1080px; margin:0 auto; padding:0; }
     .shop .inv-status[hidden] { display:none; }
@@ -334,6 +334,13 @@
     .steps-strip b { font-weight:800; color:#2f6b2f !important; }
     .steps-strip li:hover { background:none; box-shadow:none; transform:none; }
     @media (max-width:480px) { header { padding-top:0.45rem !important; padding-bottom:0.2rem !important; } }
+    /* Compact top (Oct 30): one small headline + steps line, products sooner */
+    .hero.hero-compact { background:none; padding:0.15rem 1rem 0.35rem; }
+    .hero.hero-compact h1 { font-size:0.95rem !important; font-weight:600; color:var(--sage-dark); margin:0 0 0.2rem; line-height:1.3; letter-spacing:0.01em; }
+    .hero.hero-compact .strip-wrap { margin-top:0; padding:0; justify-content:center !important; }
+    .hero.hero-compact .steps-strip { padding:0.15rem 0.7rem !important; font-size:0.8rem; }
+    .hero-compact + .shop.plants { padding-top:0.5rem; }
+    @media (min-width:768px) { .hero.hero-compact { padding:0.35rem 1rem 0.6rem; } .hero.hero-compact h1 { font-size:1.1rem !important; } }
   </style>
 </head>
 <body>
@@ -349,10 +356,9 @@
     </div>
     <div class="hdr-slogan">Connecting people to native plants.</div>
   </header>
-  <div class="strip-wrap"><ol class="steps-strip" aria-label="3 easy steps: 1. Click, 2. Order, 3. Pick up"><li class="lead">3 easy steps:</li><li><b>1.</b> Click</li><li><b>2.</b> Order</li><li><b>3.</b> Pick up</li></ol></div>
-
-  <section class="hero">
+  <section class="hero hero-compact">
     <h1>Growing the best plants for the Inland Empire.</h1>
+    <div class="strip-wrap"><ol class="steps-strip" aria-label="3 easy steps: 1. Click, 2. Order, 3. Pick up"><li class="lead">3 easy steps:</li><li><b>1.</b> Click</li><li><b>2.</b> Order</li><li><b>3.</b> Pick up</li></ol></div>
   </section>
 
   <section class="shop plants" id="plants" aria-labelledby="shop-title">
@@ -421,17 +427,17 @@
     <p style="margin-top:0.5rem;font-size:0.75rem;"><a href="credits.html">Photo credits</a></p>
   </footer>
   <script>window.IENN_PROMO_OPTS = { cta: "Shop now", onShop: function () { var g = document.getElementById("plant-list"); if (g) g.scrollIntoView({ behavior: "smooth" }); } };</script>
-  <script src="promo.js?v=5a7c0e1"></script>
-  <script src="plant-photos.js?v=5a7c0e1"></script>
-  <script src="feed-order.js?v=5a7c0e1"></script>
-  <script src="stock-view.js?v=5a7c0e1"></script>
-  <script src="shop-settings.js?v=5a7c0e1"></script>
-  <script src="data/plant-basics.js?v=5a7c0e1"></script>
-  <script src="data/plant-seals.js?v=5a7c0e1"></script>
-  <script src="shop.js?v=5a7c0e1"></script>
-  <script src="plant-search.js?v=5a7c0e1"></script>
+  <script src="promo.js?v=b1c2d30"></script>
+  <script src="plant-photos.js?v=b1c2d30"></script>
+  <script src="feed-order.js?v=b1c2d30"></script>
+  <script src="stock-view.js?v=b1c2d30"></script>
+  <script src="shop-settings.js?v=b1c2d30"></script>
+  <script src="data/plant-basics.js?v=b1c2d30"></script>
+  <script src="data/plant-seals.js?v=b1c2d30"></script>
+  <script src="shop.js?v=b1c2d30"></script>
+  <script src="plant-search.js?v=b1c2d30"></script>
   <script>document.getElementById("printlist-link").href = APPS_SCRIPT_URL + "?view=print";</script>
-  <script src="site-links.js?v=5a7c0e1"></script>
-  <script src="teaser.js?v=5a7c0e1"></script>
+  <script src="site-links.js?v=b1c2d30"></script>
+  <script src="teaser.js?v=b1c2d30"></script>
   <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "00379ec8474248f69ace426cd21d2126"}'></script><!-- End Cloudflare Web Analytics -->
 </body></html>
