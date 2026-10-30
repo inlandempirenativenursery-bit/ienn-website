@@ -18,7 +18,7 @@ Single photo set: `assets/plants/<slug>.jpg` (800px max) and `<slug>-400.jpg` (4
 | sugarbush.jpg | Sugarbush | iNat ericbg2 (photo 491606813) | https://www.inaturalist.org/observations/273323963 |
 | yucca.jpg | Yucca | iNat ericbg2 (photo 516913114) | https://www.inaturalist.org/observations/287480288 |
 | yarrow.jpg | Yarrow | Catalogue → Eric's iNat photo (ericbg2, photo 516277271); observation URL not recorded | https://static.inaturalist.org/photos/516277271/large.jpg |
-| california-encelia.jpg | California encelia | Catalogue → iNat keithwg1 (photo 484970961). **Used with Keith's permission (Oct 2026).** | https://static.inaturalist.org/photos/484970961/large.jpg |
+| california-encelia.jpg | Bush sunflower (Encelia californica) | Catalogue → iNat keithwg1 (photo 484970961). **Used with Keith's permission (Oct 2026).** | https://static.inaturalist.org/photos/484970961/large.jpg |
 | morning-glory.jpg | Morning glory | Catalogue → iNat keithwg1 (photo 286285846). **Used with Keith's permission (Oct 2026).** | https://static.inaturalist.org/photos/286285846/large.jpg |
 | deergrass.jpg | Deergrass | iNaturalist, (c) Cricket Raspet, some rights reserved (CC BY), CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/); cropped to 3:4 and resized. Stopgap until Eric or Keith has a better shot. | https://www.inaturalist.org/observations/145620781 |
 | showy-milkweed.jpg | Showy milkweed | "Asclepias speciosa - Showy Milkweed (7-15-24) 02" by Jasper Shide, Wikimedia Commons, CC0 1.0 (verified on the file page Oct 20, 2026). From main 9f30bea; not the catalogue file. | https://commons.wikimedia.org/wiki/File:Asclepias_speciosa_-_Showy_Milkweed_(7-15-24)_02.jpg |
