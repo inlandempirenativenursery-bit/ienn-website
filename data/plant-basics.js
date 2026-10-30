@@ -99,11 +99,11 @@ var IENN_BASICS_SPECIES = {
 /* Life form + short tagline (max ~8 words) shown on the card; desc is kept as data but not shown. */
 var IENN_FORM = { Salvia:["Shrub","Fragrant bee magnet"], Eriogonum:["Shrub","Tough, long-blooming bee favorite"], Hesperoyucca:["Succulent","One spectacular bloom spike"], Baileya:["Wildflower","Silver leaves, sunny daisies"],
   Calystegia:["Vine","Big white trumpets, fast climber"], Encelia:["Shrub","Fast, cheerful yellow daisies"], Eschscholzia:["Wildflower","Golden state flower"], Muhlenbergia:["Grass","Fountain of fine flower spikes"],
-  Romneya:["Perennial","Giant fried-egg flowers"], Asclepias:["Perennial","Monarch caterpillar host"], Diplacus:["Sub-shrub","Hummingbird spring show"], Penstemon:["Perennial","Hummingbird flower spikes"],
+  Romneya:["Perennial","Giant fried-egg flowers"], Asclepias:["Perennial","Monarch caterpillar host"], Diplacus:["Shrub","Hummingbird spring show"], Penstemon:["Perennial","Hummingbird flower spikes"],
   Rhus:["Shrub","Glossy evergreen hedge"], Achillea:["Perennial","Lacy, tough lawn alternative"], Datura:["Perennial","Big white evening trumpets; toxic if eaten"], Artemisia:["Shrub","Silver scent of the hills"],
-  Trichostema:["Sub-shrub","Woolly purple, wildly fragrant"], Baccharis:["Shrub","Tough evergreen cover"], Epilobium:["Perennial","Fall feast for hummingbirds"], Hesperocyparis:["Tree","Blue evergreen spire"],
+  Trichostema:["Shrub","Woolly purple, wildly fragrant"], Baccharis:["Shrub","Tough evergreen cover"], Epilobium:["Perennial","Fall feast for hummingbirds"], Hesperocyparis:["Tree","Blue evergreen spire"],
   Dendromecon:["Shrub","Golden chaparral poppies"], Heteromeles:["Small tree","Red winter berries for birds"],
-  Atriplex:["Shrub",""], Bouteloua:["Grass",""], Acmispon:["Perennial",""], Sphaeralcea:["Shrub",""], Erythranthe:["Perennial",""], Stipa:["Grass",""] };
+  Atriplex:["Shrub",""], Bouteloua:["Grass",""], Acmispon:["Shrub",""], Sphaeralcea:["Perennial",""], Erythranthe:["Perennial",""], Stipa:["Grass",""] };
 var IENN_FORM_SPECIES = { "Diplacus longiflorus":["Shrub",null], "Salvia apiana":[null,"Silvery leaves, tall bee-covered flower spikes"], "Salvia spathacea":["Perennial","Shade-loving hummingbird sage"], "Salvia mellifera":[null,"Honeybee favorite"],
   "Encelia farinosa":[null,"Silver desert sunshine"], "Eriogonum fasciculatum":[null,"Tough, long-blooming bee favorite"], "Baccharis pilularis":["Shrub","Tough evergreen groundcover"] };
 /* Old feed botanical -> species key (an older cached feed may still say aurantiacus for Southern bush monkeyflower, formerly "Sticky monkeyflower").
