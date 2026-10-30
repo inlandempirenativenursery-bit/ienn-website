@@ -16,7 +16,7 @@ var SEED = [
   ['milkweed', 'Narrowleaf milkweed', 'Asclepias fascicularis', 'active'],
   ['buckwheat', 'California buckwheat', 'Eriogonum fasciculatum', 'active'],
   ['datura', 'Sacred datura', 'Datura wrightii', 'active'],
-  ['encelia-ca', 'California brittlebush', 'Encelia californica', 'active'],
+  ['encelia-ca', 'Bush sunflower', 'Encelia californica', 'active'],
   ['marigold', 'Desert marigold', 'Baileya multiradiata', 'active'],
   ['penstemon', 'Showy penstemon', 'Penstemon spectabilis', 'active'],
   ['sugarbush', 'Sugarbush', 'Rhus ovata', 'active'],
