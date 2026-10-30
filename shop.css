@@ -312,8 +312,16 @@ html.bg-light .pane-basics { --bg-op:.12; } html.bg-strong .pane-basics { --bg-o
 .pane-clean .flip-dots i { background:rgba(255,255,255,.7); } .pane-clean .flip-dots i.on { background:var(--sage); }
 
 /* Stock cap + low-stock (no numbers). Subtle amber alert accent. */
-.incart.low-tag { color:#b45309; font-weight:700; }
-.incart.low-tag::before { content:""; display:inline-block; width:7px; height:7px; border-radius:50%; background:#d97706; margin-right:6px; vertical-align:1px; }
+/* Stock status line (replaces the old amber "Only a few left" sign; never shows numbers). */
+.incart.stock-tag { font-weight:700; font-size:.82rem; letter-spacing:.01em; }
+.incart.stock-tag::before { content:""; display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:1px; }
+.incart.in-tag { color:#3f6b3a; text-shadow:0 0 6px rgba(110,170,100,.35); }
+.incart.in-tag::before { background:#5f9a55; box-shadow:0 0 0 2px rgba(95,154,85,.18), 0 0 8px 2px rgba(95,154,85,.55); animation:ienn-glow-g 2.6s ease-in-out infinite; }
+.incart.low-tag { color:#b42318; text-shadow:0 0 6px rgba(220,60,50,.28); }
+.incart.low-tag::before { background:#d92d20; box-shadow:0 0 0 2px rgba(217,45,32,.16), 0 0 8px 2px rgba(217,45,32,.5); animation:ienn-glow-r 2s ease-in-out infinite; }
+@keyframes ienn-glow-g { 50% { box-shadow:0 0 0 3px rgba(95,154,85,.10), 0 0 12px 3px rgba(95,154,85,.35); } }
+@keyframes ienn-glow-r { 50% { box-shadow:0 0 0 3px rgba(217,45,32,.10), 0 0 12px 3px rgba(217,45,32,.35); } }
+@media (prefers-reduced-motion: reduce) { .incart.stock-tag::before { animation:none; } }
 .incart.cap-msg { color:#9a3412; font-weight:600; }
 .stepper button.at-cap:disabled { background:#efeee9; color:#c7c5bd; }
 .tray-cap { display:block; flex-basis:100%; font-size:0.78rem; color:#9a3412; }
