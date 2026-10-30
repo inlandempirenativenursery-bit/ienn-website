@@ -53,12 +53,38 @@
   /* Card element for a plant id, rendering further batches first if it isn't on the page yet (progressive render). */
   window.iennCardFor = function (id) { var i = -1; PLANTS.some(function (p, k) { if (p.id === id) { i = k; return true; } return false; }); if (i < 0) return null;
     var grew = false; while (shown <= i && shown < PLANTS.length) { more(); grew = true; } if (grew) update();
-    var c = null; Array.prototype.some.call(list.querySelectorAll(".card"), function (x) { if (x.dataset.id === id) { c = x; return true; } return false; }); return c; };
+    var c = null; Array.prototype.some.call(list.querySelectorAll(".card"), function (x) { if (x.dataset.id === id) { c = x; return true; } return false; });
+    if (c && TYPE !== "all" && c.dataset.group !== TYPE) setType("all", true);   // search pick on a filtered-out card: show All first
+    return c; };
+  /* Plant-type tabs (Keith/Eric 2026-10-30): one scrollable chip row above the grid. Filters by hiding cards (CSS), so search,
+     cart and order stay on the full list. Plants with no life-form are in All only. Tab is remembered for this tab session only. */
+  var TYPES = [["all", "All"], ["shrub", "Shrubs"], ["wild", "Wildflowers"], ["grass", "Grasses"], ["tree", "Trees"], ["more", "More"]],
+      FORM_GROUP = { Shrub: "shrub", "Sub-shrub": "shrub", Perennial: "wild", Wildflower: "wild", Grass: "grass", Tree: "tree", "Small tree": "tree", Succulent: "more", Vine: "more" },
+      TKEY = "ienn-type-tab", TYPE = "all", tbar = null;
+  try { TYPE = sessionStorage.getItem(TKEY) || "all"; } catch (e) {}
+  function typeGroup(p) { var b = typeof iennBasics === "function" && iennBasics(p.botanical); return b && b.form ? FORM_GROUP[b.form] || "" : ""; }
+  function setType(t, quiet) {
+    var y0 = tbar ? tbar.getBoundingClientRect().top : 0; TYPE = t; try { sessionStorage.setItem(TKEY, t); } catch (e) {}
+    if (t !== "all") { var grew = false; while (shown < PLANTS.length) { more(); grew = true; } if (grew) update(); }   // filtered view: all cards on the page
+    list.setAttribute("data-type", t);
+    if (tbar) tbar.querySelectorAll(".type-chip").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.type === t ? "true" : "false"); });
+    if (tbar && !quiet) { var dy = tbar.getBoundingClientRect().top - y0; if (dy) window.scrollBy(0, dy); }   // keep the chip row where the finger is: no page jump
+  }
+  function buildTypes() {
+    var n = { all: PLANTS.length }; PLANTS.forEach(function (p) { var g = typeGroup(p); if (g) n[g] = (n[g] || 0) + 1; });
+    if (!tbar) { tbar = el("div", { class: "type-tabs", role: "group", "aria-label": "Filter by plant type" }); list.parentNode.insertBefore(tbar, list); }
+    tbar.innerHTML = "";
+    TYPES.forEach(function (t) { if (t[0] !== "all" && !n[t[0]]) return;
+      var b = el("button", { type: "button", class: "type-chip", "data-type": t[0], "aria-pressed": "false" }, t[1]);
+      b.appendChild(el("small", { "aria-hidden": "true" }, String(n[t[0]]))); b.setAttribute("aria-label", t[1] + ", " + n[t[0]] + " plants");
+      b.addEventListener("click", function () { setType(t[0]); }); tbar.appendChild(b); });
+    if (TYPE !== "all" && !n[TYPE]) TYPE = "all"; setType(TYPE, true);
+  }
   function render() {
     if (pressing) { pendingRender = true; return; } pendingRender = false;
     var keep = shown;
     list.innerHTML = ""; list.setAttribute("aria-busy", "false"); shown = 0; if (io) io.disconnect();
-    more(); while (keep > shown && shown < PLANTS.length) more(); update();
+    more(); while (keep > shown && shown < PLANTS.length) more(); update(); buildTypes();
     document.dispatchEvent(new CustomEvent("ienn-grid-rendered"));
   }
   function more() {   // progressive render: next BATCH cards when the sentinel scrolls near view
@@ -79,7 +105,7 @@
     n.appendChild(el("a", { class: "contact-sms", href: "sms:" + CONTACT_TEL }, "text")); n.appendChild(document.createTextNode(" Andrew")); return n; }
   function card(p, idx) {
       var ps = pstate(p), card = el("article", { class: "card" + (ps === "out" ? " sold-out" : ""), "aria-labelledby": p.id + "-name" });
-      card.dataset.id = p.id; if (String(p.name).length >= 16) card.classList.add("long-name");   // may wrap to 2 lines: slightly smaller title, tighter gaps (shop.css)
+      card.dataset.id = p.id; card.dataset.group = typeGroup(p) || ""; if (String(p.name).length >= 16) card.classList.add("long-name");   // may wrap to 2 lines: slightly smaller title, tighter gaps (shop.css)
       var ph = el("div", { class: "ph" });
       if (p.image) ph.appendChild(el("img", p.srcset ? { src: p.image, srcset: p.srcset, sizes: "(max-width: 600px) 48vw, 260px", alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" } : { src: p.image, alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" })); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }
       var lo = p.sizes.filter(function (z) { return inStock(z) && isFinite(z.price); }).map(function (z) { return z.price; });
