@@ -9,7 +9,7 @@
   function slug(t) { return String(t).toLowerCase().replace(/\(.*?\)/g, "").trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
   function clamp(v) { v = parseInt(v, 10); return isNaN(v) || v < 1 ? 1 : Math.min(v, 99); }
   var ASK_KEYS = ['2"', 'Tree pot'];   // on-request sizes (no weekly counts): "Ask us", never addable
-  function askSize(z) { return !!z && ASK_KEYS.indexOf(z.key) >= 0; }
+  function askSize(z) { return !!z && ASK_KEYS.indexOf(z.key) >= 0 && !(Number(z.qty) > 0); }   // a counted size with ready stock (e.g. 2" needlegrass) sells normally
   function canAdd(z) { return IENNStock.available(z) || (!!z && (z.qty > 0 || IENNStock.canReq(z))); }   // qty null = offline/unknown (orderable); qty 0 only with canRequest
   function zstate(z) { return z.qty == null ? "ask" : z.qty > 0 ? "ok" : "out"; }
   function pstate(p) { var c = p.sizes.filter(function (z) { return !askSize(z); });

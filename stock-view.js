@@ -11,7 +11,7 @@
 var IENNStock = (function () {
   var LOW = 5, ASK = ['2"', 'Tree pot'];
   var KEYS = ["countDate", "baseline", "countedAt", "lastCount", "baselineDate"];
-  function isAsk(z) { return !!z && ASK.indexOf(z.key) >= 0; }
+  function isAsk(z) { return !!z && ASK.indexOf(z.key) >= 0 && !(Number(z.qty) > 0); }   // counted 2"/tree-pot stock sells normally, capped at the count
   function canReq(z) { return !!z && (z.canRequest === true || (z.canRequest == null && Number(z.extra) > 0)); }
   function hasBaseline(d, plants) {
     d = d || {};
