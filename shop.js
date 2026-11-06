@@ -278,31 +278,13 @@
   }
   function chip(iconEls, label, cls) { var c = el("span", { class: "fchip" + (cls ? " " + cls : "") }); var ic = el("span", { class: "fchip-i", "aria-hidden": "true" }); iconEls.forEach(function (n) { ic.appendChild(n); }); c.appendChild(ic); c.appendChild(el("span", { class: "fchip-t" }, label)); return c; }
 
-  /* Species-only care sheet blurb (e.g. Achillea millefolium). Never renders genus desc. */
-  function speciesCareBlock(x) {
-    if (!x || !x.careBullets || !x.careBullets.length) return null;
-    var wrap = el("div", { class: "species-care" });
-    var title = el("p", { class: "species-care-title" });
-    title.appendChild(document.createTextNode((x.careCommon || "Care") + " ("));
-    var bot = el("i", {}, x.careBotanical || "");
-    title.appendChild(bot);
-    title.appendChild(document.createTextNode(")"));
-    if (x.careIntro) title.appendChild(document.createTextNode(" " + x.careIntro));
-    wrap.appendChild(title);
-    var ul = el("ul", { class: "species-care-list" });
-    x.careBullets.forEach(function (line) { ul.appendChild(el("li", {}, line)); });
-    wrap.appendChild(ul);
-    if (x.careSourceUrl) {
-      var src = el("p", { class: "species-care-source" });
-      src.appendChild(document.createTextNode("Source: "));
-      var a = el("a", { href: x.careSourceUrl, target: "_blank", rel: "noopener" }, x.careSourceName || "source");
-      src.appendChild(a);
-      wrap.appendChild(src);
-    }
-    var more = el("p", { class: "species-care-more" });
-    var careUrl = "plant-care.html?species=" + encodeURIComponent(x.careBotanical || "");
-    more.appendChild(el("a", { href: careUrl }, "Full care & print"));
-    wrap.appendChild(more);
+  /* Compact link to species care page when Eric-approved care exists. Full intro/bullets live on plant-care.html only. */
+  function speciesCareLink(x) {
+    if (!x || !x.careBullets || !x.careBullets.length || !x.careBotanical) return null;
+    var wrap = el("p", { class: "species-care-link" });
+    var a = el("a", { href: "plant-care.html?species=" + encodeURIComponent(x.careBotanical) }, "More info & care");
+    a.addEventListener("click", function (e) { e.stopPropagation(); });
+    wrap.appendChild(a);
     return wrap;
   }
   function basicsPane(p, x) {
@@ -323,7 +305,7 @@
     var wl = el("div", { class: "feats" }); (x.wild || []).concat(x.ie ? ["heat"] : []).forEach(function (k) { wl.appendChild(chip([icon(k)], WILDL[k], "f-" + k)); }); inn.appendChild(wl);
     var sz = el("div", { class: "size", role: "img", "aria-label": "Mature size " + ft(x.h) + (x.form === "Vine" ? " long" : " tall") + ", " + ft(x.w) + " wide" }); sz.appendChild(sizeArt(x));
     var sv = el("span", { class: "size-v" }); sv.appendChild(el("b", {}, ft(x.h) + (x.form === "Vine" ? " long" : " tall"))); sv.appendChild(el("b", {}, ft(x.w) + " wide")); sz.appendChild(sv); inn.appendChild(sz);
-    var sc = speciesCareBlock(x); if (sc) inn.appendChild(sc);
+    var sc = speciesCareLink(x); if (sc) inn.appendChild(sc);
     inn.appendChild(el("p", { class: "basics-fine" }, "Results vary by site"));
     var d2 = el("div", { class: "flip-dots", "aria-hidden": "true" }); d2.appendChild(el("i")); d2.appendChild(el("i", { class: "on" })); inn.appendChild(d2);
     pane.appendChild(inn);
@@ -380,11 +362,11 @@
       ph0.addEventListener("click", function (e) { if (e.target.closest("a")) return; to(1); });
       ph0.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); to(1); setTimeout(function () { bp.pane.focus({ preventScroll: true }); }, 350); } }); }
     bp.pane.setAttribute("tabindex", "0"); bp.pane.setAttribute("role", "button"); bp.pane.setAttribute("aria-label", "Plant basics for " + p.name + ". Press to flip back.");
-    bp.pane.addEventListener("click", function () { to(cp ? 2 : 0); });
+    bp.pane.addEventListener("click", function (e) { if (e.target.closest("a")) return; to(cp ? 2 : 0); });
     if (cp) { cp.setAttribute("tabindex", "0"); cp.setAttribute("role", "button"); cp.setAttribute("aria-label", "Photo of " + p.name + ". Press to go back to the front.");
       cp.addEventListener("click", function (e) { if (e.target.closest("a")) return; to(0); });
       cp.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " " || e.key === "Escape") { e.preventDefault(); to(0); if (ph0) setTimeout(function () { ph0.focus({ preventScroll: true }); }, 350); } }); }
-    bp.pane.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " " || e.key === "Escape") { e.preventDefault(); if (cp && e.key !== "Escape") { to(2); setTimeout(function () { cp.focus({ preventScroll: true }); }, 350); return; } to(0); if (ph0) setTimeout(function () { ph0.focus({ preventScroll: true }); }, 350); } });
+    bp.pane.addEventListener("keydown", function (e) { if (e.target.closest("a")) return; if (e.key === "Enter" || e.key === " " || e.key === "Escape") { e.preventDefault(); if (cp && e.key !== "Escape") { to(2); setTimeout(function () { cp.focus({ preventScroll: true }); }, 350); return; } to(0); if (ph0) setTimeout(function () { ph0.focus({ preventScroll: true }); }, 350); } });
     bp.pane.setAttribute("aria-hidden", "true");
     bp.pane.classList.add("compact");   // uniform compact cards: back always uses the compact layout
     if (!peeked && card.querySelector(".add, .soon-pill")) { peeked = true; try { sessionStorage.setItem("ienn-peek", "1"); } catch (e) {}   // one gentle peek per session, first card only

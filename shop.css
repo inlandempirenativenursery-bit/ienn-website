@@ -423,11 +423,7 @@ html.bg-light .pane-basics { --bg-op:.12; } html.bg-strong .pane-basics { --bg-o
 #plant-list[data-type="grass"] .card:not([data-group="grass"]), #plant-list[data-type="tree"] .card:not([data-group="tree"]),
 #plant-list[data-type="more"] .card:not([data-group="more"]) { display:none; }
 
-/* Species-only care blurb inside plant basics panel (Yarrow). Scrolls inside .basics-in. */
-.species-care { margin:0; padding-top:0.35rem; border-top:1px solid #ececec; font-size:0.68rem; line-height:1.35; color:#1f2937; }
-.species-care-title { margin:0 0 0.25rem; font-weight:600; }
-.species-care-title i { font-style:italic; font-weight:600; }
-.species-care-list { margin:0; padding-left:1.1rem; display:grid; gap:0.15rem; }
-.species-care-list li { margin:0; }
-.species-care-source, .species-care-more { margin:0.3rem 0 0; font-size:0.62rem; color:#4b5563; }
-.species-care-source a, .species-care-more a { color:var(--sage-dark, #4a5a4a); font-weight:600; }
+/* Compact species care link on plant basics (approved care only). Full sheet is plant-care.html. */
+.species-care-link { margin:0; padding-top:0.25rem; border-top:1px solid #ececec; font-size:0.68rem; line-height:1.3; }
+.species-care-link a { color:var(--sage-dark, #4a5a4a); font-weight:600; text-decoration:underline; }
+.species-care-link a:focus-visible { outline:2px solid var(--sage); outline-offset:2px; border-radius:2px; }
