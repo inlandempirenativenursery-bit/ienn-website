@@ -277,6 +277,16 @@
     return svg(W, H, o, "size-art");
   }
   function chip(iconEls, label, cls) { var c = el("span", { class: "fchip" + (cls ? " " + cls : "") }); var ic = el("span", { class: "fchip-i", "aria-hidden": "true" }); iconEls.forEach(function (n) { ic.appendChild(n); }); c.appendChild(ic); c.appendChild(el("span", { class: "fchip-t" }, label)); return c; }
+
+  /* Compact link to species care page when Eric-approved care exists. Full intro/bullets live on plant-care.html only. */
+  function speciesCareLink(x) {
+    if (!x || !x.careBullets || !x.careBullets.length || !x.careBotanical) return null;
+    var wrap = el("p", { class: "species-care-link" });
+    var a = el("a", { href: "plant-care.html?species=" + encodeURIComponent(x.careBotanical) }, "More info & care");
+    a.addEventListener("click", function (e) { e.stopPropagation(); });
+    wrap.appendChild(a);
+    return wrap;
+  }
   function basicsPane(p, x) {
     var pane = el("section", { class: "pane-basics", "aria-label": "Plant basics: " + p.name }), inn = el("div", { class: "basics-in" });
     var hd = el("div", { class: "basics-hd" }); var back = null;
@@ -295,6 +305,7 @@
     var wl = el("div", { class: "feats" }); (x.wild || []).concat(x.ie ? ["heat"] : []).forEach(function (k) { wl.appendChild(chip([icon(k)], WILDL[k], "f-" + k)); }); inn.appendChild(wl);
     var sz = el("div", { class: "size", role: "img", "aria-label": "Mature size " + ft(x.h) + (x.form === "Vine" ? " long" : " tall") + ", " + ft(x.w) + " wide" }); sz.appendChild(sizeArt(x));
     var sv = el("span", { class: "size-v" }); sv.appendChild(el("b", {}, ft(x.h) + (x.form === "Vine" ? " long" : " tall"))); sv.appendChild(el("b", {}, ft(x.w) + " wide")); sz.appendChild(sv); inn.appendChild(sz);
+    var sc = speciesCareLink(x); if (sc) inn.appendChild(sc);
     inn.appendChild(el("p", { class: "basics-fine" }, "Results vary by site"));
     var d2 = el("div", { class: "flip-dots", "aria-hidden": "true" }); d2.appendChild(el("i")); d2.appendChild(el("i", { class: "on" })); inn.appendChild(d2);
     pane.appendChild(inn);
@@ -351,11 +362,11 @@
       ph0.addEventListener("click", function (e) { if (e.target.closest("a")) return; to(1); });
       ph0.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); to(1); setTimeout(function () { bp.pane.focus({ preventScroll: true }); }, 350); } }); }
     bp.pane.setAttribute("tabindex", "0"); bp.pane.setAttribute("role", "button"); bp.pane.setAttribute("aria-label", "Plant basics for " + p.name + ". Press to flip back.");
-    bp.pane.addEventListener("click", function () { to(cp ? 2 : 0); });
+    bp.pane.addEventListener("click", function (e) { if (e.target.closest("a")) return; to(cp ? 2 : 0); });
     if (cp) { cp.setAttribute("tabindex", "0"); cp.setAttribute("role", "button"); cp.setAttribute("aria-label", "Photo of " + p.name + ". Press to go back to the front.");
       cp.addEventListener("click", function (e) { if (e.target.closest("a")) return; to(0); });
       cp.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " " || e.key === "Escape") { e.preventDefault(); to(0); if (ph0) setTimeout(function () { ph0.focus({ preventScroll: true }); }, 350); } }); }
-    bp.pane.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " " || e.key === "Escape") { e.preventDefault(); if (cp && e.key !== "Escape") { to(2); setTimeout(function () { cp.focus({ preventScroll: true }); }, 350); return; } to(0); if (ph0) setTimeout(function () { ph0.focus({ preventScroll: true }); }, 350); } });
+    bp.pane.addEventListener("keydown", function (e) { if (e.target.closest("a")) return; if (e.key === "Enter" || e.key === " " || e.key === "Escape") { e.preventDefault(); if (cp && e.key !== "Escape") { to(2); setTimeout(function () { cp.focus({ preventScroll: true }); }, 350); return; } to(0); if (ph0) setTimeout(function () { ph0.focus({ preventScroll: true }); }, 350); } });
     bp.pane.setAttribute("aria-hidden", "true");
     bp.pane.classList.add("compact");   // uniform compact cards: back always uses the compact layout
     if (!peeked && card.querySelector(".add, .soon-pill")) { peeked = true; try { sessionStorage.setItem("ienn-peek", "1"); } catch (e) {}   // one gentle peek per session, first card only
@@ -423,6 +434,29 @@
   document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest(".co-btn, #cartbar-go"); if (!b) return;
     if (b.getAttribute("aria-disabled") === "true") { e.preventDefault(); e.stopImmediatePropagation(); coHint(); } }, true);
 
+
+  /* Preview host banner on every shop page (index + order). Order POST blocked only in checkout form. */
+  function showPreviewBanner() {
+    if (typeof iennIsPreviewHost !== "function" || !iennIsPreviewHost()) return;
+    if (document.getElementById("ienn-preview-banner")) return;
+    var b = el("div", { id: "ienn-preview-banner", role: "status" });
+    b.setAttribute("aria-live", "polite");
+    b.textContent = "Preview only — orders are disabled here. The live shop is unchanged.";
+    b.style.cssText = "position:sticky;top:0;z-index:10000;background:#7a3b00;color:#fff;text-align:center;padding:0.55rem 0.75rem;font-weight:700;font-size:0.9rem;line-height:1.3;";
+    if (document.body) document.body.insertBefore(b, document.body.firstChild);
+  }
+  function blockPreviewOrderSubmit(form, btn, serr) {
+    if (typeof iennIsPreviewHost !== "function" || !iennIsPreviewHost()) return false;
+    showPreviewBanner();
+    if (btn) { btn.disabled = true; btn.textContent = "Orders disabled (preview)"; btn.setAttribute("aria-disabled", "true"); }
+    if (serr) {
+      serr.style.display = "block";
+      serr.textContent = "This is a preview site. Orders are not sent. Use the live shop at www.inlandempirenativenursery.com to place an order.";
+    }
+    return true;
+  }
+  try { if (document.body) showPreviewBanner(); else document.addEventListener("DOMContentLoaded", showPreviewBanner); } catch (e0) {}
+
   if (document.getElementById("checkout")) (function () {   // checkout drawer + order form (order.html only)
   var PICKUP = "Fontana (near Sierra & Baseline) · Saturdays 10 a.m. – 2 p.m.";
   var drawer = document.getElementById("checkout"), backdrop = document.getElementById("checkout-backdrop"), opener = null;
@@ -456,7 +490,10 @@
   })();
   function fieldErr(id, msg) { var f = document.getElementById(id); f.setAttribute("aria-invalid", msg ? "true" : "false"); document.getElementById(id + "-err").textContent = msg || ""; return !msg; }
   function v(id) { return document.getElementById(id).value.trim(); }
+
+
   var form = document.getElementById("order-form"), btn = form.querySelector(".submit-btn"), serr = document.getElementById("server-error");
+  if (iennIsPreviewHost() && btn) { btn.disabled = true; btn.textContent = "Orders disabled (preview)"; btn.setAttribute("aria-disabled", "true"); }
   function showConfirm(ls, orderId, total, notes) {
     document.getElementById("confirm-id").textContent = orderId ? "Order number: " + orderId : "";
     var cl = document.getElementById("confirm-list"); cl.innerHTML = "";
@@ -476,6 +513,7 @@
   }
   form.addEventListener("submit", function (e) {
     e.preventDefault(); serr.style.display = "none";
+    if (blockPreviewOrderSubmit(form, btn, serr)) return;   // never POST on preview hosts (incl. localhost)
     var ls = update(), ok = true, f = { name: v("name"), email: v("email"), phone: v("phone"), notes: v("notes") };
     ok = fieldErr("name", f.name ? "" : "Please enter your name.") && ok;
     ok = fieldErr("email", /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email) ? "" : "Please enter a valid email so we can confirm pickup.") && ok;
