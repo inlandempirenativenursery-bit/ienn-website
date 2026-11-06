@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Plant care · Inland Empire Native Nursery</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+  <style>
+    :root { --sage:#6b8f6b; --sage-dark:#4a5a4a; --ink:#3d4b3d; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; color:var(--ink); background:#fbf9f5; line-height:1.5; }
+    .wrap { max-width:40rem; margin:0 auto; padding:1rem 1.1rem 2.5rem; }
+    header { text-align:center; margin:0.5rem 0 1.25rem; }
+    .logo { display:block; margin:0 auto; width:min(100%, 320px); height:auto; }
+    h1 { font-size:1.35rem; color:var(--sage-dark); margin:0.75rem 0 0.35rem; }
+    h1 i { font-style:italic; font-weight:600; }
+    .actions { display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center; margin:0.75rem 0 1rem; }
+    .actions a, .actions button {
+      display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:0.45rem 0.9rem;
+      border-radius:10px; font:inherit; font-weight:700; text-decoration:none; cursor:pointer;
+    }
+    .actions a { background:#fff; color:var(--sage-dark); border:1px solid #d7d0c4; }
+    .actions button { background:var(--sage); color:#fff; border:0; }
+    .care { background:#fff; border:1px solid #e6e2da; border-radius:10px; padding:0.9rem 1rem; }
+    .care p { margin:0 0 0.65rem; }
+    .care i { font-style:italic; }
+    .care ul { margin:0.25rem 0 0.75rem; padding-left:1.2rem; display:grid; gap:0.35rem; }
+    .care .source { font-size:0.92rem; color:#4b5563; margin:0; }
+    .care .source a { color:var(--sage-dark); font-weight:600; word-break:break-word; }
+    .empty { background:#fff; border:1px solid #e6e2da; border-radius:10px; padding:1rem; text-align:center; }
+    .note { font-size:0.85rem; color:#6b7280; margin-top:1.25rem; text-align:center; }
+    @media print {
+      body { background:#fff; color:#000; }
+      .actions, .no-print { display:none !important; }
+      .wrap { max-width:none; padding:0; }
+      .logo { width:220px; }
+      .care, .empty { break-inside:avoid; page-break-inside:avoid; border-color:#ccc; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <img class="logo" src="images/ienn-logo-horizontal.jpg" width="640" height="180" alt="Inland Empire Native Nursery">
+      <h1 id="page-title">Plant care</h1>
+    </header>
+
+    <div class="actions no-print" id="actions">
+      <button type="button" id="print-btn" hidden>Print care sheet</button>
+      <a href="order.html">Back to shop</a>
+      <a href="index.html">Home</a>
+      <a href="pickup-info.html">Pickup FAQ</a>
+    </div>
+
+    <div id="main"></div>
+    <p class="note no-print">Care sheets are shown only for plants with Eric-approved copy. This page has no shop or checkout.</p>
+  </div>
+  <script src="data/plant-basics.js?v=faq1106d"></script>
+  <script>
+    (function () {
+      var q = new URLSearchParams(location.search);
+      var species = (q.get("species") || "").trim().replace(/\s+/g, " ");
+      var main = document.getElementById("main");
+      var title = document.getElementById("page-title");
+      var printBtn = document.getElementById("print-btn");
+
+      function showEmpty(msg) {
+        title.textContent = "Plant care";
+        document.title = "Plant care · Inland Empire Native Nursery";
+        var box = document.createElement("div");
+        box.className = "empty";
+        box.setAttribute("role", "status");
+        box.textContent = msg;
+        main.appendChild(box);
+        printBtn.hidden = true;
+      }
+
+      if (!species) {
+        showEmpty("Choose a plant from the shop to open its care sheet. No species was specified.");
+        return;
+      }
+
+      var care = typeof iennApprovedCare === "function" ? iennApprovedCare(species) : null;
+      if (!care) {
+        showEmpty("We don’t have an approved care sheet for “" + species + "” yet. Check back later, or ask us at plants@inlandempirenativenursery.com.");
+        return;
+      }
+
+      var common = care.careCommon || "Plant";
+      var bot = care.careBotanical || species;
+      title.innerHTML = "";
+      title.appendChild(document.createTextNode(common + " ("));
+      var it = document.createElement("i");
+      it.textContent = bot;
+      title.appendChild(it);
+      title.appendChild(document.createTextNode(") care"));
+      document.title = common + " care · Inland Empire Native Nursery";
+
+      var section = document.createElement("section");
+      section.className = "care";
+      section.id = "plant-care";
+      section.setAttribute("aria-labelledby", "page-title");
+
+      var intro = document.createElement("p");
+      var introI = document.createElement("i");
+      introI.textContent = bot;
+      intro.appendChild(document.createTextNode(common + " ("));
+      intro.appendChild(introI);
+      intro.appendChild(document.createTextNode(") " + String(care.careIntro || "").trim()));
+      section.appendChild(intro);
+
+      var ul = document.createElement("ul");
+      (care.careBullets || []).forEach(function (line) {
+        var li = document.createElement("li");
+        li.textContent = line;
+        ul.appendChild(li);
+      });
+      section.appendChild(ul);
+
+      if (care.careSourceUrl) {
+        var src = document.createElement("p");
+        src.className = "source";
+        src.appendChild(document.createTextNode("Source: " + (care.careSourceName || "source") + ", "));
+        var a = document.createElement("a");
+        a.href = care.careSourceUrl;
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.textContent = care.careSourceUrl;
+        src.appendChild(a);
+        section.appendChild(src);
+      }
+
+      main.appendChild(section);
+      printBtn.hidden = false;
+      printBtn.addEventListener("click", function () { window.print(); });
+    })();
+  </script>
+</body>
+</html>

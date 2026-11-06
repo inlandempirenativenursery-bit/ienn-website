@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex">
-  <title>Pickup info &amp; Yarrow care · Inland Empire Native Nursery</title>
+  <title>Pickup information · Inland Empire Native Nursery</title>
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
   <style>
@@ -27,20 +27,13 @@
     .faq summary { cursor:pointer; font-weight:700; min-height:44px; display:flex; align-items:center; list-style:none; }
     .faq summary::-webkit-details-marker { display:none; }
     .faq p { margin:0 0 0.55rem; }
-    .care { background:#fff; border:1px solid #e6e2da; border-radius:10px; padding:0.9rem 1rem; }
-    .care p { margin:0 0 0.65rem; }
-    .care i { font-style:italic; }
-    .care ul { margin:0.25rem 0 0.75rem; padding-left:1.2rem; display:grid; gap:0.35rem; }
-    .care .source { font-size:0.92rem; color:#4b5563; margin:0; }
-    .care .source a { color:var(--sage-dark); font-weight:600; word-break:break-word; }
     .note { font-size:0.85rem; color:#6b7280; margin-top:1.25rem; text-align:center; }
-    /* Print: only this document's content — no shop, cart, or order form exist on this page. */
     @media print {
       body { background:#fff; color:#000; }
       .actions, .no-print { display:none !important; }
       .wrap { max-width:none; padding:0; }
       .logo { width:220px; }
-      .faq details { break-inside:avoid; border-color:#ccc; }
+      .faq, .faq details { break-inside:avoid; page-break-inside:avoid; border-color:#ccc; }
       .faq summary { font-weight:700; }
       .faq details p { display:block !important; }
     }
@@ -50,7 +43,7 @@
   <div class="wrap">
     <header>
       <img class="logo" src="images/ienn-logo-horizontal.jpg" width="640" height="180" alt="Inland Empire Native Nursery">
-      <h1>Pickup information &amp; plant care</h1>
+      <h1>Pickup information</h1>
     </header>
 
     <div class="actions no-print">
@@ -87,20 +80,7 @@
       </details>
     </section>
 
-    <section class="care" id="yarrow-care" aria-labelledby="yarrow-title">
-      <h2 id="yarrow-title">Yarrow care</h2>
-      <p>Common yarrow (<i>Achillea millefolium</i>) is a perennial with feathery leaves, usually growing 1–3 feet tall.</p>
-      <ul>
-        <li>Give it full sun to partial shade.</li>
-        <li>It tolerates many soils; avoid constantly wet ground.</li>
-        <li>Water during establishment, then adjust for drainage, heat and site conditions. Established plants have low water needs.</li>
-        <li>Blooms from spring into fall and attracts pollinators.</li>
-        <li>Spreads by underground stems and can reseed, so give it room.</li>
-      </ul>
-      <p class="source">Source: Calscape (CNPS), <a href="https://calscape.org/Achillea-millefolium-(Common-Yarrow)">https://calscape.org/Achillea-millefolium-(Common-Yarrow)</a></p>
-    </section>
-
-    <p class="note no-print">This page is for printing or saving. It has no shop, cart, or checkout form.</p>
+    <p class="note no-print">This page is for printing or saving pickup FAQ only. Plant care sheets are on each plant’s care page.</p>
   </div>
   <script>
     (function () {

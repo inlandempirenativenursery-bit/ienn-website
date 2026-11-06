@@ -66,7 +66,7 @@ var IENN_BASICS = {
     desc:"A fine-textured, low-water bunchgrass with airy, nodding seed heads. Goes golden and dormant in summer." }
 };
 var IENN_BASICS_SPECIES = {
-  /* Wild-type Common yarrow — Eric-approved care (panel). Full exact copy also on pickup-info.html. */
+  /* Wild-type Common yarrow — Eric-approved care (panel + plant-care.html). Yarrow only until Eric OK's more. */
   "Achillea millefolium": {
     genusLevel: false,
     careCommon: "Common yarrow",
@@ -137,6 +137,16 @@ function iennBasics(botanical) {
 }
 /* Display-name overrides: feed name (matching/orders unchanged) -> name shown on the site. */
 var IENN_DISPLAY_NAMES = { "Sacred datura": "Datura", "Sticky monkeyflower": "Southern bush monkeyflower", "California brittlebush": "Bush sunflower" };   // keys match case-insensitively
+
+/* Approved care sheets are species entries that carry careBullets (Eric-reviewed only). */
+function iennHasApprovedCare(botanical) {
+  var x = typeof iennBasics === "function" ? iennBasics(botanical) : null;
+  return !!(x && x.careBullets && x.careBullets.length);
+}
+function iennApprovedCare(botanical) {
+  var x = typeof iennBasics === "function" ? iennBasics(botanical) : null;
+  return (x && x.careBullets && x.careBullets.length) ? x : null;
+}
 function iennDisplayName(n) { if (IENN_DISPLAY_NAMES[n]) return IENN_DISPLAY_NAMES[n]; var k = String(n || "").toLowerCase().trim();
   for (var x in IENN_DISPLAY_NAMES) if (x.toLowerCase() === k) return IENN_DISPLAY_NAMES[x]; return n; }
 /* Botanical-name overrides (exact species, case-insensitive): feed botanical -> name shown on the site and used for basics.

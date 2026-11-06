@@ -300,7 +300,8 @@
       wrap.appendChild(src);
     }
     var more = el("p", { class: "species-care-more" });
-    more.appendChild(el("a", { href: "pickup-info.html#yarrow-care" }, "Full care & print"));
+    var careUrl = "plant-care.html?species=" + encodeURIComponent(x.careBotanical || "");
+    more.appendChild(el("a", { href: careUrl }, "Full care & print"));
     wrap.appendChild(more);
     return wrap;
   }
