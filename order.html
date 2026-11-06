@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-  <link rel="stylesheet" href="shop.css?v=gf30a1">
+  <link rel="stylesheet" href="shop.css?v=faq1106">
   <style>
     :root { --lilac:#d4c4e0; --sage:#6b7c6a; --sage-dark:#4a5a4a; --cream:#f8f6f3; --red:#c0392b; --text:#2c2c2c; --green:#2e7d32; }
     * { box-sizing:border-box; margin:0; padding:0; }
@@ -41,6 +41,16 @@
     .info { margin:1.5rem 1rem 0; padding:0.75rem 0.9rem; background:var(--cream); border-radius:10px; }
     .info h2 { font-size:0.95rem; margin:0 0 0.3rem; color:var(--sage-dark); }
     .info .lead, .info .hint { margin:0.2rem 0 0; }
+    .pickup-faq { margin:0.75rem 0 0; display:grid; gap:0.35rem; }
+    .pickup-faq h3 { margin:0; font-size:0.9rem; color:var(--sage-dark); }
+    .pickup-faq details { background:#fff; border:1px solid #e6e2da; border-radius:8px; padding:0.35rem 0.65rem; }
+    .pickup-faq summary { cursor:pointer; font-weight:700; font-size:0.88rem; color:var(--sage-dark); min-height:44px; display:flex; align-items:center; list-style:none; }
+    .pickup-faq summary::-webkit-details-marker { display:none; }
+    .pickup-faq summary::before { content:"+"; display:inline-flex; width:1.25rem; margin-right:0.35rem; color:#6b8f6b; font-weight:800; }
+    .pickup-faq details[open] summary::before { content:"\2212"; }
+    .pickup-faq details p { margin:0 0 0.55rem; font-size:0.88rem; line-height:1.45; color:#3d4b3d; }
+    .pickup-faq .faq-print { margin:0.5rem 0 0; }
+    .pickup-faq .faq-print a { display:inline-flex; align-items:center; min-height:44px; font-weight:700; color:var(--sage-dark); }
     .hint { margin:0 1rem; font-size:0.9rem; color:#555; }
     .notice { background:var(--cream); border-left:4px solid var(--sage); margin:1rem; padding:1rem; border-radius:8px; font-size:0.95rem; }
     .notice h2 { margin:0 0 0.5rem; }
@@ -207,6 +217,34 @@
     <h2 id="info-title">Pickup &amp; payment</h2>
     <p class="lead"><b>Connecting people to native plants.</b> Grown in Fontana · pickup Saturdays 10 a.m. – 2 p.m. · Cash or Zelle at pickup, nothing charged online.</p>
     <p class="pickup-policy" data-pickup-policy></p>
+    <div class="pickup-faq" aria-label="Pickup FAQ">
+      <h3>Pickup FAQ</h3>
+      <details>
+        <summary>How do I order?</summary>
+        <p>Choose your plants on our website and place your order. Nothing is charged online.</p>
+      </details>
+      <details>
+        <summary>What do plants cost?</summary>
+        <p>Prices include tax: 2-inch $3, 4-inch $6, quarter tree pot $10, and 1-gallon $15.</p>
+      </details>
+      <details>
+        <summary>How do I pay?</summary>
+        <p>Cash or Zelle at pickup.</p>
+      </details>
+      <details>
+        <summary>Where and when is pickup?</summary>
+        <p>Saturdays, 10 AM–2 PM Pacific, near Sierra &amp; Baseline in Fontana, about 10 minutes from the 210.</p>
+      </details>
+      <details>
+        <summary>What happens next?</summary>
+        <p>Our team reviews your order and follows up by email to confirm pickup details.</p>
+      </details>
+      <details>
+        <summary>Questions?</summary>
+        <p>Email <a href="mailto:plants@inlandempirenativenursery.com">plants@inlandempirenativenursery.com</a>.</p>
+      </details>
+      <p class="faq-print"><a href="pickup-info.html">Printable pickup info &amp; Yarrow care</a></p>
+    </div>
     <p class="hint">Tap a size, then Add. 2-inch and tree pot sizes are available on request (add them in Notes).</p>
   </section>
 
@@ -268,9 +306,9 @@
   <script src="stock-view.js?v=gf30a1"></script>
   <script src="feed-order.js?v=gf30a1"></script>
   <script src="shop-settings.js?v=gf30a1"></script>
-  <script src="data/plant-basics.js?v=gf30a1"></script>
+  <script src="data/plant-basics.js?v=faq1106"></script>
   <script src="data/plant-seals.js?v=gf30a1"></script>
-  <script src="shop.js?v=gf30a1"></script>
+  <script src="shop.js?v=faq1106"></script>
   <script src="plant-search.js?v=gf30a1"></script>
   <script>window.IENN_PROMO_OPTS = { cta: "Shop now", onShop: function () { var g = document.getElementById("plant-list"); if (g) { g.scrollIntoView({ behavior: "smooth" }); var b = g.querySelector("button:not([disabled])"); if (b) b.focus({ preventScroll: true }); } } };</script>
   <script src="promo.js?v=gf30a1"></script>

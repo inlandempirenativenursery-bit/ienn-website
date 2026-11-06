@@ -66,6 +66,23 @@ var IENN_BASICS = {
     desc:"A fine-textured, low-water bunchgrass with airy, nodding seed heads. Goes golden and dormant in summer." }
 };
 var IENN_BASICS_SPECIES = {
+  /* Wild-type Common yarrow — Eric-approved care (panel). Full exact copy also on pickup-info.html. */
+  "Achillea millefolium": {
+    genusLevel: false,
+    careCommon: "Common yarrow",
+    careBotanical: "Achillea millefolium",
+    careIntro: "is a perennial with feathery leaves, usually growing 1–3 feet tall.",
+    careBullets: [
+      "Give it full sun to partial shade.",
+      "It tolerates many soils; avoid constantly wet ground.",
+      "Water during establishment, then adjust for drainage, heat and site conditions. Established plants have low water needs.",
+      "Blooms from spring into fall and attracts pollinators.",
+      "Spreads by underground stems and can reseed, so give it room."
+    ],
+    careSourceName: "Calscape (CNPS)",
+    careSourceUrl: "https://calscape.org/Achillea-millefolium-(Common-Yarrow)"
+  },
+
   "Salvia apiana": { h:[3,5], w:[3,8], bloom:["Sp","Su"], desc:"Striking silver-white leaves with a strong fragrance and tall flower wands bees crowd around. Water very little once established." },
   "Salvia mellifera": { h:[3,6], w:[4,6], bloom:["Sp","Su"], desc:"Dark green, fragrant leaves and tiered whorls of pale flowers. One of the best plants for honeybees and native bees." },
   "Salvia clevelandii": { h:[3,5], w:[3,5], desc:"Intensely fragrant gray-green leaves and blue-violet flower whorls. A garden favorite for scent and hummingbirds." },

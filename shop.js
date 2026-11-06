@@ -277,6 +277,33 @@
     return svg(W, H, o, "size-art");
   }
   function chip(iconEls, label, cls) { var c = el("span", { class: "fchip" + (cls ? " " + cls : "") }); var ic = el("span", { class: "fchip-i", "aria-hidden": "true" }); iconEls.forEach(function (n) { ic.appendChild(n); }); c.appendChild(ic); c.appendChild(el("span", { class: "fchip-t" }, label)); return c; }
+
+  /* Species-only care sheet blurb (e.g. Achillea millefolium). Never renders genus desc. */
+  function speciesCareBlock(x) {
+    if (!x || !x.careBullets || !x.careBullets.length) return null;
+    var wrap = el("div", { class: "species-care" });
+    var title = el("p", { class: "species-care-title" });
+    title.appendChild(document.createTextNode((x.careCommon || "Care") + " ("));
+    var bot = el("i", {}, x.careBotanical || "");
+    title.appendChild(bot);
+    title.appendChild(document.createTextNode(")"));
+    if (x.careIntro) title.appendChild(document.createTextNode(" " + x.careIntro));
+    wrap.appendChild(title);
+    var ul = el("ul", { class: "species-care-list" });
+    x.careBullets.forEach(function (line) { ul.appendChild(el("li", {}, line)); });
+    wrap.appendChild(ul);
+    if (x.careSourceUrl) {
+      var src = el("p", { class: "species-care-source" });
+      src.appendChild(document.createTextNode("Source: "));
+      var a = el("a", { href: x.careSourceUrl, target: "_blank", rel: "noopener" }, x.careSourceName || "source");
+      src.appendChild(a);
+      wrap.appendChild(src);
+    }
+    var more = el("p", { class: "species-care-more" });
+    more.appendChild(el("a", { href: "pickup-info.html#yarrow-care" }, "Full care & print"));
+    wrap.appendChild(more);
+    return wrap;
+  }
   function basicsPane(p, x) {
     var pane = el("section", { class: "pane-basics", "aria-label": "Plant basics: " + p.name }), inn = el("div", { class: "basics-in" });
     var hd = el("div", { class: "basics-hd" }); var back = null;
@@ -295,6 +322,7 @@
     var wl = el("div", { class: "feats" }); (x.wild || []).concat(x.ie ? ["heat"] : []).forEach(function (k) { wl.appendChild(chip([icon(k)], WILDL[k], "f-" + k)); }); inn.appendChild(wl);
     var sz = el("div", { class: "size", role: "img", "aria-label": "Mature size " + ft(x.h) + (x.form === "Vine" ? " long" : " tall") + ", " + ft(x.w) + " wide" }); sz.appendChild(sizeArt(x));
     var sv = el("span", { class: "size-v" }); sv.appendChild(el("b", {}, ft(x.h) + (x.form === "Vine" ? " long" : " tall"))); sv.appendChild(el("b", {}, ft(x.w) + " wide")); sz.appendChild(sv); inn.appendChild(sz);
+    var sc = speciesCareBlock(x); if (sc) inn.appendChild(sc);
     inn.appendChild(el("p", { class: "basics-fine" }, "Results vary by site"));
     var d2 = el("div", { class: "flip-dots", "aria-hidden": "true" }); d2.appendChild(el("i")); d2.appendChild(el("i", { class: "on" })); inn.appendChild(d2);
     pane.appendChild(inn);
