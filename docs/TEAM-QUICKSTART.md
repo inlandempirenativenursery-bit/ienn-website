@@ -3,7 +3,7 @@
 **Team home:** `…/exec?view=hub` (bookmark it). It has four tiles: Counts & invoices · Orders · Print plant list · Website shop.
 
 ## 1. Weekly count (counters)
-- Submit counts once a week in the internal view (4" and 1 gal per plant). Count after Saturday pickups and enter it the same day.
+- Submit counts once a week in the internal view (2", 4", Tree pot, and 1 gal per plant; enter 2" / Tree pot when you have them). Count after Saturday pickups and enter it the same day.
 - A new count is the new starting stock. Website and team orders since that count are subtracted automatically. Never edit other people's submissions.
 
 ## 2. Orders (Andrew owns order-to-pickup)
@@ -14,7 +14,7 @@
 - Statuses: **New → Claimed → Paid → Picked up**. **Cancelled** returns the plants to stock.
 
 ## 3. Prices
-2" $3 · 4" $6 · Tree pot $10 · 1 gal $15. These are final prices, taxes included. 2" and Tree pot are "available on request" (not counted yet).
+2" $3 · 4" $6 · Tree pot $10 · 1 gal $15. These are final prices, taxes included. If a plant has counted ready stock in 2" or Tree pot, the shop sells it (capped at the count); otherwise those sizes stay available on request.
 
 ## 4. Printable plant list
 **Print plant list** (or IENN menu): Print, Export PDF, Export CSV, or save to Drive / Google Sheet.
