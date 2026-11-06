@@ -1,3 +1,11 @@
+/* Preview host guard (PR62): live shop hosts only. Any other host (Netlify draft, localhost, etc.)
+   is preview — show banner and block order POST. Production hostnames unchanged. */
+function iennIsLiveShopHost(hostname) {
+  var h = String(hostname != null ? hostname : (typeof location !== "undefined" && location.hostname) || "").toLowerCase();
+  return h === "www.inlandempirenativenursery.com" || h === "inlandempirenativenursery.com" || h === "inlandempirenativenursery-bit.github.io";
+}
+function iennIsPreviewHost(hostname) { return !iennIsLiveShopHost(hostname); }
+
 /* Shared shop settings (index.html + order.html). */
 /* ===== IENN SETTINGS =====
    APPS_SCRIPT_URL: the existing IENN inventory/invoice web app (/exec). The page reads ?view=inventory from it

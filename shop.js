@@ -451,6 +451,29 @@
   document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest(".co-btn, #cartbar-go"); if (!b) return;
     if (b.getAttribute("aria-disabled") === "true") { e.preventDefault(); e.stopImmediatePropagation(); coHint(); } }, true);
 
+
+  /* Preview host banner on every shop page (index + order). Order POST blocked only in checkout form. */
+  function showPreviewBanner() {
+    if (typeof iennIsPreviewHost !== "function" || !iennIsPreviewHost()) return;
+    if (document.getElementById("ienn-preview-banner")) return;
+    var b = el("div", { id: "ienn-preview-banner", role: "status" });
+    b.setAttribute("aria-live", "polite");
+    b.textContent = "Preview only — orders are disabled here. The live shop is unchanged.";
+    b.style.cssText = "position:sticky;top:0;z-index:10000;background:#7a3b00;color:#fff;text-align:center;padding:0.55rem 0.75rem;font-weight:700;font-size:0.9rem;line-height:1.3;";
+    if (document.body) document.body.insertBefore(b, document.body.firstChild);
+  }
+  function blockPreviewOrderSubmit(form, btn, serr) {
+    if (typeof iennIsPreviewHost !== "function" || !iennIsPreviewHost()) return false;
+    showPreviewBanner();
+    if (btn) { btn.disabled = true; btn.textContent = "Orders disabled (preview)"; btn.setAttribute("aria-disabled", "true"); }
+    if (serr) {
+      serr.style.display = "block";
+      serr.textContent = "This is a preview site. Orders are not sent. Use the live shop at www.inlandempirenativenursery.com to place an order.";
+    }
+    return true;
+  }
+  try { if (document.body) showPreviewBanner(); else document.addEventListener("DOMContentLoaded", showPreviewBanner); } catch (e0) {}
+
   if (document.getElementById("checkout")) (function () {   // checkout drawer + order form (order.html only)
   var PICKUP = "Fontana (near Sierra & Baseline) · Saturdays 10 a.m. – 2 p.m.";
   var drawer = document.getElementById("checkout"), backdrop = document.getElementById("checkout-backdrop"), opener = null;
@@ -484,7 +507,10 @@
   })();
   function fieldErr(id, msg) { var f = document.getElementById(id); f.setAttribute("aria-invalid", msg ? "true" : "false"); document.getElementById(id + "-err").textContent = msg || ""; return !msg; }
   function v(id) { return document.getElementById(id).value.trim(); }
+
+
   var form = document.getElementById("order-form"), btn = form.querySelector(".submit-btn"), serr = document.getElementById("server-error");
+  if (iennIsPreviewHost() && btn) { btn.disabled = true; btn.textContent = "Orders disabled (preview)"; btn.setAttribute("aria-disabled", "true"); }
   function showConfirm(ls, orderId, total, notes) {
     document.getElementById("confirm-id").textContent = orderId ? "Order number: " + orderId : "";
     var cl = document.getElementById("confirm-list"); cl.innerHTML = "";
@@ -504,6 +530,7 @@
   }
   form.addEventListener("submit", function (e) {
     e.preventDefault(); serr.style.display = "none";
+    if (blockPreviewOrderSubmit(form, btn, serr)) return;   // never POST on preview hosts (incl. localhost)
     var ls = update(), ok = true, f = { name: v("name"), email: v("email"), phone: v("phone"), notes: v("notes") };
     ok = fieldErr("name", f.name ? "" : "Please enter your name.") && ok;
     ok = fieldErr("email", /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email) ? "" : "Please enter a valid email so we can confirm pickup.") && ok;
