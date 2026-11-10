@@ -34,6 +34,13 @@ assert.ok(careHtml.includes('care.careIntro'));
 assert.ok(careHtml.includes('care.careBullets'));
 assert.ok(careHtml.includes('care.careSourceUrl'));
 
+/* Customer-facing care disclaimer; internal Eric-approved-copy note removed */
+assert.ok(!careHtml.includes('Care sheets are shown only for plants with Eric-approved copy'));
+assert.ok(!careHtml.includes('This page has no shop or checkout.'));
+assert.ok(careHtml.includes('id="care-disclaimer"'));
+assert.ok(careHtml.includes('care-disclaimer'));
+assert.ok(careHtml.includes("Care info is general guidance for Inland Empire gardens. Every yard is different, so adjust to your sun, soil and water. Questions? Reach out and we'll help."));
+
 const pickup = fs.readFileSync(path.join(root, 'pickup-info.html'), 'utf8');
 assert.ok(pickup.includes('Pickup FAQ'));
 assert.ok(!pickup.includes('Yarrow care'));
