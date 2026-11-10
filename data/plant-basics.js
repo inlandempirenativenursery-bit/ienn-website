@@ -291,6 +291,25 @@ iennCare("Erythranthe cardinalis", {
 });
 
 /* care slot: purple-needlegrass */
+iennCare("Stipa pulchra", {
+  careCommon: "Purple needlegrass",
+  careBotanical: "Stipa pulchra",
+  careIntro: "is a fine-leaved bunchgrass with airy, nodding seed heads that open purple-tinged in spring and summer, usually growing 2–3 feet tall and 1–2 feet wide. It is California’s state grass.",
+  careBullets: [
+    "Give it full sun to partial shade.",
+    "It tolerates many soils.",
+    "Water during establishment, then very little once established.",
+    "Give it room to reach 1–2 feet wide.",
+    "It turns golden and rests in summer; that is normal. It can be cut back when it turns brown at the end of summer."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/Stipa-pulchra-(Purple-Needlegrass)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/Stipa-pulchra-(Purple-Needlegrass)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-stipa-nassella-pulchra" },
+    { name: "Las Pilitas Nursery", url: "https://www.laspilitas.com/nature-of-california/plants/663--stipa-pulchra" }
+  ]
+});
 
 /* care slot: blue-grama */
 
