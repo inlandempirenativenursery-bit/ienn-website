@@ -138,6 +138,33 @@ var IENN_BASICS_SPECIES = {
   "Asclepias speciosa": { h:[2,4], w:[2,4], genusLevel:false },
   "Asclepias eriocarpa": { h:[1,3], w:[1,2], water:1, genusLevel:false }
 };
+/* Approved care sheets added one block per plant below (batch 2, Nov 10). iennCare merges care fields into the species row,
+   creating the row if missing; a row created here holds care text only, so card numbers still come from the genus entry.
+   Each plant sits in its own slot so a single plant can be dropped without touching the others (tests: tests/care-sheets/). */
+function iennCare(key, care) { var row = IENN_BASICS_SPECIES[key] || (IENN_BASICS_SPECIES[key] = {}); for (var k in care) row[k] = care[k]; }
+
+/* care slot: datura */
+
+/* care slot: southern-bush-monkeyflower */
+
+/* care slot: sugar-bush */
+
+/* care slot: narrow-leaf-milkweed */
+
+/* care slot: black-sage */
+
+/* care slot: bush-sunflower */
+
+/* care slot: scarlet-monkeyflower */
+
+/* care slot: purple-needlegrass */
+
+/* care slot: blue-grama */
+
+/* care slot: st-catherines-lace */
+
+/* care slot: deergrass */
+
 /* Life form + short tagline (max ~8 words) shown on the card; desc is kept as data but not shown. */
 var IENN_FORM = { Salvia:["Shrub","Fragrant bee magnet"], Eriogonum:["Shrub","Tough, long-blooming bee favorite"], Hesperoyucca:["Succulent","One spectacular bloom spike"], Baileya:["Wildflower","Silver leaves, sunny daisies"],
   Calystegia:["Vine","Big white trumpets, fast climber"], Encelia:["Shrub","Fast, cheerful yellow daisies"], Eschscholzia:["Wildflower","Golden state flower"], Muhlenbergia:["Grass","Fountain of fine flower spikes"],

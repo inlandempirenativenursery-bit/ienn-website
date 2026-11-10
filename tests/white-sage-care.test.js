@@ -27,9 +27,9 @@ assert.deepStrictEqual(Array.from(s.h), [3, 5]); assert.deepStrictEqual(Array.fr
 assert.strictEqual(s.desc, 'Striking silver-white leaves with a strong fragrance and tall flower wands bees crowd around. Water very little once established.');
 assert.ok(!ctx.IENN_BASICS.Salvia.careBullets, 'genus Salvia must not carry careBullets');
 for (const name of ['Salvia mellifera', 'Salvia spathacea', 'Salvia clevelandii', 'Salvia leucophylla']) {
-  const b = ctx.iennBasics(name); assert.ok(!b || !b.careBullets, name + ' must not inherit White sage care');
+  const b = ctx.iennBasics(name); assert.ok(!b || !b.careBullets || b.careBotanical === name, name + ' must not inherit White sage care');
 }
-const approved = Object.keys(ctx.IENN_BASICS_SPECIES).filter((k) => ctx.IENN_BASICS_SPECIES[k].careBullets);
-assert.deepStrictEqual(JSON.parse(JSON.stringify(approved.sort())), ['Achillea millefolium', 'Salvia apiana'], 'only Eric-approved care sheets');
-for (const f of ['index.html', 'order.html', 'plant-care.html']) assert.ok(fs.readFileSync(path.join(root, f), 'utf8').includes('data/plant-basics.js?v=sage1110'), f + ' cache string');
+// full approved-care allowlist is data-driven in tests/care-sheets.test.js
+assert.ok(ctx.IENN_BASICS_SPECIES['Salvia apiana'].careBullets);
+for (const f of ['index.html', 'order.html', 'plant-care.html']) assert.ok(fs.readFileSync(path.join(root, f), 'utf8').includes('data/plant-basics.js?v=care2-1110'), f + ' cache string');
 console.log('white-sage-care: all passed');
