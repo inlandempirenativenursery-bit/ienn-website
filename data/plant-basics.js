@@ -270,6 +270,25 @@ iennCare("Encelia californica", {
 });
 
 /* care slot: scarlet-monkeyflower */
+iennCare("Erythranthe cardinalis", {
+  careCommon: "Scarlet monkeyflower",
+  careBotanical: "Erythranthe cardinalis",
+  careIntro: "is a perennial with bright red-orange tubular flowers over soft, toothed leaves in spring, summer and fall, usually growing 2–3 feet tall and 3 feet wide.",
+  careBullets: [
+    "Give it full sun to partial shade. Inland, some afternoon shade is often a better fit.",
+    "It tolerates many soils, including moist or wet ground.",
+    "Water regularly, especially in summer heat.",
+    "Give it room to reach 3 feet wide. It can spread.",
+    "Spent flowers can be cut off to encourage more blooms and keep the plant from getting floppy."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/2518/Erythranthe-cardinalis-(Scarlet-Monkeyflower)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/2518/Erythranthe-cardinalis-(Scarlet-Monkeyflower)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-erythranthe-mimulus-card" },
+    { name: "Las Pilitas Nursery", url: "https://www.laspilitas.com/nature-of-california/plants/433--mimulus-cardinalis" }
+  ]
+});
 
 /* care slot: purple-needlegrass */
 
