@@ -138,6 +138,52 @@ var IENN_BASICS_SPECIES = {
   "Asclepias speciosa": { h:[2,4], w:[2,4], genusLevel:false },
   "Asclepias eriocarpa": { h:[1,3], w:[1,2], water:1, genusLevel:false }
 };
+/* Approved care sheets added one block per plant below (batch 2, Nov 10). iennCare merges care fields into the species row,
+   creating the row if missing; a row created here holds care text only, so card numbers still come from the genus entry.
+   Each plant sits in its own slot so a single plant can be dropped without touching the others (tests: tests/care-sheets/). */
+function iennCare(key, care) { var row = IENN_BASICS_SPECIES[key] || (IENN_BASICS_SPECIES[key] = {}); for (var k in care) row[k] = care[k]; }
+
+/* care slot: datura */
+iennCare("Datura wrightii", {
+  careCommon: "Datura",
+  careBotanical: "Datura wrightii",
+  careIntro: "is a perennial with large white trumpet flowers that open in the evening, usually growing 1–5 feet tall and 3–6 feet wide. Caution: all parts of the plant are toxic.",
+  careBullets: [
+    "Give it full sun.",
+    "It needs well-drained soil and tolerates many soil types, as long as it does not stay wet.",
+    "Water during establishment, then very little once established. Too much water, especially in summer, can harm the plant.",
+    "Give it room to reach 3–6 feet wide.",
+    "When it starts to die back, cut it down to the ground. It comes back better."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/Datura-wrightii-(Sacred-Datura)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/Datura-wrightii-(Sacred-Datura)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-datura-wrightii-local" },
+    { name: "Jepson eFlora", url: "https://ucjeps.berkeley.edu/eflora/eflora_display.php?tid=22389" }
+  ]
+});
+
+/* care slot: southern-bush-monkeyflower */
+
+/* care slot: sugar-bush */
+
+/* care slot: narrow-leaf-milkweed */
+
+/* care slot: black-sage */
+
+/* care slot: bush-sunflower */
+
+/* care slot: scarlet-monkeyflower */
+
+/* care slot: purple-needlegrass */
+
+/* care slot: blue-grama */
+
+/* care slot: st-catherines-lace */
+
+/* care slot: deergrass */
+
 /* Life form + short tagline (max ~8 words) shown on the card; desc is kept as data but not shown. */
 var IENN_FORM = { Salvia:["Shrub","Fragrant bee magnet"], Eriogonum:["Shrub","Tough, long-blooming bee favorite"], Hesperoyucca:["Succulent","One spectacular bloom spike"], Baileya:["Wildflower","Silver leaves, sunny daisies"],
   Calystegia:["Vine","Big white trumpets, fast climber"], Encelia:["Shrub","Fast, cheerful yellow daisies"], Eschscholzia:["Wildflower","Golden state flower"], Muhlenbergia:["Grass","Fountain of fine flower spikes"],
