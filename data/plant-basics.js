@@ -165,10 +165,67 @@ iennCare("Datura wrightii", {
 });
 
 /* care slot: southern-bush-monkeyflower */
+iennCare("Diplacus longiflorus", {
+  careCommon: "Southern bush monkeyflower",
+  careBotanical: "Diplacus longiflorus",
+  careIntro: "is a compact shrub with large pale-yellow to orange flowers in spring and summer, usually growing 1–3 feet tall and 1–3 feet wide.",
+  careBullets: [
+    "Give it morning sun and afternoon shade. An east-facing spot works well. It handles more sun in cool months, but needs afternoon shade in summer heat.",
+    "It needs well-drained soil.",
+    "Water during establishment, then very little once established. Too much water, especially in summer, can harm the plant.",
+    "Give it room to reach 1–3 feet wide.",
+    "It may go dry and drop leaves in summer; that is normal when it gets little water."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/Diplacus-longiflorus-(Southern-Bush-Monkeyflower)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/Diplacus-longiflorus-(Southern-Bush-Monkeyflower)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-diplacus-longiflorus-mim" },
+    { name: "Las Pilitas Nursery", url: "https://www.laspilitas.com/nature-of-california/plants/244--diplacus-longiflorus" }
+  ]
+});
 
 /* care slot: sugar-bush */
+iennCare("Rhus ovata", {
+  careCommon: "Sugarbush",
+  careBotanical: "Rhus ovata",
+  careIntro: "is an evergreen shrub with glossy leaves and small pink-white flowers in winter and spring, usually growing 7–15 feet tall and 7–15 feet wide.",
+  careBullets: [
+    "Give it full sun to partial shade.",
+    "It tolerates many soils, as long as it does not stay wet.",
+    "Water during establishment, then very little once established. Too much water, especially in summer, can harm the plant.",
+    "Give it room to reach 7–15 feet wide.",
+    "It needs little pruning to stay tidy, and it can be used as a hedge or screen."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/Rhus-ovata-(Sugar-Bush)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/Rhus-ovata-(Sugar-Bush)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-rhus-ovata" },
+    { name: "Las Pilitas Nursery", url: "https://www.laspilitas.com/nature-of-california/plants/572--rhus-ovata" }
+  ]
+});
 
 /* care slot: narrow-leaf-milkweed */
+iennCare("Asclepias fascicularis", {
+  careCommon: "Narrowleaf milkweed",
+  careBotanical: "Asclepias fascicularis",
+  careIntro: "is a perennial with clusters of lavender to pinkish-white flowers in spring, summer and fall, usually growing 2–3 feet tall and 1–3 feet wide. It is a host plant for monarch caterpillars.",
+  careBullets: [
+    "Give it full sun.",
+    "It tolerates many soils.",
+    "Water during establishment, then water occasionally once established.",
+    "Give it room to reach 1–3 feet wide. It can spread and reseed.",
+    "It dies back in winter and returns in spring. Leave the dry stems and any caterpillars until new growth appears."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/434/Asclepias-fascicularis-(Narrow-Leaf-Milkweed)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/434/Asclepias-fascicularis-(Narrow-Leaf-Milkweed)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-asclepias-fascicularis" },
+    { name: "Las Pilitas Nursery", url: "https://www.laspilitas.com/nature-of-california/plants/100--asclepias-fascicularis" }
+  ]
+});
 
 /* care slot: black-sage */
 

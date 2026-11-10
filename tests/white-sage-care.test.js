@@ -31,5 +31,5 @@ for (const name of ['Salvia mellifera', 'Salvia spathacea', 'Salvia clevelandii'
 }
 // full approved-care allowlist is data-driven in tests/care-sheets.test.js
 assert.ok(ctx.IENN_BASICS_SPECIES['Salvia apiana'].careBullets);
-for (const f of ['index.html', 'order.html', 'plant-care.html']) assert.ok(fs.readFileSync(path.join(root, f), 'utf8').includes('data/plant-basics.js?v=care2-1110'), f + ' cache string');
+for (const f of ['index.html', 'order.html', 'plant-care.html']) assert.ok(fs.readFileSync(path.join(root, f), 'utf8').includes('data/plant-basics.js?v=care3-1110'), f + ' cache string');
 console.log('white-sage-care: all passed');
