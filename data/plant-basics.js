@@ -144,6 +144,25 @@ var IENN_BASICS_SPECIES = {
 function iennCare(key, care) { var row = IENN_BASICS_SPECIES[key] || (IENN_BASICS_SPECIES[key] = {}); for (var k in care) row[k] = care[k]; }
 
 /* care slot: datura */
+iennCare("Datura wrightii", {
+  careCommon: "Datura",
+  careBotanical: "Datura wrightii",
+  careIntro: "is a perennial with large white trumpet flowers that open in the evening, usually growing 1–5 feet tall and 3–6 feet wide. Caution: all parts of the plant are toxic.",
+  careBullets: [
+    "Give it full sun.",
+    "It needs well-drained soil and tolerates many soil types, as long as it does not stay wet.",
+    "Water during establishment, then very little once established. Too much water, especially in summer, can harm the plant.",
+    "Give it room to reach 3–6 feet wide.",
+    "When it starts to die back, cut it down to the ground. It comes back better."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/Datura-wrightii-(Sacred-Datura)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/Datura-wrightii-(Sacred-Datura)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-datura-wrightii-local" },
+    { name: "Jepson eFlora", url: "https://ucjeps.berkeley.edu/eflora/eflora_display.php?tid=22389" }
+  ]
+});
 
 /* care slot: southern-bush-monkeyflower */
 
