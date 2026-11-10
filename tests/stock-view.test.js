@@ -14,10 +14,12 @@ assert.strictEqual(S.hasBaseline({ countDate: '2026-10-18' }, [plants[0]]), true
 // no baseline: nothing hidden, qty unknown
 const u = S.view(plants, false);
 assert.strictEqual(u.length, 3); assert.ok(u.every(p => p.sizes.every(s => S.isAsk(s) || s.qty === null)));
-// baseline: zero-stock plant and chips hidden
+// baseline: every plant kept (zero-inventory plants are sorted last by shop.js, since 0d29c89);
+// zero-qty sizes are kept so the plant/size shows as out (sizeState 'out')
 const v = S.view(plants, true);
-assert.deepStrictEqual(v.map(p => p.id), ['b', 'c']);
-assert.deepStrictEqual(v[0].sizes.map(s => s.key), ['2"', 'Tree pot', '1 gal']);
+assert.deepStrictEqual(v.map(p => p.id), ['a', 'b', 'c']);
+assert.deepStrictEqual(v[0].sizes.map(s => s.key), ['2"', 'Tree pot', '4"', '1 gal']);
+assert.deepStrictEqual(v[1].sizes.map(s => s.key), ['2"', 'Tree pot', '4"', '1 gal']);
 // Ask-us threshold, never counts
 assert.strictEqual(S.sizeState(z('1 gal', 3), 1), 'ask', 'below 5 => Ask us');
 assert.strictEqual(S.sizeState(z('1 gal', 4), 1), 'ask');
@@ -34,9 +36,10 @@ const np = [
   { id: 'y', sizes: [...ask(), r('4"', 0, 6), r('1 gal', 0, 0)] },      // 4" by request only
   { id: 'w', sizes: [...ask(), r('4"', 10, 0), r('1 gal', null, null)] }];
 const nv = S.view(np, S.hasBaseline({ countDate: '2026-10-20' }, np));
-assert.deepStrictEqual(nv.map(p => p.id), ['y', 'w'], 'qty 0 && !canRequest hidden; plant w/o sizes hidden');
-assert.deepStrictEqual(nv[0].sizes.map(s => s.key), ['2"', 'Tree pot', '4"']);
-assert.deepStrictEqual(nv[1].sizes.map(s => s.key), ['2"', 'Tree pot', '4"', '1 gal'], 'qty null stays (untracked/unknown)');
+assert.deepStrictEqual(nv.map(p => p.id), ['x', 'y', 'w'], 'all plants kept with a baseline (out-of-stock sorted last by shop.js)');
+assert.deepStrictEqual(nv[0].sizes.map(s => s.key), ['2"', 'Tree pot', '4"', '1 gal'], 'qty 0 sizes kept so they render as out');
+assert.strictEqual(S.sizeState(nv[0].sizes[2], 1), 'out');
+assert.deepStrictEqual(nv[2].sizes.map(s => s.key), ['2"', 'Tree pot', '4"', '1 gal'], 'qty null stays (untracked/unknown)');
 assert.strictEqual(S.hasBaseline({}, [np[1]]), true, 'no date field, canRequest stock => counted');
 assert.strictEqual(S.sizeState(r('4"', 0, 6), 1), 'ask', 'qty 0 + canRequest => Ask us');
 assert.strictEqual(S.available(r('4"', 0, 6)), true); assert.strictEqual(S.available(r('4"', 0, 0)), false);
