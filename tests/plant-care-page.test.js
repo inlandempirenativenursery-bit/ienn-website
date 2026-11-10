@@ -48,7 +48,9 @@ assert.ok(careHtml.includes('care-disclaimer'));
 assert.ok(careHtml.includes("Care info is general guidance for Inland Empire gardens. Every yard is different, so adjust to your sun, soil and water. Questions? Reach out and we'll help."));
 
 const pickup = fs.readFileSync(path.join(root, 'pickup-info.html'), 'utf8');
-assert.ok(pickup.includes('Pickup FAQ'));
+assert.ok(pickup.includes('<h2 id="faq-title">Ordering &amp; Pickup</h2>'));
+assert.ok(pickup.includes('<h2 id="care-faq-title">Plant Care Basics</h2>'));
+assert.strictEqual((pickup.match(/<details open>/g) || []).length, 14, '6 ordering/pickup + 8 care entries');
 assert.ok(!pickup.includes('Yarrow care'));
 assert.ok(!pickup.includes('Achillea millefolium'));
 assert.ok(pickup.includes('break-inside:avoid'));
@@ -71,7 +73,7 @@ assert.ok(shop.includes('bp.pane.addEventListener("keydown", function (e) { if (
 const order = fs.readFileSync(path.join(root, 'order.html'), 'utf8');
 assert.ok(order.includes('Printable pickup info</a>'));
 assert.ok(!order.includes('Yarrow care</a>'));
-assert.ok(order.includes('available on request (add them in Notes)'));
+assert.ok(!order.includes('Tap a size, then Add.'), 'order-page hint box removed (Eric, Nov 10)');
 
 const css = fs.readFileSync(path.join(root, 'shop.css'), 'utf8');
 assert.ok(css.includes('.species-care-link'));
