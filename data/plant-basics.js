@@ -354,6 +354,25 @@ iennCare("Eriogonum giganteum", {
 });
 
 /* care slot: deergrass */
+iennCare("Muhlenbergia rigens", {
+  careCommon: "Deergrass",
+  careBotanical: "Muhlenbergia rigens",
+  careIntro: "is a fountain-shaped bunchgrass with tall slender flower spikes in summer and fall, usually growing 3–4 feet tall and 3–4 feet wide.",
+  careBullets: [
+    "Give it full sun to partial shade.",
+    "It tolerates many soils.",
+    "Water during establishment, then water occasionally once established.",
+    "Give it room to reach 3–4 feet wide.",
+    "It can be cut back in fall if it becomes unruly."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/2596/Muhlenbergia-rigens-(Deergrass)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/2596/Muhlenbergia-rigens-(Deergrass)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-muhlenbergia-rigens" },
+    { name: "Las Pilitas Nursery", url: "https://www.laspilitas.com/nature-of-california/plants/446--muhlenbergia-rigens" }
+  ]
+});
 
 /* Life form + short tagline (max ~8 words) shown on the card; desc is kept as data but not shown. */
 var IENN_FORM = { Salvia:["Shrub","Fragrant bee magnet"], Eriogonum:["Shrub","Tough, long-blooming bee favorite"], Hesperoyucca:["Succulent","One spectacular bloom spike"], Baileya:["Wildflower","Silver leaves, sunny daisies"],
