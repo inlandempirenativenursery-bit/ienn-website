@@ -1,4 +1,4 @@
-/* Species-only Yarrow care: Achillea millefolium has careBullets; other plants must not.
+/* Species-only Yarrow care: Achillea millefolium has careBullets; plants without approved care must not (White sage: tests/white-sage-care.test.js).
    Card shows compact "More info & care" link only — no long intro/bullets in the card. */
 const assert = require('assert');
 const fs = require('fs');
@@ -12,7 +12,7 @@ const y = ctx.iennBasics('Achillea millefolium');
 assert.ok(y && Array.isArray(y.careBullets) && y.careBullets.length === 5);
 assert.strictEqual(y.careBotanical, 'Achillea millefolium');
 assert.strictEqual(y.genusLevel, false);
-for (const name of ['Salvia apiana', 'Eriogonum fasciculatum', 'Diplacus longiflorus', 'Stipa pulchra']) {
+for (const name of ['Eriogonum fasciculatum', 'Diplacus longiflorus', 'Stipa pulchra']) {
   const b = ctx.iennBasics(name);
   assert.ok(!b || !b.careBullets, name + ' must not expose careBullets');
 }

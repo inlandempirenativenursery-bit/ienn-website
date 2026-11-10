@@ -22,7 +22,8 @@ assert.strictEqual(yCare.careBullets[0], 'Give it full sun to partial shade. Inl
 assert.ok(Array.isArray(yCare.careSources) && yCare.careSources.length === 3);
 
 // Missing / unknown / genus-only — no approved care, no Yarrow fallback
-for (const name of ['Salvia apiana', 'Eriogonum fasciculatum', 'Not A Real Plant', 'Achillea', '']) {
+assert.strictEqual(ctx.iennHasApprovedCare('Salvia apiana'), true, 'White sage approved (Nov 10)');
+for (const name of ['Salvia mellifera', 'Eriogonum fasciculatum', 'Not A Real Plant', 'Achillea', 'Salvia', '']) {
   assert.strictEqual(ctx.iennHasApprovedCare(name), false, name);
   assert.strictEqual(ctx.iennApprovedCare(name), null, name);
 }

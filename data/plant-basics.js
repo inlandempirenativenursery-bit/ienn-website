@@ -88,7 +88,27 @@ var IENN_BASICS_SPECIES = {
     ]
   },
 
-  "Salvia apiana": { h:[3,5], w:[3,8], bloom:["Sp","Su"], desc:"Striking silver-white leaves with a strong fragrance and tall flower wands bees crowd around. Water very little once established." },
+  /* White sage — preview care copy from Yuki's Nov 10 final draft (Eric-approved copy via Kobe). Existing h/w/bloom/desc unchanged. */
+  "Salvia apiana": { h:[3,5], w:[3,8], bloom:["Sp","Su"], desc:"Striking silver-white leaves with a strong fragrance and tall flower wands bees crowd around. Water very little once established.",
+    genusLevel: false,
+    careCommon: "White sage",
+    careBotanical: "Salvia apiana",
+    careIntro: "is a shrub with fragrant silver-white leaves and tall wands of white flowers, sometimes with a hint of lavender, in spring and summer, usually growing 3–5 feet tall and 3–8 feet wide.",
+    careBullets: [
+      "Give it full sun.",
+      "It needs well-drained soil and tolerates many soil types, including heavier soil, as long as it does not stay wet.",
+      "Water during establishment, then very little once established. Too much water, especially in summer, can harm the plant.",
+      "Give it room to reach 3–8 feet wide.",
+      "After the flowers finish in late summer, spent stalks can be cut off. Sprawling branches can be trimmed at any time."
+    ],
+    careSourceName: "Calscape (CNPS)",
+    careSourceUrl: "https://calscape.org/Salvia-apiana-(White-Sage)",
+    careSources: [
+      { name: "Calscape (CNPS)", url: "https://calscape.org/Salvia-apiana-(White-Sage)" },
+      { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-salvia-apiana" },
+      { name: "Las Pilitas Nursery", url: "https://www.laspilitas.com/nature-of-california/plants/604--salvia-apiana" }
+    ]
+  },
   "Salvia mellifera": { h:[3,6], w:[4,6], bloom:["Sp","Su"], desc:"Dark green, fragrant leaves and tiered whorls of pale flowers. One of the best plants for honeybees and native bees." },
   "Salvia clevelandii": { h:[3,5], w:[3,5], desc:"Intensely fragrant gray-green leaves and blue-violet flower whorls. A garden favorite for scent and hummingbirds." },
   "Salvia leucophylla": { h:[2,5], w:[3,10], bloom:["Sp","Su"], desc:"Soft gray leaves and pinkish-lavender flower whorls. Spreads wide and handles heat well." },
