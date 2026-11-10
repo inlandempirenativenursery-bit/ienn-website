@@ -228,6 +228,25 @@ iennCare("Asclepias fascicularis", {
 });
 
 /* care slot: black-sage */
+iennCare("Salvia mellifera", {
+  careCommon: "Black sage",
+  careBotanical: "Salvia mellifera",
+  careIntro: "is a shrub with dark green, fragrant leaves and tiered whorls of pale flowers in spring and summer, usually growing 3–6 feet tall and 4–6 feet wide.",
+  careBullets: [
+    "Give it full sun.",
+    "It needs well-drained soil and tolerates many soil types, as long as it does not stay wet.",
+    "Water during establishment, then very little once established. Too much water, especially in summer, can harm the plant.",
+    "Give it room to reach 4–6 feet wide.",
+    "The leaves may curl in summer drought; that is normal."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/Salvia-mellifera-(Black-Sage)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/Salvia-mellifera-(Black-Sage)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-salvia-mellifera" },
+    { name: "Las Pilitas Nursery", url: "https://www.laspilitas.com/nature-of-california/plants/612--salvia-mellifera" }
+  ]
+});
 
 /* care slot: bush-sunflower */
 
