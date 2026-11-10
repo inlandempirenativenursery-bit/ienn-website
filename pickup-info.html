@@ -24,8 +24,12 @@
     .actions a { background:#fff; color:var(--sage-dark); border:1px solid #d7d0c4; }
     .actions button { background:var(--sage); color:#fff; border:0; }
     .faq details { background:#fff; border:1px solid #e6e2da; border-radius:8px; padding:0.35rem 0.75rem; margin:0.4rem 0; }
-    .faq summary { cursor:pointer; font-weight:700; min-height:44px; display:flex; align-items:center; list-style:none; }
+    .faq summary { cursor:pointer; font-weight:700; min-height:44px; display:flex; align-items:center; justify-content:space-between; gap:0.75rem; list-style:none; }
     .faq summary::-webkit-details-marker { display:none; }
+    .faq summary::marker { content:""; }
+    .faq summary::after { content:"+"; flex:0 0 1.6rem; width:1.6rem; height:1.6rem; display:inline-flex; align-items:center; justify-content:center; border:1px solid #d7d0c4; border-radius:50%; color:var(--sage-dark); font-size:1.15rem; line-height:1; font-weight:700; }
+    .faq details[open] > summary::after { content:"\2212"; background:var(--sage); border-color:var(--sage); color:#fff; }
+    .faq summary:focus-visible { outline:3px solid var(--sage); outline-offset:2px; border-radius:6px; }
     .faq p { margin:0 0 0.55rem; }
     .note { font-size:0.85rem; color:#6b7280; margin-top:1.25rem; text-align:center; }
     @media print {
@@ -35,7 +39,9 @@
       .logo { width:220px; }
       .faq, .faq details { break-inside:avoid; page-break-inside:avoid; border-color:#ccc; }
       .faq summary { font-weight:700; }
+      .faq summary::after { display:none !important; }
       .faq details p { display:block !important; }
+      .faq details::details-content { content-visibility:visible; display:block; }
     }
   </style>
 </head>
@@ -52,43 +58,95 @@
     </div>
 
     <section class="faq" aria-labelledby="faq-title">
-      <h2 id="faq-title">Pickup FAQ</h2>
-      <details open>
+      <h2 id="faq-title">Ordering &amp; Pickup</h2>
+      <details>
         <summary>How do I order?</summary>
         <p>Choose your plants on our website and place your order. Nothing is charged online.</p>
       </details>
-      <details open>
+      <details>
         <summary>What do plants cost?</summary>
         <p>Prices include tax: 2-inch $3, 4-inch $6, quarter tree pot $10, and 1-gallon $15.</p>
       </details>
-      <details open>
+      <details>
         <summary>How do I pay?</summary>
         <p>Cash or Zelle at pickup.</p>
       </details>
-      <details open>
+      <details>
         <summary>Where and when is pickup?</summary>
         <p>Saturdays, 10 AM–2 PM Pacific, near Sierra &amp; Baseline in Fontana, about 10 minutes from the 210.</p>
       </details>
-      <details open>
+      <details>
         <summary>What happens next?</summary>
         <p>Our team reviews your order and follows up by email to confirm pickup details.</p>
       </details>
-      <details open>
+      <details>
         <summary>Questions?</summary>
         <p>Email <a href="mailto:plants@inlandempirenativenursery.com">plants@inlandempirenativenursery.com</a>.</p>
       </details>
     </section>
 
-    <p class="note no-print">This page is for printing or saving pickup FAQ only. Plant care sheets are on each plant’s care page.</p>
+    <section class="faq" aria-labelledby="care-faq-title">
+      <h2 id="care-faq-title">Plant Care Basics</h2>
+      <details>
+        <summary>When is the best time to plant?</summary>
+        <p>Fall through early winter is the best window. Cooler days and winter rains help roots get established before summer. You can plant in spring, but the plant will need more regular water through the first dry season.</p>
+      </details>
+      <details>
+        <summary>How do I water the first year?</summary>
+        <p>New plants are not drought-tolerant yet. Water regularly the first year, keeping the soil moist but not soggy, and let the surface dry a little between waterings. How often depends on heat, soil, and rainfall; water more deeply and less often as the roots grow.</p>
+      </details>
+      <details>
+        <summary>How do I water once the plant is established?</summary>
+        <p>After about a year or two, most low-water natives need much less water. Many get by with occasional deep soaks in dry periods, and some need little or no summer water. Check the plant’s own care sheet, and cut back if the soil stays wet.</p>
+      </details>
+      <details>
+        <summary>Do native plants need fertilizer?</summary>
+        <p>Usually no, especially in the ground. Extra fertilizer can push weak, short-lived growth. Plants in pots can use a light feeding once or twice a year at the start of the growing season, diluted to about one-quarter strength, to replace nutrients that watering washes out.</p>
+      </details>
+      <details>
+        <summary>Should I add soil amendments?</summary>
+        <p>In most cases, no. Plant in the existing soil and skip mixes or fertilizers in the planting hole, unless a specific plant’s care sheet says otherwise.</p>
+      </details>
+      <details>
+        <summary>What is summer dormancy?</summary>
+        <p>Some California natives slow down or rest in summer, when their wild habitats are dry. A plant that looks tired or drops some leaves may be resting, not dying. Those “summer-dry” plants can rot if they are watered too often in warm soil, so check the plant’s care sheet before adding summer water.</p>
+      </details>
+      <details>
+        <summary>Should I use mulch?</summary>
+        <p>Yes. A few inches of mulch helps hold moisture and keep weeds down. Keep it a few inches away from the stem or crown so the base of the plant stays dry.</p>
+      </details>
+      <details>
+        <summary>Can I grow natives in pots?</summary>
+        <p>Yes, many can. Pots dry out faster than the ground, so they need more regular water and a well-draining potting mix. Most natives in the ground do not need fertilizer; plants in pots often need a light feeding once or twice a year.</p>
+      </details>
+    </section>
+
+    <p class="note no-print">Each plant also has its own care sheet on its care page.</p>
   </div>
   <script>
     (function () {
-      function openFaq() {
-        Array.prototype.forEach.call(document.querySelectorAll('.faq details'), function (d) { d.open = true; });
+      var saved = null;
+      function all() { return Array.prototype.slice.call(document.querySelectorAll('.faq details')); }
+      /* Print only: open every answer, then restore the reader's open/closed state afterwards. */
+      function openForPrint() {
+        if (saved) return;
+        saved = all().map(function (d) { return d.open; });
+        all().forEach(function (d) { d.open = true; });
+      }
+      function restoreAfterPrint() {
+        if (!saved) return;
+        var s = saved; saved = null;
+        all().forEach(function (d, i) { d.open = !!s[i]; });
       }
       var b = document.getElementById('print-btn');
-      if (b) b.addEventListener('click', function () { openFaq(); window.print(); });
-      window.addEventListener('beforeprint', openFaq);
+      if (b) b.addEventListener('click', function () { openForPrint(); window.print(); setTimeout(restoreAfterPrint, 0); });
+      window.addEventListener('beforeprint', openForPrint);
+      window.addEventListener('afterprint', restoreAfterPrint);
+      if (window.matchMedia) {
+        var mq = window.matchMedia('print');
+        var onMq = function (e) { if (e.matches) openForPrint(); };
+        if (mq.addEventListener) mq.addEventListener('change', onMq); else if (mq.addListener) mq.addListener(onMq);
+      }
     })();
   </script>
 </body>

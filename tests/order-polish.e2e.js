@@ -41,7 +41,7 @@ const feed = () => ({ version: 3, updated: new Date().toISOString(), taxIncluded
     await mf.locator('.chip', { hasText: '1-gal' }).click(); assert.ok(await mf.locator('.ask-note').isVisible(), 'qty 4 < 5 => Ask us');
     for (const c of await page.locator('.chip-request').all()) assert.notStrictEqual(await c.evaluate(e => getComputedStyle(e).textDecorationLine), 'line-through');
     assert.ok(!/\d+ left|Only \d|NaN/.test(await page.locator('#plant-list').innerText()), 'no exact counts');
-    assert.strictEqual(await page.locator('p.hint', { hasText: 'on request' }).count(), 1, 'on-request note once');
+    assert.strictEqual(await page.locator('p.hint', { hasText: 'on request' }).count(), 0, 'order-page hint box removed (Eric, Nov 10)');
     // tap targets
     const small = await page.evaluate(() => [...document.querySelectorAll('main button, .cartbar a, main a')].filter(e => e.offsetParent && e.getBoundingClientRect().height < 40 && !e.closest('p,li')).map(e => e.textContent.trim()));
     assert.deepStrictEqual(small, [], 'small targets: ' + small);
