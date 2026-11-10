@@ -207,6 +207,25 @@ iennCare("Rhus ovata", {
 });
 
 /* care slot: narrow-leaf-milkweed */
+iennCare("Asclepias fascicularis", {
+  careCommon: "Narrowleaf milkweed",
+  careBotanical: "Asclepias fascicularis",
+  careIntro: "is a perennial with clusters of lavender to pinkish-white flowers in spring, summer and fall, usually growing 2–3 feet tall and 1–3 feet wide. It is a host plant for monarch caterpillars.",
+  careBullets: [
+    "Give it full sun.",
+    "It tolerates many soils.",
+    "Water during establishment, then water occasionally once established.",
+    "Give it room to reach 1–3 feet wide. It can spread and reseed.",
+    "It dies back in winter and returns in spring. Leave the dry stems and any caterpillars until new growth appears."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/434/Asclepias-fascicularis-(Narrow-Leaf-Milkweed)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/434/Asclepias-fascicularis-(Narrow-Leaf-Milkweed)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-asclepias-fascicularis" },
+    { name: "Las Pilitas Nursery", url: "https://www.laspilitas.com/nature-of-california/plants/100--asclepias-fascicularis" }
+  ]
+});
 
 /* care slot: black-sage */
 
