@@ -249,6 +249,25 @@ iennCare("Salvia mellifera", {
 });
 
 /* care slot: bush-sunflower */
+iennCare("Encelia californica", {
+  careCommon: "Bush sunflower",
+  careBotanical: "Encelia californica",
+  careIntro: "is a fast-growing, rounded shrub with bright yellow daisy flowers in winter and spring, usually growing 3–4 feet tall and 3–5 feet wide.",
+  careBullets: [
+    "Give it full sun to partial shade.",
+    "It tolerates many soils.",
+    "Water during establishment, then very little once established.",
+    "Give it room to reach 3–5 feet wide.",
+    "It may go dry in summer; that is normal. It can be cut back after bloom to keep it compact."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/Encelia-californica-(Bush-Sunflower)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/Encelia-californica-(Bush-Sunflower)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-encelia-californica" },
+    { name: "Las Pilitas Nursery", url: "https://www.laspilitas.com/nature-of-california/plants/260--encelia-californica" }
+  ]
+});
 
 /* care slot: scarlet-monkeyflower */
 
