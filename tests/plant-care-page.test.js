@@ -16,6 +16,10 @@ assert.ok(ctx.iennApprovedCare('Achillea millefolium'));
 assert.strictEqual(ctx.iennApprovedCare('Achillea millefolium').careBotanical, 'Achillea millefolium');
 assert.strictEqual(ctx.iennApprovedCare('Achillea millefolium').careBullets.length, 5);
 assert.ok(ctx.iennApprovedCare('Achillea millefolium').careIntro);
+const yCare = ctx.iennApprovedCare('Achillea millefolium');
+assert.strictEqual(yCare.careIntro, 'is a perennial with feathery leaves and flat clusters of white flowers, usually growing 1–3 feet tall.');
+assert.strictEqual(yCare.careBullets[0], 'Give it full sun to partial shade. Inland, some afternoon shade is often a better fit.');
+assert.ok(Array.isArray(yCare.careSources) && yCare.careSources.length === 3);
 
 // Missing / unknown / genus-only — no approved care, no Yarrow fallback
 for (const name of ['Salvia apiana', 'Eriogonum fasciculatum', 'Not A Real Plant', 'Achillea', '']) {
@@ -33,6 +37,15 @@ assert.ok(!careHtml.includes('pickup-info.html#yarrow-care'));
 assert.ok(careHtml.includes('care.careIntro'));
 assert.ok(careHtml.includes('care.careBullets'));
 assert.ok(careHtml.includes('care.careSourceUrl'));
+assert.ok(careHtml.includes('care.careSources'));
+assert.ok(careHtml.includes('Sources: '));
+
+/* Customer-facing care disclaimer; internal Eric-approved-copy note removed */
+assert.ok(!careHtml.includes('Care sheets are shown only for plants with Eric-approved copy'));
+assert.ok(!careHtml.includes('This page has no shop or checkout.'));
+assert.ok(careHtml.includes('id="care-disclaimer"'));
+assert.ok(careHtml.includes('care-disclaimer'));
+assert.ok(careHtml.includes("Care info is general guidance for Inland Empire gardens. Every yard is different, so adjust to your sun, soil and water. Questions? Reach out and we'll help."));
 
 const pickup = fs.readFileSync(path.join(root, 'pickup-info.html'), 'utf8');
 assert.ok(pickup.includes('Pickup FAQ'));

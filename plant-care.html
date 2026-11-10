@@ -54,9 +54,9 @@
     </div>
 
     <div id="main"></div>
-    <p class="note no-print">Care sheets are shown only for plants with Eric-approved copy. This page has no shop or checkout.</p>
+    <p id="care-disclaimer" class="note no-print care-disclaimer">Care info is general guidance for Inland Empire gardens. Every yard is different, so adjust to your sun, soil and water. Questions? Reach out and we'll help.</p>
   </div>
-  <script src="data/plant-basics.js?v=faq1106d"></script>
+  <script src="data/plant-basics.js?v=yarrow1110"></script>
   <script>
     (function () {
       var q = new URLSearchParams(location.search);
@@ -118,15 +118,38 @@
       });
       section.appendChild(ul);
 
-      if (care.careSourceUrl) {
+      var sourceList = [];
+      if (care.careSources && care.careSources.length) {
+        for (var si = 0; si < care.careSources.length; si++) {
+          var item = care.careSources[si];
+          if (item && item.url) sourceList.push({ name: item.name || item.url, url: item.url });
+        }
+      } else if (care.careSourceUrl) {
+        sourceList.push({ name: care.careSourceName || "source", url: care.careSourceUrl });
+      }
+      if (sourceList.length > 1) {
         var src = document.createElement("p");
         src.className = "source";
-        src.appendChild(document.createTextNode("Source: " + (care.careSourceName || "source") + ", "));
+        src.appendChild(document.createTextNode("Sources: "));
+        sourceList.forEach(function (item, i) {
+          if (i) src.appendChild(document.createTextNode(", "));
+          var a = document.createElement("a");
+          a.href = item.url;
+          a.target = "_blank";
+          a.rel = "noopener";
+          a.textContent = item.name;
+          src.appendChild(a);
+        });
+        section.appendChild(src);
+      } else if (sourceList.length === 1) {
+        var src = document.createElement("p");
+        src.className = "source";
+        src.appendChild(document.createTextNode("Source: " + sourceList[0].name + ", "));
         var a = document.createElement("a");
-        a.href = care.careSourceUrl;
+        a.href = sourceList[0].url;
         a.target = "_blank";
         a.rel = "noopener";
-        a.textContent = care.careSourceUrl;
+        a.textContent = sourceList[0].url;
         src.appendChild(a);
         section.appendChild(src);
       }
