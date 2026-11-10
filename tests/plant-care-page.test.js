@@ -50,7 +50,11 @@ assert.ok(careHtml.includes("Care info is general guidance for Inland Empire gar
 const pickup = fs.readFileSync(path.join(root, 'pickup-info.html'), 'utf8');
 assert.ok(pickup.includes('<h2 id="faq-title">Ordering &amp; Pickup</h2>'));
 assert.ok(pickup.includes('<h2 id="care-faq-title">Plant Care Basics</h2>'));
-assert.strictEqual((pickup.match(/<details open>/g) || []).length, 14, '6 ordering/pickup + 8 care entries');
+assert.strictEqual((pickup.match(/<details>/g) || []).length, 14, '6 ordering/pickup + 8 care entries');
+assert.ok(!pickup.includes('<details open'), 'FAQ answers closed by default');
+assert.ok(pickup.includes("addEventListener('beforeprint', openForPrint)") && pickup.includes("addEventListener('afterprint', restoreAfterPrint)"), 'print opens all, then restores');
+assert.ok(pickup.includes('::-webkit-details-marker') && pickup.includes('summary::after'), 'custom open/close indicator');
+assert.ok(pickup.includes('Each plant also has its own care sheet on its care page.'));
 assert.ok(!pickup.includes('Yarrow care'));
 assert.ok(!pickup.includes('Achillea millefolium'));
 assert.ok(pickup.includes('break-inside:avoid'));
