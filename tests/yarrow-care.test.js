@@ -17,6 +17,26 @@ for (const name of ['Salvia apiana', 'Eriogonum fasciculatum', 'Diplacus longifl
   assert.ok(!b || !b.careBullets, name + ' must not expose careBullets');
 }
 assert.ok(!ctx.IENN_BASICS.Achillea.careBullets, 'genus Achillea must not carry careBullets');
+
+assert.strictEqual(y.careCommon, 'Common yarrow');
+assert.strictEqual(y.careIntro, 'is a perennial with feathery leaves and flat clusters of white flowers, usually growing 1–3 feet tall.');
+const bullets = [
+  'Give it full sun to partial shade. Inland, some afternoon shade is often a better fit.',
+  'It tolerates many soils; avoid constantly wet ground.',
+  'Water during establishment, then adjust for drainage, heat and site conditions. Established plants have low water needs.',
+  'Blooms from spring into fall and attracts pollinators.',
+  'Spreads by rhizomes (underground stems) and can reseed, so give it room.'
+];
+bullets.forEach((line, i) => { assert.strictEqual(y.careBullets[i], line, 'bullet ' + (i + 1)); });
+assert.ok(Array.isArray(y.careSources) && y.careSources.length === 3);
+assert.strictEqual(y.careSources[0].name, 'Calscape (CNPS)');
+assert.strictEqual(y.careSources[1].name, 'Theodore Payne Foundation');
+assert.strictEqual(y.careSources[2].name, 'Las Pilitas Nursery');
+assert.strictEqual(y.careSources[0].url, 'https://calscape.org/Achillea-millefolium-(Common-Yarrow)');
+assert.strictEqual(y.careSources[1].url, 'https://store.theodorepayne.org/products/theodore-payne-foundation-achillea-millefolium');
+assert.strictEqual(y.careSources[2].url, 'https://www.laspilitas.com/nature-of-california/plants/14--achillea-millefolium-californica');
+assert.strictEqual(y.careSourceName, 'Calscape (CNPS)');
+assert.strictEqual(y.careSourceUrl, y.careSources[0].url);
 const shop = fs.readFileSync(path.join(root, 'shop.js'), 'utf8');
 assert.ok(shop.includes('function speciesCareLink'));
 assert.ok(!shop.includes('function speciesCareBlock'));

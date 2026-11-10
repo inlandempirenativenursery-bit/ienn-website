@@ -66,21 +66,26 @@ var IENN_BASICS = {
     desc:"A fine-textured, low-water bunchgrass with airy, nodding seed heads. Goes golden and dormant in summer." }
 };
 var IENN_BASICS_SPECIES = {
-  /* Wild-type Common yarrow — Eric-approved care (panel + plant-care.html). Yarrow only until Eric OK's more. */
+  /* Wild-type Common yarrow — preview care copy from Yuki's Nov 10 draft (Eric's answers via Kobe). Yarrow only until Eric OK's more. */
   "Achillea millefolium": {
     genusLevel: false,
     careCommon: "Common yarrow",
     careBotanical: "Achillea millefolium",
-    careIntro: "is a perennial with feathery leaves, usually growing 1–3 feet tall.",
+    careIntro: "is a perennial with feathery leaves and flat clusters of white flowers, usually growing 1–3 feet tall.",
     careBullets: [
-      "Give it full sun to partial shade.",
+      "Give it full sun to partial shade. Inland, some afternoon shade is often a better fit.",
       "It tolerates many soils; avoid constantly wet ground.",
       "Water during establishment, then adjust for drainage, heat and site conditions. Established plants have low water needs.",
       "Blooms from spring into fall and attracts pollinators.",
-      "Spreads by underground stems and can reseed, so give it room."
+      "Spreads by rhizomes (underground stems) and can reseed, so give it room."
     ],
     careSourceName: "Calscape (CNPS)",
-    careSourceUrl: "https://calscape.org/Achillea-millefolium-(Common-Yarrow)"
+    careSourceUrl: "https://calscape.org/Achillea-millefolium-(Common-Yarrow)",
+    careSources: [
+      { name: "Calscape (CNPS)", url: "https://calscape.org/Achillea-millefolium-(Common-Yarrow)" },
+      { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-achillea-millefolium" },
+      { name: "Las Pilitas Nursery", url: "https://www.laspilitas.com/nature-of-california/plants/14--achillea-millefolium-californica" }
+    ]
   },
 
   "Salvia apiana": { h:[3,5], w:[3,8], bloom:["Sp","Su"], desc:"Striking silver-white leaves with a strong fragrance and tall flower wands bees crowd around. Water very little once established." },
