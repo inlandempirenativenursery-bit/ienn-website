@@ -34,7 +34,7 @@ var IENN_BASICS = {
   Achillea: { water:2, sun:["full","part"], soil:"Adaptable", bloom:["Sp","Su"], wild:["pollinators","fragrant","containers"], h:[1,3], w:[1,3], ie:true,
     desc:"Feathery, aromatic leaves with flat clusters of small flowers. Spreads into a soft patch and can even be mowed as a lawn alternative." },
   Datura: { water:1, sun:["full"], soil:"Adaptable", bloom:["W","Sp","Su","F"], wild:["pollinators","fragrant"], h:[1,5], w:[3,6], ie:true,
-    desc:"Large white trumpet flowers open in the evening for night-flying moths. All parts are toxic if eaten, so plant it away from kids and pets." },
+    desc:"Large white trumpet flowers open in the evening for night-flying moths. All parts of the plant are toxic." },
   Artemisia: { water:1, sun:["full"], soil:"Fast-draining", bloom:["F"], wild:["birds","fragrant"], h:[3,5], w:[3,5], ie:true,
     desc:"Soft, silvery-gray foliage with the classic scent of the coastal sage scrub. Excellent cover for small birds." },
   Trichostema: { water:1, sun:["full"], soil:"Fast-draining", bloom:["Sp","Su"], wild:["pollinators","hummingbirds","fragrant"], h:[3,5], w:[3,5], ie:true,
