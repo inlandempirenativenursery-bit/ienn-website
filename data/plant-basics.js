@@ -373,6 +373,65 @@ iennCare("Muhlenbergia rigens", {
     { name: "Las Pilitas Nursery", url: "https://www.laspilitas.com/nature-of-california/plants/446--muhlenbergia-rigens" }
   ]
 });
+/* care slot: california-buckwheat */
+iennCare("Eriogonum fasciculatum", {
+  careCommon: "California buckwheat",
+  careBotanical: "Eriogonum fasciculatum",
+  careIntro: "is a tough, rounded shrub with clusters of pink to white flowers that fade to rust, in spring, summer and fall, usually growing 2–4 feet tall and 3–5 feet wide.",
+  careBullets: [
+    "Give it full sun to part sun.",
+    "It needs well-drained soil and tolerates many soil types, as long as it does not stay wet.",
+    "Water during establishment, then very little once established.",
+    "Give it room to reach 3–5 feet wide.",
+    "It can handle a hard cut-back, and the rust-colored flower heads can be left on into winter."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/1502/Eriogonum-fasciculatum-(California-Buckwheat)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/1502/Eriogonum-fasciculatum-(California-Buckwheat)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/eriogonum-fasciculatum" }
+  ]
+});
+/* care slot: chaparral-yucca */
+iennCare("Hesperoyucca whipplei", {
+  careCommon: "Chaparral yucca",
+  careBotanical: "Hesperoyucca whipplei",
+  careIntro: "is a spiky rosette of blue-gray leaves that sends up one tall stalk of creamy flowers in spring and summer. The rosette is usually 2–4 feet wide; the flower stalk can reach 12 feet. It often takes 5–6 years to flower.",
+  careBullets: [
+    "Give it full sun.",
+    "It needs well-drained soil.",
+    "Water during establishment, then very little once established.",
+    "Give it room to reach 2–4 feet wide, and plant it away from paths, because the leaf tips are sharp.",
+    "After it flowers, the blooming rosette dies and can be removed. New plants may come up from seed or from offsets at the base."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/1864/Hesperoyucca-whipplei-(Chaparral-Yucca)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/1864/Hesperoyucca-whipplei-(Chaparral-Yucca)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-hesperoyucca-whipplei" },
+    { name: "Las Pilitas Nursery", url: "https://www.laspilitas.com/nature-of-california/plants/880--yucca-whipplei" }
+  ]
+});
+/* care slot: southern-woodland-penstemon */
+iennCare("Penstemon grinnellii", {
+  careCommon: "Southern woodland penstemon",
+  careBotanical: "Penstemon grinnellii",
+  careIntro: "is a bushy clump of gray-green leaves with stems of wide-throated, pale pink to lavender flowers striped with purple guide lines, in spring and summer, usually growing 1–3 feet tall and 1.5–2.5 feet wide.",
+  careBullets: [
+    "Give it full sun to partial shade. Inland, some afternoon shade is often a better fit.",
+    "It needs well-drained soil and tolerates many soil types, as long as it does not stay wet.",
+    "Water during establishment, then very little once established.",
+    "Give it room to reach 1.5–2.5 feet wide.",
+    "In California, it grows wild mainly in the mountains."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/2767/Penstemon-grinnellii-(Grinnell's-Beardtongue)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/2767/Penstemon-grinnellii-(Grinnell's-Beardtongue)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-penstemon-grinnellii" },
+    { name: "Las Pilitas Nursery", url: "https://www.laspilitas.com/nature-of-california/plants/468--penstemon-grinnellii" }
+  ]
+});
 
 /* Life form + short tagline (max ~8 words) shown on the card; desc is kept as data but not shown. */
 var IENN_FORM = { Salvia:["Shrub","Fragrant bee magnet"], Eriogonum:["Shrub","Tough, long-blooming bee favorite"], Hesperoyucca:["Succulent","One spectacular bloom spike"], Baileya:["Wildflower","Silver leaves, sunny daisies"],
@@ -397,7 +456,7 @@ function iennBasics(botanical) {
   return out;
 }
 /* Display-name overrides: feed name (matching/orders unchanged) -> name shown on the site. */
-var IENN_DISPLAY_NAMES = { "Sacred datura": "Datura", "Sticky monkeyflower": "Southern bush monkeyflower", "California brittlebush": "Bush sunflower" };   // keys match case-insensitively
+var IENN_DISPLAY_NAMES = { "Sacred datura": "Datura", "Sticky monkeyflower": "Southern bush monkeyflower", "California brittlebush": "Bush sunflower", "Grinnell's beardtongue": "Southern woodland penstemon" };   // keys match case-insensitively
 
 /* Approved care sheets are species entries that carry careBullets (Eric-reviewed only). */
 function iennHasApprovedCare(botanical) {

@@ -1,0 +1,27 @@
+{
+  "key": "Penstemon grinnellii",
+  "careCommon": "Southern woodland penstemon",
+  "careBotanical": "Penstemon grinnellii",
+  "careIntro": "is a bushy clump of gray-green leaves with stems of wide-throated, pale pink to lavender flowers striped with purple guide lines, in spring and summer, usually growing 1–3 feet tall and 1.5–2.5 feet wide.",
+  "careBullets": [
+    "Give it full sun to partial shade. Inland, some afternoon shade is often a better fit.",
+    "It needs well-drained soil and tolerates many soil types, as long as it does not stay wet.",
+    "Water during establishment, then very little once established.",
+    "Give it room to reach 1.5–2.5 feet wide.",
+    "In California, it grows wild mainly in the mountains."
+  ],
+  "careSources": [
+    {
+      "name": "Calscape (CNPS)",
+      "url": "https://calscape.org/plant/2767/Penstemon-grinnellii-(Grinnell's-Beardtongue)"
+    },
+    {
+      "name": "Theodore Payne Foundation",
+      "url": "https://store.theodorepayne.org/products/theodore-payne-foundation-penstemon-grinnellii"
+    },
+    {
+      "name": "Las Pilitas Nursery",
+      "url": "https://www.laspilitas.com/nature-of-california/plants/468--penstemon-grinnellii"
+    }
+  ]
+}

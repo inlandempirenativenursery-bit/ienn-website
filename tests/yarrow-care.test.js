@@ -12,7 +12,7 @@ const y = ctx.iennBasics('Achillea millefolium');
 assert.ok(y && Array.isArray(y.careBullets) && y.careBullets.length === 5);
 assert.strictEqual(y.careBotanical, 'Achillea millefolium');
 assert.strictEqual(y.genusLevel, false);
-for (const name of ['Eriogonum fasciculatum', 'Diplacus calycinus', 'Salvia clevelandii']) {   // full allowlist: tests/care-sheets.test.js
+for (const name of ['Eriogonum crocatum', 'Diplacus calycinus', 'Salvia clevelandii']) {   // full allowlist: tests/care-sheets.test.js
   const b = ctx.iennBasics(name);
   assert.ok(!b || !b.careBullets, name + ' must not expose careBullets');
 }
