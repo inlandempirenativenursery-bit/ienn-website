@@ -249,16 +249,130 @@ iennCare("Salvia mellifera", {
 });
 
 /* care slot: bush-sunflower */
+iennCare("Encelia californica", {
+  careCommon: "Bush sunflower",
+  careBotanical: "Encelia californica",
+  careIntro: "is a fast-growing, rounded shrub with bright yellow daisy flowers in winter and spring, usually growing 3–4 feet tall and 3–5 feet wide.",
+  careBullets: [
+    "Give it full sun to partial shade.",
+    "It tolerates many soils.",
+    "Water during establishment, then very little once established.",
+    "Give it room to reach 3–5 feet wide.",
+    "It may go dry in summer; that is normal. It can be cut back after bloom to keep it compact."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/Encelia-californica-(Bush-Sunflower)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/Encelia-californica-(Bush-Sunflower)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-encelia-californica" },
+    { name: "Las Pilitas Nursery", url: "https://www.laspilitas.com/nature-of-california/plants/260--encelia-californica" }
+  ]
+});
 
 /* care slot: scarlet-monkeyflower */
+iennCare("Erythranthe cardinalis", {
+  careCommon: "Scarlet monkeyflower",
+  careBotanical: "Erythranthe cardinalis",
+  careIntro: "is a perennial with bright red-orange tubular flowers over soft, toothed leaves in spring, summer and fall, usually growing 2–3 feet tall and 3 feet wide.",
+  careBullets: [
+    "Give it full sun to partial shade. Inland, some afternoon shade is often a better fit.",
+    "It tolerates many soils, including moist or wet ground.",
+    "Water regularly, especially in summer heat.",
+    "Give it room to reach 3 feet wide. It can spread.",
+    "Spent flowers can be cut off to encourage more blooms and keep the plant from getting floppy."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/2518/Erythranthe-cardinalis-(Scarlet-Monkeyflower)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/2518/Erythranthe-cardinalis-(Scarlet-Monkeyflower)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-erythranthe-mimulus-card" },
+    { name: "Las Pilitas Nursery", url: "https://www.laspilitas.com/nature-of-california/plants/433--mimulus-cardinalis" }
+  ]
+});
 
 /* care slot: purple-needlegrass */
+iennCare("Stipa pulchra", {
+  careCommon: "Purple needlegrass",
+  careBotanical: "Stipa pulchra",
+  careIntro: "is a fine-leaved bunchgrass with airy, nodding seed heads that open purple-tinged in spring and summer, usually growing 2–3 feet tall and 1–2 feet wide. It is California’s state grass.",
+  careBullets: [
+    "Give it full sun to partial shade.",
+    "It tolerates many soils.",
+    "Water during establishment, then very little once established.",
+    "Give it room to reach 1–2 feet wide.",
+    "It turns golden and rests in summer; that is normal. It can be cut back when it turns brown at the end of summer."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/Stipa-pulchra-(Purple-Needlegrass)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/Stipa-pulchra-(Purple-Needlegrass)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-stipa-nassella-pulchra" },
+    { name: "Las Pilitas Nursery", url: "https://www.laspilitas.com/nature-of-california/plants/663--stipa-pulchra" }
+  ]
+});
 
 /* care slot: blue-grama */
+iennCare("Bouteloua gracilis", {
+  careCommon: "Blue grama",
+  careBotanical: "Bouteloua gracilis",
+  careIntro: "is a fine-textured bunchgrass with eyelash-shaped seed heads in summer and fall, usually growing 6 inches to 2 feet tall and 2 feet wide. In California, it grows wild mainly in the dry mountains of San Bernardino County and the eastern Mojave.",
+  careBullets: [
+    "Give it full sun to partial shade.",
+    "It needs well-drained soil and tolerates many soil types, as long as it does not stay wet.",
+    "Water during establishment, then very little to occasional water once established.",
+    "Give it room to reach 2 feet wide.",
+    "It is winter-dormant and goes tan; that is normal. It can be cut back in winter when dormant."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/Bouteloua-gracilis-(Blue-Grama)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/Bouteloua-gracilis-(Blue-Grama)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-bouteloua-gracilis" },
+    { name: "Las Pilitas Nursery", url: "https://www.laspilitas.com/nature-of-california/plants/1064--bouteloua-gracilis" }
+  ]
+});
 
 /* care slot: st-catherines-lace */
+iennCare("Eriogonum giganteum", {
+  careCommon: "St. Catherine's lace",
+  careBotanical: "Eriogonum giganteum",
+  careIntro: "is a rounded shrub with woolly gray-white leaves and broad, lacy cream flower heads that age to rust, in spring, summer and fall, usually growing 3–8 feet tall and 4–10 feet wide. It grows wild only on the southern Channel Islands.",
+  careBullets: [
+    "Give it full sun.",
+    "It needs well-drained soil and can tolerate heavier soil, as long as it does not stay wet.",
+    "Water during establishment, then very little to occasional water once established.",
+    "Give it room to reach 4–10 feet wide.",
+    "After bloom, the old flower heads can be cut back or left on."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/1506/Eriogonum-giganteum-(St.-Catherine's-Lace)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/1506/Eriogonum-giganteum-(St.-Catherine's-Lace)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-eriogonum-gigant-4817713" },
+    { name: "Las Pilitas Nursery", url: "https://www.laspilitas.com/nature-of-california/plants/287--eriogonum-giganteum" }
+  ]
+});
 
 /* care slot: deergrass */
+iennCare("Muhlenbergia rigens", {
+  careCommon: "Deergrass",
+  careBotanical: "Muhlenbergia rigens",
+  careIntro: "is a fountain-shaped bunchgrass with tall slender flower spikes in summer and fall, usually growing 3–4 feet tall and 3–4 feet wide.",
+  careBullets: [
+    "Give it full sun to partial shade.",
+    "It tolerates many soils.",
+    "Water during establishment, then water occasionally once established.",
+    "Give it room to reach 3–4 feet wide.",
+    "It can be cut back in fall if it becomes unruly."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/2596/Muhlenbergia-rigens-(Deergrass)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/2596/Muhlenbergia-rigens-(Deergrass)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-muhlenbergia-rigens" },
+    { name: "Las Pilitas Nursery", url: "https://www.laspilitas.com/nature-of-california/plants/446--muhlenbergia-rigens" }
+  ]
+});
 
 /* Life form + short tagline (max ~8 words) shown on the card; desc is kept as data but not shown. */
 var IENN_FORM = { Salvia:["Shrub","Fragrant bee magnet"], Eriogonum:["Shrub","Tough, long-blooming bee favorite"], Hesperoyucca:["Succulent","One spectacular bloom spike"], Baileya:["Wildflower","Silver leaves, sunny daisies"],
