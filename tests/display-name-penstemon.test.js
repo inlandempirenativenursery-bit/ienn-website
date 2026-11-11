@@ -16,5 +16,5 @@ assert.strictEqual(ctx.iennDisplayName('Showy penstemon'), 'Showy penstemon');
 assert.strictEqual(JSON.stringify(ctx.ienPhoto('Southern woodland penstemon')), JSON.stringify(ctx.ienPhoto("Grinnell's beardtongue")));
 assert.ok(JSON.stringify(ctx.ienPhoto('Southern woodland penstemon')).includes('grinnell-s-beardtongue'));
 // no care added
-assert.ok(!ctx.iennHasApprovedCare('Penstemon grinnellii'), 'no care sheet for Penstemon grinnellii yet');
+assert.ok(ctx.iennHasApprovedCare('Penstemon grinnellii') && ctx.iennBasics('Penstemon grinnellii').careCommon === 'Southern woodland penstemon', 'care sheet uses the new name');
 console.log('display-name-penstemon: passed');

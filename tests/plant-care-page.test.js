@@ -23,7 +23,7 @@ assert.ok(Array.isArray(yCare.careSources) && yCare.careSources.length === 3);
 
 // Missing / unknown / genus-only — no approved care, no Yarrow fallback
 assert.strictEqual(ctx.iennHasApprovedCare('Salvia apiana'), true, 'White sage approved (Nov 10)');
-for (const name of ['Salvia clevelandii', 'Eriogonum fasciculatum', 'Not A Real Plant', 'Achillea', 'Salvia', '']) {
+for (const name of ['Salvia clevelandii', 'Eriogonum crocatum', 'Not A Real Plant', 'Achillea', 'Salvia', '']) {
   assert.strictEqual(ctx.iennHasApprovedCare(name), false, name);
   assert.strictEqual(ctx.iennApprovedCare(name), null, name);
 }
