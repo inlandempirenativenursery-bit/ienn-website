@@ -397,7 +397,7 @@ function iennBasics(botanical) {
   return out;
 }
 /* Display-name overrides: feed name (matching/orders unchanged) -> name shown on the site. */
-var IENN_DISPLAY_NAMES = { "Sacred datura": "Datura", "Sticky monkeyflower": "Southern bush monkeyflower", "California brittlebush": "Bush sunflower" };   // keys match case-insensitively
+var IENN_DISPLAY_NAMES = { "Sacred datura": "Datura", "Sticky monkeyflower": "Southern bush monkeyflower", "California brittlebush": "Bush sunflower", "Grinnell's beardtongue": "Southern woodland penstemon" };   // keys match case-insensitively
 
 /* Approved care sheets are species entries that carry careBullets (Eric-reviewed only). */
 function iennHasApprovedCare(botanical) {
