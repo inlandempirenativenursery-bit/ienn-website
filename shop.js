@@ -625,10 +625,13 @@
       return { id: slug(nb[0]), name: nb[0], fullName: p.name, botanical: p.botanical || nb[1], image: (typeof ienPhoto === "function" && ienPhoto(nb[0]) || {}).src || "", srcset: (typeof ienPhoto === "function" && ienPhoto(nb[0]) || {}).srcset || "", sizes: p.sizes.map(function (k) { return { key: k, label: SIZE_LABELS[k], price: PRICES[k], qty: null }; }) }; });
   }
   var params = new URLSearchParams(location.search), prefilled = false;
+  /* Old card slugs from before a sheet rename -> current slug, so saved order.html?<old-slug>=N links still prefill. */
+  var SLUG_ALIAS = { "grinnell-s-beardtongue": "southern-woodland-penstemon", "grinnells-beardtongue": "southern-woodland-penstemon" };   // Penstemon grinnellii, renamed Nov 10
   function prefill() { // home-page cart link: order.html?white-sage=2 or ?white-sage|1%20gal=1 (slug or slug|size)
     if (prefilled) return; prefilled = true;
     params.forEach(function (v, k) {
-      var parts = k.split("|"), p = PLANTS.find(function (x) { return x.id === parts[0] || x.id.indexOf(parts[0] + "-") === 0 || parts[0].indexOf(x.id) === 0; }), q = parseInt(v, 10);
+      var parts = k.split("|"); parts[0] = SLUG_ALIAS[parts[0]] || parts[0];
+      var p = PLANTS.find(function (x) { return x.id === parts[0] || x.id.indexOf(parts[0] + "-") === 0 || parts[0].indexOf(x.id) === 0; }), q = parseInt(v, 10);
       if (!p || !(q > 0)) return;
       var z = (parts[1] && p.sizes.find(function (s) { return s.key === parts[1] || s.label === parts[1]; })) || p.sizes.find(canAdd);
       if (canAdd(z)) cart[p.id + "|" + z.key] = Math.min(q, IENNStock.maxQty(z));
