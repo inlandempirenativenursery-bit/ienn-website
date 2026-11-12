@@ -1,0 +1,27 @@
+{
+  "key": "Eriogonum crocatum",
+  "careCommon": "Conejo buckwheat",
+  "careBotanical": "Eriogonum crocatum",
+  "careIntro": "is a low, mounding evergreen with silvery woolly leaves and bright sulfur-yellow flower clusters in spring and summer, usually growing 1–3 feet tall and 2–3 feet wide.",
+  "careBullets": [
+    "Give it full sun.",
+    "It grows in most soil types.",
+    "Water during establishment, then very little once established.",
+    "Give it room to reach 2–3 feet wide.",
+    "Inland, some afternoon shade is often a better fit."
+  ],
+  "careSources": [
+    {
+      "name": "Calscape (CNPS)",
+      "url": "https://calscape.org/plant/1495/Eriogonum-crocatum-(Conejo-Buckwheat)"
+    },
+    {
+      "name": "Theodore Payne Foundation",
+      "url": "https://store.theodorepayne.org/products/theodore-payne-foundation-eriogonum-crocatum"
+    },
+    {
+      "name": "CNPS Orange County",
+      "url": "https://chapters.cnps.org/oc/2018/11/11/eriogonum-crocatum-saffron-buckwheat/"
+    }
+  ]
+}

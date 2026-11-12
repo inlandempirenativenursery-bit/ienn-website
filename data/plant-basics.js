@@ -114,7 +114,9 @@ var IENN_BASICS_SPECIES = {
   "Salvia leucophylla": { h:[2,5], w:[3,10], bloom:["Sp","Su"], desc:"Soft gray leaves and pinkish-lavender flower whorls. Spreads wide and handles heat well." },
   "Salvia spathacea": { water:2, sun:["part","shade"], soil:"Adaptable", h:[1,3], w:[2,4], bloom:["W","Sp"], desc:"A low, spreading sage with magenta flower spikes, made for dry shade under trees. Hummingbirds visit often." },
   "Eriogonum fasciculatum": { h:[2,4], w:[3,5], genusLevel:false },
-  "Eriogonum crocatum": { water:1, sun:["full"], soil:"Clay-tolerant", bloom:["Sp","Su"], wild:["pollinators"], h:[1,3], w:[2,3], ie:false, genusLevel:false,
+  /* Card soil label to match the batch-8 care page (Eric, Nov 12 11:21 AM PT); species row only.
+     Conejo buckwheat "Adaptable" (card: "Any soil"). Eriogonum genus and California buckwheat unchanged. */
+  "Eriogonum crocatum": { water:1, sun:["full"], soil:"Adaptable", bloom:["Sp","Su"], wild:["pollinators"], h:[1,3], w:[2,3], ie:false, genusLevel:false,
     desc:"A low, mounding evergreen with silvery woolly leaves and bright sulfur-yellow flower clusters. Easy and low water once established." },
   /* Card labels to match the batch-7 care pages (Eric, Nov 12 10:52 AM PT); species rows only, genus entries unchanged.
      California sagebrush "Adaptable" (card: "Any soil"); Four-winged saltbush height 2–4 ft (width stays 3–7), bloom Summer only. */
@@ -669,6 +671,46 @@ iennCare("Atriplex canescens", {
   careSources: [
     { name: "Calscape (CNPS)", url: "https://calscape.org/plant/475/Atriplex-canescens-(Shadscale)" },
     { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-atriplex-canescens" }
+  ]
+});
+
+/* care slot: conejo-buckwheat */
+iennCare("Eriogonum crocatum", {
+  careCommon: "Conejo buckwheat",
+  careBotanical: "Eriogonum crocatum",
+  careIntro: "is a low, mounding evergreen with silvery woolly leaves and bright sulfur-yellow flower clusters in spring and summer, usually growing 1–3 feet tall and 2–3 feet wide.",
+  careBullets: [
+    "Give it full sun.",
+    "It grows in most soil types.",
+    "Water during establishment, then very little once established.",
+    "Give it room to reach 2–3 feet wide.",
+    "Inland, some afternoon shade is often a better fit."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/1495/Eriogonum-crocatum-(Conejo-Buckwheat)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/1495/Eriogonum-crocatum-(Conejo-Buckwheat)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-eriogonum-crocatum" },
+    { name: "CNPS Orange County", url: "https://chapters.cnps.org/oc/2018/11/11/eriogonum-crocatum-saffron-buckwheat/" }
+  ]
+});
+/* care slot: morning-glory */
+iennCare("Calystegia macrostegia", {
+  careCommon: "Morning glory",
+  careBotanical: "Calystegia macrostegia",
+  careIntro: "is a vigorous native vine with large white to pale-pink trumpet flowers in spring and summer, usually growing 3–10 feet long and 3–6 feet wide.",
+  careBullets: [
+    "Give it full sun to partial shade. Inland, some afternoon shade is often a better fit.",
+    "It grows in most soil types.",
+    "Water during establishment, then water occasionally once established.",
+    "Give it room to reach 3–6 feet wide. It can climb a fence or spread as a groundcover.",
+    "In winter, it can be cut back to control its spread and to encourage new growth."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/707/Calystegia-macrostegia-(Island-Morning-Glory)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/707/Calystegia-macrostegia-(Island-Morning-Glory)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/calystegia-macrostegia" }
   ]
 });
 
