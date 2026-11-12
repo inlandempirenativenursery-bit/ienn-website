@@ -432,6 +432,63 @@ iennCare("Penstemon grinnellii", {
     { name: "Las Pilitas Nursery", url: "https://www.laspilitas.com/nature-of-california/plants/468--penstemon-grinnellii" }
   ]
 });
+/* care slot: california-poppy */
+iennCare("Eschscholzia californica", {
+  careCommon: "California poppy",
+  careBotanical: "Eschscholzia californica",
+  careIntro: "is an annual, and in milder areas a short-lived perennial, with feathery blue-green leaves and silky orange to yellow flowers in spring and summer, usually growing 1–1.5 feet tall and 1–1.5 feet wide. It often reseeds. It is California's state flower.",
+  careBullets: [
+    "Give it full sun.",
+    "It prefers well-drained soil and tolerates many soil types, including poorer or heavier soil.",
+    "Water during establishment, then very little once established.",
+    "Give it room to reach 1–1.5 feet wide.",
+    "Sow seed in fall, as the rains begin."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/1602/Eschscholzia-californica-(California-Poppy)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/1602/Eschscholzia-californica-(California-Poppy)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-eschscholzia-californica" }
+  ]
+});
+/* care slot: desert-marigold */
+iennCare("Baileya multiradiata", {
+  careCommon: "Desert marigold",
+  careBotanical: "Baileya multiradiata",
+  careIntro: "is a short-lived perennial, sometimes grown as an annual, with silvery leaves and bright yellow daisy flowers in spring, summer and fall, usually growing 1–1.5 feet tall and 1–1.5 feet wide. It often reseeds.",
+  careBullets: [
+    "Give it full sun.",
+    "It needs well-drained, even sandy or rocky, soil.",
+    "Water during establishment, then very little once established. Too much water, especially in summer, can harm the plant.",
+    "Give it room to reach 1–1.5 feet wide.",
+    "Skip organic mulch; a rocky surface suits it better."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/511/Baileya-multiradiata-(Wild-Marigold)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/511/Baileya-multiradiata-(Wild-Marigold)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-baileya-multiradiata" }
+  ]
+});
+/* care slot: california-fuchsia */
+iennCare("Epilobium canum", {
+  careCommon: "California fuchsia",
+  careBotanical: "Epilobium canum",
+  careIntro: "is a perennial with bright red-orange tubular flowers in summer and fall, usually growing 1–2 feet tall and 2–3 feet wide.",
+  careBullets: [
+    "Give it full sun to partial shade. Inland, some afternoon shade is often a better fit.",
+    "It tolerates many soils.",
+    "Water during establishment, then very little once established.",
+    "Give it room to reach 2–3 feet wide. It can spread.",
+    "After the flowers finish in late fall, it can be cut to the ground. It dies back in winter and returns in spring."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/1413/Epilobium-canum-(California-Fuchsia)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/1413/Epilobium-canum-(California-Fuchsia)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-epilobium-zausch-4817644" }
+  ]
+});
 
 /* Life form + short tagline (max ~8 words) shown on the card; desc is kept as data but not shown. */
 var IENN_FORM = { Salvia:["Shrub","Fragrant bee magnet"], Eriogonum:["Shrub","Tough, long-blooming bee favorite"], Hesperoyucca:["Succulent","One spectacular bloom spike"], Baileya:["Wildflower","Silver leaves, sunny daisies"],
