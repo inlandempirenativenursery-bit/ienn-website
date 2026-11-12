@@ -147,8 +147,11 @@ var IENN_BASICS_SPECIES = {
   "Stipa pulchra": { water:1, sun:["full","part"], soil:"Adaptable", bloom:["Sp","Su"], wild:["birds","butterflies"], h:[2,3], w:[1,2], ie:true, genusLevel:false,
     desc:"A fine-leaved bunchgrass with airy, nodding seed heads that open purple-tinged in spring and trail long, twisting awns. Turns golden and rests in summer with little water. The sharp seeds can catch in pet fur, so keep it away from dog runs." },
   "Asclepias fascicularis": { bloom:["Sp","Su","F"], h:[2,3], w:[1,3], genusLevel:false },
-  "Asclepias speciosa": { h:[2,4], w:[2,4], genusLevel:false },
-  "Asclepias eriocarpa": { h:[1,3], w:[1,2], water:1, genusLevel:false }
+  /* Card labels to match the batch-9 care pages (Eric, Nov 12 11:50 AM PT); species rows only.
+     Showy milkweed Low water (water:1) and Spring–Summer bloom; Woollypod milkweed sun / part sun and Spring–Summer bloom.
+     Asclepias genus and Narrowleaf milkweed unchanged. */
+  "Asclepias speciosa": { h:[2,4], w:[2,4], water:1, bloom:["Sp","Su"], genusLevel:false },
+  "Asclepias eriocarpa": { h:[1,3], w:[1,2], water:1, sun:["full","part"], bloom:["Sp","Su"], genusLevel:false }
 };
 /* Approved care sheets added one block per plant below (batch 2, Nov 10). iennCare merges care fields into the species row,
    creating the row if missing; a row created here holds care text only, so card numbers still come from the genus entry.
@@ -711,6 +714,45 @@ iennCare("Calystegia macrostegia", {
   careSources: [
     { name: "Calscape (CNPS)", url: "https://calscape.org/plant/707/Calystegia-macrostegia-(Island-Morning-Glory)" },
     { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/calystegia-macrostegia" }
+  ]
+});
+
+/* care slot: showy-milkweed */
+iennCare("Asclepias speciosa", {
+  careCommon: "Showy milkweed",
+  careBotanical: "Asclepias speciosa",
+  careIntro: "is a perennial with large clusters of fragrant pink, white, or purple flowers in spring and summer, usually growing 2–4 feet tall and 2–4 feet wide. It is a host plant for monarch caterpillars.",
+  careBullets: [
+    "Give it full sun.",
+    "It grows in most soil types.",
+    "Water during establishment, then very little once established.",
+    "Give it room to reach 2–4 feet wide. It can spread.",
+    "It dies back in winter and returns in spring. Leave any caterpillars on the plant."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/439/Asclepias-speciosa-(Showy-Milkweed)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/439/Asclepias-speciosa-(Showy-Milkweed)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-asclepias-speciosa" }
+  ]
+});
+/* care slot: woollypod-milkweed */
+iennCare("Asclepias eriocarpa", {
+  careCommon: "Woollypod milkweed",
+  careBotanical: "Asclepias eriocarpa",
+  careIntro: "is a perennial with woolly leaves and clusters of white to cream flowers, often tinted pink, in spring and summer, usually growing 1–3 feet tall and 1–2 feet wide. It is a host plant for monarch caterpillars.",
+  careBullets: [
+    "Give it full sun to partial shade.",
+    "It grows in most soil types.",
+    "Water during establishment, then very little once established.",
+    "Give it room to reach 1–2 feet wide. It can spread.",
+    "It dies back in winter and returns in spring. Leave any caterpillars on the plant."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/432/Asclepias-eriocarpa-(Woollypod-Milkweed)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/432/Asclepias-eriocarpa-(Woollypod-Milkweed)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-asclepias-eriocarpa" }
   ]
 });
 
