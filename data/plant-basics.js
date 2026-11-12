@@ -116,7 +116,10 @@ var IENN_BASICS_SPECIES = {
   "Eriogonum fasciculatum": { h:[2,4], w:[3,5], genusLevel:false },
   "Eriogonum crocatum": { water:1, sun:["full"], soil:"Clay-tolerant", bloom:["Sp","Su"], wild:["pollinators"], h:[1,3], w:[2,3], ie:false, genusLevel:false,
     desc:"A low, mounding evergreen with silvery woolly leaves and bright sulfur-yellow flower clusters. Easy and low water once established." },
-  "Atriplex canescens": { genusLevel:false },
+  /* Card labels to match the batch-7 care pages (Eric, Nov 12 10:52 AM PT); species rows only, genus entries unchanged.
+     California sagebrush "Adaptable" (card: "Any soil"); Four-winged saltbush height 2–4 ft (width stays 3–7), bloom Summer only. */
+  "Artemisia californica": { soil:"Adaptable" },
+  "Atriplex canescens": { h:[2,4], bloom:["Su"], genusLevel:false },
   /* Added 2026-10-25c (see docs/factcheck-2026-10-25c.md). Feed row: Catalog id "giganteum" = Eriogonum giganteum, St. Catherine's lace. */
   "Eriogonum giganteum": { water:[1,2], sun:["full"], soil:"Fast-draining", bloom:["Sp","Su","F"], wild:["pollinators","birds"], h:[3,8], w:[4,10], ie:true, genusLevel:false,   // Eric 2026-10-25: 3–8 ft tall, Low–moderate water
     desc:"The largest buckwheat: a rounded shrub with woolly gray-white leaves and broad, lacy cream flower heads that age to rust. Give it room and good drainage; cut back after bloom." },
@@ -608,6 +611,64 @@ iennCare("Encelia farinosa", {
   careSources: [
     { name: "Calscape (CNPS)", url: "https://calscape.org/plant/1404/Encelia-farinosa-(Brittlebush)" },
     { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-encelia-farinosa" }
+  ]
+});
+
+/* care slot: california-sagebrush */
+iennCare("Artemisia californica", {
+  careCommon: "California sagebrush",
+  careBotanical: "Artemisia californica",
+  careIntro: "is a shrub with soft, silvery-gray foliage and a pleasant scent, and small flowers in fall, usually growing 3–5 feet tall and 3–5 feet wide.",
+  careBullets: [
+    "Give it full sun.",
+    "It grows in most soil types.",
+    "Water during establishment, then very little once established.",
+    "Give it room to reach 3–5 feet wide.",
+    "A little pruning keeps it compact."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/396/Artemisia-californica-(California-Sagebrush)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/396/Artemisia-californica-(California-Sagebrush)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-artemisia-californica" }
+  ]
+});
+/* care slot: deerweed */
+iennCare("Acmispon glaber", {
+  careCommon: "Deerweed",
+  careBotanical: "Acmispon glaber",
+  careIntro: "is a perennial with wiry green stems and small yellow pea flowers that age to red, in spring and summer, usually growing 2–3 feet tall and 3 feet wide.",
+  careBullets: [
+    "Give it full sun.",
+    "It grows in most soil types.",
+    "Water during establishment, then very little once established.",
+    "Give it room to reach 3 feet wide.",
+    "It may go dormant in late summer; that is normal. It can be cut back then, or in early fall, for fresh growth."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/2296/Acmispon-glaber-(Deer-Plant)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/2296/Acmispon-glaber-(Deer-Plant)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-acmispon-glaber-lotus-sc" }
+  ]
+});
+/* care slot: four-winged-saltbush */
+iennCare("Atriplex canescens", {
+  careCommon: "Four-winged saltbush",
+  careBotanical: "Atriplex canescens",
+  careIntro: "is a tough gray-green shrub with small yellow-green flowers in summer and showy clusters of papery four-winged fruit, usually growing 2–4 feet tall and 3–7 feet wide.",
+  careBullets: [
+    "Give it full sun.",
+    "It grows in most soil types.",
+    "Water during establishment, then very little once established. Too much water, especially in summer, can harm the plant.",
+    "Give it room to reach 3–7 feet wide.",
+    "It can be used as an informal hedge."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/475/Atriplex-canescens-(Shadscale)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/475/Atriplex-canescens-(Shadscale)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-atriplex-canescens" }
   ]
 });
 
