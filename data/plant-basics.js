@@ -122,7 +122,11 @@ var IENN_BASICS_SPECIES = {
     desc:"The largest buckwheat: a rounded shrub with woolly gray-white leaves and broad, lacy cream flower heads that age to rust. Give it room and good drainage; cut back after bloom." },
   "Bouteloua gracilis": { water:[1,2], wild:["butterflies","containers"], genusLevel:false },   // Eric 2026-10-25: Low–moderate water; butterflies only (skippers)
   "Encelia californica": { sun:["full","part"], soil:"Adaptable", h:[3,4], w:[3,5], genusLevel:false },
-  "Encelia farinosa": { h:[1,5], w:[2,4], soil:"Fast-draining", genusLevel:false, desc:"A desert shrub with silver leaves and bright yellow daisies held above the foliage. Loves heat and needs very little water." },
+  /* Card soil labels to match the batch-6 care pages (Eric, Nov 12 9:28 AM PT); species rows only, genus entries unchanged.
+     Brittlebush + Matilija poppy "Adaptable" (card: "Any soil"); Apricot mallow "Sandy or clay" (shown as written). */
+  "Romneya coulteri": { soil:"Adaptable" },
+  "Sphaeralcea ambigua": { soil:"Sandy or clay" },
+  "Encelia farinosa": { h:[1,5], w:[2,4], soil:"Adaptable", genusLevel:false, desc:"A desert shrub with silver leaves and bright yellow daisies held above the foliage. Loves heat and needs very little water." },
   "Diplacus longiflorus": { sun:["full","part"], soil:"Fast-draining", water:1, bloom:["Sp","Su"], h:[1,3], w:[1,3], genusLevel:false,
     desc:"A compact shrub with large pale-yellow to orange flowers in spring and summer. Give it good drainage and very little summer water." },
   "Diplacus calycinus": { sun:["full","part"], h:[1,3], w:[1,3], genusLevel:false },
@@ -547,6 +551,63 @@ iennCare("Trichostema lanatum", {
   careSources: [
     { name: "Calscape (CNPS)", url: "https://calscape.org/plant/3704/Trichostema-lanatum-(Woolly-Bluecurls)" },
     { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-trichostema-lanatum" }
+  ]
+});
+/* care slot: matilija-poppy */
+iennCare("Romneya coulteri", {
+  careCommon: "Matilija poppy",
+  careBotanical: "Romneya coulteri",
+  careIntro: "is a perennial with huge white flowers like fried eggs, with yellow centers, on tall blue-gray stems, in spring and summer, usually growing 5–8 feet tall and 5–10 feet wide.",
+  careBullets: [
+    "Give it full sun.",
+    "It grows in most soil types.",
+    "Water during establishment, then very little once established.",
+    "Give it room to reach 5–10 feet wide. It can spread.",
+    "In late summer or fall, it can be cut back to about 6 inches."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/3253/Romneya-coulteri-(Coulter's-Matilija-Poppy)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/3253/Romneya-coulteri-(Coulter's-Matilija-Poppy)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-romneya-coulteri" }
+  ]
+});
+/* care slot: apricot-mallow */
+iennCare("Sphaeralcea ambigua", {
+  careCommon: "Apricot mallow",
+  careBotanical: "Sphaeralcea ambigua",
+  careIntro: "is a perennial with fuzzy gray-green leaves and bowl-shaped apricot-orange flowers in spring and summer, usually growing 3–5 feet tall and 2–4 feet wide.",
+  careBullets: [
+    "Give it full sun.",
+    "It prefers well-drained soil and tolerates many soil types, including sandy or clay soils.",
+    "Water during establishment, then very little once established.",
+    "Give it room to reach 2–4 feet wide.",
+    "After it finishes blooming, it can be cut back to keep it compact."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/3575/Sphaeralcea-ambigua-(Desert-Globemallow)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/3575/Sphaeralcea-ambigua-(Desert-Globemallow)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-sphaeralcea-ambigua" }
+  ]
+});
+/* care slot: brittlebush */
+iennCare("Encelia farinosa", {
+  careCommon: "Brittlebush",
+  careBotanical: "Encelia farinosa",
+  careIntro: "is a desert shrub with silver leaves and bright yellow daisy flowers held above the foliage, in winter and spring, usually growing 1–5 feet tall and 2–4 feet wide.",
+  careBullets: [
+    "Give it full sun.",
+    "It grows in most soil types.",
+    "Water during establishment, then very little once established.",
+    "Give it room to reach 2–4 feet wide.",
+    "It may drop some leaves in summer when it is dry; that is normal."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/1404/Encelia-farinosa-(Brittlebush)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/1404/Encelia-farinosa-(Brittlebush)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-encelia-farinosa" }
   ]
 });
 

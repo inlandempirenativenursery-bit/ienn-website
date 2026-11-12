@@ -1,0 +1,23 @@
+{
+  "key": "Encelia farinosa",
+  "careCommon": "Brittlebush",
+  "careBotanical": "Encelia farinosa",
+  "careIntro": "is a desert shrub with silver leaves and bright yellow daisy flowers held above the foliage, in winter and spring, usually growing 1–5 feet tall and 2–4 feet wide.",
+  "careBullets": [
+    "Give it full sun.",
+    "It grows in most soil types.",
+    "Water during establishment, then very little once established.",
+    "Give it room to reach 2–4 feet wide.",
+    "It may drop some leaves in summer when it is dry; that is normal."
+  ],
+  "careSources": [
+    {
+      "name": "Calscape (CNPS)",
+      "url": "https://calscape.org/plant/1404/Encelia-farinosa-(Brittlebush)"
+    },
+    {
+      "name": "Theodore Payne Foundation",
+      "url": "https://store.theodorepayne.org/products/theodore-payne-foundation-encelia-farinosa"
+    }
+  ]
+}
