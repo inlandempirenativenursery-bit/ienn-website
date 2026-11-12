@@ -16,4 +16,14 @@ const care = (n) => ctx.iennBasics(n).careIntro;
 assert.ok(care('Penstemon spectabilis').includes('2–4 feet tall and 3–4 feet wide'));
 assert.ok(care('Penstemon centranthifolius').includes('2–4 feet tall and 1–2 feet wide'));
 assert.ok(care('Trichostema lanatum').includes('about 4 feet tall and 4 feet wide'));
+// card light/soil match the care pages (Eric, Nov 12 9:00 AM PT); species rows only
+const B = (n) => ctx.iennBasics(n);
+assert.strictEqual(JSON.stringify(B('Trichostema lanatum').sun), '["full","part"]', 'Woolly blue curls: sun / part sun');
+assert.ok(B('Trichostema lanatum').careBullets[0].startsWith('Give it full sun to partial shade.'));
+for (const n of ['Penstemon spectabilis', 'Penstemon centranthifolius']) { assert.strictEqual(B(n).soil, 'Clay-tolerant', n + ' soil'); assert.ok(B(n).careBullets[1].includes('including clay'), n + ' care page supports clay'); }
+assert.strictEqual(JSON.stringify(ctx.IENN_BASICS.Trichostema.sun), '["full"]', 'Trichostema genus light unchanged');
+assert.strictEqual(ctx.IENN_BASICS.Penstemon.soil, 'Fast-draining', 'Penstemon genus soil unchanged');
+assert.strictEqual(B('Penstemon grinnellii').soil, 'Fast-draining', 'Southern woodland penstemon soil unchanged');
+assert.strictEqual(JSON.stringify(B('Penstemon spectabilis').sun), '["full"]');
+assert.strictEqual(JSON.stringify(B('Penstemon centranthifolius').sun), '["full"]');
 console.log('batch5-sizes: passed');

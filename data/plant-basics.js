@@ -126,10 +126,11 @@ var IENN_BASICS_SPECIES = {
   "Diplacus longiflorus": { sun:["full","part"], soil:"Fast-draining", water:1, bloom:["Sp","Su"], h:[1,3], w:[1,3], genusLevel:false,
     desc:"A compact shrub with large pale-yellow to orange flowers in spring and summer. Give it good drainage and very little summer water." },
   "Diplacus calycinus": { sun:["full","part"], h:[1,3], w:[1,3], genusLevel:false },
-  "Penstemon centranthifolius": { h:[2,4], w:[1,2], wild:["hummingbirds","pollinators"], genusLevel:false, desc:"Slender stems of scarlet tubular flowers rise from blue-green leaves. Built for hummingbirds; keep it on the dry side." },
-  "Penstemon spectabilis": { h:[2,4], w:[3,4], genusLevel:false, desc:"Tall stems packed with lavender-blue tubular flowers in spring. Needs good drainage and little summer water." },
-  /* Sizes set to match the approved care sheets (Eric, Nov 12 8:53 AM PT): Showy penstemon 2–4 × 3–4 ft (above); Woolly blue curls about 4 × 4 ft as a species override (genus Trichostema stays 3–5 × 3–5). */
-  "Trichostema lanatum": { h:[4,4], w:[4,4] },
+  "Penstemon centranthifolius": { h:[2,4], w:[1,2], soil:"Clay-tolerant", wild:["hummingbirds","pollinators"], genusLevel:false, desc:"Slender stems of scarlet tubular flowers rise from blue-green leaves. Built for hummingbirds; keep it on the dry side." },
+  "Penstemon spectabilis": { h:[2,4], w:[3,4], soil:"Clay-tolerant", genusLevel:false, desc:"Tall stems packed with lavender-blue tubular flowers in spring. Needs good drainage and little summer water." },
+  /* Sizes set to match the approved care sheets (Eric, Nov 12 8:53 AM PT): Showy penstemon 2–4 × 3–4 ft (above); Woolly blue curls about 4 × 4 ft as a species override (genus Trichostema stays 3–5 × 3–5).
+     Card light/soil to match the care pages (Eric, Nov 12 9:00 AM PT): Woolly blue curls sun to part sun; Showy penstemon + Scarlet bugler Clay-tolerant ("Clay OK"). Species rows only. */
+  "Trichostema lanatum": { h:[4,4], w:[4,4], sun:["full","part"] },
   /* Added 2026-10-25d (see docs/factcheck-2026-10-25d.md). Waiting on a Catalog row: botanical "Penstemon grinnellii", Grinnell's beardtongue (shown as Southern woodland penstemon since Nov 10). Mountain native: ie:false (no Heat tough chip). */
   "Penstemon grinnellii": { water:1, sun:["full","part"], soil:"Fast-draining", bloom:["Sp","Su"], wild:["pollinators","hummingbirds","containers"], h:[1,3], w:[1.5,2.5], ie:false, genusLevel:false,
     desc:"A bushy clump of gray-green leaves with stems of wide-throated, pale pink to lavender flowers striped with purple guide lines. Needs sharp drainage, little summer water and some afternoon shade inland." },
