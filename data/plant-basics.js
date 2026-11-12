@@ -127,7 +127,9 @@ var IENN_BASICS_SPECIES = {
     desc:"A compact shrub with large pale-yellow to orange flowers in spring and summer. Give it good drainage and very little summer water." },
   "Diplacus calycinus": { sun:["full","part"], h:[1,3], w:[1,3], genusLevel:false },
   "Penstemon centranthifolius": { h:[2,4], w:[1,2], wild:["hummingbirds","pollinators"], genusLevel:false, desc:"Slender stems of scarlet tubular flowers rise from blue-green leaves. Built for hummingbirds; keep it on the dry side." },
-  "Penstemon spectabilis": { h:[3,4], w:[2,3], genusLevel:false, desc:"Tall stems packed with lavender-blue tubular flowers in spring. Needs good drainage and little summer water." },
+  "Penstemon spectabilis": { h:[2,4], w:[3,4], genusLevel:false, desc:"Tall stems packed with lavender-blue tubular flowers in spring. Needs good drainage and little summer water." },
+  /* Sizes set to match the approved care sheets (Eric, Nov 12 8:53 AM PT): Showy penstemon 2–4 × 3–4 ft (above); Woolly blue curls about 4 × 4 ft as a species override (genus Trichostema stays 3–5 × 3–5). */
+  "Trichostema lanatum": { h:[4,4], w:[4,4] },
   /* Added 2026-10-25d (see docs/factcheck-2026-10-25d.md). Waiting on a Catalog row: botanical "Penstemon grinnellii", Grinnell's beardtongue (shown as Southern woodland penstemon since Nov 10). Mountain native: ie:false (no Heat tough chip). */
   "Penstemon grinnellii": { water:1, sun:["full","part"], soil:"Fast-draining", bloom:["Sp","Su"], wild:["pollinators","hummingbirds","containers"], h:[1,3], w:[1.5,2.5], ie:false, genusLevel:false,
     desc:"A bushy clump of gray-green leaves with stems of wide-throated, pale pink to lavender flowers striped with purple guide lines. Needs sharp drainage, little summer water and some afternoon shade inland." },
@@ -487,6 +489,63 @@ iennCare("Epilobium canum", {
   careSources: [
     { name: "Calscape (CNPS)", url: "https://calscape.org/plant/1413/Epilobium-canum-(California-Fuchsia)" },
     { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-epilobium-zausch-4817644" }
+  ]
+});
+/* care slot: showy-penstemon */
+iennCare("Penstemon spectabilis", {
+  careCommon: "Showy penstemon",
+  careBotanical: "Penstemon spectabilis",
+  careIntro: "is a perennial with tall stems packed with wide-mouthed, lavender-blue to purple tubular flowers in spring and summer, usually growing 2–4 feet tall and 3–4 feet wide.",
+  careBullets: [
+    "Give it full sun.",
+    "It needs well-drained soil and tolerates many soil types, including clay.",
+    "Water during establishment, then very little once established. Too much water, especially in summer, can harm the plant.",
+    "Give it room to reach 3–4 feet wide.",
+    "It is fairly short-lived, but it often reseeds."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/2805/Penstemon-spectabilis-(Showy-Penstemon)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/2805/Penstemon-spectabilis-(Showy-Penstemon)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-penstemon-spectabilis" }
+  ]
+});
+/* care slot: scarlet-bugler */
+iennCare("Penstemon centranthifolius", {
+  careCommon: "Scarlet bugler",
+  careBotanical: "Penstemon centranthifolius",
+  careIntro: "is a perennial with slender stems of scarlet tubular flowers and blue-green leaves, in spring and summer, usually growing 2–4 feet tall and 1–2 feet wide.",
+  careBullets: [
+    "Give it full sun.",
+    "It needs well-drained soil and tolerates many soil types, including clay.",
+    "Water during establishment, then very little once established. Too much water, especially in summer, can harm the plant.",
+    "Give it room to reach 1–2 feet wide.",
+    "It does well in rock gardens and on slopes."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/2748/Penstemon-centranthifolius-(Scarlet-Bugler)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/2748/Penstemon-centranthifolius-(Scarlet-Bugler)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-penstemon-centranthifoli" }
+  ]
+});
+/* care slot: woolly-blue-curls */
+iennCare("Trichostema lanatum", {
+  careCommon: "Woolly blue curls",
+  careBotanical: "Trichostema lanatum",
+  careIntro: "is a short-lived shrub with fragrant narrow leaves and woolly purple-blue flower spikes in spring and summer, usually growing about 4 feet tall and 4 feet wide.",
+  careBullets: [
+    "Give it full sun to partial shade. Inland, some afternoon shade is often a better fit.",
+    "It needs well-drained, even sandy or rocky, soil.",
+    "Water during establishment, then very little once established. Too much water, especially in summer, can harm the plant.",
+    "Give it room to reach about 4 feet wide.",
+    "Skip organic mulch; a rocky surface suits it better."
+  ],
+  careSourceName: "Calscape (CNPS)",
+  careSourceUrl: "https://calscape.org/plant/3704/Trichostema-lanatum-(Woolly-Bluecurls)",
+  careSources: [
+    { name: "Calscape (CNPS)", url: "https://calscape.org/plant/3704/Trichostema-lanatum-(Woolly-Bluecurls)" },
+    { name: "Theodore Payne Foundation", url: "https://store.theodorepayne.org/products/theodore-payne-foundation-trichostema-lanatum" }
   ]
 });
 
