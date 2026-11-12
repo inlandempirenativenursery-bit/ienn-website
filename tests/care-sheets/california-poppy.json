@@ -1,0 +1,23 @@
+{
+  "key": "Eschscholzia californica",
+  "careCommon": "California poppy",
+  "careBotanical": "Eschscholzia californica",
+  "careIntro": "is an annual, and in milder areas a short-lived perennial, with feathery blue-green leaves and silky orange to yellow flowers in spring and summer, usually growing 1–1.5 feet tall and 1–1.5 feet wide. It often reseeds. It is California's state flower.",
+  "careBullets": [
+    "Give it full sun.",
+    "It prefers well-drained soil and tolerates many soil types, including poorer or heavier soil.",
+    "Water during establishment, then very little once established.",
+    "Give it room to reach 1–1.5 feet wide.",
+    "Sow seed in fall, as the rains begin."
+  ],
+  "careSources": [
+    {
+      "name": "Calscape (CNPS)",
+      "url": "https://calscape.org/plant/1602/Eschscholzia-californica-(California-Poppy)"
+    },
+    {
+      "name": "Theodore Payne Foundation",
+      "url": "https://store.theodorepayne.org/products/theodore-payne-foundation-eschscholzia-californica"
+    }
+  ]
+}
