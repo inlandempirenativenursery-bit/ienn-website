@@ -17,15 +17,16 @@ function iennEsc_(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, func
 function iennAppeal_(p) { var t = (p.name + ' ' + p.botanical).toLowerCase(); for (var i = 0; i < IENN_APPEAL_KEYWORDS.length; i++) if (t.indexOf(IENN_APPEAL_KEYWORDS[i]) >= 0) return i; return 999; }
 function iennAvailText_(z) { return z.qty == null ? 'On request' : z.qty > 0 ? String(z.qty) : 'Sold out'; }
 
-/** Plants sorted: anything available first, then appeal keywords, then A–Z. */
+/** Printable list (HTML, PDF, CSV): only plants with qty > 0 in at least one size; sorted by appeal keywords, then A–Z. The ?view=inventory feed is not filtered. */
+function iennPrintInStock_(p) { return p.sizes.some(function (z) { return z.qty > 0; }); }
 function iennPrintRows_() {
   var inv = iennInventory();
-  var rank = function (p) { return p.sizes.some(function (z) { return z.qty > 0; }) ? 0 : 1; };
-  return { inv: inv, plants: inv.plants.slice().sort(function (a, b) { return rank(a) - rank(b) || iennAppeal_(a) - iennAppeal_(b) || a.name.localeCompare(b.name); }) };
+  return { inv: inv, plants: inv.plants.filter(iennPrintInStock_).sort(function (a, b) { return iennAppeal_(a) - iennAppeal_(b) || a.name.localeCompare(b.name); }) };
 }
 
 function iennPrintHtml_() {
   var d = iennPrintRows_(), date = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'MMMM d, yyyy');
+  var exec = iennWebAppUrl_();   // absolute /exec links + target=_top: relative ?view=… links resolve to the googleusercontent iframe and blank the page
   var head = d.inv.sizes.map(function (s) { return '<th>' + iennEsc_(s.label) + '<br><small>$' + s.price + '</small></th>'; }).join('');
   var rows = d.plants.map(function (p) {
     return '<tr><td><b>' + iennEsc_(p.name) + '</b>' + (p.botanical ? '<br><i>' + iennEsc_(p.botanical) + '</i>' : '') + '</td>' +
@@ -38,7 +39,7 @@ function iennPrintHtml_() {
     'th{background:#f8f6f3;color:#4a5a4a}td.out{color:#999}.btns{margin:8px 0}.btns a{margin-right:12px}@media print{.btns{display:none}}' +
     '</style></head><body><header><img src="' + iennEsc_(IENN_LOGO_URL) + '" alt="Inland Empire Native Nursery logo"><div><h1>Inland Empire Native Nursery — Plant list</h1>' +
     '<div class="sub">' + date + ' · Prices by size, taxes included · Numbers = available now · "On request" = ask us</div></div></header>' +
-    '<div class="btns"><a href="javascript:window.print()">Print</a><a href="?view=print&format=pdf">Export PDF</a><a href="?view=print&format=csv">Export CSV</a></div>' +
+    '<div class="btns"><a href="javascript:window.print()">Print</a><a href="' + iennEsc_(exec + '?view=print&format=pdf') + '" target="_top">Export PDF</a><a href="' + iennEsc_(exec + '?view=print&format=csv') + '" target="_top">Export CSV</a></div>' +
     '<table><thead><tr><th>Plant</th>' + head + '</tr></thead><tbody>' + rows + '</tbody></table>' +
     '<p class="sub">Pickup only · Fontana area · Saturdays 10 a.m. – 2 p.m. · Cash or Zelle at time of pickup · Call or text Andrew: <a href="tel:' + IENN_CONTACT_TEL + '">' + IENN_CONTACT_PHONE + '</a></p><p class="sub fine-print" style="font-size:10px">Other pickup times available case by case upon request.</p></body></html>';
 }
@@ -55,11 +56,21 @@ function iennPdfBlob_() {
     .setName('IENN plant list ' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd') + '.pdf');
 }
 
+/** format=pdf page: starts the download automatically (Blob + programmatic click on load); the visible link stays as a fallback if the browser blocks it. */
+function iennPdfPageHtml_(b64) {
+  return '<p>Your PDF download should start automatically. If it doesn\'t, <a id="ienn-pdf" download="IENN-plant-list.pdf" href="data:application/pdf;base64,' + b64 + '">Download the PDF</a></p>' +
+    '<script>(function () { try { var a = document.getElementById("ienn-pdf"), s = atob(a.getAttribute("href").split(",")[1]), u = new Uint8Array(s.length);' +
+    ' for (var i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);' +
+    ' var url = URL.createObjectURL(new Blob([u], { type: "application/pdf" })), d = document.createElement("a");' +
+    ' d.href = url; d.download = "IENN-plant-list.pdf"; d.style.display = "none"; document.body.appendChild(d); d.click();' +
+    ' setTimeout(function () { URL.revokeObjectURL(url); }, 60000); } catch (e) { /* fallback link stays visible */ } })();</script>';
+}
+
 function iennPrintRoute_(p) {
   if (p.format === 'csv') return ContentService.createTextOutput(iennPrintCsv_()).setMimeType(ContentService.MimeType.CSV).downloadAsFile('IENN-plant-list.csv');
   if (p.format === 'pdf') {   // web apps can't stream binary; hand back a data: link that downloads the PDF
     var b64 = Utilities.base64Encode(iennPdfBlob_().getBytes());
-    return HtmlService.createHtmlOutput('<p><a download="IENN-plant-list.pdf" href="data:application/pdf;base64,' + b64 + '">Download the PDF</a></p>').setTitle('IENN plant list PDF');
+    return HtmlService.createHtmlOutput(iennPdfPageHtml_(b64)).setTitle('IENN plant list PDF');
   }
   return HtmlService.createHtmlOutput(iennPrintHtml_()).setTitle('IENN plant list');
 }

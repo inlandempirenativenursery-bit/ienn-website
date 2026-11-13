@@ -114,7 +114,7 @@ function catalog_() {
     if (!id && !name) continue;
     var m = /^(.*?)\s*\((.*)\)\s*$/.exec(name), latin = c.latin >= 0 ? String(rows[i][c.latin] || '').trim() : '';
     if (m && !latin) { name = m[1].trim(); latin = m[2].trim(); }
-    out.push({ id: id || ('row' + (i + 1)), common: name || id, latin: latin, band: c.band >= 0 ? String(rows[i][c.band] || 'popular') : 'popular' });
+    var o = { id: id || ('row' + (i + 1)), common: name || id, latin: latin, band: c.band >= 0 ? String(rows[i][c.band] || 'popular') : 'popular' }; if (/^(hidden|hide)$/i.test(o.band.trim())) o.hidden = true; out.push(o);
   }
   return out;
 }
@@ -207,7 +207,7 @@ function getBoard() {
   var plants = catalog_();
   var by = submissions_(week);
   var compiled = {};
-  plants.forEach(function (p) { compiled[p.id] = blankCounts_(); });
+  plants = plants.filter(function (p) { return !p.hidden; });   /* Catalog band 'hidden' = not on the count form; history still counts it */ plants.forEach(function (p) { compiled[p.id] = blankCounts_(); });
   Object.keys(by).forEach(function (person) {
     var counts = by[person].counts || {};
     plants.forEach(function (p) { addCounts_(compiled[p.id], counts[p.id]); });

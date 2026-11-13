@@ -12,6 +12,7 @@
  * `today` / `week` (= d7) are kept for older copies of the widget.
  * `since` appears only when a source can't reach back to a period's start (Cloudflare retention):
  *   e.g. since: { ytd: "2026-04-25" } = the YTD visits number only counts from that date.
+ *   Visits also count only from METRICS_VISITS_SINCE (default = ordersSince); periods starting earlier report that date in `since`.
  *
  * Counts and totals only. Never returns names, emails, phones, addresses, notes or invoice numbers.
  * Read-only: never writes to any sheet (it does not reuse iennInvoices_(), which can add header cells).
@@ -46,8 +47,8 @@ var IENN_METRICS_PERIODS = [                                            // order
 ];
 var IENN_METRICS_TZ = 'America/Los_Angeles';
 var IENN_METRICS_CACHE_SECONDS = 600;                                   // ~10 minutes for the whole payload
-var IENN_CF_ACCOUNT_ID = 'a85e045b95745b2eea831457317a5f54';            // an identifier, not a secret
-var IENN_CF_BEACON_TOKEN = '00379ec8474248f69ace426cd21d2126';          // public (it is in every page); used as the siteTag unless CF_SITE_TAG is set
+var IENN_CF_ACCOUNT_ID = '' /* REDACTED: Cloudflare account id, see Script Properties */;            // an identifier, not a secret
+var IENN_CF_BEACON_TOKEN = '' /* REDACTED: Cloudflare Web Analytics beacon token, see Script Properties */;          // public (it is in every page); used as the siteTag unless CF_SITE_TAG is set
 // Cloudflare limits for rumPageloadEventsAdaptiveGroups are read live from the GraphQL `settings` node (cached 6 h).
 // These fallbacks are used only if that read fails: deliberately conservative (30-day chunks, 31-day reach-back).
 var IENN_CF_FALLBACK_MAX_DURATION_S = 30 * 86400;
@@ -72,7 +73,7 @@ function iennMetricsRoute_(p) {
 
 /** Builds (or returns cached) payload. fresh=true bypasses the cache (?fresh=1). */
 function iennMetrics_(fresh) {
-  var cache = CacheService.getScriptCache(), ck = 'ienn-metrics-v2';
+  var cache = CacheService.getScriptCache(), ck = 'ienn-metrics-v4';
   if (!fresh) { var hit = cache.get(ck); if (hit) return JSON.parse(hit); }
   var w = iennMetricsWindows_(new Date()), src = {}, errors = {};
   var need = {}; IENN_METRICS.forEach(function (m) { need[m.source] = true; });
@@ -88,7 +89,7 @@ function iennMetrics_(fresh) {
   });
   var periods = {};
   IENN_METRICS_PERIODS.forEach(function (p) { periods[p.key] = { label: p.label, from: Utilities.formatDate(w.starts[p.key], IENN_METRICS_TZ, 'yyyy-MM-dd') }; });
-  var payload = { ok: true, updated: Utilities.formatDate(w.now, IENN_METRICS_TZ, "yyyy-MM-dd'T'HH:mm:ssXXX"), tz: IENN_METRICS_TZ, periods: periods, metrics: metrics };
+  var payload = { ok: true, updated: Utilities.formatDate(w.now, IENN_METRICS_TZ, "yyyy-MM-dd'T'HH:mm:ssXXX"), tz: IENN_METRICS_TZ, periods: periods, metrics: metrics, ordersSince: iennMetricsOrdersSince_(), visitsSince: iennMetricsVisitsSince_() };
   if (Object.keys(errors).length) { payload.partial = true; Logger.log('IENN metrics source errors: ' + JSON.stringify(errors)); }
   cache.put(ck, JSON.stringify(payload), errors.cf || errors.orders ? 120 : IENN_METRICS_CACHE_SECONDS);   // retry sooner after a failure
   return payload;
@@ -128,9 +129,10 @@ function iennMetricsOrders_(w) {
     lines: iennCol_(head, INVOICE_LINES_HEADERS), total: iennCol_(head, INVOICE_TOTAL_HEADERS), status: iennCol_(head, INVOICE_STATUS_HEADERS) };
   if (c.date < 0) throw new Error('Invoices: no Timestamp/Date column');
   var F = ['count', 'revenue', 'units'], res = { website: { periods: iennMetricsZeroPeriods_(F) }, all: { periods: iennMetricsZeroPeriods_(F) } }, seen = {};
+  var since = iennMetricsMidnight_(iennMetricsOrdersSince_());          // soft-open test orders before this date are ignored
   for (var i = 1; i < v.length; i++) {
     var r = v[i], d = iennDate_(r[c.date]);
-    if (!d || d < w.earliest || d > w.end) continue;
+    if (!d || d < w.earliest || d < since || d > w.end) continue;
     if (c.status >= 0 && /cancel/i.test(String(r[c.status]))) continue;
     var id = c.id >= 0 ? String(r[c.id] || '') : ''; if (id) { if (seen[id]) continue; seen[id] = true; }   // one invoice = one purchase
     var total = c.total >= 0 ? (Number(String(r[c.total]).replace(/[^0-9.\-]/g, '')) || 0) : 0, units = 0;
@@ -142,6 +144,16 @@ function iennMetricsOrders_(w) {
   }
   ['website', 'all'].forEach(function (k) { IENN_METRICS_PERIODS.forEach(function (p) { var t = res[k].periods[p.key]; t.revenue = Math.round(t.revenue * 100) / 100; }); });
   return res;
+}
+/** Script Property METRICS_ORDERS_SINCE (yyyy-MM-dd, America/Los_Angeles); defaults to 2026-10-25 when unset or invalid. */
+function iennMetricsOrdersSince_() {
+  var s = String(iennMetricsProp_('METRICS_ORDERS_SINCE')).trim();
+  return /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(new Date(s + 'T12:00:00Z').getTime()) ? s : '2026-10-25';
+}
+/** Script Property METRICS_VISITS_SINCE (yyyy-MM-dd, America/Los_Angeles); defaults to iennMetricsOrdersSince_() when unset or invalid. */
+function iennMetricsVisitsSince_() {
+  var s = String(iennMetricsProp_('METRICS_VISITS_SINCE')).trim();
+  return /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(new Date(s + 'T12:00:00Z').getTime()) ? s : iennMetricsOrdersSince_();
 }
 
 /* ---------- Visits: Cloudflare Web Analytics (GraphQL, dataset rumPageloadEventsAdaptiveGroups) ---------- */
@@ -156,7 +168,9 @@ function iennMetricsCloudflare_(w) {
   var hosts = (iennMetricsProp_('CF_HOSTS') || '').split(',').map(function (h) { return h.trim(); }).filter(String);
   var lim = iennCfLimits_(token), end = new Date(w.end.getTime() + 60000);   // include the current minute
   var floor = new Date(end.getTime() - lim.notOlderThan * 1000 + 3600000);  // 1 h inside retention, to be safe
-  var segs = iennCfSegments_(w, end, floor, (lim.maxDuration - 3600) * 1000);
+  var sinceYmd = iennMetricsVisitsSince_(), since = iennMetricsMidnight_(sinceYmd);   // soft-open: ignore visits before this date
+  var lower = since > floor ? since : floor;                                // count from max(retention floor, since)
+  var segs = iennCfSegments_(w, end, lower, (lim.maxDuration - 3600) * 1000, since);
   var base = [{ siteTag: siteTag }, { bot: 0 }]; if (hosts.length) base.push({ requestHost_in: hosts });
   var iso = function (d) { return d.toISOString().replace(/\.\d{3}Z$/, 'Z'); };
   for (var i = 0; i < segs.length; i += IENN_CF_ALIASES_PER_REQUEST) {
@@ -171,14 +185,16 @@ function iennMetricsCloudflare_(w) {
   IENN_METRICS_PERIODS.forEach(function (p) {
     var st = w.starts[p.key], t = out.periods[p.key];
     segs.forEach(function (s) { if (s.bucket >= st) { t.visits += s.visits; t.pageviews += s.pageviews; } });
-    if (st < floor) out.since[p.key] = Utilities.formatDate(floor, IENN_METRICS_TZ, 'yyyy-MM-dd');
+    if (st < lower) out.since[p.key] = since >= floor ? sinceYmd : Utilities.formatDate(floor, IENN_METRICS_TZ, 'yyyy-MM-dd');
   });
   return out;
 }
 
-/** Disjoint [from,to) segments covering max(earliest,floor)..end, cut at each period start and at maxMs width. */
-function iennCfSegments_(w, end, floor, maxMs) {
+/** Disjoint [from,to) segments covering max(earliest,floor)..end, cut at each period start, at `cut` (the visits-since
+    midnight, so no segment straddles it) and at maxMs width. */
+function iennCfSegments_(w, end, floor, maxMs, cut) {
   var cuts = Object.keys(w.starts).map(function (k) { return w.starts[k].getTime(); }).concat([end.getTime()]);
+  if (cut && cut.getTime() > w.earliest.getTime() && cut.getTime() < end.getTime()) cuts.push(cut.getTime());
   cuts = cuts.filter(function (t, i) { return cuts.indexOf(t) === i; }).sort(function (a, b) { return a - b; });
   var segs = [];
   for (var i = 0; i + 1 < cuts.length; i++) {

@@ -48,7 +48,7 @@ input, select { width:100%; font:inherit; padding:10px 12px; border:1px solid va
     <h1>INLAND EMPIRE<br>NATIVE NURSERY</h1>
     <p style="margin:4px 0;font-weight:700">Team invoice (internal) · <a href="?view=hub" target="_top">Team home</a> · <a href="?view=print" target="_top">Print list</a></p>
     <div class="est">Established 2020</div>
-    <div class="meta">1 (909) 609-9373 · Fontana, CA 92336</div>
+    <div class="meta">REDACTED-phone · Fontana, CA 92336</div>
   </div>
 </header>
 
@@ -85,7 +85,7 @@ const root = document.getElementById("lines");
 
 function plantKey(name) {
   const short = (name || "").split(" (")[0].trim().toLowerCase();
-  return short;
+  return short === "sticky monkeyflower" ? "southern bush monkeyflower" : short;
 }
 
 function availableFor(plantFull, size) {
