@@ -1,14 +1,14 @@
 /**
- * Available stock = latest weekly counts (existing getAvailableStock) minus units sold since that count.
- * "Sold since" comes from IENN Invoices rows dated after the latest Submissions date (no new sheets).
- * A new weekly count moves the baseline forward, so earlier sales stop being subtracted (the count already reflects them).
+ * Available stock = each person's current count per plant and size (carried forward week to week; iennStockDetail_ in Code.gs)
+ * minus units sold after that plant/size's own count date. "Sold" comes from IENN Invoices rows (no new sheets).
+ * A newer count of an item moves that item's date forward, so earlier sales stop being subtracted (the count already reflects them).
  * Invoices with Status "Cancelled" are not subtracted.
  */
 function iennSs_() { return IENN_INVENTORY_SPREADSHEET_ID ? SpreadsheetApp.openById(IENN_INVENTORY_SPREADSHEET_ID) : SpreadsheetApp.getActive(); }
 function iennNorm_(h) { return String(h == null ? '' : h).toLowerCase().replace(/[^a-z0-9#]/g, ''); }
 function iennCol_(head, aliases) { var w = aliases.map(iennNorm_); for (var i = 0; i < head.length; i++) if (w.indexOf(iennNorm_(head[i])) >= 0) return i; return -1; }
 function iennSplit_(full) { var m = /^(.*?)\s*\((.*)\)\s*$/.exec(String(full)); return m ? [m[1].trim(), m[2].trim()] : [String(full).trim(), '']; }
-function iennKey_(name) { return iennSplit_(name)[0].toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
+var IENN_NAME_ALIASES = { 'sticky monkeyflower': 'southern bush monkeyflower', 'california encelia': 'bush sunflower', 'california brittlebush': 'bush sunflower', 'grinnell s beardtongue': 'southern woodland penstemon' }; /* Encelia californica renamed to Bush sunflower 2026-10-29; Penstemon grinnellii renamed to Southern woodland penstemon 2026-11-10; old names in past invoices still map */ function iennKey_(name) { var k = iennSplit_(name)[0].toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); return IENN_NAME_ALIASES[k] || k; }
 function iennDate_(v) { var d = v instanceof Date ? v : (v ? new Date(v) : null); return d && !isNaN(d) ? d : null; }
 /** Forgiving size match: 4" / 4 inch / 4in / 4-inch pot -> '4"'; 1 gallon -> '1 gal'; quarter tree pot -> 'Tree pot'. */
 function iennSize_(s) {
@@ -68,31 +68,40 @@ function iennInvoices_() {
 }
 
 /** { plantKey|sizeKey : units on invoices dated after the baseline, excluding Cancelled } */
-function iennSoldSince_(baseline) {
-  var out = {};
+function iennSoldSince_(baseline) { return iennSoldByItem_({}, baseline); }
+/** Like iennSoldSince_, but each plantKey|sizeKey uses its own count date from `since` (ms or Date); items without one use `fallback`. */
+function iennSoldByItem_(since, fallback) {
+  var out = {}; since = since || {};
   iennInvoices_().forEach(function (inv) {
     if (/cancel/i.test(String(inv.status))) return;
-    if (baseline && !(inv.date && inv.date > baseline)) return;
-    inv.lines.forEach(function (l) { var s = iennSize_(l.size); if (!s) return; var k = iennKey_(l.plant) + '|' + s.key; out[k] = (out[k] || 0) + l.qty; });
+    inv.lines.forEach(function (l) { var s = iennSize_(l.size); if (!s) return; var k = iennKey_(l.plant) + '|' + s.key;
+      var cut = since[k] != null ? new Date(since[k]) : fallback;
+      if (cut && !(inv.date && inv.date > cut)) return;
+      out[k] = (out[k] || 0) + l.qty; });
   });
   return out;
 }
 
 /** { plantKey: { '4"': readyLeft, '1 gal': readyLeft, ['2"', 'Tree pot' when counted,] __extra: { sizeKey: n } } }.
-    Ready = <size>Ready (missing key -> on hand) minus units sold since the latest count. out.__counted (non-enumerable) lists optional sizes the newest count covers.
+    Ready = each person's current <size>Ready (carried forward per plant/size; missing key -> on hand), summed, minus units sold
+    after THAT plant/size's own count date (iennStockDetail_ `since`). out.__counted (non-enumerable) lists optional sizes the counts cover.
     __extra = on hand minus ready, floored at 0 (smaller plants not retail-ready yet). */
 function iennAvailable_(baseline) {
   if (baseline === undefined) baseline = iennBaselineDate_();
   var out = {}; if (!baseline) { out.__noBaseline = true; return out; }   // no count yet: every tracked qty is unknown (null), never 0
-  var base = (typeof iennStockDetail_ === 'function' ? iennStockDetail_() : null), sold = iennSoldSince_(baseline), counted = (base && base.__counted) || {};
+  var base = (typeof iennStockDetail_ === 'function' ? iennStockDetail_() : null), counted = (base && base.__counted) || {};
   Object.defineProperty(out, '__counted', { value: counted, enumerable: false });
   var tracked = function (s) { return s.tracked || !!counted[s.key]; };
   if (!base) { base = {}; var g = getAvailableStock() || {}; Object.keys(g).forEach(function (n) { base[n] = {}; Object.keys(g[n]).forEach(function (z) { base[n][z] = { ready: Number(g[n][z]) || 0, onHand: Number(g[n][z]) || 0 }; }); }); }
+  var since = {};
   Object.keys(base).forEach(function (name) {
     var k = iennKey_(name); out[k] = out[k] || { __extra: {} };
     IENN_SIZES.forEach(function (s) { if (!tracked(s)) return; var c = (base[name] || {})[s.key] || { ready: 0, onHand: 0 };
-      out[k][s.key] = (out[k][s.key] || 0) + c.ready; out[k].__extra[s.key] = (out[k].__extra[s.key] || 0) + Math.max(0, c.onHand - c.ready); });
+      out[k][s.key] = (out[k][s.key] || 0) + c.ready; out[k].__extra[s.key] = (out[k].__extra[s.key] || 0) + Math.max(0, c.onHand - c.ready);
+      var sk = k + '|' + s.key, d = c.since == null ? null : (c.since instanceof Date ? c.since.getTime() : Number(c.since));
+      if (d != null && !isNaN(d) && (since[sk] == null || d < since[sk])) since[sk] = d; });
   });
+  var sold = iennSoldByItem_(since, baseline);
   Object.keys(out).forEach(function (k) { IENN_SIZES.forEach(function (s) { if (tracked(s)) out[k][s.key] = Math.max(0, out[k][s.key] - (sold[k + '|' + s.key] || 0)); }); });
   return out;
 }
@@ -125,13 +134,13 @@ function iennRequestNote_(notices) {
     ' retail-ready; up to ' + n.extra + ' smaller ones on hand. Offer the smaller ones.'; }).join('\n');
 }
 
-function iennCatalogNames_() {
+function iennHiddenBand_(b) { return IENN_HIDDEN_BANDS.indexOf(String(b == null ? '' : b).trim().toLowerCase()) >= 0; } function iennCatalogNames_() {
   var sh = iennSs_().getSheetByName(IENN_CATALOG_SHEET); if (!sh) return [];
-  var v = sh.getDataRange().getValues(), c = iennCol_(v[0] || [], CATALOG_NAME_HEADERS), l = iennCol_(v[0] || [], CATALOG_LATIN_HEADERS); if (c < 0) return [];
-  return v.slice(1).map(function (r) { var n = String(r[c] || '').trim(), b = l >= 0 ? String(r[l] || '').trim() : '';
+  var v = sh.getDataRange().getValues(), c = iennCol_(v[0] || [], CATALOG_NAME_HEADERS), l = iennCol_(v[0] || [], CATALOG_LATIN_HEADERS), bd = iennCol_(v[0] || [], CATALOG_BAND_HEADERS); if (c < 0) return [];
+  return v.slice(1).filter(function (r) { return !(bd >= 0 && iennHiddenBand_(r[bd])); }).map(function (r) { var n = String(r[c] || '').trim(), b = l >= 0 ? String(r[l] || '').trim() : '';
     return n && b && !/\(/.test(n) ? n + ' (' + b + ')' : n; }).filter(String);
 }
-/** Optional Photo column in Catalog: { plantKey: url }. Missing column -> {} (website uses assets/plants/<id>.jpg). */
+/** Master plant list = visible Catalog rows (deduped) + 'Other'; null if the Catalog can't be read. */ function iennInitialPlants_() { var cat = []; try { cat = iennCatalogNames_(); } catch (e) { cat = []; } var seen = {}, out = []; cat.forEach(function (n) { var k = iennKey_(n); if (k && !seen[k]) { seen[k] = 1; out.push(n); } }); IENN_FELL_BACK_ = !out.length; return out.length ? out.concat(['Other']) : null; } /** Optional Photo column in Catalog: { plantKey: url }. Missing column -> {} (website uses assets/plants/<id>.jpg). */
 function iennCatalogPhotos_() {
   var sh = iennSs_().getSheetByName(IENN_CATALOG_SHEET); if (!sh) return {};
   var v = sh.getDataRange().getValues(), h = v[0] || [], c = iennCol_(h, CATALOG_NAME_HEADERS), ph = iennCol_(h, CATALOG_PHOTO_HEADERS), out = {};

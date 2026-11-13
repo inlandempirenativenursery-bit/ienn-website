@@ -5,9 +5,9 @@
  * token = HMAC-SHA256(orderId) keyed with Script Property IENN_CONFIRM_SECRET (auto-created on first use).
  * The web app runs as the owner (nursery account), so the thank-you DRAFT lands in that Gmail. It is never sent.
  */
-var IENN_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec';   // the ONE live deployment; always preferred (getUrl() can return /dev or an old deployment)
+var IENN_WEBAPP_URL = '' /* REDACTED: web app /exec URL (contains deployment id), see Script Properties */;   // the ONE live deployment; always preferred (getUrl() can return /dev or an old deployment)
 var IENN_DRAFTS_URL = 'https://mail.google.com/mail/#drafts';
-var IENN_DRAFTS_ACCOUNT = 'NURSERY_ACCOUNT_PLACEHOLDER@example.com';
+var IENN_DRAFTS_ACCOUNT = '' /* REDACTED: team Gmail account, see Script Properties */;
 
 function iennConfirmSecret_() {
   var props = PropertiesService.getScriptProperties(), s = props.getProperty('IENN_CONFIRM_SECRET');

@@ -15,14 +15,18 @@ var RESPONSE_TEMPLATE =
   'Total: ${{TOTAL}} (taxes included)\n\n' +
   'Pickup: Saturdays 10 a.m. – 2 p.m. in Fontana{{PICKUP_DATE_LINE}}\n\n' +
   "Here's the location: {{PICKUP_ADDRESS}}\n\n" +
-  'Payment: Cash or Zelle at time of pickup.\n\n' +
+  'Payment: Cash or Zelle at time of pickup.\n\n{{NO_SHOW_POLICY}}\n\n' +
   "If you have any questions, don't hesitate to reach out. Call or text {{OWNER}}: {{PHONE}}\n\n" +
   'Inland Empire Native Nursery\n';
 
+/** The first Saturday on or after d (Pacific date) as a UTC-midnight Date of that calendar day. Shared by the customer email and the pickup reminder. */
+function iennNextSaturdayUtc_(d) {
+  var ymd = Utilities.formatDate(d || new Date(), IENN_PROMO_TZ, 'yyyy-MM-dd').split('-').map(Number), t = new Date(Date.UTC(ymd[0], ymd[1] - 1, ymd[2]));
+  t.setUTCDate(t.getUTCDate() + (6 - t.getUTCDay() + 7) % 7); return t;
+}
 /** 'Saturday, October 24, 2026': the first Saturday on or after the order date (Pacific). The team verifies it before sending. */
 function iennNextSaturday_(d) {
-  var ymd = Utilities.formatDate(d || new Date(), IENN_PROMO_TZ, 'yyyy-MM-dd').split('-').map(Number), t = new Date(Date.UTC(ymd[0], ymd[1] - 1, ymd[2]));
-  t.setUTCDate(t.getUTCDate() + (6 - t.getUTCDay() + 7) % 7);
+  var t = iennNextSaturdayUtc_(d);
   var M = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   return 'Saturday, ' + M[t.getUTCMonth()] + ' ' + t.getUTCDate() + ', ' + t.getUTCFullYear();
 }
@@ -73,7 +77,7 @@ function iennBuildReply_(orderId, assumeConfirmed) {
     PAID_STATUS: /^(yes|y|true|paid)$/i.test(String(inv.paid)) || /paid/i.test(String(inv.status)) ? 'Paid, thank you!' : 'Not paid yet (pay at pickup)',
     PAYMENT_TERMS: PAYMENT_TERMS.replace(/\.$/, ''), PAYMENT_CHOICE: choice ? ' (you chose ' + choice + ').' : '.',
     PICKUP_ADDRESS: confirmed ? PICKUP_ADDRESS : PICKUP_UNCONFIRMED_TEXT, PICKUP_AREA: PICKUP_AREA, PICKUP_SCHEDULE: PICKUP_SCHEDULE, PICKUP_DATE: iennNextSaturday_(inv.date), PICKUP_DATE_LINE: inv.date ? ' (your pickup date: ' + iennNextSaturday_(inv.date) + ')' : '',
-    PICKUP_FINE_PRINT: PICKUP_FINE_PRINT.join('\n'),
+    PICKUP_FINE_PRINT: PICKUP_FINE_PRINT.join('\n'), NO_SHOW_POLICY: IENN_NO_SHOW_POLICY,
     CUSTOMER_NOTES: notes || '(none)', OUR_RESPONSE: inv.response || '(none)', SIGN_OFF: SIGN_OFF };
   var body = RESPONSE_TEMPLATE.replace(/\{\{([A-Z_]+)\}\}/g, function (x, k) { return map[k] != null && map[k] !== '' ? String(map[k]) : x; });
   var rows = inv.lines.map(function (l) { var s = iennSize_(l.size), p = s ? s.price : Number(l.amt) / l.qty; return { plant: iennSplit_(l.plant)[0], size: s ? s.label : l.size, qty: l.qty, amount: l.qty * p }; });
@@ -89,6 +93,7 @@ function iennConfirmAndDraft(orderId) {
   if (all.cols.status < 0) throw new Error('Status column missing in ' + IENN_INVOICES_SHEET);
   var d = iennDraftReply(orderId, true);   // draft FIRST: if Gmail fails, the status is untouched
   if (IENN_CONFIRMED_STATUSES.indexOf(String(inv.status)) < 0) all.sheet.getRange(inv.row, all.cols.status + 1).setValue('Confirmed');
+  try { var hh = iennCol_(all.sheet.getDataRange().getValues()[0] || [], ['Hold until']); if (hh >= 0) all.sheet.getRange(inv.row, hh + 1).setValue(''); } catch (e) { /* confirming clears any hold */ }
   try { PropertiesService.getScriptProperties().setProperty('IENN_DRAFT_' + orderId, d.draftId || new Date().toISOString()); } catch (e) { /* draft still saved */ }
   return d;
 }
@@ -124,7 +129,7 @@ function iennInvoiceHtml_(d) {
     '<div class="sub">Order ' + E(d.inv.id) + (date ? ' · ' + E(date) : '') + ' · ' + E(d.name) + '</div></div></header>' +
     '<table><thead><tr><th>Plant</th><th>Size</th><th>Qty</th><th>Price</th></tr></thead><tbody>' + rows + '</tbody></table>' +
     '<p class="tot">Total: $' + Number(d.total).toFixed(2) + ' (taxes included)</p>' +
-    '<p class="sub">Pickup: Saturdays 10 a.m. – 2 p.m. · ' + E(PICKUP_ADDRESS) + '<br>Payment: Cash or Zelle at time of pickup · Call or text ' + E(IENN_ORDER_OWNER) + ': ' + E(IENN_CONTACT_PHONE) + '</p></body></html>';
+    '<p class="sub">Pickup: Saturdays 10 a.m. – 2 p.m. · ' + E(PICKUP_ADDRESS) + '<br>Payment: Cash or Zelle at time of pickup · Call or text ' + E(IENN_ORDER_OWNER) + ': ' + E(IENN_CONTACT_PHONE) + '<br>' + E(IENN_NO_SHOW_POLICY) + '</p></body></html>';
 }
 function iennInvoicePdf_(d) {
   return Utilities.newBlob(iennInvoiceHtml_(d), 'text/html', 'invoice.html').getAs('application/pdf').setName('IENN-Invoice-' + d.inv.id + '.pdf');

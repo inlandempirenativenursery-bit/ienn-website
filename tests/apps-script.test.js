@@ -2,7 +2,8 @@
 // separate IENN Inventory spreadsheet by ID. Loads the exact paste-ready files. Run: node tests/apps-script.test.js (no dependencies). Mirrors the live project's test suite; secrets are placeholders here.
 const assert = require('assert'), fs = require('fs'), path = require('path'), vm = require('vm');
 const { makeSheet } = require('./gas-harness');
-const INV_ID = '1klPpRNuoNtdUDmCwpqYaQuQOKYvgku4AhKOFpTVR3Vw', INVO_ID = '1sGCDid99h7WsWsOrG2jyD2Nh9mprrNaS9dIV2vtS-Zs';
+const INV_ID = 'test-inventory-spreadsheet-id', INVO_ID = 'test-invoices-spreadsheet-id';
+const TEST_EXEC = 'https://script.google.com/macros/s/TEST/exec';
 const ADDR = /El[a]ine|P[i]co|1710[5]|2243[0]|TEST ADDRESS/;
 let pass = 0; const t = (n, f) => { f(); pass++; console.log('ok -', n); };
 const D = s => Date.parse(s);
@@ -45,7 +46,7 @@ function load() {
   vm.createContext(ctx);
   const dir = path.join(__dirname, '..', 'apps-script');
   ['Code.gs'].concat(fs.readdirSync(dir).filter(f => /^IENN_.*\.gs$/.test(f)).sort()).forEach(f => vm.runInContext(fs.readFileSync(path.join(dir, f), 'utf8'), ctx, { filename: f }));
-  vm.runInContext("TEAM_EMAIL_TO = 'andrew@example.test'; TEAM_EMAIL_CC = ['eric@example.test', 'keith@example.test']; TEAM_EMAILS = [TEAM_EMAIL_TO].concat(TEAM_EMAIL_CC); PICKUP_ADDRESS = 'TEST ADDRESS 1'; PICKUP_ALT_ADDRESS = 'TEST ADDRESS 2';", ctx);   // repo config holds placeholders only
+  vm.runInContext("IENN_INVENTORY_SPREADSHEET_ID = " + JSON.stringify(INV_ID) + "; IENN_INVOICES_SPREADSHEET_ID = " + JSON.stringify(INVO_ID) + "; IENN_WEBAPP_URL = " + JSON.stringify(TEST_EXEC) + "; IENN_CONTACT_PHONE = '(909) 609-9373'; IENN_CONTACT_TEL = '+19096099373'; IENN_DRAFTS_ACCOUNT = 'NURSERY_ACCOUNT_PLACEHOLDER@example.com'; TEAM_EMAIL_TO = 'andrew@example.test'; TEAM_EMAIL_CC = ['eric@example.test', 'keith@example.test']; TEAM_EMAILS = [TEAM_EMAIL_TO].concat(TEAM_EMAIL_CC); PICKUP_ADDRESS = 'TEST ADDRESS 1'; PICKUP_ALT_ADDRESS = 'TEST ADDRESS 2';", ctx);   // redacted repo constants are injected here (no live ids)
   return { ctx, inv, invo, sent, drafts, lock, props, logs, pdfFail, setNow: x => (now = x) };
 }
 const post = (h, items, extra) => JSON.parse(h.ctx.doPost({ postData: { contents: JSON.stringify(Object.assign({ name: 'Ana Lopez', email: 'ana@example.com', phone: '9095550100', notes: 'Sat 11', pickup: 'Saturday', payment: 'Zelle', items }, extra)) } }).getContent());
@@ -64,7 +65,7 @@ t('website order: Invoices row via live submitInvoice, IEN number, status, one a
   const h = load(), r = post(h, [{ plant: 'White sage (Salvia apiana)', sizeKey: '4"', qty: 2 }, { plant: 'Deergrass (Muhlenbergia rigens)', sizeKey: '2"', qty: 1 }]);
   assert.strictEqual(r.ok, true, JSON.stringify(r)); assert.strictEqual(r.orderId, 'IEN-2026-003'); assert.strictEqual(r.total, 15);
   const rows = h.invo.sheets.Invoices.rows, row = rows[rows.length - 1];
-  assert.strictEqual(row[1], 'IEN-2026-003'); assert.deepStrictEqual(J(rows[0].slice(8)), ['Status', 'Handled by', 'Our response']); assert.deepStrictEqual(J(row.slice(8, 10)), ['New', 'Andrew']);
+  assert.strictEqual(row[1], 'IEN-2026-003'); assert.deepStrictEqual(J(rows[0].slice(8)), ['Status', 'Handled by', 'Our response', 'Hold until', 'Cancel reason']); assert.deepStrictEqual(J(row.slice(8, 10)), ['New', 'Andrew']);
   const team = h.sent.filter(m => m.to === 'andrew@example.test'), cust = h.sent.filter(m => m.to === 'ana@example.com');
   assert.strictEqual(h.sent.length, 2); assert.strictEqual(team.length, 1); assert.strictEqual(team[0].cc, 'eric@example.test,keith@example.test'); assert.strictEqual(cust.length, 1);
   assert.match(cust[0].body, /You chose: Zelle/); h.sent.forEach(m => assert.doesNotMatch(m.body + m.subject, ADDR));
@@ -90,9 +91,11 @@ t('exact addresses ONLY in the confirmed reply draft (never sent)', () => {
   assert.match(d.body, /Here's the location: TEST ADDRESS 1/); assert.doesNotMatch(d.body, /Grand Terrace|P[i]co/);
   const row = h.invo.sheets.Invoices.rows.slice(-1)[0]; assert.strictEqual(row[8], 'Confirmed'); assert.strictEqual(h.drafts.length, 2); assert.strictEqual(h.sent.length, sentBefore);
 });
-t('a new weekly count moves the baseline (earlier sales no longer subtracted)', () => {
+t('a new weekly count carries that counters numbers forward (other counters last counts still included; later sales after the earlier count date still subtracted)', () => {
   const h = load(); h.inv.sheets.Submissions.rows.push(['2026-W43', 'keith', D('2026-10-21T21:00:00Z'), JSON.stringify({ apiana: { four: 4, gal1: 1 } })]);
-  const f = h.ctx.iennInventory(); assert.strictEqual(qty(f, 'White sage', '4"'), 4); assert.strictEqual(qty(f, 'White sage', '1 gal'), 1);
+  const f = h.ctx.iennInventory();
+  // Keith W43 (4 / 1) + Eric's still-current W42 (1 / 4) = 5 / 5, minus 2 of 1 gal sold 2026-10-16 (after Eric's count, before Keith's) -> 5 and 3
+  assert.strictEqual(qty(f, 'White sage', '4"'), 5); assert.strictEqual(qty(f, 'White sage', '1 gal'), 3);
 });
 t('public repo: no exact address and no real team emails anywhere', () => {
   const dir = path.join(__dirname, '..');
@@ -104,7 +107,7 @@ t('customer copy is clean: no internal info, no exact address/ZIP, has Sierra & 
   const c = h.sent.find(m => m.to === 'ana@example.com'), b = c.body;
   assert.strictEqual(c.subject, 'Your Inland Empire Native Nursery order — IEN-2026-003');
   [/1710[5]/, /El[a]ine/, /P[i]co/, /Grand Terrace/, /92336/, /Website order/, /Status:/, /Handled by/, /docs\.google/, /9095550100/, /Ana Lopez/].forEach(r => assert.doesNotMatch(b + c.subject, r, String(r)));
-  ['near Sierra & Baseline, about 10 minutes from the 210; exact address once your order is confirmed', 'Saturdays 10 a.m. – 2 p.m., other times case by case on request', 'Cash or Zelle at time of pickup', 'We\u2019ll email to confirm your pickup time', 'plants@inlandempirenativenursery.com', 'Call or text Andrew', 'All sales are final', 'Your notes: Pickup preference: Saturday\nSat 11'].forEach(x => assert.ok(b.includes(x), x));
+  ['near Sierra & Baseline, about 10 minutes from the 210; exact address once your order is confirmed', 'Saturdays 10 a.m. – 2 p.m., other times case by case on request', 'Cash or Zelle at time of pickup', 'We\u2019ll email to confirm your pickup time', 'REDACTED-email', 'Call or text Andrew', 'All sales are final', 'Your notes: Pickup preference: Saturday\nSat 11'].forEach(x => assert.ok(b.includes(x), x));
   const team = h.sent.find(m => m.to === 'andrew@example.test'); assert.match(team.body, /Website order — Ana Lopez · 9095550100/);
   assert.match(h.invo.sheets.Invoices.rows.slice(-1)[0][7], /^Website order — Ana Lopez/);
   fs.writeFileSync('/tmp/ienn-customer.txt', 'Subject: ' + c.subject + '\n\n' + b); fs.writeFileSync('/tmp/ienn-team.txt', 'Subject: ' + team.subject + '\nCC: ' + team.cc + '\n\n' + team.body);
@@ -114,6 +117,7 @@ t('thank-you draft: warm lines, exact address, draft only, onOpen safe in standa
   const d = h.ctx.iennConfirmAndDraftLatest();
   const want = ['Hi Ana Lopez,', 'Thanks for ordering, and thanks for choosing us.', 'Order number: IEN-2026-003', 'White sage, 4-inch pot, qty 1, $6.00', 'Total: $6.00 (taxes included)',
     'Pickup: Saturdays 10 a.m. – 2 p.m. in Fontana (your pickup date: Saturday, October 24, 2026)', "Here's the location: TEST ADDRESS 1", 'Payment: Cash or Zelle at time of pickup.',
+    "Please pick up on time. We set your plants aside just for you. If you can't make your pickup, let us know ahead of time. Orders that aren't picked up are released, and the plants go back on sale.",
     "If you have any questions, don't hesitate to reach out. Call or text Andrew: (909) 609-9373", 'Inland Empire Native Nursery'];
   assert.strictEqual(d.body.trim(), want.join('\n\n'), d.body);
   [/Grand Terrace|P[i]co|2243[0]/, /case by case|fine print|All sales are final/i, /Your notes|Sat 11/, /you chose/, /\bam\b|\bpm\b|AM|PM/].forEach(r => assert.doesNotMatch(d.body, r, String(r)));
@@ -162,20 +166,21 @@ t('confirm: status Confirmed by hand but no draft yet -> draft created once', ()
 t('confirm route does not break ?view=inventory / default / print; /dev URL falls back to IENN_WEBAPP_URL', () => {
   const h = load(); const f = JSON.parse(h.ctx.doGet({ parameter: { view: 'inventory' } }).getContent()); assert.strictEqual(f.version, 3); assert.ok(f.plants.length >= 3);
   assert.strictEqual(h.ctx.doGet({ parameter: {} }).file, 'Index'); assert.ok(h.ctx.doGet({ parameter: { view: 'print' } }));
-  h.ctx.ScriptApp.getService = () => ({ getUrl: () => 'https://script.google.com/macros/s/X/dev' }); assert.strictEqual(h.ctx.iennWebAppUrl_(), 'https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec');
+  h.ctx.ScriptApp.getService = () => ({ getUrl: () => 'https://script.google.com/macros/s/X/dev' }); assert.strictEqual(h.ctx.iennWebAppUrl_(), TEST_EXEC);
   vm.runInContext("IENN_WEBAPP_URL = 'https://script.google.com/macros/s/LIVE/exec'", h.ctx); assert.strictEqual(h.ctx.iennWebAppUrl_(), 'https://script.google.com/macros/s/LIVE/exec');
 });
 
 const order = f => J(f.plants.map(p => p.name));
 t('popularity: no Pin column -> best sellers (90 days, Cancelled excluded) first, rest stable; rank/popularity/pinned fields', () => {
-  const h = load(), I = h.invo.sheets.Invoices.rows;
+  const h = load(), I = h.invo.sheets.Invoices.rows, C = h.inv.sheets.Catalog.rows;
+  C.push(['yarrow', 'Yarrow', 'Achillea millefolium', 'active']); C.push(['sugar', 'Sugarbush', 'Rhus ovata', 'active']);  // live feed lists Catalog only; add these so cancelled / older-than-90d popularity can be asserted
   I.push([new Date(D('2026-10-18T18:00:00Z')), 'IEN-2026-003', '2026-10-18', 'unpaid', 'c@x.co', '6', JSON.stringify([{ plant: 'Deergrass (Muhlenbergia rigens)', size: '2"', qty: '9' }]), '']);
   I.push([new Date(D('2026-10-19T18:00:00Z')), 'IEN-2026-004', '2026-10-19', 'unpaid', 'd@x.co', '6', JSON.stringify([{ plant: 'Yarrow (Achillea millefolium)', size: '2"', qty: '50' }]), '']);
   I.push([new Date(D('2026-06-01T18:00:00Z')), 'IEN-2026-000', '2026-06-01', 'paid', 'e@x.co', '6', JSON.stringify([{ plant: 'Sugarbush (Rhus ovata)', size: '2"', qty: '99' }]), '']);
   h.ctx.iennInvoices_(); I[0][8] = 'Status'; I[I.length - 2][8] = 'Cancelled';   // Yarrow cancelled; Sugarbush older than 90 days
   const f = JSON.parse(h.ctx.iennRoute_({ parameter: { view: 'inventory' } }).getContent()), base = JSON.parse(JSON.stringify(h.ctx.getInitial().plants)).map(n => n.split(' (')[0]).filter(n => n !== 'Other');
   assert.deepStrictEqual(order(f).slice(0, 2), ['Deergrass', 'White sage']);
-  const rest = order(f).slice(2), expect = base.concat(['Other', 'Woolly blue curls']).filter(n => !['Deergrass', 'White sage'].includes(n));
+  const rest = order(f).slice(2), expect = [...new Set(base.concat(['Other', 'Woolly blue curls']))].filter(n => !['Deergrass', 'White sage'].includes(n));
   assert.deepStrictEqual(rest, expect.filter(n => rest.includes(n)), 'stable'); assert.strictEqual(rest.length, f.plants.length - 2);
   assert.deepStrictEqual(f.plants.map(p => p.rank), f.plants.map((_, i) => i + 1));
   const by = n => f.plants.find(p => p.name === n);
@@ -224,12 +229,15 @@ t('placeholder recipe: one Submissions row -> White sage 4" = 5, everything else
   f.plants.forEach(p => p.sizes.forEach(s => { if (s.qty !== null && !(p.name === 'White sage' && s.key === '4"')) assert.strictEqual(s.qty, 0, p.name + s.key); }));
 });
 const alertOf = h => h.sent.find(x => /CONFIRM ORDER/.test(x.body));
-t('json confirm: alert button -> confirm.html; NO script.google.com link/fallback in text or HTML', () => {
+t('json confirm: alert Confirm button -> confirm.html (not /exec confirm); Hold and Picked up may use /exec; no fallback phrase', () => {
   const h = load(), r = post(h, [{ plant: 'White sage (Salvia apiana)', sizeKey: '4"', qty: 1 }]), m = alertOf(h), tok = h.ctx.iennConfirmToken_(r.orderId);
-  const page = 'https://www.inlandempirenativenursery.com/confirm.html?id=' + r.orderId + '&t=' + encodeURIComponent(tok), direct = 'https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec' + '?action=confirm&id=' + r.orderId + '&t=' + encodeURIComponent(tok);
+  const page = 'https://www.inlandempirenativenursery.com/confirm.html?id=' + r.orderId + '&t=' + encodeURIComponent(tok), direct = TEST_EXEC + '?action=confirm&id=' + r.orderId + '&t=' + encodeURIComponent(tok);
   assert.strictEqual(linkOf(m), page); assert.ok(m.htmlBody.includes('href="' + page.replace(/&/g, '&amp;') + '"'));
-  assert.ok(!m.body.includes(direct) && !m.htmlBody.includes(direct.replace(/&/g, '&amp;'))); assert.doesNotMatch(m.body + m.htmlBody, /script\.google\.com|does not work, try/);
-  const hrefs = [...m.htmlBody.matchAll(/href="([^"]+)"/g)].map(x => x[1]); assert.ok(hrefs.every(u => !/script\.google/.test(u)), hrefs.join(' '));
+  assert.ok(!m.body.includes(direct) && !m.htmlBody.includes(direct.replace(/&/g, '&amp;'))); assert.doesNotMatch(m.body + m.htmlBody, /does not work, try/);
+  assert.ok((m.body + m.htmlBody).includes(TEST_EXEC + '?action=hold&id=' + r.orderId));
+  assert.ok((m.body + m.htmlBody).includes(TEST_EXEC + '?action=pickup&id=' + r.orderId));
+  const hrefs = [...m.htmlBody.matchAll(/href="([^"]+)"/g)].map(x => x[1]);
+  assert.ok(hrefs.every(u => !/action=confirm/.test(u) || /confirm\.html/.test(u)), hrefs.join(' '));
 });
 t('json confirm: good token -> {ok,confirmed,draft}, draft + Confirmed, no data; repeat -> already', () => {
   const h = load(), r = post(h, [{ plant: 'White sage (Salvia apiana)', sizeKey: '4"', qty: 1 }]), n = h.sent.length, id = r.orderId;
@@ -290,7 +298,8 @@ t('bug3: no Submissions rows -> every tracked qty null, all plants listed, count
   assert.strictEqual(qty(before, 'Deergrass', '4"'), 0, 'baseline exists: missing/0 count = sold out');
   h.inv.sheets.Submissions = require('./gas-harness').makeSheet('Submissions', [full[0]], 1, h.inv);
   const f = JSON.parse(h.ctx.iennRoute_({ parameter: { view: 'inventory' } }).getContent());
-  assert.strictEqual(f.countDate, null); assert.ok(f.plants.length >= 20);
+  const catalogNames = h.ctx.getInitial().plants.filter(n => !/^other$/i.test(String(n)));
+  assert.strictEqual(f.countDate, null); assert.strictEqual(f.plants.length, catalogNames.length, 'no-count feed lists every Catalog plant (live: Catalog is the master list)');
   f.plants.forEach(p => p.sizes.forEach(s => assert.strictEqual(s.qty, null, p.name + ' ' + s.key)));
 });
 t('stock check: no baseline -> qty 3 of a 4" plant accepted; baseline qty 0 -> rejected; baseline qty 5, order 3 -> ok', () => {
@@ -363,14 +372,17 @@ t('?view=confirm alias: no token / bad token / wrong-id token change nothing; go
   assert.match(ok, /confirmed/); assert.notStrictEqual(st(), before);
   assert.ok(h.invo.sheets.Invoices.getDataRange().getValues().some(r => r.includes(id) && r.includes('Confirmed')));
 });
-const LIVE_EXEC = 'https://script.google.com/macros/s/AKfycby_sfzJNwCYq1Sf6qwcBb_batYrvGDR3LUlc5YJFs-C-hbd4vAkH7rvBrkDATWrVX3X/exec';
+const LIVE_EXEC = TEST_EXEC;   // injected IENN_WEBAPP_URL; live deployment id is redacted in the repo copy
 for (const other of ['https://script.google.com/macros/s/X/dev', 'https://script.google.com/macros/s/AKfycbOLD1/exec']) {
-  t('confirm link in alert uses the live AKfycby_ exec URL even when getUrl() = ' + other, () => {
+  t('confirm link in alert uses confirm.html (not exec) even when getUrl() = ' + other, () => {
     const h = load(); h.ctx.ScriptApp.getService = () => ({ getUrl: () => other });
     post(h, [{ plant: 'White sage (Salvia apiana)', sizeKey: '4"', qty: 1 }]); const m = h.sent.find(x => x.to === 'andrew@example.test'), u = linkOf(m);
-    assert.ok(u && u.startsWith('https://www.inlandempirenativenursery.com/confirm.html?id='), u); assert.ok(!/script\.google\.com/.test(m.body + m.htmlBody), 'no exec link'); assert.ok(!(m.body + m.htmlBody).includes(other));
+    assert.ok(u && u.startsWith('https://www.inlandempirenativenursery.com/confirm.html?id='), u);
+    assert.ok(!(m.body + m.htmlBody).includes(other), 'must not use getUrl() when it is /dev or an old deployment');
+    assert.ok(!(m.body + m.htmlBody).includes('?action=confirm&'), 'Confirm stays on confirm.html, not /exec confirm');
+    assert.ok((m.body + m.htmlBody).includes(LIVE_EXEC + '?action=hold&'), 'Hold uses injected IENN_WEBAPP_URL');
   });
-  t('hub links use the live AKfycby_ exec URL even when getUrl() = ' + other, () => {
+  t('hub links use the injected IENN_WEBAPP_URL even when getUrl() = ' + other, () => {
     const h = load(); h.ctx.ScriptApp.getService = () => ({ getUrl: () => other });
     const html = h.ctx.iennHubHtml_(); assert.ok(html.includes('href="' + LIVE_EXEC + '"'), 'hub exec'); assert.ok(!html.includes(other));
   });

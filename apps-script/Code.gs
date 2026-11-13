@@ -133,10 +133,12 @@ function getAvailableStock() {
   Object.keys(d).forEach(function (n) { out[n] = { '4"': d[n]['4"'].ready, '1 gal': d[n]['1 gal'].ready }; });
   return out;
 }
-/** { name: { '2"'|'4"'|'Tree pot'|'1 gal': {ready, onHand} } } from the latest week's Submissions.
-    stock.__counted (non-enumerable) = { sizeKey: true } for sizes the newest week actually has keys for;
-    2" and Tree pot were added Oct 2026, so older counts without them leave those sizes untracked ("On request"). */
+/** { name: { '2"'|'4"'|'Tree pot'|'1 gal': {ready, onHand, since} } } from Submissions, carried forward per person, plant and size.
+    Each person counts their own bench; stock = sum of every person's CURRENT count (not just this week's submitters).
+    stock.__counted (non-enumerable) = { sizeKey: true } for sizes that have count keys in the current counts;
+    2" and Tree pot were added Oct 2026, so counts without them leave those sizes untracked ("On request"). */
 var IENN_COUNT_SIZES = [['2"', 'two', 'twoReady'], ['4"', 'four', 'fourReady'], ['Tree pot', 'tree', 'treeReady'], ['1 gal', 'gal1', 'gal1Ready']];
+var IENN_OPTIONAL_COUNT_KEYS = { two: true, tree: true };   // the count tool only sends these when non-zero
 function iennStockDetail_() {
   var ss = inventoryDb_();
   if (!ss) return {};
@@ -150,44 +152,62 @@ function iennStockDetail_() {
   for (var i = 1; i < catRows.length; i++) {
     if (catRows[i][0]) idToName[String(catRows[i][0])] = String(catRows[i][1] || '');
   }
+  return iennCarryCounts_(sub.getDataRange().getValues(), idToName);
+}
 
-  // Find latest submission per person for the current week (or overall latest)
-  var rows = sub.getDataRange().getValues();
-  var latest = {};
-  var currentWeek = '';
-  for (var r = 1; r < rows.length; r++) {
-    var week = String(rows[r][0] || '');
-    var person = String(rows[r][1] || '');
-    var at = Number(rows[r][2]) || 0;
+/** Pure: Submissions rows [week, person, at, countsJSON] -> stock detail (see iennStockDetail_).
+    Per person, submissions are applied oldest -> newest (by `at`, then row order):
+     - a plant missing from a newer submission keeps that person's earlier count (carried forward);
+     - a size value that is blank / null / '' is "not counted" and also carries forward; an explicit 0 is 0;
+     - 4" / 1 gal keys missing on a plant carry forward; 2" / Tree keys missing on a plant that IS in the submission
+       mean 0 (the count tool prefills each person's last numbers and omits zero 2"/Tree sizes);
+     - a missing Ready value means ready = on hand.
+    since = ms of the earliest current count among people holding that plant/size (sales after it are subtracted);
+    null when nobody holds any. */
+function iennCarryCounts_(rows, idToName) {
+  idToName = idToName || {};
+  var subs = [];
+  for (var r = 1; r < (rows || []).length; r++) {
+    var week = String(rows[r][0] || ''), person = String(rows[r][1] || ''), at = Number(rows[r][2]) || 0, counts;
     if (!week || !person) continue;
-    if (!currentWeek || week > currentWeek) currentWeek = week;
-    var key = person;
-    if (!latest[key] || latest[key].at < at) {
-      var counts = {};
-      try { counts = JSON.parse(rows[r][3] || '{}'); } catch (e) { counts = {}; }
-      latest[key] = { at: at, week: week, counts: counts };
-    }
+    try { counts = JSON.parse(rows[r][3] || '{}'); } catch (e) { continue; }   // unreadable row: ignore it, never wipe counts
+    if (!counts || typeof counts !== 'object') continue;
+    subs.push({ person: person, at: at, i: r, counts: counts });
   }
-
-  // Compile totals only from the most recent week
-  var stock = {}, counted = {};
-  Object.keys(latest).forEach(function (person) {
-    var entry = latest[person];
-    if (entry.week !== currentWeek) return;
-    var counts = entry.counts || {};
-    Object.keys(counts).forEach(function (plantId) {
-      var name = idToName[plantId] || plantId;
-      if (!stock[name]) { stock[name] = {}; IENN_COUNT_SIZES.forEach(function (z) { stock[name][z[0]] = { ready: 0, onHand: 0 }; }); }
-      var c = counts[plantId] || {};
+  subs.sort(function (a, b) { return (a.at - b.at) || (a.i - b.i); });
+  var blank = function (v) { return v === undefined || v === null || (typeof v === 'string' && v.trim() === ''); };
+  var num = function (v) { var n = Number(v); return isFinite(n) && n > 0 ? n : 0; };
+  var eff = {};   // person -> plantId -> sizeKey -> { onHand, ready, at, keyed }
+  subs.forEach(function (s) {
+    var mine = eff[s.person] = eff[s.person] || {};
+    Object.keys(s.counts).forEach(function (id) {
+      var c = s.counts[id]; if (!c || typeof c !== 'object') return;
+      var cur = mine[id] = mine[id] || {};
       IENN_COUNT_SIZES.forEach(function (z) {
-        var has = function (k) { return !(c[k] === undefined || c[k] === null || c[k] === ''); };
-        if (has(z[1]) || has(z[2])) counted[z[0]] = true;
-        var oh = Number(c[z[1]]) || 0, rd = has(z[2]) ? (Number(c[z[2]]) || 0) : oh;
-        stock[name][z[0]].onHand += oh; stock[name][z[0]].ready += rd;
+        var hasH = !blank(c[z[1]]), hasR = !blank(c[z[2]]);
+        if (hasH || hasR) {
+          var oh = hasH ? num(c[z[1]]) : num(c[z[2]]), rd = hasR ? num(c[z[2]]) : oh;
+          cur[z[0]] = { onHand: oh, ready: rd, at: s.at, keyed: true };
+        } else if (IENN_OPTIONAL_COUNT_KEYS[z[1]] && !(z[1] in c) && !(z[2] in c)) {
+          cur[z[0]] = { onHand: 0, ready: 0, at: s.at, keyed: false };   // tool omits zero 2"/Tree: counted as none
+        }   // else: not counted in this submission -> keep the earlier value
       });
     });
   });
-  // Sizes with any count key in the newest week (non-enumerable so callers iterating plant names never see it).
+  var stock = {}, counted = {};
+  Object.keys(eff).forEach(function (person) {
+    Object.keys(eff[person]).forEach(function (id) {
+      var name = idToName[id] || id;
+      if (!stock[name]) { stock[name] = {}; IENN_COUNT_SIZES.forEach(function (z) { stock[name][z[0]] = { ready: 0, onHand: 0, since: null }; }); }
+      IENN_COUNT_SIZES.forEach(function (z) {
+        var e = eff[person][id][z[0]], t = stock[name][z[0]]; if (!e) return;
+        if (e.keyed) counted[z[0]] = true;
+        t.onHand += e.onHand; t.ready += e.ready;
+        if ((e.onHand > 0 || e.ready > 0) && (t.since === null || e.at < t.since)) t.since = e.at;
+      });
+    });
+  });
+  // Sizes with count keys in the current counts (non-enumerable so callers iterating plant names never see it).
   Object.defineProperty(stock, '__counted', { value: counted, enumerable: false });
   return stock;
 }
@@ -199,23 +219,23 @@ function getInitial() {
   return {
     previewInv: preview,
     teamEmails: s.teamEmails,
-    plants: [
+    plants: iennInitialPlants_() || [   // master list = IENN Inventory > Catalog (hidden rows excluded); this array is only a fallback if the Catalog can't be read
       'White sage (Salvia apiana)',
       'Black sage (Salvia mellifera)',
       'California buckwheat (Eriogonum fasciculatum)',
-      'California encelia (Encelia californica)',
+      'Bush sunflower (Encelia californica)',
       'California poppy (Eschscholzia californica)',
       'Chaparral yucca (Hesperoyucca whipplei)',
       'Deergrass (Muhlenbergia rigens)',
       'Desert marigold (Baileya multiradiata)',
       'Matilija poppy (Romneya coulteri)',
       'Morning glory (Calystegia macrostegia)',
-      'Narrow-leaf milkweed (Asclepias fascicularis)',
+      'Narrowleaf milkweed (Asclepias fascicularis)',
       'Rock monkeyflower (Diplacus calycinus)',
       'Scarlet bugler (Penstemon centranthifolius)',
       'Showy milkweed (Asclepias speciosa)',
       'Showy penstemon (Penstemon spectabilis)',
-      'Sticky monkeyflower (Diplacus aurantiacus)',
+      'Southern bush monkeyflower (Diplacus longiflorus)',
       'Sugarbush (Rhus ovata)',
       'Woollypod milkweed (Asclepias eriocarpa)',
       'Yarrow (Achillea millefolium)',
@@ -298,7 +318,7 @@ function buildReceiptText(payload, invno) {
   return [
     'Inland Empire Native Nursery',
     'Established 2020',
-    '1 (909) 609-9373 · Fontana, CA 92336',
+    'REDACTED-phone · Fontana, CA 92336',
     '',
     'Invoice #: ' + invno,
     'Date: ' + (payload.date || ''),
@@ -332,7 +352,7 @@ function buildCustomerReceiptText(payload, invno) {
   var note = customerNoteOf_(payload);
   return [
     'Inland Empire Native Nursery',
-    'Fontana, CA · 1 (909) 609-9373 · plants@inlandempirenativenursery.com',
+    'Fontana, CA · REDACTED-phone · REDACTED-email',
     '',
     'Thanks for your order! Here is your copy.',
     '',
@@ -348,7 +368,7 @@ function buildCustomerReceiptText(payload, invno) {
     '',
     'PICKUP',
     'Saturdays 10 a.m. – 2 p.m., other times case by case on request.',
-    'We\u2019ll email to confirm your pickup time.',
+    'We\u2019ll email to confirm your pickup time.', IENN_NO_SHOW_POLICY,
     '',
     'LOCATION',
     'Fontana area, near Sierra & Baseline, about 10 minutes from the 210; exact address once your order is confirmed.',
@@ -356,7 +376,7 @@ function buildCustomerReceiptText(payload, invno) {
     'PAYMENT',
     'Cash or Zelle at time of pickup.' + (payload.payment ? ' You chose: ' + payload.payment + '.' : ''),
     '',
-    'Questions? Call or text Andrew: (909) 609-9373, or email plants@inlandempirenativenursery.com',
+    'Questions? Call or text Andrew: REDACTED-phone, or email REDACTED-email',
     '',
     'All sales are final. Plants are sold as-is. No returns, exchanges, or refunds after pickup.',
     'Identity is as marked on this receipt. No warranty beyond defects obvious at the time of pickup.'

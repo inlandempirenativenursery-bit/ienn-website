@@ -9,6 +9,7 @@ function fmt(d, tz, f) {
   if (f === 'yyyy-MM-dd') return `${p.year}-${p.month}-${p.day}`;
   return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}${off}`;
 }
+const TEST_CF_ACCOUNT = 'test-cf-account-id', TEST_CF_SITE = 'test-cf-site-tag';
 function run({ now, rows, props, cf }) {
   const cache = {}, fetches = [], writes = [];
   const sheet = { getDataRange: () => ({ getValues: () => rows.map(r => r.slice()) }), getRange() { writes.push(arguments); return { setValues() {}, setValue() {} }; } };
@@ -24,6 +25,7 @@ function run({ now, rows, props, cf }) {
   };
   vm.createContext(ctx);
   for (const f of ['IENN_Config.gs', 'IENN_Stock.gs', 'IENN_Metrics.gs']) vm.runInContext(fs.readFileSync(path.join(dir, f), 'utf8'), ctx, { filename: f });
+  ctx.IENN_CF_ACCOUNT_ID = TEST_CF_ACCOUNT; ctx.IENN_CF_BEACON_TOKEN = TEST_CF_SITE; ctx.IENN_INVOICES_SPREADSHEET_ID = 'test-invoices-spreadsheet-id';   // redacted in repo copy; stub openById ignores the id
   return { ctx, cache, fetches, writes, get: p => JSON.parse(ctx.iennMetricsRoute_(p).s) };
 }
 const head = ['Timestamp', 'Invoice #', 'Date', 'Paid', 'Customer Email', 'Grand Total', 'Lines JSON', 'Note', 'Status', 'Handled by', 'Our response'];
@@ -63,7 +65,7 @@ const events = [
   [T('2026-09-20T12:00:00-07:00'), 1],                                                 // outside d30 (starts Sep 26), in ytd
   [T('2026-03-15T12:00:00-07:00'), 1],                                                 // ytd only
 ];
-const props = { METRICS_KEY: 'k3y-long', CF_API_TOKEN: 'tok' };
+const props = { METRICS_KEY: 'k3y-long', CF_API_TOKEN: 'tok', METRICS_ORDERS_SINCE: '2026-01-01' };   // live defaults this to 2026-10-25 (soft-open)
 const P = (r, id) => r.metrics.find(x => x.id === id).periods;
 
 let cf = fakeCf(events), h = run({ now: NOW, rows, props, cf });
@@ -86,7 +88,7 @@ assert(cf.segs.every(g => g.to - g.from <= lim && g.from >= NOW - keep), JSON.st
 cf.segs.slice().sort((x, y) => x.from - y.from).reduce((prev, g) => { assert(!prev || g.from >= prev.to, 'disjoint'); return g; }, null);
 assert(h.fetches.filter(q => /s8:/.test(q)).length === 0, 'max 8 aliases per request');
 const q = h.fetches.find(x => x.includes('s0:'));
-assert(q.includes('accountTag:"a85e045b95745b2eea831457317a5f54"') && q.includes('siteTag:"00379ec8474248f69ace426cd21d2126"') && q.includes('bot:0'), q);
+assert(q.includes('accountTag:"' + TEST_CF_ACCOUNT + '"') && q.includes('siteTag:"' + TEST_CF_SITE + '"') && q.includes('bot:0'), q);
 assert(q.includes('datetime_geq:"2026-10-25T07:00:00Z"') && q.includes('datetime_geq:"2026-10-19T07:00:00Z"') && q.includes('datetime_geq:"2026-10-01T07:00:00Z"'), q);
 // orders: periods
 assert.deepStrictEqual(P(r, 'orders'), { today: 1, d7: 3, d30: 4, qtd: 4, ytd: 4 }, 'cancelled never counted; Oct 18 order is in d30/qtd but not d7');
@@ -111,7 +113,7 @@ cf = fakeCf(events, { maxDuration: 10 * 86400, notOlderThan: 400 * 86400 }); h =
 assert(cf.segs.length > 25 && cf.segs.every(g => g.to - g.from <= 10 * 864e5));
 assert.deepStrictEqual(P(r, 'visits'), { today: 1, d7: 2, d30: 4, qtd: 3, ytd: 6 }); assert(!r.metrics[0].since);
 // early January: d30 reaches into last year, before YTD start
-h = run({ now: T('2026-01-05T09:00:00-08:00'), rows, props, cf: fakeCf([[T('2025-12-20T12:00:00-08:00'), 1], [T('2026-01-02T12:00:00-08:00'), 1]]) });
+h = run({ now: T('2026-01-05T09:00:00-08:00'), rows, props: Object.assign({}, props, { METRICS_ORDERS_SINCE: '2025-01-01' }), cf: fakeCf([[T('2025-12-20T12:00:00-08:00'), 1], [T('2026-01-02T12:00:00-08:00'), 1]]) });
 r = h.get({ key: 'k3y-long' }); assert.deepStrictEqual(P(r, 'visits'), { today: 0, d7: 1, d30: 2, qtd: 1, ytd: 1 });
 assert.strictEqual(r.periods.d30.from, '2025-12-07');
 // Cloudflare down: orders still served, visits null, partial flag, no raw upstream error

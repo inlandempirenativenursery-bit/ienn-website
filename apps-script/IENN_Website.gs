@@ -17,22 +17,24 @@ function iennJson_(obj, cb) {
   return ContentService.createTextOutput(s).setMimeType(ContentService.MimeType.JSON);
 }
 
-function iennRoute_(e) {
+var IENN_FELL_BACK_ = false, IENN_FEED_CACHE_KEY = 'ienn_feed_v1', IENN_FEED_BUST_KEY = 'ienn_feed_v1_bust', IENN_FEED_CACHE_TTL = 60, IENN_FEED_CACHE_MAX = 95000; /* ?view=inventory cache: 60 s in CacheService (value limit 100 KB); fallback/error replies never cached; orders bust it */ function iennJsonStr_(s, cb) { if (cb && /^[A-Za-z_$][\w$]*$/.test(cb)) return ContentService.createTextOutput(cb + '(' + s + ')').setMimeType(ContentService.MimeType.JAVASCRIPT); return ContentService.createTextOutput(s).setMimeType(ContentService.MimeType.JSON); } function iennFeedGet_() { try { return CacheService.getScriptCache().get(IENN_FEED_CACHE_KEY) || null; } catch (e) { return null; } } function iennFeedPut_(s, t0) { try { var c = CacheService.getScriptCache(), b = Number(c.get(IENN_FEED_BUST_KEY) || 0); if (b >= t0) return false; var v = s.replace(/"cached":false}$/, '"cached":true}'); if (encodeURIComponent(v).replace(/%[0-9A-F]{2}/g, 'x').length > IENN_FEED_CACHE_MAX) return false; c.put(IENN_FEED_CACHE_KEY, v, IENN_FEED_CACHE_TTL); return true; } catch (e) { return false; } } function iennFeedBust_() { try { var c = CacheService.getScriptCache(); c.remove(IENN_FEED_CACHE_KEY); c.put(IENN_FEED_BUST_KEY, String(Date.now()), 2 * IENN_FEED_CACHE_TTL); } catch (e) {} } function iennRoute_(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'confirm') return iennConfirmRoute_(p);
+  if (p.action === 'hold' || p.action === 'cancel' || p.action === 'extend' || p.action === 'pickup') return iennHoldRoute_(p);   // signed Hold / Cancel / Extend links (IENN_Hold.gs)
   if (p.view === 'confirm') return iennConfirmRoute_({ id: p.orderId || p.id, t: p.t, format: p.format });   // alias ?view=confirm&orderId=…&t=…; same signed HMAC check, bad/missing token = generic page, nothing changed    // one-tap Confirm link in Andrew's alert (IENN_Confirm.gs)
   if (p.view === 'customer') return iennCustomerClosed_();     // public orders now go through the website only
   if (p.view === 'print' || p.view === 'printlist') return iennPrintRoute_(p);
   if (p.view === 'hub') return HtmlService.createHtmlOutput(iennHubHtml_()).setTitle('IENN team home');
+  if (p.view === 'metrics') return iennMetricsRoute_(p);   // private totals for Eric's phone widget (IENN_Metrics.gs); key-checked, counts only
   if (p.view !== 'inventory') return null;
-  try { return iennJson_(iennInventory(), p.callback); } catch (err) { return iennJson_({ ok: false, error: String(err.message || err) }, p.callback); }
+  try { var hit = iennFeedGet_(); if (hit) return iennJsonStr_(hit, p.callback); var t0 = Date.now(), inv = iennInventory(); inv.cached = false; var s = JSON.stringify(inv); if (!inv.fallback) iennFeedPut_(s, t0); return iennJsonStr_(s, p.callback); } catch (err) { return iennJson_({ ok: false, error: String(err.message || err) }, p.callback); }
 }
 
 /** {version:3, taxPct, sizes:[{key,label,price,tracked}], plants:[{name, fullName, botanical, image, sizes:[{key,size,price,qty}]}]}
     qty = READY count left (0 = not available), extra = smaller on-hand not retail-ready (null without a count), canRequest = extra>0; qty: number for tracked sizes once a count exists; null when no count yet (countDate null), null for untracked sizes (= "Available on request"); 2" / Tree pot become tracked once the newest count includes them. Prices include tax. */
-function iennInventory() {
+function iennInventory() { IENN_FELL_BACK_ = false;
   var baseline = iennBaselineDate_(), init = getInitial() || {}, avail = iennAvailable_(baseline), known = !!baseline, photos = iennCatalogPhotos_(), seen = {}, names = [];
-  (init.plants || []).concat(iennCatalogNames_()).forEach(function (n) { var k = iennKey_(n); if (k && !seen[k]) { seen[k] = 1; names.push(n); } });
+  names = (init.plants || []).filter(function (n) { return !/^other$/i.test(String(n).trim()); });   // Catalog is the master list; 'Other' is only an order-form option
   var plants = names.map(function (full) {
     var nb = iennSplit_(full), a = avail[iennKey_(full)] || {};
     return { name: nb[0], fullName: full, botanical: nb[1], image: photos[iennKey_(full)] || photos[iennKey_(nb[0])] || '',
@@ -41,7 +43,7 @@ function iennInventory() {
   });
   return { version: 3, updated: new Date().toISOString(), countDate: baseline ? baseline.toISOString() : null, taxIncluded: true, onRequestLabel: IENN_ON_REQUEST_LABEL, contactPhone: IENN_CONTACT_PHONE,
     sizes: IENN_SIZES.map(function (s) { return { key: s.key, label: s.label, price: s.price, tracked: iennTracked_(s, avail) }; }), plants: iennSortPlants_(plants), sortedBy: 'pin,popularity' + IENN_POPULAR_DAYS + 'd',
-    promo: iennPromo_() };
+    promo: iennPromo_(), fallback: !!IENN_FELL_BACK_ };
 }
 
 function doPost(e) { return iennWebsitePost_(e); }
@@ -104,7 +106,7 @@ function iennSubmitInvoiceChecked(data, meta) {
     iennMarkNew_(id);
     if (IENN_EXTRA_TEAM_EMAIL) iennTeamEmail_(id, data, meta);
     return fromCustomerView ? res : { ok: true, orderId: String(id), notices: notices };
-  } finally { lock.releaseLock(); }
+  } finally { iennFeedBust_(); lock.releaseLock(); }
 }
 /** New invoice: Status = New, Handled by = Andrew (if blank). */
 function iennMarkNew_(id) {
@@ -132,20 +134,25 @@ function iennTeamEmail_(id, data, meta) {
   var ok = function (a) { return a && !/PLACEHOLDER/i.test(a); };
   var to = ok(TEAM_EMAIL_TO) ? TEAM_EMAIL_TO : '', cc = TEAM_EMAIL_CC.filter(ok); if (!to && !cc.length) return false;
   if (!to) { to = cc.shift(); }
-  var link = iennConfirmLink_(id), sheetUrl = iennInvoicesSheet_().getParent().getUrl() + '#gid=' + iennInvoicesSheet_().getSheetId();
+  var link = iennConfirmLink_(id), holdLink = iennActionLink_('hold', id), pickLink = iennActionLink_('pickup', id), sheetUrl = iennInvoicesSheet_().getParent().getUrl() + '#gid=' + iennInvoicesSheet_().getSheetId();
   var reqs = iennRequestNote_(data.notices), notesOnly = String(data.note || '').replace(/^REQUEST: .*\n?/gm, '');
   var items = data.lines.map(function (l) { return l.qty + ' × ' + l.plant + ' (' + l.size + ') = $' + l.amt; });
   var body = 'A new order came in (' + (meta.source || 'customer view') + ').\n\nOrder: ' + id + '\nCustomer: ' + (meta.name || '') + ' <' + data.customerEmail + '>\n\n' +
     items.map(function (x) { return '  ' + x; }).join('\n') +
     '\n\nTotal: $' + data.grand + ' (taxes included)' + (reqs ? '\n\n' + reqs : '') + '\nNotes: ' + notesOnly + '\n\n' + IENN_ORDER_OWNER + ' is handling this order (order-to-pickup).' +
     (link ? '\n\nCONFIRM ORDER (one tap, saves the thank-you email to Gmail Drafts, sends nothing): ' + link : '') +
+    (holdLink ? '\nHOLD (customer hasn\'t replied yet; you can still Confirm later): ' + holdLink : '') +
+    (pickLink ? '\nPICKED UP (closes the order): ' + pickLink : '') +
     '\n\nView details: ' + sheetUrl + '\nIf someone else takes it, change Handled by in IENN Invoices.';
   var E = iennEsc_, html = '<div style="font-family:system-ui,Arial,sans-serif;font-size:15px;color:#2c2c2c;max-width:560px">' +
     '<p>A new order came in (' + E(meta.source || 'customer view') + ').</p><p><b>Order:</b> ' + E(id) + '<br><b>Customer:</b> ' + E(meta.name || '') + ' &lt;' + E(data.customerEmail) + '&gt;</p>' +
     '<ul>' + items.map(function (x) { return '<li>' + E(x) + '</li>'; }).join('') + '</ul><p><b>Total: $' + E(data.grand) + '</b> (taxes included)</p>' +
     (reqs ? '<p style="background:#fdecea;border-left:4px solid #c0392b;padding:8px"><b>' + E(reqs).replace(/\n/g, '<br>') + '</b></p>' : '') + '<p><b>Notes:</b><br>' + E(notesOnly).replace(/\n/g, '<br>') + '</p>' +
-    (link ? '<p><a href="' + E(link) + '" style="display:inline-block;padding:14px 22px;background:#c0392b;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:17px">Confirm order</a><br>' +
-      '<small>One tap: marks it Confirmed and saves the thank-you email (with the pickup address) in Gmail Drafts. Nothing is sent until you press Send there.</small>' +
+    (link ? '<p><a href="' + E(link) + '" style="display:inline-block;padding:14px 22px;background:#c0392b;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:17px">Confirm order</a>' +
+      (holdLink ? ' <a href="' + E(holdLink) + '" style="display:inline-block;padding:14px 22px;background:#6b6b6b;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:17px">Hold</a>' : '') +
+      (pickLink ? ' <a href="' + E(pickLink) + '" style="display:inline-block;padding:14px 22px;background:#4a6fa5;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:17px">Picked up</a>' : '') + '<br>' +
+      '<small>One tap: marks it Confirmed and saves the thank-you email (with the pickup address) in Gmail Drafts. Nothing is sent until you press Send there.' +
+      (holdLink ? ' Hold: marks it On hold for ' + iennHoldDays_() + ' days (nothing sent); we remind the team when it runs out. Picked up: closes the order.' : '') + '</small>' +
       '</p>' : '') +
     '<p>' + E(IENN_ORDER_OWNER) + ' is handling this order (order-to-pickup). <a href="' + E(sheetUrl) + '">View details</a>. If someone else takes it, change Handled by in IENN Invoices.</p></div>';
   MailApp.sendEmail({ to: to, cc: cc.join(','), subject: 'New IENN order ' + id + ' — ' + (meta.name || data.customerEmail), body: body, htmlBody: html });
