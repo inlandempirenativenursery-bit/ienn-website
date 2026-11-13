@@ -421,4 +421,25 @@ t('print view: format=pdf page auto-starts the download (Blob + click on load) a
   assert.strictEqual(clicks.length, 1); assert.deepStrictEqual(clicks[0], { href: 'blob:x', download: 'IENN-plant-list.pdf' });
   assert.strictEqual(blobs[0].type, 'application/pdf'); assert.strictEqual(blobs[0].bytes.toString('latin1'), '%PDF-1.5 test');
 });
+t('print list (HTML, PDF, CSV) keeps only plants with qty > 0 in some size; Sold out still shown inside kept rows; feed untouched', () => {
+  const h = load(), sizes = [{ key: '4"', label: '4-inch pot', price: 6 }, { key: '1 gal', label: '1-gallon', price: 15 }];
+  const fixture = { sizes, plants: [
+    { name: 'One size only', botanical: 'Unus solus', sizes: [{ key: '4"', qty: 0 }, { key: '1 gal', qty: 3 }] },
+    { name: 'All zero', botanical: 'Nullus omnis', sizes: [{ key: '4"', qty: 0 }, { key: '1 gal', qty: 0 }] },
+    { name: 'On request only', botanical: 'Rogatus', sizes: [{ key: '4"', qty: null }, { key: '1 gal', qty: null }] },
+    { name: 'Both sizes', botanical: 'Ambo', sizes: [{ key: '4"', qty: 2 }, { key: '1 gal', qty: 5 }] }] };
+  h.ctx.__printFixture = fixture; vm.runInContext('iennInventory = function () { return JSON.parse(JSON.stringify(__printFixture)); };', h.ctx);
+  let pdfHtml = null; h.ctx.Utilities.newBlob = (html) => { pdfHtml = html; return { getAs: () => ({ setName() { return this; }, getBytes: () => [] }) }; };   // PDF = this HTML converted by Apps Script
+  const html = h.ctx.iennRoute_({ parameter: { view: 'print' } }).getContent(), csv = h.ctx.iennPrintCsv_();
+  h.ctx.iennPdfBlob_();
+  [['HTML', html], ['PDF', pdfHtml], ['CSV', csv]].forEach(([kind, out]) => {
+    assert.ok(out, kind + ' rendered');
+    assert.match(out, /One size only/, kind + ': stock in one size is kept'); assert.match(out, /Both sizes/, kind);
+    assert.doesNotMatch(out, /All zero/, kind + ': all-zero plant dropped'); assert.doesNotMatch(out, /On request only/, kind + ': no qty > 0 -> dropped');
+  });
+  assert.match(html, /One size only[\s\S]*?<td class="out">Sold out<\/td><td class="">3<\/td>/, 'Sold out kept inside a kept row');
+  const rows = csv.split('\n'); assert.strictEqual(rows.length, 3); assert.match(rows.find(r => /^One size only/.test(r)), /,Sold out,3$/);
+  assert.strictEqual(h.ctx.iennInventory().plants.length, 4, 'feed source (iennInventory) not filtered');
+  assert.strictEqual(JSON.parse(h.ctx.iennRoute_({ parameter: { view: 'inventory' } }).getContent()).plants.length, 4, '?view=inventory still lists every plant');
+});
 console.log('\n' + pass + ' total tests passed');

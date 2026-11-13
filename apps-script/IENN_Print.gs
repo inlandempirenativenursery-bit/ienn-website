@@ -17,11 +17,11 @@ function iennEsc_(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, func
 function iennAppeal_(p) { var t = (p.name + ' ' + p.botanical).toLowerCase(); for (var i = 0; i < IENN_APPEAL_KEYWORDS.length; i++) if (t.indexOf(IENN_APPEAL_KEYWORDS[i]) >= 0) return i; return 999; }
 function iennAvailText_(z) { return z.qty == null ? 'On request' : z.qty > 0 ? String(z.qty) : 'Sold out'; }
 
-/** Plants sorted: anything available first, then appeal keywords, then A–Z. */
+/** Printable list (HTML, PDF, CSV): only plants with qty > 0 in at least one size; sorted by appeal keywords, then A–Z. The ?view=inventory feed is not filtered. */
+function iennPrintInStock_(p) { return p.sizes.some(function (z) { return z.qty > 0; }); }
 function iennPrintRows_() {
   var inv = iennInventory();
-  var rank = function (p) { return p.sizes.some(function (z) { return z.qty > 0; }) ? 0 : 1; };
-  return { inv: inv, plants: inv.plants.slice().sort(function (a, b) { return rank(a) - rank(b) || iennAppeal_(a) - iennAppeal_(b) || a.name.localeCompare(b.name); }) };
+  return { inv: inv, plants: inv.plants.filter(iennPrintInStock_).sort(function (a, b) { return iennAppeal_(a) - iennAppeal_(b) || a.name.localeCompare(b.name); }) };
 }
 
 function iennPrintHtml_() {
