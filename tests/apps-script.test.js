@@ -409,4 +409,16 @@ t('print view: Export PDF / Export CSV are absolute iennWebAppUrl_() /exec links
   });
   assert.doesNotMatch(html, /href="\?view=/);
 });
+t('print view: format=pdf page auto-starts the download (Blob + click on load) and keeps the visible "Download the PDF" fallback link', () => {
+  const h = load(), b64 = Buffer.from('%PDF-1.5 test').toString('base64'), html = h.ctx.iennPdfPageHtml_(b64);
+  assert.match(html, /<a id="ienn-pdf" download="IENN-plant-list\.pdf" href="data:application\/pdf;base64,[^"]+">Download the PDF<\/a>/);
+  const script = (html.match(/<script>([\s\S]*)<\/script>/) || [])[1]; assert.ok(script, 'auto-download script present');
+  const clicks = [], blobs = [], fallback = { getAttribute: n => n === 'href' ? 'data:application/pdf;base64,' + b64 : null };
+  const doc = { getElementById: id => id === 'ienn-pdf' ? fallback : null, body: { appendChild() {} },
+    createElement: () => ({ style: {}, click() { clicks.push({ href: this.href, download: this.download }); } }) };
+  vm.runInNewContext(script, { document: doc, atob: s => Buffer.from(s, 'base64').toString('latin1'), Uint8Array, setTimeout() {},
+    Blob: function (parts, o) { blobs.push({ bytes: Buffer.from(parts[0]), type: o.type }); }, URL: { createObjectURL: () => 'blob:x', revokeObjectURL() {} } });
+  assert.strictEqual(clicks.length, 1); assert.deepStrictEqual(clicks[0], { href: 'blob:x', download: 'IENN-plant-list.pdf' });
+  assert.strictEqual(blobs[0].type, 'application/pdf'); assert.strictEqual(blobs[0].bytes.toString('latin1'), '%PDF-1.5 test');
+});
 console.log('\n' + pass + ' total tests passed');

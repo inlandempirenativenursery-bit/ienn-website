@@ -56,11 +56,21 @@ function iennPdfBlob_() {
     .setName('IENN plant list ' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd') + '.pdf');
 }
 
+/** format=pdf page: starts the download automatically (Blob + programmatic click on load); the visible link stays as a fallback if the browser blocks it. */
+function iennPdfPageHtml_(b64) {
+  return '<p>Your PDF download should start automatically. If it doesn\'t, <a id="ienn-pdf" download="IENN-plant-list.pdf" href="data:application/pdf;base64,' + b64 + '">Download the PDF</a></p>' +
+    '<script>(function () { try { var a = document.getElementById("ienn-pdf"), s = atob(a.getAttribute("href").split(",")[1]), u = new Uint8Array(s.length);' +
+    ' for (var i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);' +
+    ' var url = URL.createObjectURL(new Blob([u], { type: "application/pdf" })), d = document.createElement("a");' +
+    ' d.href = url; d.download = "IENN-plant-list.pdf"; d.style.display = "none"; document.body.appendChild(d); d.click();' +
+    ' setTimeout(function () { URL.revokeObjectURL(url); }, 60000); } catch (e) { /* fallback link stays visible */ } })();</script>';
+}
+
 function iennPrintRoute_(p) {
   if (p.format === 'csv') return ContentService.createTextOutput(iennPrintCsv_()).setMimeType(ContentService.MimeType.CSV).downloadAsFile('IENN-plant-list.csv');
   if (p.format === 'pdf') {   // web apps can't stream binary; hand back a data: link that downloads the PDF
     var b64 = Utilities.base64Encode(iennPdfBlob_().getBytes());
-    return HtmlService.createHtmlOutput('<p><a download="IENN-plant-list.pdf" href="data:application/pdf;base64,' + b64 + '">Download the PDF</a></p>').setTitle('IENN plant list PDF');
+    return HtmlService.createHtmlOutput(iennPdfPageHtml_(b64)).setTitle('IENN plant list PDF');
   }
   return HtmlService.createHtmlOutput(iennPrintHtml_()).setTitle('IENN plant list');
 }
