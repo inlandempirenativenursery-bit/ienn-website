@@ -397,4 +397,16 @@ t('unconfirmed manual draft gets no PDF and no address', () => {
   const h = load(), r = post(h, [{ plant: 'White sage (Salvia apiana)', sizeKey: '4"', qty: 1 }]); h.ctx.iennDraftReply(r.orderId);
   assert.strictEqual(h.drafts[0].attachments.length, 0); assert.doesNotMatch(h.drafts[0].body, ADDR);
 });
+t('print view: Export PDF / Export CSV are absolute iennWebAppUrl_() /exec links with target=_top (not relative ?view= links that blank the iframe)', () => {
+  const h = load(), html = h.ctx.iennRoute_({ parameter: { view: 'print' } }).getContent(), exec = h.ctx.iennWebAppUrl_();
+  const anchors = [...html.matchAll(/<a\s+([^>]*)>([^<]*)<\/a>/g)].map(m => ({ attrs: m[1], text: m[2] }));
+  [['Export PDF', 'pdf'], ['Export CSV', 'csv']].forEach(([label, format]) => {
+    const a = anchors.find(x => x.text === label); assert.ok(a, label + ' link present');
+    const u = new URL(((a.attrs.match(/href="([^"]*)"/) || [])[1] || '').replace(/&amp;/g, '&'));   // throws if relative
+    assert.strictEqual(u.protocol, 'https:'); assert.match(u.pathname, /\/exec$/); assert.strictEqual(u.origin + u.pathname, exec);
+    assert.strictEqual(u.searchParams.get('view'), 'print'); assert.strictEqual(u.searchParams.get('format'), format);
+    assert.match(a.attrs, /target="_top"/, label + ' has target=_top');
+  });
+  assert.doesNotMatch(html, /href="\?view=/);
+});
 console.log('\n' + pass + ' total tests passed');

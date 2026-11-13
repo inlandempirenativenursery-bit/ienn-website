@@ -26,6 +26,7 @@ function iennPrintRows_() {
 
 function iennPrintHtml_() {
   var d = iennPrintRows_(), date = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'MMMM d, yyyy');
+  var exec = iennWebAppUrl_();   // absolute /exec links + target=_top: relative ?view=… links resolve to the googleusercontent iframe and blank the page
   var head = d.inv.sizes.map(function (s) { return '<th>' + iennEsc_(s.label) + '<br><small>$' + s.price + '</small></th>'; }).join('');
   var rows = d.plants.map(function (p) {
     return '<tr><td><b>' + iennEsc_(p.name) + '</b>' + (p.botanical ? '<br><i>' + iennEsc_(p.botanical) + '</i>' : '') + '</td>' +
@@ -38,7 +39,7 @@ function iennPrintHtml_() {
     'th{background:#f8f6f3;color:#4a5a4a}td.out{color:#999}.btns{margin:8px 0}.btns a{margin-right:12px}@media print{.btns{display:none}}' +
     '</style></head><body><header><img src="' + iennEsc_(IENN_LOGO_URL) + '" alt="Inland Empire Native Nursery logo"><div><h1>Inland Empire Native Nursery — Plant list</h1>' +
     '<div class="sub">' + date + ' · Prices by size, taxes included · Numbers = available now · "On request" = ask us</div></div></header>' +
-    '<div class="btns"><a href="javascript:window.print()">Print</a><a href="?view=print&format=pdf">Export PDF</a><a href="?view=print&format=csv">Export CSV</a></div>' +
+    '<div class="btns"><a href="javascript:window.print()">Print</a><a href="' + iennEsc_(exec + '?view=print&format=pdf') + '" target="_top">Export PDF</a><a href="' + iennEsc_(exec + '?view=print&format=csv') + '" target="_top">Export CSV</a></div>' +
     '<table><thead><tr><th>Plant</th>' + head + '</tr></thead><tbody>' + rows + '</tbody></table>' +
     '<p class="sub">Pickup only · Fontana area · Saturdays 10 a.m. – 2 p.m. · Cash or Zelle at time of pickup · Call or text Andrew: <a href="tel:' + IENN_CONTACT_TEL + '">' + IENN_CONTACT_PHONE + '</a></p><p class="sub fine-print" style="font-size:10px">Other pickup times available case by case upon request.</p></body></html>';
 }
