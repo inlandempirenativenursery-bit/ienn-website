@@ -33,11 +33,16 @@
   /* Header placement: on the title row, right of the title (or left of the Instagram link on wide screens), never moving the title.
      Size shrinks only as far as needed to keep a gap from the title on narrow phones (min 28px; the tap target stays 44px). */
   function fitHeader() { if (place !== "header" || !header) return;
-    var bn = header.querySelector(".brand-name"), ig = header.querySelector(".ig-top"), vw = document.documentElement.clientWidth; if (!bn) return;
+    var bn = header.querySelector(".brand-name"), ig = header.querySelector(".ig-top"), about = header.querySelector(".about-top"), vw = document.documentElement.clientWidth; if (!bn) return;
     var rg = document.createRange(); rg.selectNodeContents(bn); var tr = rg.getBoundingClientRect();
-    var igv = ig && ig.offsetWidth > 0 ? ig.getBoundingClientRect() : null, edge = igv ? igv.left - 8 : vw - 4;
+    function vis(el) { return el && el.offsetWidth > 0 ? el.getBoundingClientRect() : null; }
+    var igv = vis(ig), abv = vis(about);
+    /* Ignore About us when it has moved under the slogan (≤480px), so search stays on the title row. */
+    if (abv && (abv.bottom <= tr.top || abv.top >= tr.bottom)) abv = null;
+    var edgeBox = (abv && igv) ? (abv.left <= igv.left ? abv : igv) : (abv || igv);
+    var edge = edgeBox ? edgeBox.left - 8 : vw - 4;
     btn.style.setProperty("--ps-size", Math.max(28, Math.min(38, Math.floor(edge - tr.right - 6))) + "px");
-    btn.style.right = igv ? Math.round(vw - edge) + "px" : "";
+    btn.style.right = edgeBox ? Math.round(vw - edge) + "px" : "";
     var cy = (tr.top + tr.bottom) / 2 + (sticky ? 0 : window.pageYOffset);
     btn.style.top = Math.round(cy - 22) + "px"; }
 

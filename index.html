@@ -351,6 +351,32 @@
     .hero.hero-compact .steps-strip li.lead { color:#6b5a85; }
     @media (min-width:768px) { .hero.hero-compact { padding:0.4rem 1rem 0.8rem; } }
   </style>
+
+  <style id="about-top-nav">
+    /* About us top link (preview): on the right next to Instagram on desktop; under the slogan at ≤480px so it never crowds the brand name. Instagram stays hidden at that width. */
+    .about-top {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      padding: 0 0.8rem;
+      font-size: 0.82rem;
+      font-weight: 650;
+      letter-spacing: 0.02em;
+      color: var(--sage-dark, #4a5a4a);
+      text-decoration: none;
+      border: 1px solid #cfc8b8;
+      border-radius: 999px;
+      background: #fff;
+      white-space: nowrap;
+    }
+    .about-top:hover { background: #f8f6f3; }
+    .about-top:focus-visible { outline: 3px solid #6b7c6a; outline-offset: 2px; }
+    @media (max-width: 480px) {
+      header .header-right { flex: 0 0 100%; order: 10; justify-content: center; display: flex; }
+      header .about-top { min-height: 44px; margin: 0.1rem 0 0.3rem; }
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -361,6 +387,7 @@
       </div>
     </a>
     <div class="header-right">
+      <a class="about-top" href="about.html">About us</a>
       <a class="ig-link ig-top" href="https://www.instagram.com/inlandempirenativenursery/" target="_blank" rel="noopener" aria-label="Instagram (opens in a new tab)"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg><span class="ig-top-text">Instagram</span></a>
     </div>
     <div class="hdr-slogan">Connecting people to native plants.</div>
@@ -444,7 +471,7 @@
   <script src="data/plant-basics.js?v=care15-1112"></script>
   <script src="data/plant-seals.js?v=gf30a1"></script>
   <script src="shop.js?v=alias1110"></script>
-  <script src="plant-search.js?v=gf30a1"></script>
+  <script src="plant-search.js?v=about1116"></script>
   <script>document.getElementById("printlist-link").href = APPS_SCRIPT_URL + "?view=print";</script>
   <script src="site-links.js?v=gf30a1"></script>
   <script src="teaser.js?v=gf30a1"></script>
