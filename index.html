@@ -297,7 +297,7 @@
     .order-btn.co-btn { border:2px solid var(--red); }
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Fraunces:ital,opsz,wght@1,9..144,600&display=swap" rel="stylesheet">
   <style id="hdr-3d">
     /* Header: no Check out button (tray bar handles checkout), seamless (no border), raised 3D name, deeper slogan glow */
     header { border-bottom:0 !important; box-shadow:none !important; }
@@ -353,7 +353,7 @@
   </style>
 
 <style id="hdr-top-refresh">
-    /* Preview: larger slogan, About us in a nav row under it (room for a future Map link). 1-2-3 removed from the top. */
+    /* Preview: larger slogan in Fraunces italic 600, About us in a nav row under it. 1-2-3 removed from the top. */
     .hdr-branding {
       flex: 0 0 100%;
       order: 9;
@@ -361,22 +361,24 @@
       padding: 0.2rem 0.7rem 0.55rem;
     }
     .hdr-slogan {
-      font-family: "Dancing Script", "Satisfy", cursive !important;
+      font-family: Fraunces, "Fraunces 9pt", serif !important;
+      font-optical-sizing: auto;
       font-style: italic;
-      font-weight: 700 !important;
-      font-size: clamp(2.05rem, 9.2vw, 3.55rem) !important;
-      line-height: 1.12 !important;
-      letter-spacing: 0.01em !important;
+      font-weight: 600 !important;
+      font-synthesis: none;
+      font-size: clamp(1.95rem, 7.4vw, 3.1rem) !important;
+      line-height: 1.18 !important;
+      letter-spacing: -0.015em !important;
       white-space: normal !important;
       overflow: visible !important;
       text-overflow: unset !important;
       text-wrap: balance;
       max-width: 100%;
-      margin: 0.1rem auto 0 !important;
+      margin: 0.15rem auto 0 !important;
       padding-left: 0.15rem !important;
       padding-right: 0.15rem !important;
       color: var(--sage-dark, #4f6b4e);
-      text-shadow: 0 1px 0 #fff, 0 0 10px rgba(143,188,143,.55), 0 0 22px rgba(200,180,230,.4) !important;
+      text-shadow: none !important;
     }
     .hdr-links {
       display: flex;
