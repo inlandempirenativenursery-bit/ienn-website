@@ -46,3 +46,22 @@
   src: url("fonts/fraunces-normal-560-650.woff2") format("woff2");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+
+/* Reserve the header logo box before the image decodes.
+   The <img> already has width/height (180×223), but CSS sets a fluid height
+   and width:auto, and wrapping it in <picture> meant the used size was not
+   reserved — Lighthouse: "Media element lacking an explicit size" on
+   header > a.logo > picture > img, which pushed main (order CLS 1.00 / 0.665). */
+.logo picture {
+  display: block;
+  flex-shrink: 0;
+  height: clamp(55px, 15.4vw, 76px);
+  aspect-ratio: 180 / 223;
+  width: auto;
+}
+.logo picture img {
+  display: block;
+  height: 100%;
+  width: 100%;
+  aspect-ratio: 180 / 223;
+}
