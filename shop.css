@@ -444,3 +444,9 @@ html.bg-light .pane-basics { --bg-op:.12; } html.bg-strong .pane-basics { --bg-o
   height: 440px;
   min-height: 440px;
 }
+
+/* Photo-only shells while the inventory feed is in flight: same 440px card
+   height as .card.has-basics, no price/stock/Add (those would be unverified). */
+.card.is-pending { height: var(--card-h, 440px); overflow: hidden; }
+.card.is-pending .body { display:flex; flex-direction:column; gap:0.35rem; padding:0.5rem 0.55rem 0.55rem; }
+.card.is-pending .pending-avail { margin:0; font-size:0.85rem; color:#6b7280; }

@@ -106,6 +106,7 @@
   function plantPhotoEl(p, idx) {
     var sizes = "(max-width: 600px) 48vw, 260px";
     var img = el("img", { src: p.image, alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" });
+    if (idx < 2) img.setAttribute("fetchpriority", "high");
     if (p.srcset) { img.setAttribute("srcset", p.srcset); img.setAttribute("sizes", sizes); }
     if (p.webpSrcset) {
       var pic = el("picture");
@@ -666,20 +667,94 @@
     if (params.get("checkout") === "1" && !autoOpened && lines().length) { autoOpened = true; if (window.iennOpenCheckout) window.iennOpenCheckout(); } }
   var autoOpened = false;
   /* Loading the live feed (Apps Script ?view=inventory, typically 5-9 s to respond):
-     - First visit (nothing cached): skeleton cards + "Loading today's plants…", never a partial or built-in list while we wait.
+     - First visit (nothing cached): photo-only shells for plants we already have pictures for (static plant-photos.js + plant-basics.js),
+       so the first card images can paint before the feed returns. No price, stock, quantity or Add button until live data arrives.
      - Each request gets FEED_TIMEOUT_MS; a failed, timed-out, flagged (fallback:true / ok:false) or suspiciously short reply is retried FEED_RETRIES times.
      - If it still fails: last good feed from localStorage (with a dated note), else the built-in offline list (with a note), and keep retrying quietly.
-     - Once a good list is showing, a failed background refresh keeps it as is (never downgrades to a shorter list). */
+     - Once a good list is showing, a failed background refresh keeps it as is (never downgrades to a shorter list).
+     - A shell whose plant is missing from the feed is dropped when the live grid renders; it never showed availability. */
   var TIMEOUT = typeof FEED_TIMEOUT_MS === "number" ? FEED_TIMEOUT_MS : 25000, RETRIES = typeof FEED_RETRIES === "number" ? FEED_RETRIES : 1;
   var SHORT = typeof FEED_SHORT_RATIO === "number" ? FEED_SHORT_RATIO : 0.7, good = false, live = false, loadingNow = false, retryTimer = null;
   try { localStorage.removeItem("ienn-inventory-v2"); } catch (e) {}   // old cache could hold a short list
   function cached() { var c = null; try { c = JSON.parse(localStorage.getItem(CACHE)); } catch (e) {} return c && c.d && (c.d.plants || []).length ? c : null; }
   function rawCount(d) { return d && Array.isArray(d.plants) ? d.plants.length : 0; }
-  function showLoading() {   // clear loading state, no plants yet
-    if (good || list.querySelector(".card:not(.skel)")) return;   // something real (or the offline list + its note) is already showing
+  function photoShellPlants() {
+    var seen = {}, out = [];
+    function add(name, botanical) {
+      if (!name && !botanical) return;
+      var photo = typeof ienPhoto === "function" && (ienPhoto(name) || ienPhoto(String(name || "").replace(/^common\s+/i, "")) || (botanical && ienPhoto(botanical)));
+      if (!photo || !photo.src) return;
+      var shown = (typeof iennDisplayName === "function" && name && iennDisplayName(name)) || name || botanical;
+      var bot = botanical && typeof iennDisplayBotanical === "function" ? iennDisplayBotanical(botanical) : (botanical || "");
+      var p = { id: slug(shown || name), name: shown, botanical: bot, image: photo.src, srcset: photo.srcset || "", webpSrcset: photo.webpSrcset || "", sizes: [], pending: true };
+      if (typeof iennHidden === "function" && iennHidden(p)) return;
+      if (seen[photo.src]) return;
+      seen[photo.src] = 1;
+      out.push(p);
+    }
+    if (typeof IENN_BASICS_SPECIES === "object") {
+      Object.keys(IENN_BASICS_SPECIES).forEach(function (bot) {
+        var s = IENN_BASICS_SPECIES[bot] || {};
+        add(s.careCommon || bot, s.careBotanical || bot);
+      });
+    }
+    if (typeof IENN_PHOTOS !== "undefined") {
+      IENN_PHOTOS.forEach(function (k) { add(String(k).replace(/-/g, " "), ""); });
+    }
+    /* Paint likely first-viewport / LCP photos first. The live feed order replaces this list. */
+    var FIRST = ["yarrow", "white-sage", "sticky-monkeyflower", "narrow-leaf-milkweed"];
+    out.sort(function (a, b) {
+      function idx(p) { var src = p.image || ""; for (var i = 0; i < FIRST.length; i++) if (src.indexOf("/" + FIRST[i] + ".") >= 0 || src.indexOf("/" + FIRST[i] + "-") >= 0) return i; return 100; }
+      return idx(a) - idx(b);
+    });
+    return out;
+  }
+  function preloadShellPhotos(plants) {
+    plants.slice(0, 4).forEach(function (p, i) {
+      var href = "";
+      if (p.webpSrcset) href = p.webpSrcset.split(",")[0].trim().split(" ")[0];
+      else if (p.srcset) href = p.srcset.split(",")[0].trim().split(" ")[0];
+      else href = p.image || "";
+      if (!href || document.querySelector('link[rel="preload"][href="' + href + '"]')) return;
+      var l = document.createElement("link"); l.rel = "preload"; l.as = "image";
+      if (/\.webp$/i.test(href)) l.type = "image/webp";
+      if (i === 0) l.setAttribute("fetchpriority", "high");
+      l.href = href; document.head.appendChild(l);
+    });
+  }
+  function pendingCard(p, idx) {
+    var card = el("article", { class: "card has-basics is-pending" + (String(p.name).length >= 16 ? " long-name" : ""), "aria-labelledby": p.id + "-name", "aria-busy": "true" });
+    card.dataset.id = p.id; card.dataset.pending = "1";
+    var ph = el("div", { class: "ph" });
+    if (p.image) ph.appendChild(plantPhotoEl(p, idx));
+    else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }
+    card.appendChild(ph);
+    var b = el("div", { class: "body" });
+    b.appendChild(el("h3", { id: p.id + "-name" }, p.name));
+    if (p.botanical) b.appendChild(el("span", { class: "note" }, p.botanical));
+    b.appendChild(el("p", { class: "pending-avail", role: "status" }, "Checking availability\u2026"));
+    card.appendChild(b);
+    return card;
+  }
+  function showPhotoShells(plants) {
+    preloadShellPhotos(plants);
+    list.innerHTML = "";
+    plants.slice(0, 8).forEach(function (p, i) { list.appendChild(pendingCard(p, i)); });
+    list.setAttribute("aria-busy", "true");
+    status.className = "inv-status loading"; status.textContent = "Loading today\u2019s plants\u2026"; status.hidden = false;
+  }
+  function showLoading() {   // first visit: photo shells (no stock/price/Add). Skeletons only if we have no stills.
+    if (good || list.querySelector(".card:not(.skel):not(.is-pending)")) return;   // a live or offline list is already showing
+    if (list.querySelector(".is-pending")) {
+      list.setAttribute("aria-busy", "true"); status.className = "inv-status loading"; status.textContent = "Loading today\u2019s plants\u2026"; status.hidden = false;
+      return;
+    }
+    var plants = photoShellPlants();
+    if (plants.length) { showPhotoShells(plants); return; }
     if (list.querySelectorAll(".skel").length < 6) { list.innerHTML = ""; for (var i = 0; i < 6; i++) list.appendChild(el("div", { class: "card skel", "aria-hidden": "true" })); }
     list.setAttribute("aria-busy", "true"); status.className = "inv-status loading"; status.textContent = "Loading today\u2019s plants\u2026"; status.hidden = false;
   }
+  try { window.iennPhotoShellPlants = photoShellPlants; } catch (e0) {}
   function getFeed() {
     var ctl = "AbortController" in window ? new AbortController() : null, timer;
     var t = new Promise(function (_, no) { timer = setTimeout(function () { if (ctl) ctl.abort(); no("timeout"); }, TIMEOUT); });
