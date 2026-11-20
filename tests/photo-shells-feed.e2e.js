@@ -96,7 +96,14 @@ function assertPending(s, label) {
       const hadYarrow = before.names.some((n) => /yarrow/i.test(n));
       const hBefore = before.listH;
       await page.evaluate(() => {
-        document.querySelectorAll('#plant-list .card.is-pending img').forEach((img, i) => { img.dataset.shellKeep = String(i); });
+        window.__imgDetached = false;
+        document.querySelectorAll('#plant-list .card.is-pending img').forEach((img, i) => {
+          img.dataset.shellKeep = String(i);
+          if (/yarrow/i.test(img.alt || '')) return;
+          if (window.__watchedImg) return;
+          window.__watchedImg = img;
+          new MutationObserver(() => { if (!img.isConnected) window.__imgDetached = true; }).observe(document, { childList: true, subtree: true });
+        });
       });
       release();
       await page.waitForFunction(() => !document.querySelector('#plant-list .card.is-pending') && document.querySelector('#plant-list button.add'), null, { timeout: 15000 });
@@ -114,6 +121,8 @@ function assertPending(s, label) {
         });
         console.log('slow-reuse', JSON.stringify(reuse));
         if (!reuse.firstKept) throw new Error('feed render replaced shell photos instead of reusing them (LCP would reset)');
+        const detached = await page.evaluate(() => window.__imgDetached);
+        if (detached) throw new Error('a kept shell photo was disconnected from the document (LCP would reset)');
       } catch (e) { fail++; console.error('slow-after: ' + e.message); }
       await ctx.close();
     }

@@ -83,9 +83,40 @@
   function render() {
     if (pressing) { pendingRender = true; return; } pendingRender = false;
     var keep = shown;
-    shellPhotos = takeShellPhotos();   // reuse already-painted shell <img> nodes so LCP is not reset when the feed arrives
-    list.innerHTML = ""; list.setAttribute("aria-busy", "false"); shown = 0; if (io) io.disconnect();
-    more(); while (keep > shown && shown < PLANTS.length) more(); update(); buildTypes();
+    var shells = Array.prototype.slice.call(list.querySelectorAll(".card.is-pending"));
+    var bySrc = {};
+    shells.forEach(function (c) {
+      var img = c.querySelector(".ph img");
+      var key = img && (img.getAttribute("src") || img.src || "").split("?")[0];
+      if (key && !bySrc[key]) bySrc[key] = c;
+    });
+    list.setAttribute("aria-busy", "false"); shown = 0; if (io) io.disconnect();
+    var oldMore = list.querySelector(".grid-more"); if (oldMore) oldMore.remove();
+    var mark = null;
+    if (shells.length) { mark = el("div", { "aria-hidden": "true" }); list.insertBefore(mark, list.firstChild); }
+    else list.innerHTML = "";
+    function place(p, j) {
+      var src = (p.image || "").split("?")[0], shell = src && bySrc[src], live;
+      if (shell) { delete bySrc[src]; live = card(p, j, shell); }
+      else live = card(p, j);
+      if (mark) list.insertBefore(live, mark); else list.appendChild(live);
+    }
+    if (shells.length) {
+      /* Upgrade matching shells in place (image never leaves the document, so LCP is not reset). */
+      PLANTS.slice(0, BATCH).forEach(place);
+      shown = Math.min(PLANTS.length, BATCH);
+      if (mark) mark.remove();
+      Array.prototype.slice.call(list.querySelectorAll(".card.is-pending")).forEach(function (c) { c.remove(); });
+      if (shown < PLANTS.length) {
+        var s = el("div", { class: "grid-more", "aria-hidden": "true" }); list.appendChild(s);
+        if ("IntersectionObserver" in window) { io = new IntersectionObserver(function (es) { if (es.some(function (x) { return x.isIntersecting; })) { io.disconnect(); more(); update(); } }, { rootMargin: "800px" }); io.observe(s); }
+        else more();
+      }
+      while (keep > shown && shown < PLANTS.length) more();
+    } else {
+      more(); while (keep > shown && shown < PLANTS.length) more();
+    }
+    update(); buildTypes();
     shellPhotos = {};
     document.dispatchEvent(new CustomEvent("ienn-grid-rendered"));
   }
@@ -139,18 +170,42 @@
     }
     return img;
   }
-    function card(p, idx) {
-      var ps = pstate(p), card = el("article", { class: "card" + (ps === "out" ? " sold-out" : ""), "aria-labelledby": p.id + "-name" });
+    function card(p, idx, existing) {
+      var ps = pstate(p), card = existing || el("article", { class: "card" + (ps === "out" ? " sold-out" : ""), "aria-labelledby": p.id + "-name" });
+      card.className = "card" + (ps === "out" ? " sold-out" : "");
+      card.setAttribute("aria-labelledby", p.id + "-name");
+      card.removeAttribute("aria-busy");
+      delete card.dataset.pending;
       card.dataset.id = p.id; card.dataset.group = typeGroup(p) || ""; if (String(p.name).length >= 16) card.classList.add("long-name");   // may wrap to 2 lines: slightly smaller title, tighter gaps (shop.css)
-      var ph = el("div", { class: "ph" });
-      if (p.image) ph.appendChild(plantPhotoEl(p, idx)); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }
+      var ph = existing && existing.querySelector(".ph");
+      if (ph) {
+        Array.prototype.slice.call(ph.children).forEach(function (c) {
+          if (c.tagName === "PICTURE" || c.tagName === "IMG" || (c.classList && c.classList.contains("leaf"))) return;
+          c.remove();
+        });
+        Array.prototype.slice.call(card.children).forEach(function (c) { if (c !== ph) c.remove(); });
+      } else {
+        ph = el("div", { class: "ph" });
+        if (p.image) ph.appendChild(plantPhotoEl(p, idx)); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }
+      }
+      if (p.image) {
+        var kept = ph.querySelector("img");
+        if (kept) {
+          kept.alt = p.name;
+          kept.loading = idx < 4 ? "eager" : "lazy";
+          if (idx < 2) kept.setAttribute("fetchpriority", "high");
+          else kept.removeAttribute("fetchpriority");
+        } else ph.appendChild(plantPhotoEl(p, idx));
+      }
       var lo = p.sizes.filter(function (z) { return inStock(z) && isFinite(z.price); }).map(function (z) { return z.price; });
       if (lo.length) ph.appendChild(el("span", { class: "price-tag", "aria-hidden": "true" }, (lo.length > 1 ? "from $" : "$") + Math.min.apply(null, lo)));
       if (p.badge) ph.appendChild(el("span", { class: "pick-badge" + (p.badgeAuto ? " auto-" + p.badgeAuto : "") }, String(p.badge)));
       if (p.badge) ph.removeAttribute("aria-hidden");
-      capOverlays(ph); card.appendChild(ph);
-      card.addEventListener("touchstart", function () { card.classList.add("lift"); }, { passive: true });
-      ["touchend", "touchcancel"].forEach(function (t) { card.addEventListener(t, function () { setTimeout(function () { card.classList.remove("lift"); }, 160); }); });
+      capOverlays(ph); if (ph.parentNode !== card) card.appendChild(ph);
+      if (!existing) {
+        card.addEventListener("touchstart", function () { card.classList.add("lift"); }, { passive: true });
+        ["touchend", "touchcancel"].forEach(function (t) { card.addEventListener(t, function () { setTimeout(function () { card.classList.remove("lift"); }, 160); }); });
+      }
       var cr = p.image && typeof ienPhoto === "function" && ienPhoto(p.name); cr = cr && cr.src === p.image && cr.credit;
       if (cr) { var ca = el("a", { class: "photo-credit", href: cr.url, target: "_blank", rel: "noopener", title: cr.text }, String(cr.text).replace(/^Photo:\s*/, "© "));   // credit sits inside the photo (bottom-right); an <a>, so capOverlays never counts it
         ca.addEventListener("click", function (e) { e.stopPropagation(); }); ph.appendChild(ca); }
@@ -365,7 +420,9 @@
   function withBasics(card, p, x) {
     if (!x) return card;
     var track = el("div", { class: "card-track" }), front = el("div", { class: "pane-front" });
-    while (card.firstChild) front.appendChild(card.firstChild);
+    /* If the card is already on the page (photo shells), wrap in place so the LCP <img> is never disconnected. */
+    if (card.isConnected) { card.appendChild(track); track.appendChild(front); while (card.firstChild !== track) front.appendChild(card.firstChild); }
+    else { while (card.firstChild) front.appendChild(card.firstChild); }
     var bp = basicsPane(p, x), ph0 = front.querySelector(".ph");
     if (ph0 && x.form) ph0.appendChild(el("span", { class: "form-ribbon on-photo", "aria-hidden": "true" }, x.form));
     if (ph0 && ph0.querySelector(".photo-credit")) fitCredit(ph0);
@@ -380,7 +437,7 @@
     if (ph0) ph0.after(d1);
     var fimg = ph0 && ph0.querySelector("img");   // faded copy of the front photo behind the back (same URL, cached)
     if (fimg) { var srcEl = fimg.closest("picture") || fimg; var bgWrap = srcEl.cloneNode(true); var bg = bgWrap.tagName === "PICTURE" ? bgWrap.querySelector("img") : bgWrap; bg.className = ((bg.className ? bg.className + " " : "") + "back-bg").trim(); bg.setAttribute("alt", ""); bg.setAttribute("aria-hidden", "true"); bg.setAttribute("loading", "lazy"); bg.setAttribute("decoding", "async"); if (bgWrap.tagName === "PICTURE") bgWrap.classList.add("back-bg-wrap"); bp.pane.insertBefore(bgWrap, bp.pane.firstChild); bp.pane.classList.add("has-bg"); }
-    track.appendChild(front); track.appendChild(bp.pane); if (cp) track.appendChild(cp); card.appendChild(track); card.classList.add("has-basics");
+    if (front.parentNode !== track) track.appendChild(front); track.appendChild(bp.pane); if (cp) track.appendChild(cp); if (track.parentNode !== card) card.appendChild(track); card.classList.add("has-basics");
     var side = 0, drag = null, swallow = false;
     function show(on) { card.classList.toggle("showing-basics", !!on); front.setAttribute("aria-hidden", on ? "true" : "false"); bp.pane.setAttribute("aria-hidden", on === 1 ? "false" : "true"); if (cp) cp.setAttribute("aria-hidden", on === 2 ? "false" : "true"); }
     function to(i) { side = Math.max(0, Math.min(NP - 1, i | 0)); track.style.transition = ""; track.style.transform = side ? "translateX(-" + side * 100 + "%)" : ""; show(side); }
