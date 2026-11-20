@@ -13,6 +13,6 @@ assert.ok(ctx.iennBasics('Datura wrightii').desc.includes('All parts of the plan
 const shop = fs.readFileSync(path.join(root, 'shop.js'), 'utf8');
 assert.ok(!/\.tag\b/.test(shop) && !/\.desc\b/.test(shop), 'shop.js never displays tag or desc');
 for (const f of ['index.html', 'order.html', 'plant-care.html']) {
-  assert.ok(fs.readFileSync(path.join(root, f), 'utf8').includes('data/plant-basics.js?v=care15-1112'), f + ' cache string');
+  assert.ok(fs.readFileSync(path.join(root, f), 'utf8').includes('data/plant-basics.js?v=care15-1120'), f + ' cache string');
 }
 console.log('datura-form-tagline: passed');

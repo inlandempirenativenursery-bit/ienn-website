@@ -808,3 +808,35 @@ function iennHidden(p) { function c(x) { return String(x || "").toLowerCase().re
   var full = c(p.feedName || p.fullName), names = [c(p.name), full, full.replace(/\s*\(.*$/, "")], b = c(p.botanical || (/\(([^)]*)\)/.exec(full) || [])[1]);
   if (IENN_HIDDEN_PLANTS.some(function (h) { return names.indexOf(c(h)) >= 0; })) return true;
   return !!b && IENN_HIDDEN_BOTANICAL.some(function (h) { h = c(h); return b === h || b.indexOf(h + " ") === 0; }); }
+
+/* Care-guide URL slugs (announced to Lobo): botanical name (careBotanical / iennApprovedCare key),
+   lowercase, spaces to hyphens, other punctuation dropped. Runs of spaces become one hyphen. */
+function iennCareSlug(botanical) {
+  return String(botanical || "").toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "");
+}
+function iennApprovedCareList() {
+  var out = [], seen = {};
+  if (typeof IENN_BASICS_SPECIES !== "object" || typeof iennApprovedCare !== "function") return out;
+  Object.keys(IENN_BASICS_SPECIES).forEach(function (bot) {
+    var c = iennApprovedCare(bot);
+    if (!c || !c.careBotanical) return;
+    var k = String(c.careBotanical).toLowerCase();
+    if (seen[k]) return;
+    seen[k] = 1;
+    out.push(c);
+  });
+  out.sort(function (a, b) {
+    return String(a.careCommon || a.careBotanical).localeCompare(String(b.careCommon || b.careBotanical), undefined, { sensitivity: "base" });
+  });
+  return out;
+}
+function iennApprovedCareBySlug(slug) {
+  var want = iennCareSlug(slug);
+  if (!want) return null;
+  var list = iennApprovedCareList(), i, c;
+  for (i = 0; i < list.length; i++) {
+    c = list[i];
+    if (iennCareSlug(c.careBotanical) === want) return c;
+  }
+  return null;
+}

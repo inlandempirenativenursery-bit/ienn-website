@@ -587,10 +587,41 @@
 
   var form = document.getElementById("order-form"), btn = form.querySelector(".submit-btn"), serr = document.getElementById("server-error");
   if (iennIsPreviewHost() && btn) { btn.disabled = true; btn.textContent = "Orders disabled (preview)"; btn.setAttribute("aria-disabled", "true"); }
+  function confirmCareSlugFor(item) {
+    var bot = item && (item.botanical || (item.p && item.p.botanical) || "");
+    if (typeof iennDisplayBotanical === "function" && bot) bot = iennDisplayBotanical(bot) || bot;
+    var care = (typeof iennApprovedCare === "function" && bot) ? iennApprovedCare(bot) : null;
+    var key = care && care.careBotanical ? care.careBotanical : bot;
+    return (typeof iennCareSlug === "function" && key) ? iennCareSlug(key) : "";
+  }
+  function confirmCareSlugs(items) {
+    var seen = {}, out = [];
+    (items || []).forEach(function (x) {
+      var s = confirmCareSlugFor(x);
+      if (!s || seen[s]) return;
+      seen[s] = 1;
+      out.push(s);
+    });
+    return out;
+  }
+  function setConfirmCareLink(items) {
+    var a = document.getElementById("confirm-care-hub-link");
+    if (!a) return;
+    var slugs = confirmCareSlugs(items);
+    a.href = slugs.length ? ("/care/?p=" + slugs.join(",")) : "/care/";
+    a.target = "_blank";
+    a.rel = "noopener";
+  }
+  function fillConfirmItems(items) {
+    var cl = document.getElementById("confirm-list"); cl.innerHTML = "";
+    (items || []).forEach(function (x) {
+      cl.appendChild(el("li", {}, x.qty + " \u00d7 " + x.name + " (" + x.size + ") \u2014 " + money(x.total)));
+    });
+    setConfirmCareLink(items);
+  }
   function showConfirm(ls, orderId, total, notes) {
     document.getElementById("confirm-id").textContent = orderId ? "Order number: " + orderId : "";
-    var cl = document.getElementById("confirm-list"); cl.innerHTML = "";
-    ls.forEach(function (l) { cl.appendChild(el("li", {}, l.q + " × " + l.p.name + " (" + l.z.label + ") — " + money(l.total))); });
+    fillConfirmItems((ls || []).map(function (l) { return { name: l.p.name, size: l.z.label, qty: l.q, total: l.total, botanical: l.p.botanical || "" }; }));
     var cn = document.getElementById("confirm-notices"); cn.innerHTML = ""; (notes || []).forEach(function (m) { cn.appendChild(el("p", { class: "stock-note" }, m)); }); cn.hidden = !(notes && notes.length);
     var ct = document.getElementById("confirm-total"); ct.textContent = "Total: " + money(total) + " ";
     ct.appendChild(el("small", { class: "tax-note" }, "Taxes included"));
@@ -638,13 +669,12 @@
   });
   /* Last order (this tab only): plants, sizes, quantities, order id. No address, no stock counts. */
   var LAST = "ienn-last-order";
-  function saveLastOrder(ls, orderId, total) { try { sessionStorage.setItem(LAST, JSON.stringify({ orderId: orderId || "", total: total, items: ls.map(function (l) { return { name: l.p.name, size: l.z.label, qty: l.q, total: l.total }; }) })); } catch (e) {} }
+  function saveLastOrder(ls, orderId, total) { try { sessionStorage.setItem(LAST, JSON.stringify({ orderId: orderId || "", total: total, items: ls.map(function (l) { return { name: l.p.name, size: l.z.label, qty: l.q, total: l.total, botanical: l.p.botanical || "" }; }) })); } catch (e) {} }
   function lastOrder() { try { return JSON.parse(sessionStorage.getItem(LAST)); } catch (e) { return null; } }
   function showLastOrder() {
     var o = lastOrder(); if (!o) return;
     document.getElementById("confirm-id").textContent = o.orderId ? "Order number: " + o.orderId : "";
-    var cl = document.getElementById("confirm-list"); cl.innerHTML = "";
-    o.items.forEach(function (x) { cl.appendChild(el("li", {}, x.qty + " \u00d7 " + x.name + " (" + x.size + ") \u2014 " + money(x.total))); });
+    fillConfirmItems(o.items || []);
     document.getElementById("confirm-notices").hidden = true;
     var ct = document.getElementById("confirm-total"); ct.textContent = "Total: " + money(o.total) + " "; ct.appendChild(el("small", { class: "tax-note" }, "Taxes included"));
     document.getElementById("last-order-link").hidden = true;
@@ -683,16 +713,22 @@
   document.getElementById("view-order-2").addEventListener("click", showLastOrder);
   document.getElementById("last-order-link").hidden = !lastOrder();
   /* Preview for review/screenshots: order.html?confirm=preview shows the thank-you modal with EXAMPLE data (nothing saved or sent). */
-  if (/[?&]confirm=preview\b/.test(location.search)) setTimeout(function () {
-    document.getElementById("confirm-id").textContent = "Order number: INV-EXAMPLE";
-    var cl = document.getElementById("confirm-list"); cl.innerHTML = "";
-    var ex = [], tot = 0; /* real catalog names/prices from the loaded list; no made-up prices */
-    PLANTS.some(function (p) { var z = (p.sizes || []).filter(function (z) { return isFinite(z.price) && ASK_KEYS.indexOf(z.key) < 0; })[0]; if (z) ex.push([ex.length ? 1 : 2, p.name, z.label, z.price]); return ex.length >= 2; });
-    ex.forEach(function (x) { tot += x[0] * x[3]; cl.appendChild(el("li", {}, x[0] + " \u00d7 " + x[1] + " (" + x[2] + ") \u2014 " + money(x[0] * x[3]))); });
-    document.getElementById("confirm-notices").hidden = true;
-    var ct = document.getElementById("confirm-total"); ct.textContent = "Total: " + money(tot) + " "; ct.appendChild(el("small", { class: "tax-note" }, "Taxes included"));
-    openConfirm();
-  }, 1200);
+  try { window.iennCareSlug = typeof iennCareSlug === "function" ? iennCareSlug : window.iennCareSlug; window.iennConfirmCareSlugs = confirmCareSlugs; } catch (eC) {}
+  if (/[?&]confirm=preview\b/.test(location.search)) (function () {
+    var tries = 0;
+    function go() {
+      if (!(PLANTS || []).length && tries++ < 40) { setTimeout(go, 200); return; }   /* wait for the catalog; still never sends an order */
+      document.getElementById("confirm-id").textContent = "Order number: INV-EXAMPLE";
+      var ex = [], tot = 0; /* real catalog names/prices from the loaded list; no made-up prices */
+      PLANTS.some(function (p) { var z = (p.sizes || []).filter(function (z) { return isFinite(z.price) && ASK_KEYS.indexOf(z.key) < 0; })[0]; if (z) ex.push({ qty: ex.length ? 1 : 2, name: p.name, size: z.label, total: (ex.length ? 1 : 2) * z.price, botanical: p.botanical || "" }); return ex.length >= 3; });
+      ex.forEach(function (x) { tot += x.total; });
+      fillConfirmItems(ex);
+      document.getElementById("confirm-notices").hidden = true;
+      var ct = document.getElementById("confirm-total"); ct.textContent = "Total: " + money(tot) + " "; ct.appendChild(el("small", { class: "tax-note" }, "Taxes included"));
+      openConfirm();
+    }
+    setTimeout(go, 200);
+  })();
 
 
   })();
