@@ -83,8 +83,41 @@
   function render() {
     if (pressing) { pendingRender = true; return; } pendingRender = false;
     var keep = shown;
-    list.innerHTML = ""; list.setAttribute("aria-busy", "false"); shown = 0; if (io) io.disconnect();
-    more(); while (keep > shown && shown < PLANTS.length) more(); update(); buildTypes();
+    var shells = Array.prototype.slice.call(list.querySelectorAll(".card.is-pending"));
+    var bySrc = {};
+    shells.forEach(function (c) {
+      var img = c.querySelector(".ph img");
+      var key = img && (img.getAttribute("src") || img.src || "").split("?")[0];
+      if (key && !bySrc[key]) bySrc[key] = c;
+    });
+    list.setAttribute("aria-busy", "false"); shown = 0; if (io) io.disconnect();
+    var oldMore = list.querySelector(".grid-more"); if (oldMore) oldMore.remove();
+    var mark = null;
+    if (shells.length) { mark = el("div", { "aria-hidden": "true" }); list.insertBefore(mark, list.firstChild); }
+    else list.innerHTML = "";
+    function place(p, j) {
+      var src = (p.image || "").split("?")[0], shell = src && bySrc[src], live;
+      if (shell) { delete bySrc[src]; live = card(p, j, shell); }
+      else live = card(p, j);
+      if (mark) list.insertBefore(live, mark); else list.appendChild(live);
+    }
+    if (shells.length) {
+      /* Upgrade matching shells in place (image never leaves the document, so LCP is not reset). */
+      PLANTS.slice(0, BATCH).forEach(place);
+      shown = Math.min(PLANTS.length, BATCH);
+      if (mark) mark.remove();
+      Array.prototype.slice.call(list.querySelectorAll(".card.is-pending")).forEach(function (c) { c.remove(); });
+      if (shown < PLANTS.length) {
+        var s = el("div", { class: "grid-more", "aria-hidden": "true" }); list.appendChild(s);
+        if ("IntersectionObserver" in window) { io = new IntersectionObserver(function (es) { if (es.some(function (x) { return x.isIntersecting; })) { io.disconnect(); more(); update(); } }, { rootMargin: "800px" }); io.observe(s); }
+        else more();
+      }
+      while (keep > shown && shown < PLANTS.length) more();
+    } else {
+      more(); while (keep > shown && shown < PLANTS.length) more();
+    }
+    update(); buildTypes();
+    shellPhotos = {};
     document.dispatchEvent(new CustomEvent("ienn-grid-rendered"));
   }
   function more() {   // progressive render: next BATCH cards when the sentinel scrolls near view
@@ -103,9 +136,31 @@
   function askNote() { var n = el("span", { class: "ask-note" }); n.appendChild(document.createTextNode("Ask us: "));
     n.appendChild(el("a", { class: "contact-tel", href: "tel:" + CONTACT_TEL }, "call")); n.appendChild(document.createTextNode(" or "));
     n.appendChild(el("a", { class: "contact-sms", href: "sms:" + CONTACT_TEL }, "text")); n.appendChild(document.createTextNode(" Andrew")); return n; }
+  var shellPhotos = {};
+  function takeShellPhotos() {
+    var map = {};
+    Array.prototype.forEach.call(list.querySelectorAll(".card.is-pending .ph picture, .card.is-pending .ph > img"), function (node) {
+      var img = node.tagName === "IMG" ? node : node.querySelector("img");
+      var key = img && (img.getAttribute("src") || img.src || "").split("?")[0];
+      if (key && !map[key]) map[key] = node;
+    });
+    return map;
+  }
   function plantPhotoEl(p, idx) {
     var sizes = "(max-width: 600px) 48vw, 260px";
+    if (p.image && shellPhotos[p.image]) {
+      var node = shellPhotos[p.image]; delete shellPhotos[p.image];
+      var img = node.tagName === "IMG" ? node : node.querySelector("img");
+      if (img) {
+        img.alt = p.name;
+        img.loading = idx < 4 ? "eager" : "lazy";
+        if (idx < 2) img.setAttribute("fetchpriority", "high");
+        else img.removeAttribute("fetchpriority");
+      }
+      return node;   // keep the already-painted LCP image in the DOM
+    }
     var img = el("img", { src: p.image, alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" });
+    if (idx < 2) img.setAttribute("fetchpriority", "high");
     if (p.srcset) { img.setAttribute("srcset", p.srcset); img.setAttribute("sizes", sizes); }
     if (p.webpSrcset) {
       var pic = el("picture");
@@ -115,18 +170,42 @@
     }
     return img;
   }
-    function card(p, idx) {
-      var ps = pstate(p), card = el("article", { class: "card" + (ps === "out" ? " sold-out" : ""), "aria-labelledby": p.id + "-name" });
+    function card(p, idx, existing) {
+      var ps = pstate(p), card = existing || el("article", { class: "card" + (ps === "out" ? " sold-out" : ""), "aria-labelledby": p.id + "-name" });
+      card.className = "card" + (ps === "out" ? " sold-out" : "");
+      card.setAttribute("aria-labelledby", p.id + "-name");
+      card.removeAttribute("aria-busy");
+      delete card.dataset.pending;
       card.dataset.id = p.id; card.dataset.group = typeGroup(p) || ""; if (String(p.name).length >= 16) card.classList.add("long-name");   // may wrap to 2 lines: slightly smaller title, tighter gaps (shop.css)
-      var ph = el("div", { class: "ph" });
-      if (p.image) ph.appendChild(plantPhotoEl(p, idx)); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }
+      var ph = existing && existing.querySelector(".ph");
+      if (ph) {
+        Array.prototype.slice.call(ph.children).forEach(function (c) {
+          if (c.tagName === "PICTURE" || c.tagName === "IMG" || (c.classList && c.classList.contains("leaf"))) return;
+          c.remove();
+        });
+        Array.prototype.slice.call(card.children).forEach(function (c) { if (c !== ph) c.remove(); });
+      } else {
+        ph = el("div", { class: "ph" });
+        if (p.image) ph.appendChild(plantPhotoEl(p, idx)); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }
+      }
+      if (p.image) {
+        var kept = ph.querySelector("img");
+        if (kept) {
+          kept.alt = p.name;
+          kept.loading = idx < 4 ? "eager" : "lazy";
+          if (idx < 2) kept.setAttribute("fetchpriority", "high");
+          else kept.removeAttribute("fetchpriority");
+        } else ph.appendChild(plantPhotoEl(p, idx));
+      }
       var lo = p.sizes.filter(function (z) { return inStock(z) && isFinite(z.price); }).map(function (z) { return z.price; });
       if (lo.length) ph.appendChild(el("span", { class: "price-tag", "aria-hidden": "true" }, (lo.length > 1 ? "from $" : "$") + Math.min.apply(null, lo)));
       if (p.badge) ph.appendChild(el("span", { class: "pick-badge" + (p.badgeAuto ? " auto-" + p.badgeAuto : "") }, String(p.badge)));
       if (p.badge) ph.removeAttribute("aria-hidden");
-      capOverlays(ph); card.appendChild(ph);
-      card.addEventListener("touchstart", function () { card.classList.add("lift"); }, { passive: true });
-      ["touchend", "touchcancel"].forEach(function (t) { card.addEventListener(t, function () { setTimeout(function () { card.classList.remove("lift"); }, 160); }); });
+      capOverlays(ph); if (ph.parentNode !== card) card.appendChild(ph);
+      if (!existing) {
+        card.addEventListener("touchstart", function () { card.classList.add("lift"); }, { passive: true });
+        ["touchend", "touchcancel"].forEach(function (t) { card.addEventListener(t, function () { setTimeout(function () { card.classList.remove("lift"); }, 160); }); });
+      }
       var cr = p.image && typeof ienPhoto === "function" && ienPhoto(p.name); cr = cr && cr.src === p.image && cr.credit;
       if (cr) { var ca = el("a", { class: "photo-credit", href: cr.url, target: "_blank", rel: "noopener", title: cr.text }, String(cr.text).replace(/^Photo:\s*/, "© "));   // credit sits inside the photo (bottom-right); an <a>, so capOverlays never counts it
         ca.addEventListener("click", function (e) { e.stopPropagation(); }); ph.appendChild(ca); }
@@ -341,7 +420,9 @@
   function withBasics(card, p, x) {
     if (!x) return card;
     var track = el("div", { class: "card-track" }), front = el("div", { class: "pane-front" });
-    while (card.firstChild) front.appendChild(card.firstChild);
+    /* If the card is already on the page (photo shells), wrap in place so the LCP <img> is never disconnected. */
+    if (card.isConnected) { card.appendChild(track); track.appendChild(front); while (card.firstChild !== track) front.appendChild(card.firstChild); }
+    else { while (card.firstChild) front.appendChild(card.firstChild); }
     var bp = basicsPane(p, x), ph0 = front.querySelector(".ph");
     if (ph0 && x.form) ph0.appendChild(el("span", { class: "form-ribbon on-photo", "aria-hidden": "true" }, x.form));
     if (ph0 && ph0.querySelector(".photo-credit")) fitCredit(ph0);
@@ -356,7 +437,7 @@
     if (ph0) ph0.after(d1);
     var fimg = ph0 && ph0.querySelector("img");   // faded copy of the front photo behind the back (same URL, cached)
     if (fimg) { var srcEl = fimg.closest("picture") || fimg; var bgWrap = srcEl.cloneNode(true); var bg = bgWrap.tagName === "PICTURE" ? bgWrap.querySelector("img") : bgWrap; bg.className = ((bg.className ? bg.className + " " : "") + "back-bg").trim(); bg.setAttribute("alt", ""); bg.setAttribute("aria-hidden", "true"); bg.setAttribute("loading", "lazy"); bg.setAttribute("decoding", "async"); if (bgWrap.tagName === "PICTURE") bgWrap.classList.add("back-bg-wrap"); bp.pane.insertBefore(bgWrap, bp.pane.firstChild); bp.pane.classList.add("has-bg"); }
-    track.appendChild(front); track.appendChild(bp.pane); if (cp) track.appendChild(cp); card.appendChild(track); card.classList.add("has-basics");
+    if (front.parentNode !== track) track.appendChild(front); track.appendChild(bp.pane); if (cp) track.appendChild(cp); if (track.parentNode !== card) card.appendChild(track); card.classList.add("has-basics");
     var side = 0, drag = null, swallow = false;
     function show(on) { card.classList.toggle("showing-basics", !!on); front.setAttribute("aria-hidden", on ? "true" : "false"); bp.pane.setAttribute("aria-hidden", on === 1 ? "false" : "true"); if (cp) cp.setAttribute("aria-hidden", on === 2 ? "false" : "true"); }
     function to(i) { side = Math.max(0, Math.min(NP - 1, i | 0)); track.style.transition = ""; track.style.transform = side ? "translateX(-" + side * 100 + "%)" : ""; show(side); }
@@ -666,20 +747,94 @@
     if (params.get("checkout") === "1" && !autoOpened && lines().length) { autoOpened = true; if (window.iennOpenCheckout) window.iennOpenCheckout(); } }
   var autoOpened = false;
   /* Loading the live feed (Apps Script ?view=inventory, typically 5-9 s to respond):
-     - First visit (nothing cached): skeleton cards + "Loading today's plants…", never a partial or built-in list while we wait.
+     - First visit (nothing cached): photo-only shells for plants we already have pictures for (static plant-photos.js + plant-basics.js),
+       so the first card images can paint before the feed returns. No price, stock, quantity or Add button until live data arrives.
      - Each request gets FEED_TIMEOUT_MS; a failed, timed-out, flagged (fallback:true / ok:false) or suspiciously short reply is retried FEED_RETRIES times.
      - If it still fails: last good feed from localStorage (with a dated note), else the built-in offline list (with a note), and keep retrying quietly.
-     - Once a good list is showing, a failed background refresh keeps it as is (never downgrades to a shorter list). */
+     - Once a good list is showing, a failed background refresh keeps it as is (never downgrades to a shorter list).
+     - A shell whose plant is missing from the feed is dropped when the live grid renders; it never showed availability. */
   var TIMEOUT = typeof FEED_TIMEOUT_MS === "number" ? FEED_TIMEOUT_MS : 25000, RETRIES = typeof FEED_RETRIES === "number" ? FEED_RETRIES : 1;
   var SHORT = typeof FEED_SHORT_RATIO === "number" ? FEED_SHORT_RATIO : 0.7, good = false, live = false, loadingNow = false, retryTimer = null;
   try { localStorage.removeItem("ienn-inventory-v2"); } catch (e) {}   // old cache could hold a short list
   function cached() { var c = null; try { c = JSON.parse(localStorage.getItem(CACHE)); } catch (e) {} return c && c.d && (c.d.plants || []).length ? c : null; }
   function rawCount(d) { return d && Array.isArray(d.plants) ? d.plants.length : 0; }
-  function showLoading() {   // clear loading state, no plants yet
-    if (good || list.querySelector(".card:not(.skel)")) return;   // something real (or the offline list + its note) is already showing
+  function photoShellPlants() {
+    var seen = {}, out = [];
+    function add(name, botanical) {
+      if (!name && !botanical) return;
+      var photo = typeof ienPhoto === "function" && (ienPhoto(name) || ienPhoto(String(name || "").replace(/^common\s+/i, "")) || (botanical && ienPhoto(botanical)));
+      if (!photo || !photo.src) return;
+      var shown = (typeof iennDisplayName === "function" && name && iennDisplayName(name)) || name || botanical;
+      var bot = botanical && typeof iennDisplayBotanical === "function" ? iennDisplayBotanical(botanical) : (botanical || "");
+      var p = { id: slug(shown || name), name: shown, botanical: bot, image: photo.src, srcset: photo.srcset || "", webpSrcset: photo.webpSrcset || "", sizes: [], pending: true };
+      if (typeof iennHidden === "function" && iennHidden(p)) return;
+      if (seen[photo.src]) return;
+      seen[photo.src] = 1;
+      out.push(p);
+    }
+    if (typeof IENN_BASICS_SPECIES === "object") {
+      Object.keys(IENN_BASICS_SPECIES).forEach(function (bot) {
+        var s = IENN_BASICS_SPECIES[bot] || {};
+        add(s.careCommon || bot, s.careBotanical || bot);
+      });
+    }
+    if (typeof IENN_PHOTOS !== "undefined") {
+      IENN_PHOTOS.forEach(function (k) { add(String(k).replace(/-/g, " "), ""); });
+    }
+    /* Paint likely first-viewport / LCP photos first. The live feed order replaces this list. */
+    var FIRST = ["yarrow", "white-sage", "sticky-monkeyflower", "narrow-leaf-milkweed"];
+    out.sort(function (a, b) {
+      function idx(p) { var src = p.image || ""; for (var i = 0; i < FIRST.length; i++) if (src.indexOf("/" + FIRST[i] + ".") >= 0 || src.indexOf("/" + FIRST[i] + "-") >= 0) return i; return 100; }
+      return idx(a) - idx(b);
+    });
+    return out;
+  }
+  function preloadShellPhotos(plants) {
+    plants.slice(0, 4).forEach(function (p, i) {
+      var href = "";
+      if (p.webpSrcset) href = p.webpSrcset.split(",")[0].trim().split(" ")[0];
+      else if (p.srcset) href = p.srcset.split(",")[0].trim().split(" ")[0];
+      else href = p.image || "";
+      if (!href || document.querySelector('link[rel="preload"][href="' + href + '"]')) return;
+      var l = document.createElement("link"); l.rel = "preload"; l.as = "image";
+      if (/\.webp$/i.test(href)) l.type = "image/webp";
+      if (i === 0) l.setAttribute("fetchpriority", "high");
+      l.href = href; document.head.appendChild(l);
+    });
+  }
+  function pendingCard(p, idx) {
+    var card = el("article", { class: "card has-basics is-pending" + (String(p.name).length >= 16 ? " long-name" : ""), "aria-labelledby": p.id + "-name", "aria-busy": "true" });
+    card.dataset.id = p.id; card.dataset.pending = "1";
+    var ph = el("div", { class: "ph" });
+    if (p.image) ph.appendChild(plantPhotoEl(p, idx));
+    else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }
+    card.appendChild(ph);
+    var b = el("div", { class: "body" });
+    b.appendChild(el("h3", { id: p.id + "-name" }, p.name));
+    if (p.botanical) b.appendChild(el("span", { class: "note" }, p.botanical));
+    b.appendChild(el("p", { class: "pending-avail", role: "status" }, "Checking availability\u2026"));
+    card.appendChild(b);
+    return card;
+  }
+  function showPhotoShells(plants) {
+    preloadShellPhotos(plants);
+    list.innerHTML = "";
+    plants.slice(0, 4).forEach(function (p, i) { list.appendChild(pendingCard(p, i)); });
+    list.setAttribute("aria-busy", "true");
+    status.className = "inv-status loading"; status.textContent = "Loading today\u2019s plants\u2026"; status.hidden = false;
+  }
+  function showLoading() {   // first visit: photo shells (no stock/price/Add). Skeletons only if we have no stills.
+    if (good || list.querySelector(".card:not(.skel):not(.is-pending)")) return;   // a live or offline list is already showing
+    if (list.querySelector(".is-pending")) {
+      list.setAttribute("aria-busy", "true"); status.className = "inv-status loading"; status.textContent = "Loading today\u2019s plants\u2026"; status.hidden = false;
+      return;
+    }
+    var plants = photoShellPlants();
+    if (plants.length) { showPhotoShells(plants); return; }
     if (list.querySelectorAll(".skel").length < 6) { list.innerHTML = ""; for (var i = 0; i < 6; i++) list.appendChild(el("div", { class: "card skel", "aria-hidden": "true" })); }
     list.setAttribute("aria-busy", "true"); status.className = "inv-status loading"; status.textContent = "Loading today\u2019s plants\u2026"; status.hidden = false;
   }
+  try { window.iennPhotoShellPlants = photoShellPlants; } catch (e0) {}
   function getFeed() {
     var ctl = "AbortController" in window ? new AbortController() : null, timer;
     var t = new Promise(function (_, no) { timer = setTimeout(function () { if (ctl) ctl.abort(); no("timeout"); }, TIMEOUT); });
