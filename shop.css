@@ -428,3 +428,21 @@ html.bg-light .pane-basics { --bg-op:.12; } html.bg-strong .pane-basics { --bg-o
 .species-care-link { margin:0; padding-top:0.25rem; border-top:1px solid #ececec; font-size:0.68rem; line-height:1.3; }
 .species-care-link a { color:var(--sage-dark, #4a5a4a); font-weight:600; text-decoration:underline; }
 .species-care-link a:focus-visible { outline:2px solid var(--sage); outline-offset:2px; border-radius:2px; }
+
+/* Reserve the plant grid while it is empty or showing skeletons so sections
+   below it (order pickup FAQ / 1-2-3 strip, homepage problem-guide-plan)
+   start below the fold and do not jump when the first card batch paints.
+   After load, aria-busy is false and the list is not :empty, so this
+   min-height does not apply and the grid is its natural card height. */
+#plant-list:empty,
+#plant-list[aria-busy="true"] {
+  min-height: 100vh;
+  min-height: 100svh;
+}
+/* Match .card.has-basics --card-h so two skeleton rows nearly fill a desktop viewport. */
+#plant-list[aria-busy="true"] .skel {
+  height: 440px;
+  min-height: 440px;
+}
+/* Avoid a width reflow when the long grid makes the vertical scrollbar appear. */
+html { scrollbar-gutter: stable; }

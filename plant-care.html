@@ -13,8 +13,8 @@
     body { margin:0; font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; color:var(--ink); background:#fbf9f5; line-height:1.5; }
     .wrap { max-width:40rem; margin:0 auto; padding:1rem 1.1rem 2.5rem; }
     header { text-align:center; margin:0.5rem 0 1.25rem; }
-    .logo { display:block; margin:0 auto; width:min(100%, 320px); height:auto; }
-    .logo img { width:100%; height:auto; display:block; }
+    .logo { display:block; margin:0 auto; width:min(100%, 320px); height:auto; aspect-ratio:560 / 316; }
+    .logo img { width:100%; height:auto; display:block; aspect-ratio:560 / 316; }
     h1 { font-size:1.35rem; color:var(--sage-dark); margin:0.75rem 0 0.35rem; }
     h1 i { font-style:italic; font-weight:600; }
     .actions { display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center; margin:0.75rem 0 1rem; }
@@ -49,6 +49,23 @@
         <img src="images/ienn-logo-horizontal-560.jpg" srcset="images/ienn-logo-horizontal-560.jpg 560w, images/ienn-logo-horizontal-1120.jpg 1120w" sizes="(min-width: 21.25em) 320px, calc(100vw - 2.2rem)" width="560" height="316" alt="Inland Empire Native Nursery">
       </picture>
       <h1 id="page-title">Plant care</h1>
+      <script src="data/plant-basics.js?v=care15-1112"></script>
+      <script>
+        (function () {
+          var q = new URLSearchParams(location.search);
+          var species = (q.get("species") || "").trim().replace(/\s+/g, " ");
+          var title = document.getElementById("page-title");
+          var care = species && typeof iennApprovedCare === "function" ? iennApprovedCare(species) : null;
+          if (!care || !title) return;
+          var common = care.careCommon || "Plant";
+          var bot = care.careBotanical || species;
+          title.innerHTML = "";
+          title.appendChild(document.createTextNode(common + " ("));
+          var it = document.createElement("i"); it.textContent = bot; title.appendChild(it);
+          title.appendChild(document.createTextNode(") care"));
+          document.title = common + " care · Inland Empire Native Nursery";
+        })();
+      </script>
     </header>
 
     <div class="actions no-print" id="actions">
@@ -60,7 +77,6 @@
     <div id="main"></div>
     <p id="care-disclaimer" class="note no-print care-disclaimer">Care info is general guidance for Inland Empire gardens. Every yard is different, so adjust to your sun, soil and water. Questions? Reach out and we'll help.</p>
   </div>
-  <script src="data/plant-basics.js?v=care15-1112"></script>
   <script>
     (function () {
       var q = new URLSearchParams(location.search);
