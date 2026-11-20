@@ -90,6 +90,8 @@
     .confirm .tk-body p { margin:0.35rem 0; }
     .confirm-id { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:0.04em; }
     #confirm-total { display:flex; justify-content:space-between; font-weight:700; border-top:1px solid #eee; padding-top:0.5rem; }
+    .confirm-care-hub { margin:0.15rem 0 0.65rem; }
+    .confirm-care-hub a { color:var(--sage-dark); font-weight:700; font-size:0.95rem; }
     @media (prefers-reduced-motion:reduce) { .summary li.drop { animation:none; } }
     /* polish: minimal usability additions (no restyle) */
     .lead { margin:0 1rem 0.25rem; font-size:0.95rem; color:#444; }
@@ -263,6 +265,7 @@
     <div class="tk-body">
       <p id="confirm-id" class="confirm-id"></p>
       <ul id="confirm-list"></ul>
+      <p class="confirm-care-hub"><a id="confirm-care-hub-link" href="/care/" target="_blank" rel="noopener">Care guides for your plants</a></p>
       <div id="confirm-notices" class="stock-notes" hidden></div>
       <p id="confirm-total"></p>
       <p class="pickup-line">Pickup: Fontana · Saturdays 10 a.m. – 2 p.m.</p>
@@ -409,9 +412,9 @@
   <script src="stock-view.js?v=gf30a1"></script>
   <script src="feed-order.js?v=gf30a1"></script>
   <script src="shop-settings.js?v=faq1106d"></script>
-  <script src="data/plant-basics.js?v=care15-1112"></script>
+  <script src="data/plant-basics.js?v=care15-1120"></script>
   <script src="data/plant-seals.js?v=gf30a1"></script>
-  <script src="shop.js?v=feed1120c"></script>
+  <script src="shop.js?v=care1120"></script>
   <script src="plant-search.js?v=about1116"></script>
   <script>window.IENN_PROMO_OPTS = { cta: "Shop now", onShop: function () { var g = document.getElementById("plant-list"); if (g) { g.scrollIntoView({ behavior: "smooth" }); var b = g.querySelector("button:not([disabled])"); if (b) b.focus({ preventScroll: true }); } } };</script>
   <script src="promo.js?v=gf30a1"></script>

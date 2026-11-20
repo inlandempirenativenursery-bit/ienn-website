@@ -48,7 +48,7 @@ assert.ok(css.includes('440px'));
 
 for (const f of ['index.html', 'order.html']) {
   const html = fs.readFileSync(path.join(root, f), 'utf8');
-  assert.ok(html.includes('shop.js?v=feed1120'), f);
+  assert.ok(html.includes('shop.js?v=care1120'), f);
   assert.ok(html.includes('shop.css?v=feed1120'), f);
   assert.ok(html.includes('yarrow-400.webp'), f + ' preloads yarrow');
   assert.ok(html.includes('fetchpriority="high"'), f);

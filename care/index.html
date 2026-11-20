@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Plant care guides · Inland Empire Native Nursery</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+  <link rel="preload" href="/fonts/fraunces-italic-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/fonts.css?v=ps1120c">
+  <style>
+    :root { --sage:#6b8f6b; --sage-dark:#4a5a4a; --ink:#3d4b3d; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; color:var(--ink); background:#fbf9f5; line-height:1.5; }
+    .wrap { max-width:40rem; margin:0 auto; padding:1rem 1.1rem 2.5rem; }
+    header { text-align:center; margin:0.5rem 0 1.25rem; }
+    /* Horizontal care logo (560/316). Overrides fonts.css shop-header portrait box. */
+    header picture.logo, header .logo { display:block; margin:0 auto; width:min(100%, 320px); height:auto; aspect-ratio:560 / 316; }
+    header picture.logo img, header .logo img { width:100%; height:auto; display:block; aspect-ratio:560 / 316; }
+    h1 { font-family:Fraunces,"Fraunces Fallback",Georgia,serif; font-size:1.35rem; color:var(--sage-dark); margin:0.75rem 0 0.35rem; }
+    .lead { margin:0 0 1rem; }
+    .guides { list-style:none; margin:0; padding:0; background:#fff; border:1px solid #e6e2da; border-radius:10px; }
+    .guides li { border-top:1px solid #eee; }
+    .guides li:first-child { border-top:0; }
+    .guides a { display:block; padding:0.7rem 1rem; color:var(--sage-dark); text-decoration:none; font-weight:700; min-height:44px; }
+    .guides a:hover, .guides a:focus-visible { background:#f6f4ef; }
+    .guides i { display:block; font-style:italic; font-weight:600; color:#4b5563; font-size:0.92rem; }
+    .note { font-size:0.85rem; color:#6b7280; margin-top:1.25rem; text-align:center; }
+    .actions { display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center; margin:0.75rem 0 1rem; }
+    .actions a {
+      display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:0.45rem 0.9rem;
+      border-radius:10px; font:inherit; font-weight:700; text-decoration:none;
+      background:#fff; color:var(--sage-dark); border:1px solid #d7d0c4;
+    }
+    @media print {
+      body { background:#fff; color:#000; }
+      .actions, .no-print { display:none !important; }
+      .wrap { max-width:none; padding:0; }
+      header picture.logo, header .logo { width:220px; }
+      .guides { break-inside:avoid; page-break-inside:avoid; border-color:#ccc; }
+      .guides a { color:#000; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <picture class="logo">
+        <source type="image/webp" srcset="/images/ienn-logo-horizontal-560.webp 560w, /images/ienn-logo-horizontal-1120.webp 1120w" sizes="(min-width: 21.25em) 320px, calc(100vw - 2.2rem)">
+        <img src="/images/ienn-logo-horizontal-560.jpg" srcset="/images/ienn-logo-horizontal-560.jpg 560w, /images/ienn-logo-horizontal-1120.jpg 1120w" sizes="(min-width: 21.25em) 320px, calc(100vw - 2.2rem)" width="560" height="316" alt="Inland Empire Native Nursery">
+      </picture>
+      <h1 id="page-title">Plant care guides</h1>
+      <p class="lead" id="hub-lead">Choose a plant to open its care sheet.</p>
+    </header>
+    <div class="actions no-print">
+      <a href="/order.html">Back to plants</a>
+    </div>
+    <ul class="guides" id="guides"></ul>
+    <p id="care-disclaimer" class="note no-print care-disclaimer">Care info is general guidance for Inland Empire gardens. Every yard is different, so adjust to your sun, soil and water. Questions? Reach out and we'll help.</p>
+  </div>
+  <script src="/data/plant-basics.js?v=care15-1120"></script>
+  <script>
+    (function () {
+      var list = document.getElementById("guides");
+      if (!list || typeof iennApprovedCareList !== "function") return;
+      var all = iennApprovedCareList();
+      var raw = (new URLSearchParams(location.search).get("p") || "").split(",");
+      var seen = {}, filtered = [];
+      raw.forEach(function (part) {
+        var c = typeof iennApprovedCareBySlug === "function" ? iennApprovedCareBySlug(part) : null;
+        if (!c) return;
+        var k = String(c.careBotanical).toLowerCase();
+        if (seen[k]) return;
+        seen[k] = 1;
+        filtered.push(c);
+      });
+      var rows = filtered.length ? filtered : all;
+      rows.forEach(function (c) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = "/plant-care.html?species=" + encodeURIComponent(c.careBotanical);
+        a.appendChild(document.createTextNode(c.careCommon || c.careBotanical));
+        if (c.careBotanical) {
+          var it = document.createElement("i");
+          it.textContent = c.careBotanical;
+          a.appendChild(it);
+        }
+        li.appendChild(a);
+        list.appendChild(li);
+      });
+    })();
+  </script>
+</body>
+</html>
