@@ -1,24 +1,28 @@
 /* "Planting bundles coming soon" (starter packs) teaser (index.html only): a big juicy 3-D button centered in the viewport.
    Shows after STARTER_TEASER_DELAY_MS (shop-settings.js), once per visitor; color from STARTER_TEASER_COLOR ("honey" | "lilac" | "sage" | "red").
    Waits while the checkout drawer, promo or a dialog is open. Press anywhere on it: it sinks (~120ms), then shrinks/fades away. Escape also dismisses.
-   Heading font from STARTER_TEASER_FONT (only that one Google Font loads). Preview: ?teaser=now (ignores the seen flag), optional &teasercolor=lilac &teaserfont=fredoka &teasershape=leaf (STARTER_TEASER_SHAPE; flowers: calochortus, calochortus-glass, calochortus-side, salvia, trichostema). No email capture, prices or pack names. */
+   Heading font from STARTER_TEASER_FONT (only that one self-hosted font loads). Preview: ?teaser=now (ignores the seen flag), optional &teasercolor=lilac &teaserfont=fredoka &teasershape=leaf (STARTER_TEASER_SHAPE; flowers: calochortus, calochortus-glass, calochortus-side, salvia, trichostema). No email capture, prices or pack names. */
 (function () {
   var KEY = "ienn-starter-teaser-seen", q = location.search, now = /[?&]teaser=now\b/.test(q);
   var COLORS = ["honey", "lilac", "sage", "red"], m = /[?&]teasercolor=([a-z]+)/.exec(q);
   var color = (m && COLORS.indexOf(m[1]) >= 0) ? m[1] : (typeof STARTER_TEASER_COLOR === "string" && COLORS.indexOf(STARTER_TEASER_COLOR) >= 0 ? STARTER_TEASER_COLOR : "honey");
-  /* Heading font options (Google Fonts, one weight each, display=swap). Only the active one is loaded. size = title font-size that fits one line at 390px. */
+  /* Heading font options (self-hosted latin woff2, one weight each, display=swap). Only the active one is loaded. size = title font-size that fits one line at 390px. */
   var FONTS = {
-    dancing:   { family: '"Dancing Script", cursive', css: null, weight: 700, size: "1.75rem" },   // already loaded by the page
-    fredoka:   { family: '"Fredoka", system-ui, sans-serif', css: "Fredoka:wght@700", weight: 700, size: "1.45rem" },
-    baloo:     { family: '"Baloo 2", system-ui, sans-serif', css: "Baloo+2:wght@800", weight: 800, size: "1.45rem" },
-    lilita:    { family: '"Lilita One", system-ui, sans-serif', css: "Lilita+One", weight: 400, size: "1.5rem" },
-    rubik:     { family: '"Rubik", system-ui, sans-serif', css: "Rubik:wght@800", weight: 800, size: "1.3rem" },
-    bricolage: { family: '"Bricolage Grotesque", system-ui, sans-serif', css: "Bricolage+Grotesque:wght@800", weight: 800, size: "1.35rem" }
+    dancing:   { family: '"Dancing Script", cursive', file: "fonts/dancing-script-700.woff2", weight: 700, size: "1.75rem" },
+    fredoka:   { family: '"Fredoka", system-ui, sans-serif', file: "fonts/fredoka-700.woff2", weight: 700, size: "1.45rem" },
+    baloo:     { family: '"Baloo 2", system-ui, sans-serif', file: "fonts/baloo-2-800.woff2", weight: 800, size: "1.45rem" },
+    lilita:    { family: '"Lilita One", system-ui, sans-serif', file: "fonts/lilita-one-400.woff2", weight: 400, size: "1.5rem" },
+    rubik:     { family: '"Rubik", system-ui, sans-serif', file: "fonts/rubik-800.woff2", weight: 800, size: "1.3rem" },
+    bricolage: { family: '"Bricolage Grotesque", system-ui, sans-serif', file: "fonts/bricolage-grotesque-800.woff2", weight: 800, size: "1.35rem" }
   };
   var fm = /[?&]teaserfont=([a-z]+)/.exec(q), fontKey = (fm && FONTS[fm[1]]) ? fm[1] : (typeof STARTER_TEASER_FONT === "string" && FONTS[STARTER_TEASER_FONT] ? STARTER_TEASER_FONT : "dancing"), FONT = FONTS[fontKey];
   function loadFont(cb) {   // inject only the chosen font; wait briefly for it so the heading doesn't swap mid-entry
-    if (FONT.css && !document.getElementById("st-font")) { var l = document.createElement("link"); l.id = "st-font"; l.rel = "stylesheet";
-      l.href = "https://fonts.googleapis.com/css2?family=" + FONT.css + "&display=swap"; document.head.appendChild(l); }
+    if (FONT.file && !document.getElementById("st-font")) {
+      var fam = FONT.family.split(",")[0].trim().replace(/^["']|["']$/g, "");
+      var s = document.createElement("style"); s.id = "st-font";
+      s.textContent = "@font-face{font-family:" + fam + ";font-style:normal;font-weight:" + FONT.weight + ";font-display:swap;src:url('" + FONT.file + "') format('woff2')}";
+      document.head.appendChild(s);
+    }
     var done = false; function go() { if (!done) { done = true; cb(); } } setTimeout(go, 1500);
     try { var fam = FONT.family.split(",")[0]; (function poll(n) { if (document.fonts && document.fonts.check(FONT.weight + " 20px " + fam)) return go(); if (n > 0) setTimeout(function () { poll(n - 1); }, 100); })(14); } catch (e) { go(); }
   }

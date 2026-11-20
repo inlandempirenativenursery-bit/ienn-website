@@ -41,6 +41,7 @@
     }
     .logo { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: inherit; }
     .logo img { height: 64px; width: auto; display: block; }
+    .logo picture { display: block; }
     .steps-strip { display:flex; justify-content:center; gap:0.9rem; list-style:none; margin:0.5rem auto 0; padding:0.3rem 0.8rem; font-size:0.78rem; color:#4a5a4a; background:#f8f6f3; border:1px solid #e6e2da; border-radius:999px; width:max-content; max-width:100%; }
     .steps-strip li + li::before { content:"·"; margin-right:0.9rem; color:#9aa69a; }
     .steps-strip b { font-weight:700; color:#6b7c6a; }
@@ -48,7 +49,7 @@
     .logo { min-width:0; flex:1 1 0; }
     .logo > div { min-width:0; }
     .brand-name { font-weight:800; font-size:clamp(0.7rem, 3.6vw, 1.3rem); line-height:1.1; letter-spacing:-0.02em; white-space:nowrap; color:#3d4b3d; text-shadow:0 1px 0 #fff, 0 2px 3px rgba(61,75,61,0.18); }
-    .hdr-slogan { flex:0 0 100%; order:9; text-align:center; font-family:"Dancing Script","Satisfy",cursive; font-style:italic; font-weight:700; font-size:clamp(1.25rem, 5.4vw, 1.8rem); line-height:1.15; color:#2f6b2f; margin:0.1rem 0 0; text-shadow:0 0 6px rgba(143,188,143,0.55), 0 0 14px rgba(200,180,230,0.45), 0 1px 0 #fff; }
+    .hdr-slogan { flex:0 0 100%; order:9; text-align:center; font-family:Fraunces, "Fraunces Fallback", Georgia, "Times New Roman", serif; font-style:italic; font-weight:700; font-size:clamp(1.25rem, 5.4vw, 1.8rem); line-height:1.15; color:#2f6b2f; margin:0.1rem 0 0; text-shadow:0 0 6px rgba(143,188,143,0.55), 0 0 14px rgba(200,180,230,0.45), 0 1px 0 #fff; }
     .header-right { flex:0 0 auto; }
     @media (max-width:480px) { header { padding-left:0.6rem; padding-right:0.6rem; } .logo { gap:0.4rem; } .logo img { height:42px; } .header-right .co-btn { padding:0.45rem 0.55rem; font-size:0.8rem; min-height:40px; } .header-right .ig-top { display:none; } }
     .strip-wrap { display:flex; justify-content:flex-end; padding:0 1rem; margin-top:0.35rem; }
@@ -109,7 +110,7 @@
     .starter-teaser.st-sage { --st-top:#94a592; --st-mid:#6b7c6a; --st-bot:#5a6a59; --st-edge:#3b483b; --st-ink:#fff; --st-sub:#eef3ec; --st-glow:rgba(40,55,40,.32); --st-ts:rgba(0,0,0,.28); }
     .starter-teaser.st-red { --st-top:#e2394f; --st-mid:#c8102e; --st-bot:#a50d22; --st-edge:#6f0816; --st-ink:#fff; --st-sub:#ffe9ec; --st-glow:rgba(110,10,25,.32); --st-ts:rgba(0,0,0,.28); }
     .starter-teaser::before { content:""; position:absolute; left:5%; right:5%; top:3px; height:40%; border-radius:999px; background:linear-gradient(180deg, rgba(255,255,255,.38), rgba(255,255,255,0) 90%); pointer-events:none; }
-    .starter-teaser .st-title { position:relative; display:block; font-family:"Dancing Script","Satisfy",cursive; font-weight:700; font-size:1.75rem; line-height:1.1; color:var(--st-ink); text-shadow:0 1px 0 var(--st-ts); }
+    .starter-teaser .st-title { position:relative; display:block; font-family:system-ui, sans-serif; font-weight:700; font-size:1.75rem; line-height:1.1; color:var(--st-ink); text-shadow:0 1px 0 var(--st-ts); }
     .starter-teaser .st-sub { position:relative; display:block; margin-top:0.15rem; font-size:0.82rem; text-wrap:balance; font-weight:600; line-height:1.3; color:var(--st-sub); }
     .starter-teaser.in { opacity:1; animation:st-drop .75s cubic-bezier(.2,.9,.3,1.2) backwards, st-pulse 2.4s ease-in-out .9s 2; }
     @media (hover:hover) { .starter-teaser.in:hover { transform:translateY(-2px); box-shadow:inset 0 2px 0 rgba(255,255,255,.6), inset 0 -3px 0 rgba(0,0,0,.10), 0 8px 0 var(--st-edge), 0 16px 28px var(--st-glow); } }
@@ -289,15 +290,15 @@
     .ig-top { min-width:44px; flex-shrink:0; justify-content:center; color:var(--sage-dark); font-weight:600; font-size:0.85rem; text-decoration:none; }
     @media (max-width: 480px) { .ig-top-text { display:none; } .ig-top svg { width:22px; height:22px; } }
   </style>
-  <link rel="stylesheet" href="shop.css?v=faq1106">
+  <link rel="stylesheet" href="shop.css?v=ps1120">
   <style>
     .shop { max-width:1080px; margin:0 auto; padding:0; }
     .shop .inv-status[hidden] { display:none; }
     body { padding-bottom:96px; }
     .order-btn.co-btn { border:2px solid var(--red); }
   </style>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Fraunces:ital,opsz,wght@1,9..144,600&display=swap" rel="stylesheet">
+  <link rel="preload" href="fonts/fraunces-italic-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="fonts.css?v=ps1120">
   <style id="hdr-3d">
     /* Header: no Check out button (tray bar handles checkout), seamless (no border), raised 3D name, deeper slogan glow */
     header { border-bottom:0 !important; box-shadow:none !important; }
@@ -361,7 +362,7 @@
       padding: 0.2rem 0.7rem 0.55rem;
     }
     .hdr-slogan {
-      font-family: Fraunces, "Fraunces 9pt", serif !important;
+      font-family: Fraunces, "Fraunces Fallback", Georgia, "Times New Roman", serif !important;
       font-optical-sizing: auto;
       font-style: italic;
       font-weight: 600 !important;
@@ -413,7 +414,10 @@
 <body>
   <header>
     <a href="index.html" class="logo">
-      <img src="images/ienn-logo-IMG_2773-600.jpg" width="52" height="64" alt="Inland Empire Native Nursery logo">
+      <picture>
+        <source type="image/webp" srcset="images/ienn-logo-header-90.webp 90w, images/ienn-logo-header-180.webp 180w" sizes="(max-width: 480px) 37px, 61px">
+        <img src="images/ienn-logo-header-180.jpg" srcset="images/ienn-logo-header-90.jpg 90w, images/ienn-logo-header-180.jpg 180w" sizes="(max-width: 480px) 37px, 61px" width="180" height="223" alt="Inland Empire Native Nursery logo">
+      </picture>
       <div>
         <div class="brand-name">Inland Empire Native Nursery</div>
       </div>
@@ -497,16 +501,16 @@
   </footer>
   <script>window.IENN_PROMO_OPTS = { cta: "Shop now", onShop: function () { var g = document.getElementById("plant-list"); if (g) g.scrollIntoView({ behavior: "smooth" }); } };</script>
   <script src="promo.js?v=gf30a1"></script>
-  <script src="plant-photos.js?v=gf30a1"></script>
+  <script src="plant-photos.js?v=ps1120"></script>
   <script src="feed-order.js?v=gf30a1"></script>
   <script src="stock-view.js?v=gf30a1"></script>
   <script src="shop-settings.js?v=faq1106d"></script>
   <script src="data/plant-basics.js?v=care15-1112"></script>
   <script src="data/plant-seals.js?v=gf30a1"></script>
-  <script src="shop.js?v=alias1110"></script>
+  <script src="shop.js?v=ps1120"></script>
   <script src="plant-search.js?v=about1116"></script>
   <script>document.getElementById("printlist-link").href = APPS_SCRIPT_URL + "?view=print";</script>
   <script src="site-links.js?v=gf30a1"></script>
-  <script src="teaser.js?v=gf30a1"></script>
+  <script src="teaser.js?v=ps1120"></script>
   <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "00379ec8474248f69ace426cd21d2126"}'></script><!-- End Cloudflare Web Analytics -->
 </body></html>
