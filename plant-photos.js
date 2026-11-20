@@ -56,9 +56,12 @@ var IENN_PHOTO_CREDITS = {
 function ienPhoto(name) { var k = String(name || "").toLowerCase().replace(/\(.*?\)/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); k = IENN_PHOTO_ALIAS[k] || k;
   if (IENN_PHOTOS.indexOf(k) < 0) return null;
   var base = "assets/plants/" + k, out = { src: base + ".jpg", srcset: base + "-400.jpg 400w, " + base + ".jpg 800w", credit: IENN_PHOTO_CREDITS[k] || null }, w = [];
-  if (IENN_PHOTO_WEBP_400.indexOf(k) >= 0) w.push(base + "-400.webp 400w");
-  if (IENN_PHOTO_WEBP_FULL.indexOf(k) >= 0) w.push(base + ".webp 800w");
-  if (w.length) out.webpSrcset = w.join(", ");
+  /* Only emit a WebP source when a 400w WebP exists. An 800w-only source would force the large file on mobile. */
+  if (IENN_PHOTO_WEBP_400.indexOf(k) >= 0) {
+    w.push(base + "-400.webp 400w");
+    if (IENN_PHOTO_WEBP_FULL.indexOf(k) >= 0) w.push(base + ".webp 800w");
+    out.webpSrcset = w.join(", ");
+  }
   return out; }
 /* WebP siblings (same pixel size, cwebp q80-85) only when the file is smaller than the JPEG. */
 var IENN_PHOTO_WEBP_400 = ["apricot-mallow", "arizona-cypress", "blue-grama", "brittlebush", "bush-poppy", "california-buckwheat", "california-encelia", "cleveland-sage", "conejo-buckwheat", "coyote-brush", "deerweed", "four-winged-saltbush", "grinnell-s-beardtongue", "hummingbird-sage", "matilija-poppy", "morning-glory", "narrow-leaf-milkweed", "purple-needlegrass", "purple-sage", "sacred-datura", "scarlet-bugler", "scarlet-monkeyflower", "showy-milkweed", "showy-penstemon", "st-catherine-s-lace", "sticky-monkeyflower", "sugarbush", "toyon", "woolly-blue-curls", "woollypod-milkweed", "yarrow"];
