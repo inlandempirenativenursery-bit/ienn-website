@@ -444,5 +444,3 @@ html.bg-light .pane-basics { --bg-op:.12; } html.bg-strong .pane-basics { --bg-o
   height: 440px;
   min-height: 440px;
 }
-/* Avoid a width reflow when the long grid makes the vertical scrollbar appear. */
-html { scrollbar-gutter: stable; }
