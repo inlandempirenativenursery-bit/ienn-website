@@ -27,5 +27,5 @@ const slug = (t) => String(t).toLowerCase().replace(/\(.*?\)/g, '').trim().repla
 assert.strictEqual(SA[slug("Grinnell's beardtongue")], slug('Southern woodland penstemon'));
 assert.strictEqual(SA['grinnells-beardtongue'], 'southern-woodland-penstemon');
 assert.ok(shop.includes('parts[0] = SLUG_ALIAS[parts[0]] || parts[0];'), 'prefill applies the alias');
-for (const f of ['index.html', 'order.html']) assert.ok(fs.readFileSync(path.join(root, f), 'utf8').includes('shop.js?v=feed1120'), f + ' shop.js cache string');
+for (const f of ['index.html', 'order.html']) assert.ok(fs.readFileSync(path.join(root, f), 'utf8').includes('shop.js?v=feed1120b'), f + ' shop.js cache string');
 console.log('display-name-penstemon: slug alias passed');

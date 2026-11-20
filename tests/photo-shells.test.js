@@ -18,6 +18,8 @@ assert.ok(shop.includes('function photoShellPlants'));
 assert.ok(shop.includes('Checking availability'));
 assert.ok(shop.includes('is-pending'));
 assert.ok(shop.includes('fetchpriority'));
+assert.ok(shop.includes('takeShellPhotos'));
+assert.ok(shop.includes('shellPhotos[p.image]'));
 assert.ok(!/pendingCard[\s\S]{0,800}(Add to tray|In stock|price-tag)/.test(shop), 'pendingCard must not include Add/stock/price');
 
 const slugSrc = shop.match(/function slug\(t\) \{[^}]+\}/)[0];

@@ -83,8 +83,10 @@
   function render() {
     if (pressing) { pendingRender = true; return; } pendingRender = false;
     var keep = shown;
+    shellPhotos = takeShellPhotos();   // reuse already-painted shell <img> nodes so LCP is not reset when the feed arrives
     list.innerHTML = ""; list.setAttribute("aria-busy", "false"); shown = 0; if (io) io.disconnect();
     more(); while (keep > shown && shown < PLANTS.length) more(); update(); buildTypes();
+    shellPhotos = {};
     document.dispatchEvent(new CustomEvent("ienn-grid-rendered"));
   }
   function more() {   // progressive render: next BATCH cards when the sentinel scrolls near view
@@ -103,8 +105,29 @@
   function askNote() { var n = el("span", { class: "ask-note" }); n.appendChild(document.createTextNode("Ask us: "));
     n.appendChild(el("a", { class: "contact-tel", href: "tel:" + CONTACT_TEL }, "call")); n.appendChild(document.createTextNode(" or "));
     n.appendChild(el("a", { class: "contact-sms", href: "sms:" + CONTACT_TEL }, "text")); n.appendChild(document.createTextNode(" Andrew")); return n; }
+  var shellPhotos = {};
+  function takeShellPhotos() {
+    var map = {};
+    Array.prototype.forEach.call(list.querySelectorAll(".card.is-pending .ph picture, .card.is-pending .ph > img"), function (node) {
+      var img = node.tagName === "IMG" ? node : node.querySelector("img");
+      var key = img && (img.getAttribute("src") || img.src || "").split("?")[0];
+      if (key && !map[key]) map[key] = node;
+    });
+    return map;
+  }
   function plantPhotoEl(p, idx) {
     var sizes = "(max-width: 600px) 48vw, 260px";
+    if (p.image && shellPhotos[p.image]) {
+      var node = shellPhotos[p.image]; delete shellPhotos[p.image];
+      var img = node.tagName === "IMG" ? node : node.querySelector("img");
+      if (img) {
+        img.alt = p.name;
+        img.loading = idx < 4 ? "eager" : "lazy";
+        if (idx < 2) img.setAttribute("fetchpriority", "high");
+        else img.removeAttribute("fetchpriority");
+      }
+      return node;   // keep the already-painted LCP image in the DOM
+    }
     var img = el("img", { src: p.image, alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" });
     if (idx < 2) img.setAttribute("fetchpriority", "high");
     if (p.srcset) { img.setAttribute("srcset", p.srcset); img.setAttribute("sizes", sizes); }
@@ -739,7 +762,7 @@
   function showPhotoShells(plants) {
     preloadShellPhotos(plants);
     list.innerHTML = "";
-    plants.slice(0, 8).forEach(function (p, i) { list.appendChild(pendingCard(p, i)); });
+    plants.slice(0, 4).forEach(function (p, i) { list.appendChild(pendingCard(p, i)); });
     list.setAttribute("aria-busy", "true");
     status.className = "inv-status loading"; status.textContent = "Loading today\u2019s plants\u2026"; status.hidden = false;
   }

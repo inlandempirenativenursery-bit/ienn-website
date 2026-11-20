@@ -95,6 +95,9 @@ function assertPending(s, label) {
       try { assertPending(before, 'slow-feed before'); } catch (e) { fail++; console.error(e.message); }
       const hadYarrow = before.names.some((n) => /yarrow/i.test(n));
       const hBefore = before.listH;
+      await page.evaluate(() => {
+        document.querySelectorAll('#plant-list .card.is-pending img').forEach((img, i) => { img.dataset.shellKeep = String(i); });
+      });
       release();
       await page.waitForFunction(() => !document.querySelector('#plant-list .card.is-pending') && document.querySelector('#plant-list button.add'), null, { timeout: 15000 });
       const after = await snapshot(page);
@@ -105,6 +108,12 @@ function assertPending(s, label) {
         if (!after.instock && !after.available) throw new Error('live stock labels missing after feed');
         if (hadYarrow && after.names.some((n) => /yarrow/i.test(n))) throw new Error('yarrow shell should drop when the feed omits it');
         if (after.listH + 80 < hBefore && after.live >= 8) throw new Error('list collapsed after a dropped shell: ' + hBefore + ' -> ' + after.listH);
+        const reuse = await page.evaluate(() => {
+          const kept = [...document.querySelectorAll('#plant-list img[data-shell-keep]')].map((i) => ({ keep: i.dataset.shellKeep, alt: i.alt, inFirst: !!i.closest('.card') }));
+          return { kept, firstKept: !!document.querySelector('#plant-list .card:not(.is-pending) img[data-shell-keep]') };
+        });
+        console.log('slow-reuse', JSON.stringify(reuse));
+        if (!reuse.firstKept) throw new Error('feed render replaced shell photos instead of reusing them (LCP would reset)');
       } catch (e) { fail++; console.error('slow-after: ' + e.message); }
       await ctx.close();
     }
