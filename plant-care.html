@@ -14,6 +14,7 @@
     .wrap { max-width:40rem; margin:0 auto; padding:1rem 1.1rem 2.5rem; }
     header { text-align:center; margin:0.5rem 0 1.25rem; }
     .logo { display:block; margin:0 auto; width:min(100%, 320px); height:auto; }
+    .logo img { width:100%; height:auto; display:block; }
     h1 { font-size:1.35rem; color:var(--sage-dark); margin:0.75rem 0 0.35rem; }
     h1 i { font-style:italic; font-weight:600; }
     .actions { display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center; margin:0.75rem 0 1rem; }
@@ -43,7 +44,10 @@
 <body>
   <div class="wrap">
     <header>
-      <img class="logo" src="images/ienn-logo-horizontal.jpg" width="640" height="180" alt="Inland Empire Native Nursery">
+      <picture class="logo">
+        <source type="image/webp" srcset="images/ienn-logo-horizontal-560.webp 560w, images/ienn-logo-horizontal-1120.webp 1120w" sizes="(min-width: 21.25em) 320px, calc(100vw - 2.2rem)">
+        <img src="images/ienn-logo-horizontal-560.jpg" srcset="images/ienn-logo-horizontal-560.jpg 560w, images/ienn-logo-horizontal-1120.jpg 1120w" sizes="(min-width: 21.25em) 320px, calc(100vw - 2.2rem)" width="560" height="316" alt="Inland Empire Native Nursery">
+      </picture>
       <h1 id="page-title">Plant care</h1>
     </header>
 

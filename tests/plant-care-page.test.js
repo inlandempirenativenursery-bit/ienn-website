@@ -32,7 +32,7 @@ const careHtml = fs.readFileSync(path.join(root, 'plant-care.html'), 'utf8');
 assert.ok(careHtml.includes('iennApprovedCare'));
 assert.ok(careHtml.includes('plant-basics.js'));
 assert.ok(careHtml.includes('break-inside:avoid') || careHtml.includes('page-break-inside:avoid'));
-assert.ok(careHtml.includes('ienn-logo-horizontal.jpg'));
+assert.ok(careHtml.includes('ienn-logo-horizontal-560.jpg') && careHtml.includes('ienn-logo-horizontal-1120.jpg'));
 assert.ok(!careHtml.includes('pickup-info.html#yarrow-care'));
 /* Full sheet still rendered on the dedicated care page */
 assert.ok(careHtml.includes('care.careIntro'));

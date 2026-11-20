@@ -9,9 +9,9 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,560;0,9..144,650;1,9..144,560;1,9..144,600&display=swap" rel="stylesheet">
+  <link rel="preload" href="fonts/fraunces-italic-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/fraunces-normal-560-650.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="fonts.css?v=ps1120c">
   <style>
     :root {
       --lilac: #d4c4e0;
@@ -47,6 +47,7 @@
     .logo { display: flex; align-items: center; gap: 0.45rem; text-decoration: none; color: inherit; min-width: 0; flex: 1 1 60%; }
     .logo > div { min-width: 0; }
     .logo img { height: clamp(55px, 15.4vw, 76px); width: auto; display: block; }
+    .logo picture { display: block; }
     .brand-name {
       font-weight: 800;
       font-size: clamp(1rem, 5.05vw, 2.1rem);
@@ -66,7 +67,7 @@
       padding: 0.2rem 0.7rem 0.55rem;
     }
     .hdr-slogan {
-      font-family: Fraunces, "Fraunces 9pt", serif;
+      font-family: Fraunces, "Fraunces Fallback", Georgia, "Times New Roman", serif;
       font-optical-sizing: auto;
       font-style: italic;
       font-weight: 600;
@@ -147,7 +148,7 @@
       box-shadow: 0 18px 40px rgba(20, 28, 20, 0.28);
     }
     .about-panel h1 {
-      font-family: Fraunces, Georgia, "Times New Roman", serif;
+      font-family: Fraunces, "Fraunces Fallback", Georgia, "Times New Roman", serif;
       font-optical-sizing: auto;
       font-weight: 650;
       font-size: clamp(2.05rem, 8.2vw, 3.15rem);
@@ -171,7 +172,7 @@
     .about-panel .turn {
       display: block;
       margin-top: 0.85rem;
-      font-family: Fraunces, Georgia, "Times New Roman", serif;
+      font-family: Fraunces, "Fraunces Fallback", Georgia, "Times New Roman", serif;
       font-optical-sizing: auto;
       font-style: italic;
       font-weight: 560;
@@ -201,7 +202,10 @@
 <body>
   <header>
     <a href="index.html" class="logo">
-      <img src="images/ienn-logo-IMG_2773-600.jpg" width="52" height="64" alt="Inland Empire Native Nursery logo">
+      <picture>
+        <source type="image/webp" srcset="images/ienn-logo-header-90.webp 90w, images/ienn-logo-header-180.webp 180w" sizes="(max-width: 480px) 37px, 61px">
+        <img src="images/ienn-logo-header-180.jpg" srcset="images/ienn-logo-header-90.jpg 90w, images/ienn-logo-header-180.jpg 180w" sizes="(max-width: 480px) 37px, 61px" width="180" height="223" alt="Inland Empire Native Nursery logo">
+      </picture>
       <div>
         <div class="brand-name">Inland Empire Native Nursery</div>
       </div>

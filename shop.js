@@ -103,11 +103,23 @@
   function askNote() { var n = el("span", { class: "ask-note" }); n.appendChild(document.createTextNode("Ask us: "));
     n.appendChild(el("a", { class: "contact-tel", href: "tel:" + CONTACT_TEL }, "call")); n.appendChild(document.createTextNode(" or "));
     n.appendChild(el("a", { class: "contact-sms", href: "sms:" + CONTACT_TEL }, "text")); n.appendChild(document.createTextNode(" Andrew")); return n; }
-  function card(p, idx) {
+  function plantPhotoEl(p, idx) {
+    var sizes = "(max-width: 600px) 48vw, 260px";
+    var img = el("img", { src: p.image, alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" });
+    if (p.srcset) { img.setAttribute("srcset", p.srcset); img.setAttribute("sizes", sizes); }
+    if (p.webpSrcset) {
+      var pic = el("picture");
+      pic.appendChild(el("source", { type: "image/webp", srcset: p.webpSrcset, sizes: sizes }));
+      pic.appendChild(img);
+      return pic;
+    }
+    return img;
+  }
+    function card(p, idx) {
       var ps = pstate(p), card = el("article", { class: "card" + (ps === "out" ? " sold-out" : ""), "aria-labelledby": p.id + "-name" });
       card.dataset.id = p.id; card.dataset.group = typeGroup(p) || ""; if (String(p.name).length >= 16) card.classList.add("long-name");   // may wrap to 2 lines: slightly smaller title, tighter gaps (shop.css)
       var ph = el("div", { class: "ph" });
-      if (p.image) ph.appendChild(el("img", p.srcset ? { src: p.image, srcset: p.srcset, sizes: "(max-width: 600px) 48vw, 260px", alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" } : { src: p.image, alt: p.name, loading: idx < 4 ? "eager" : "lazy", decoding: "async" })); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }
+      if (p.image) ph.appendChild(plantPhotoEl(p, idx)); else { ph.appendChild(el("span", { class: "leaf" }, "🌿")); ph.setAttribute("aria-hidden", "true"); }
       var lo = p.sizes.filter(function (z) { return inStock(z) && isFinite(z.price); }).map(function (z) { return z.price; });
       if (lo.length) ph.appendChild(el("span", { class: "price-tag", "aria-hidden": "true" }, (lo.length > 1 ? "from $" : "$") + Math.min.apply(null, lo)));
       if (p.badge) ph.appendChild(el("span", { class: "pick-badge" + (p.badgeAuto ? " auto-" + p.badgeAuto : "") }, String(p.badge)));
@@ -335,7 +347,7 @@
     if (ph0 && ph0.querySelector(".photo-credit")) fitCredit(ph0);
     capOverlays(ph0);
     var fimg0 = ph0 && ph0.querySelector("img"), cp = null;
-    if (CLEAN && fimg0) { cp = el("div", { class: "pane-clean", "aria-hidden": "true" }); var ci = fimg0.cloneNode(); ci.removeAttribute("loading"); cp.appendChild(ci);
+    if (CLEAN && fimg0) { cp = el("div", { class: "pane-clean", "aria-hidden": "true" }); var srcEl = fimg0.closest("picture") || fimg0; var ci = srcEl.cloneNode(true); var ciImg = ci.tagName === "PICTURE" ? ci.querySelector("img") : ci; if (ciImg) ciImg.removeAttribute("loading"); cp.appendChild(ci);
       var oc = ph0.querySelector(".photo-credit"); if (oc) { var cc = oc.cloneNode(true); cc.style.maxWidth = ""; cc.addEventListener("click", function (e) { e.stopPropagation(); }); cp.appendChild(cc); } }
     var NP = cp ? 3 : 2;
     function dots(on) { var d = el("div", { class: "flip-dots", "aria-hidden": "true" }); for (var k = 0; k < NP; k++) d.appendChild(el("i", k === on ? { class: "on" } : {})); return d; }
@@ -343,7 +355,7 @@
     var d1 = dots(0);
     if (ph0) ph0.after(d1);
     var fimg = ph0 && ph0.querySelector("img");   // faded copy of the front photo behind the back (same URL, cached)
-    if (fimg) { var bg = el("img", { class: "back-bg", src: fimg.getAttribute("src"), alt: "", "aria-hidden": "true", loading: "lazy", decoding: "async" }); if (fimg.getAttribute("srcset")) { bg.setAttribute("srcset", fimg.getAttribute("srcset")); bg.setAttribute("sizes", fimg.getAttribute("sizes")); } bp.pane.insertBefore(bg, bp.pane.firstChild); bp.pane.classList.add("has-bg"); }
+    if (fimg) { var srcEl = fimg.closest("picture") || fimg; var bgWrap = srcEl.cloneNode(true); var bg = bgWrap.tagName === "PICTURE" ? bgWrap.querySelector("img") : bgWrap; bg.className = ((bg.className ? bg.className + " " : "") + "back-bg").trim(); bg.setAttribute("alt", ""); bg.setAttribute("aria-hidden", "true"); bg.setAttribute("loading", "lazy"); bg.setAttribute("decoding", "async"); if (bgWrap.tagName === "PICTURE") bgWrap.classList.add("back-bg-wrap"); bp.pane.insertBefore(bgWrap, bp.pane.firstChild); bp.pane.classList.add("has-bg"); }
     track.appendChild(front); track.appendChild(bp.pane); if (cp) track.appendChild(cp); card.appendChild(track); card.classList.add("has-basics");
     var side = 0, drag = null, swallow = false;
     function show(on) { card.classList.toggle("showing-basics", !!on); front.setAttribute("aria-hidden", on ? "true" : "false"); bp.pane.setAttribute("aria-hidden", on === 1 ? "false" : "true"); if (cp) cp.setAttribute("aria-hidden", on === 2 ? "false" : "true"); }
@@ -616,13 +628,13 @@
   function fromInventory(d) {
     var ab = autoBadges(d.plants || []);
     return (d.plants || []).map(function (p) {
-      return { id: slug(p.name), name: p.name, fullName: p.fullName || p.name, botanical: p.botanical || "", badge: p.badge && String(p.badge).trim() ? String(p.badge).trim().slice(0, 24) : ab[p.name] === "top" ? "#1 Selling" : ab[p.name] === "pop" ? "Popular" : "", badgeAuto: p.badge && String(p.badge).trim() ? "" : ab[p.name] || "", rank: p.rank, pinned: p.pinned, image: p.image || (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).src || "", srcset: p.image ? "" : (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).srcset || "",
+      return { id: slug(p.name), name: p.name, fullName: p.fullName || p.name, botanical: p.botanical || "", badge: p.badge && String(p.badge).trim() ? String(p.badge).trim().slice(0, 24) : ab[p.name] === "top" ? "#1 Selling" : ab[p.name] === "pop" ? "Popular" : "", badgeAuto: p.badge && String(p.badge).trim() ? "" : ab[p.name] || "", rank: p.rank, pinned: p.pinned, image: p.image || (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).src || "", srcset: p.image ? "" : (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).srcset || "", webpSrcset: p.image ? "" : (typeof ienPhoto === "function" && ienPhoto(p.name) || {}).webpSrcset || "",
         sizes: (p.sizes || []).map(function (z) { return { key: z.key, label: z.size || SIZE_LABELS[z.key] || z.key, price: isFinite(Number(z.price)) && z.price !== "" && z.price != null ? Number(z.price) : PRICES[z.key], qty: z.qty == null ? null : Number(z.qty), extra: z.extra == null ? null : Number(z.extra), canRequest: z.canRequest == null ? null : z.canRequest === true }; }) };
     });
   }
   function fallback() {
     return FALLBACK_PLANTS.map(function (p) { var nb = split(p.name);
-      return { id: slug(nb[0]), name: nb[0], fullName: p.name, botanical: p.botanical || nb[1], image: (typeof ienPhoto === "function" && ienPhoto(nb[0]) || {}).src || "", srcset: (typeof ienPhoto === "function" && ienPhoto(nb[0]) || {}).srcset || "", sizes: p.sizes.map(function (k) { return { key: k, label: SIZE_LABELS[k], price: PRICES[k], qty: null }; }) }; });
+      return { id: slug(nb[0]), name: nb[0], fullName: p.name, botanical: p.botanical || nb[1], image: (typeof ienPhoto === "function" && ienPhoto(nb[0]) || {}).src || "", srcset: (typeof ienPhoto === "function" && ienPhoto(nb[0]) || {}).srcset || "", webpSrcset: (typeof ienPhoto === "function" && ienPhoto(nb[0]) || {}).webpSrcset || "", sizes: p.sizes.map(function (k) { return { key: k, label: SIZE_LABELS[k], price: PRICES[k], qty: null }; }) }; });
   }
   var params = new URLSearchParams(location.search), prefilled = false;
   /* Old card slugs from before a sheet rename -> current slug, so saved order.html?<old-slug>=N links still prefill. */
